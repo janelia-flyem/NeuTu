@@ -182,8 +182,14 @@ public:
 public:
   bool isEmpty() const;
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
+               */
 
 //  const std::string& className() const override;
 

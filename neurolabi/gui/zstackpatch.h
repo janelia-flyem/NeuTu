@@ -14,8 +14,12 @@ public:
   ~ZStackPatch() override;
 
 public:
+  virtual bool display(
+      QPainter *painter, const DisplayConfig &config) const {}
+  /*
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                        neutu::EAxis sliceAxis) const override;
+                       */
 
 //  virtual const std::string& className() const;
 

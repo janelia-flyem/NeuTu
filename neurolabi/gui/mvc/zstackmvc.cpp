@@ -204,8 +204,6 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
                 m_view, SLOT(paintStack()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(zoomingTo(int, int, int)),
                 this, SLOT(zoomTo(int,int,int)), Qt::AutoConnection);
-  connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
-          this, SLOT(processViewChange(ZStackViewParam)), Qt::AutoConnection);
 
   connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
                 m_view, SLOT(updateViewBox()), Qt::QueuedConnection);
@@ -217,6 +215,12 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 {
   updateDocSignalSlot(connectAction);
+
+  connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
+          this, SLOT(processViewChange(ZStackViewParam)), Qt::AutoConnection);
+  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
+                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
+                Qt::AutoConnection);
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //                m_presenter, SLOT(processSliceChangeEvent(int)));
 }
@@ -251,9 +255,11 @@ void ZStackMvc::updateDocument()
       m_presenter->optimizeStackBc();
     }
 
+    /*
     if (m_view != NULL) {
       m_view->reset();
     }
+    */
   }
 }
 
@@ -532,6 +538,7 @@ void ZStackMvc::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
 
 void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 {
+  /*
   ZStackViewParam param = view->getViewParameter();
   ZViewProj viewProj = param.getViewProj();
 
@@ -548,6 +555,7 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());
   }
+  */
 
 #if 0
   ZIntPoint center = view->getViewCenter();
@@ -566,6 +574,7 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 
 void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 {
+  /*
   ZStackViewParam param = view->getViewParameter();
   ZViewProj viewProj = param.getViewProj();
 
@@ -582,6 +591,7 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());
   }
+  */
 
 #if 0
   ZIntPoint center = view->getViewCenter();
@@ -697,9 +707,9 @@ void ZStackMvc::setDefaultViewPort(const QRect &rect)
   getView()->setDefaultViewPort(rect);
 }
 
-QRect ZStackMvc::getViewPort() const
+ZAffineRect ZStackMvc::getViewPort() const
 {
-  return getView()->getViewPort(neutu::ECoordinateSystem::STACK);
+  return getView()->getViewPort();
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const
@@ -712,15 +722,19 @@ QSize ZStackMvc::getViewScreenSize() const
   return getView()->getScreenSize();
 }
 
+/*
 double ZStackMvc::getWidthZoomRatio() const
 {
   return getView()->getCanvasWidthZoomRatio();
 }
+*/
 
+/*
 double ZStackMvc::getHeightZoomRatio() const
 {
   return getView()->getCanvasHeightZoomRatio();
 }
+*/
 
 void ZStackMvc::shortcutTest()
 {

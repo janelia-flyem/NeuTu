@@ -180,6 +180,7 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstras
 //  m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 }
 
+#if 0
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -251,6 +252,7 @@ void ZDvidTile::display(
     //}
   }
 }
+#endif
 
 void ZDvidTile::setTileIndex(int ix, int iy)
 {

@@ -550,6 +550,7 @@ void Z3DGraph::clear()
   m_edgeArray.clear();
 }
 
+#if 0
 void Z3DGraph::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -580,6 +581,7 @@ void Z3DGraph::display(
     }
   }
 }
+#endif
 
 void Z3DGraph::addEdge(const Z3DGraphEdge &edge)
 {

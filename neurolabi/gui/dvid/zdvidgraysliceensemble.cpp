@@ -60,6 +60,7 @@ std::shared_ptr<ZDvidGraySlice> ZDvidGraySliceEnsemble::getSlice(
   return std::shared_ptr<ZDvidGraySlice>();
 }
 
+#if 0
 void ZDvidGraySliceEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
@@ -68,6 +69,7 @@ void ZDvidGraySliceEnsemble::display(
     grayslice->display(painter, slice, option, sliceAxis);
   }
 }
+#endif
 
 void ZDvidGraySliceEnsemble::prepare(const ZDvidTarget &target)
 {

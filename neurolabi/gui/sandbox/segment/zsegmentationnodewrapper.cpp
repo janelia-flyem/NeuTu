@@ -26,7 +26,7 @@ ZCuboid ZSegmentationNodeWrapper::getBoundBox() const
   return ZCuboid::FromIntCuboid(box);
 }
 
-
+#if 0
 void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const{
 
   if (sliceAxis != m_sliceAxis || getColor().alpha() == 0) {
@@ -145,4 +145,4 @@ void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplaySty
     }
   }
 }
-
+#endif

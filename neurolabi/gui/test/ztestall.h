@@ -101,7 +101,10 @@
 #include "test/zlocalneurosegtest.h"
 #include "test/zaffinerecttest.h"
 #include "test/zdvidurltest.h"
-#include "test/zworldviewtranformtest.h"
 #include "test/zflyembodycolorschemetest.h"
+
+#include "data3d/tests/zmodelviewtranformtest.h"
+#include "data3d/tests/zviewplanetransformtest.h"
+#include "data3d/tests/zsliceviewtransformtest.h"
 
 #endif // ZTESTALL_H

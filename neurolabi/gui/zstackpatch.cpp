@@ -28,6 +28,7 @@ ZPoint ZStackPatch::getFinalOffset() const
   return pt;
 }
 
+#if 0
 void ZStackPatch::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -56,6 +57,7 @@ void ZStackPatch::display(
     painter.restore();
   }
 }
+#endif
 
 int ZStackPatch::getZOffset() const
 {

@@ -12,8 +12,8 @@ class ZLineSegmentObject : public ZStackObject
 {
 public:
   ZLineSegmentObject();
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+  virtual bool display(
+      QPainter *painter, const DisplayConfig &config) const {}
 
 
   bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;

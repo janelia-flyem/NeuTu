@@ -132,11 +132,12 @@ void neutu::DrawText(QPainter &painter, const QPoint &pos, const QStringList &te
 
 namespace {
 
+/*
 inline void pixel_centered_adjust(const QPainter &painter, double &x, double &y)
 {
-  x += 0.5;
-  y += 0.5;
   if (painter.pen().isCosmetic()) { //may have no effect due to subpixel limitation of qt painting
+    x += 0.5;
+    y += 0.5;
     x -= 0.5 / painter.transform().m11();
     y -= 0.5 / painter.transform().m22();
   }
@@ -148,6 +149,57 @@ inline void pixel_centered_adjust(const QPainter &painter, T &x, T&y, Args&... a
   pixel_centered_adjust(painter, x, y);
   pixel_centered_adjust(painter, args...);
 }
+*/
+
+double get_center_adjustment(double s, bool isCosmetic)
+{
+  double c = 0.0;
+  if (s > 1.0) {
+    c = s * 0.5;
+    if (isCosmetic) {
+      c -= 0.5;
+    }
+  }
+  return c;
+}
+
+struct AdjustPixelCenter {
+  AdjustPixelCenter(QPainter *painter, bool adjusting) {
+    m_adjusting = adjusting;
+    m_painter = painter;
+    /*
+    if (m_painter) {
+      if (!m_painter->pen().isCosmetic()) {
+        m_adjusting = false;
+      }
+    } else {
+      m_adjusting = false;
+    }
+    */
+    if (m_adjusting && m_painter) {
+      m_oldTransform = m_painter->transform();
+      QTransform t = m_oldTransform;
+      t.setMatrix(
+            t.m11(), t.m12(), t.m13(), t.m21(), t.m22(), t.m23(),
+            get_center_adjustment(
+              t.m11(), m_painter->pen().isCosmetic()) + t.m31(),
+            get_center_adjustment(
+              t.m22(), m_painter->pen().isCosmetic()) + t.m32(),
+            t.m33());
+      m_painter->setTransform(t);
+    }
+  }
+
+  ~AdjustPixelCenter() {
+    if (m_painter && m_adjusting) {
+      m_painter->setTransform(m_oldTransform);
+    }
+  }
+
+  bool m_adjusting = true;
+  QPainter *m_painter = nullptr;
+  QTransform m_oldTransform;
+};
 
 }
 
@@ -191,41 +243,38 @@ void neutu::ScalePenAlpha(QPainter *painter, double s)
 void neutu::DrawPoint(
     QPainter &painter, double x, double y, const PixelCentered p)
 {
+  AdjustPixelCenter adjustOnce(&painter, p);
+  /*
   if (p) {
     pixel_centered_adjust(painter, x, y);
   }
+  */
 
   painter.drawPoint(QPointF(x, y));
 }
 
 void neutu::DrawCircle(
-    QPainter &painter, double cx, double cy, double r, const PixelCentered p)
+    QPainter &painter, double cx, double cy, double r, const PixelCentered &p)
 {
-  if (p) {
-    pixel_centered_adjust(painter, cx, cy);
-  }
+  AdjustPixelCenter adjustOnce(&painter, p);
 
   painter.drawEllipse(QRectF(cx - r, cy - r, r + r, r + r));
 }
 
 void neutu::DrawLine(
     QPainter &painter, double x0, double y0, double x1, double y1,
-    const PixelCentered p)
+    const PixelCentered &p)
 {
-  if (p) {
-    pixel_centered_adjust(painter, x0, y0, x1, y1);
-  }
+  AdjustPixelCenter adjustOnce(&painter, p);
 
   painter.drawLine(QPointF(x0, y0), QPointF(x1, y1));
 }
 
 void neutu::DrawRect(
     QPainter &painter, double x0, double y0, double x1, double y1,
-    const PixelCentered p)
+    const PixelCentered &p)
 {
-  if (p) {
-    pixel_centered_adjust(painter, x0, y0, x1, y1);
-  }
+  AdjustPixelCenter adjustOnce(&painter, p);
 
   painter.drawRect(QRectF(QPointF(x0, y0), QPointF(x1, y1)));
 }

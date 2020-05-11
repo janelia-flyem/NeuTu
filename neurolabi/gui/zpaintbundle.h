@@ -17,7 +17,9 @@
 #include "zswctree.h"
 #include "geometry/zintpoint.h"
 #include "zstackobjectsourcefactory.h"
-#include "zstackviewparam.h"
+#include "data3d/displayconfig.h"
+#include "data3d/zsliceviewtransform.h"
+//#include "zstackviewparam.h"
 
 #if 0
 namespace impl {
@@ -148,17 +150,24 @@ public:
   void addDynamicObject(ZStackObject *obj);
   void clearDynamicObjectList();
 
-  inline int sliceIndex() const { return m_viewParam.getSliceIndex(); }
-  void setViewParam(const ZStackViewParam &param);
+  void setSliceViewTransform(const ZSliceViewTransform &t);
+
+//  inline int sliceIndex() const { return m_viewParam.getSliceIndex(); }
+//  void setViewParam(const ZStackViewParam &param);
 
   neutu::EAxis getSliceAxis() const;
 
+  /*
   inline int getZ() const {
     return m_viewParam.getZ();
   }
+  */
 
-  inline void setDisplayStyle(ZStackObject::EDisplayStyle style) { m_style = style; }
-  inline ZStackObject::EDisplayStyle displayStyle() const { return m_style; }
+  void setDisplayStyle(ZStackObject::EDisplayStyle style);
+  ZStackObject::EDisplayStyle getDisplayStyle() const;
+
+  void setDisplaySliceMode(neutu::data3d::EDisplaySliceMode mode);
+  neutu::data3d::EDisplaySliceMode getDisplaySliceMode() const;
 
   inline void setStackOffset(int x, int y, int z) {
     m_stackOffset.set(x, y, z);
@@ -171,9 +180,9 @@ public:
     return m_stackOffset;
   }
 
-  QList<ZStackObject*> getVisibleObjectList() const;
+  QList<ZStackObject*> getVisibleObjectList(ZStackObject::ETarget target) const;
   QList<std::shared_ptr<ZStackObject> > getVisibleDynamicObjectList() const;
-  void alignToCutPlane(const QList<std::shared_ptr<ZStackObject>> &objList) const;
+//  void alignToCutPlane(const QList<std::shared_ptr<ZStackObject>> &objList) const;
   bool hasDynamicObject() const;
 
 private:
@@ -184,10 +193,12 @@ private:
   QList<std::shared_ptr<ZStackObject>> m_dynamicObjectList; //Dynamically changing object; owned by the painter itself
   mutable QMutex m_dynamicObjectListMutex;
 
-  ZStackObject::EDisplayStyle m_style;
-  ZStackViewParam m_viewParam;
+  neutu::data3d::DisplayConfig m_displayConfig;
+//  ZStackObject::EDisplayStyle m_style;
+//  ZSliceViewTransform m_sliceViewTransform;
+//  ZStackViewParam m_viewParam;
   ZIntPoint m_stackOffset;
-  ZStackObject::ETarget m_target = ZStackObject::ETarget::WIDGET;
+//  ZStackObject::ETarget m_target = ZStackObject::ETarget::WIDGET;
 };
 
 #endif // ZPAINTBUNDLE_H

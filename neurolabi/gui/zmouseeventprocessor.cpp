@@ -36,8 +36,7 @@ void ZMouseEventProcessor::registerMapper()
 }
 
 const ZMouseEvent& ZMouseEventProcessor::process(
-    QMouseEvent *event, ZMouseEvent::EAction action, const ZViewProj &viewProj,
-    int z)
+    QMouseEvent *event, ZMouseEvent::EAction action)
 {
   switch (action) {
   case ZMouseEvent::EAction::PRESS:
@@ -53,22 +52,26 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   }
 
   ZMouseEvent zevent;
-  zevent.set(event, action, z);
-  zevent.setSliceAxis(getSliceAxis());
+  zevent.set(event, action, m_context->getSliceViewTransform());
+//  zevent.setSliceAxis(getSliceAxis());
   const ZIntPoint &pt = zevent.getWidgetPosition();
-  zevent.setRawStackPosition(ZPositionMapper::WidgetToRawStack(pt, viewProj));
+//  zevent.setRawStackPosition(ZPositionMapper::WidgetToRawStack(pt, viewProj));
 //  zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt, viewProj));
 
-  if (m_doc->hasStack()) {
-    if (m_doc->getStack()->containsRaw(zevent.getRawStackPosition())) {
+  if (m_doc->hasStackData()) {
+    if (m_doc->getStack()->contains(zevent.getStackPosition())) {
       zevent.setInStack(true);
     }
   }
 
-  int z0 = ZStackDocUtil::GetStackSpaceRange(
-        *m_doc, getSliceAxis()).getMinCorner().getZ();
-  ZPoint stackPosition = ZPositionMapper::WidgetToStack(
-        pt, viewProj, z0);
+  ZPoint stackPosition = m_context->getSliceViewTransform().transform(
+        ZPoint(pt.getX(), pt.getY(), 0), neutu::data3d::ESpace::CANVAS,
+        neutu::data3d::ESpace::VIEW);
+
+//  int z0 = ZStackDocUtil::GetStackSpaceRange(
+//        *m_doc, getSliceAxis()).getMinCorner().getZ();
+//  ZPoint stackPosition = ZPositionMapper::WidgetToStack(
+//        pt, viewProj, z0);
   zevent.setStackPosition(stackPosition);
   /*
   ZPoint stackPosition = zevent.getRawStackPosition();
@@ -78,6 +81,10 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   zevent.setStackPosition(stackPosition);
     */
 
+  ZPoint dataPosition = m_context->getSliceViewTransform().transform(
+        stackPosition, neutu::data3d::ESpace::VIEW,
+        neutu::data3d::ESpace::MODEL);
+ /*
   ZPoint dataPos = stackPosition;
 
   switch (getSliceAxis()) {
@@ -97,13 +104,14 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   default:
     break;
   }
-  zevent.setDataPosition(dataPos);
+  */
+  zevent.setDataPosition(dataPosition);
 
 #ifdef _DEBUG_
   if (action == ZMouseEvent::EAction::RELEASE) {
     std::cout << "Stack pos r: " << stackPosition << std::endl;
-    std::cout << "Data pos r: " << dataPos << std::endl;
-    std::cout << "Arb plane r: " << m_arbSlice.getOffset().toString() << std::endl;
+    std::cout << "Data pos r: " << dataPosition << std::endl;
+//    std::cout << "Arb plane r: " << m_arbSlice.getOffset().toString() << std::endl;
   }
 #endif
 
@@ -123,6 +131,7 @@ void ZMouseEventProcessor::setInteractiveContext(ZInteractiveContext *context)
   }
 }
 
+/*
 void ZMouseEventProcessor::setSliceAxis(neutu::EAxis axis)
 {
   m_sliceAxis = axis;
@@ -137,6 +146,7 @@ neutu::EAxis ZMouseEventProcessor::getSliceAxis() const
 {
   return m_sliceAxis;
 }
+*/
 
 /*
 void ZMouseEventProcessor::setImageWidget(ZImageWidget *widget)
@@ -257,6 +267,8 @@ const ZMouseEvent& ZMouseEventProcessor::getMouseEvent(
 
 ZPoint ZMouseEventProcessor::getLatestStackPosition() const
 {
+  return getLatestMouseEvent().getStackPosition();
+  /*
   ZPoint pt = getLatestMouseEvent().getRawStackPosition();
 
   if (m_doc.get() != NULL) {
@@ -264,6 +276,7 @@ ZPoint ZMouseEventProcessor::getLatestStackPosition() const
   }
 
   return pt;
+  */
 }
 
 ZPoint ZMouseEventProcessor::getStackPosition(
@@ -272,13 +285,17 @@ ZPoint ZMouseEventProcessor::getStackPosition(
   return getMouseEvent(buttons, action).getStackPosition();
 }
 
+/*
 ZPoint ZMouseEventProcessor::getRawStackPosition(
     Qt::MouseButtons buttons, ZMouseEvent::EAction action) const
 {
   return getMouseEvent(buttons, action).getRawStackPosition();
 }
+*/
 
+/*
 bool ZMouseEventProcessor::isPositionInStack(const ZMouseEvent &event) const
 {
   return getDocument()->getStack()->containsRaw(event.getRawStackPosition());
 }
+*/

@@ -18,7 +18,8 @@ ZPaintBundle::~ZPaintBundle()
 
 neutu::EAxis ZPaintBundle::getSliceAxis() const
 {
-  return m_viewParam.getSliceAxis();
+  return m_displayConfig.getSliceAxis();
+//  return m_viewParam.getSliceAxis();
 }
 
 void ZPaintBundle::addDynamicObject(ZStackObject *obj)
@@ -64,9 +65,16 @@ void ZPaintBundle::addDrawableList(const QList<ZStackObject*>& lst)
   }
 }
 
+/*
 void ZPaintBundle::setViewParam(const ZStackViewParam &param)
 {
   m_viewParam = param;
+}
+*/
+
+void ZPaintBundle::setSliceViewTransform(const ZSliceViewTransform &t)
+{
+  m_displayConfig.setTransform(t);
 }
 
 bool ZPaintBundle::hasDynamicObject() const
@@ -75,6 +83,27 @@ bool ZPaintBundle::hasDynamicObject() const
   return !m_dynamicObjectList.empty();
 }
 
+void ZPaintBundle::setDisplayStyle(ZStackObject::EDisplayStyle style)
+{
+  m_displayConfig.setStyle(style);
+}
+
+ZStackObject::EDisplayStyle ZPaintBundle::getDisplayStyle() const
+{
+  return m_displayConfig.getStyle();
+}
+
+void ZPaintBundle::setDisplaySliceMode(neutu::data3d::EDisplaySliceMode mode)
+{
+  m_displayConfig.setSliceMode(mode);
+}
+
+neutu::data3d::EDisplaySliceMode ZPaintBundle::getDisplaySliceMode() const
+{
+  return m_displayConfig.getSliceMode();
+}
+
+/*
 void ZPaintBundle::alignToCutPlane(
     const QList<std::shared_ptr<ZStackObject> > &objList) const
 {
@@ -82,6 +111,7 @@ void ZPaintBundle::alignToCutPlane(
     ZStackObjectHelper::Align(obj.get(), m_viewParam.getArbSlicePlane());
   }
 }
+*/
 
 QList<std::shared_ptr<ZStackObject>>
 ZPaintBundle::getVisibleDynamicObjectList() const
@@ -90,8 +120,7 @@ ZPaintBundle::getVisibleDynamicObjectList() const
   {
     QMutexLocker locker(&m_dynamicObjectListMutex);
     for (auto obj : m_dynamicObjectList) {
-      if (obj->isSliceVisible(
-            getZ(), m_viewParam.getSliceAxis(), m_viewParam.getArbSlicePlane())) {
+      if (obj->isSliceVisible(m_displayConfig)) {
         objList.append(obj);
       }
     }
@@ -101,12 +130,11 @@ ZPaintBundle::getVisibleDynamicObjectList() const
   return objList;
 }
 
-QList<ZStackObject*> ZPaintBundle::getVisibleObjectList() const
+QList<ZStackObject*> ZPaintBundle::getVisibleObjectList(ZStackObject::ETarget target) const
 {
   QList<ZStackObject*> objList;
   for (ZStackObject *obj : m_objList) {
-    if (obj->getTarget() == m_target &&
-        obj->isSliceVisible(getZ(), m_viewParam.getSliceAxis())) {
+    if (obj->getTarget() == target && obj->isSliceVisible(m_displayConfig)) {
       objList.append(obj);
     }
   }

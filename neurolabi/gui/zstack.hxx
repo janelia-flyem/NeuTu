@@ -408,7 +408,7 @@ public: /* attributes */
   void *getDataPointer(int c, int slice) const;
 
   /*!
-   * \brief Get data pointer starting from a certain loation
+   * \brief Get data pointer starting from a certain location
    *
    * (\a x, \a y, \a z) is the global coorindates of the starting point.
    */

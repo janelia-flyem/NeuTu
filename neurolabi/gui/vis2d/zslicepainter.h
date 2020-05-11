@@ -1,12 +1,20 @@
 #ifndef ZSLICEPAINTER_H
 #define ZSLICEPAINTER_H
 
-#include "data3d/zworldviewtransform.h"
+#include <vector>
+#include <utility>
+
+#include <QVector>
+
+#include "data3d/zmodelviewtransform.h"
 #include "data3d/zviewplanetransform.h"
+//#include "data3d/displayconfig.h"
 
 class QPainter;
 class QImage;
+class QLineF;
 class ZLineSegment;
+class ZPoint;
 //class ZCuboid;
 
 /*!
@@ -21,9 +29,16 @@ public:
     m_viewPlaneTransform = t;
   }
 
+  void draw(
+      QPainter *painter, std::function<void(QPainter *painter)> drawFunc,
+      std::function<bool(QPainter *painter)> pred) const;
+
   void drawCircle(QPainter *painter, double cx, double cy, double r) const;
   void drawLine(
       QPainter *painter, double x0, double y0, double x1, double y1) const;
+  void drawLines(
+      QPainter *painter, const std::vector<double> &lines) const;
+  void drawLines(QPainter *painter, QVector<QLineF> &lines) const;
   void drawPoint(QPainter *painter, double x, double y) const;
   void drawRect(
       QPainter *painter, double x0, double y0, double x1, double y1) const;
@@ -31,11 +46,18 @@ public:
       QPainter *painter, double cx, double cy, double r) const;
   void drawImage(QPainter *painter, const QImage &image);
 
+  bool getPaintedHint() const;
+  void setPaintedHint(bool painted) const;
+
 private:
   void preparePainter(QPainter *painter) const;
+  bool intersects(QPainter *painter, double x, double y) const;
+  bool intersects(QPainter *painter, double x0, double y0, double x1, double y1) const;
+  bool intersects(QPainter *painter, double x, double y, double r) const;
 
 private:
   ZViewPlaneTransform m_viewPlaneTransform;
+  mutable bool m_painted = false;
 };
 
 class ZSlice3dPainter
@@ -43,7 +65,9 @@ class ZSlice3dPainter
 public:
   ZSlice3dPainter();
 
-  void setViewPlaneTransform(const ZViewPlaneTransform &t);
+  void setViewCanvasTransform(const ZViewPlaneTransform &t);
+  void setModelViewTransform(const ZModelViewTransform &t);
+  void setTransform(const ZModelViewTransform &tmv, const ZViewPlaneTransform &tvc);
 
   /*!
    * \brief Draw a ball on a slice
@@ -53,10 +77,16 @@ public:
   void drawBall(
       QPainter *painter, double cx, double cy, double cz, double r,
       double depthScale, double fadingFactor) const;
+  void drawBall(
+      QPainter *painter, const ZPoint &center, double r,
+      double depthScale, double fadingFactor) const;
   void drawBoundBox(
       QPainter *painter, double cx, double cy, double cz, double r,
       double depthScale);
+  void drawBoundBox(
+      QPainter *painter, const ZPoint &center, double r, double depthScale);
   void drawLine(QPainter *painter, const ZLineSegment &line);
+  void drawPoint(QPainter *painter, double x, double y, double z);
 
   /*!
    * \brief Set cut plane
@@ -72,9 +102,11 @@ public:
    */
   void setCutPlane(neutu::EAxis sliceAxis, double cutDepth);
 
+  bool getPaintedHint() const;
+
 private:
   ZSlice2dPainter m_painterHelper;
-  ZWorldViewTransform m_worldViewTransform;
+  ZModelViewTransform m_worldViewTransform;
 };
 
 #endif // ZSLICEPAINTER_H

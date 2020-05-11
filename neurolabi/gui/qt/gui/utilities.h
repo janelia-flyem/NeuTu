@@ -38,13 +38,13 @@ void DrawPoint(
     QPainter &painter, double x, double y, const PixelCentered p = true);
 void DrawCircle(
     QPainter &painter, double cx, double cy, double r,
-    const PixelCentered p = true);
+    const PixelCentered &p = true);
 void DrawRect(
     QPainter &painter, double x0, double y0, double x1, double y1,
-    const PixelCentered p = true);
+    const PixelCentered &p = true);
 void DrawLine(
     QPainter &painter, double x0, double y0, double x1, double y1,
-    const PixelCentered p = true);
+    const PixelCentered &p = true);
 
 
 }

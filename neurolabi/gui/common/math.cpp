@@ -25,3 +25,15 @@ int neutu::ifloor<double>(const double &v);
 
 template
 int neutu::ifloor<float>(const float &v);
+
+template<typename T>
+int neutu::iceil(const T &v)
+{
+  return int(std::ceil(v));
+}
+
+template
+int neutu::iceil<double>(const double &v);
+
+template
+int neutu::iceil<float>(const float &v);

@@ -62,6 +62,7 @@ void ZSparseObject::labelStack(ZStack *stack) const
   drawStack(stack->c_stack(), getLabel(), offset);
 }
 
+#if 0
 void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
                             neutu::EAxis sliceAxis) const
 {
@@ -100,6 +101,7 @@ void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
     }
   }
 }
+#endif
 
 void ZSparseObject::append(const ZObject3dScan &obj)
 {

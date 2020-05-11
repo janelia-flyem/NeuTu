@@ -49,9 +49,20 @@ int ZLabeledSpinBoxWidget::getValue() const
 
 void ZLabeledSpinBoxWidget::setValueQuietly(int v)
 {
-  m_mainWidget->blockSignals(true);
-  m_mainWidget->setValue(v);
-  m_mainWidget->blockSignals(false);
+  if (m_mainWidget->value() != v) {
+    m_mainWidget->blockSignals(true);
+    m_mainWidget->setValue(v);
+    m_mainWidget->blockSignals(false);
+  }
+}
+
+void ZLabeledSpinBoxWidget::setRangeQuietly(int vmin, int vmax)
+{
+  if (m_mainWidget->minimum() != vmin || m_mainWidget->maximum() != vmax) {
+    m_mainWidget->blockSignals(true);
+    m_mainWidget->setRange(vmin, vmax);
+    m_mainWidget->blockSignals(false);
+  }
 }
 
 void ZLabeledSpinBoxWidget::setValue(int v)

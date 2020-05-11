@@ -2,10 +2,90 @@
 #include "zpainter.h"
 #include "geometry/zlinesegment.h"
 #include "common/utilities.h"
+#include "vis2d/zslicecanvas.h"
+#include "data3d/displayconfig.h"
 
 ZStackObjectPainter::ZStackObjectPainter()
 {
 }
+
+void ZStackObjectPainter::paint(
+    QPainter *painter, const ZStackObject *obj,
+    const neutu::data3d::DisplayConfig &config)
+{
+  m_paintedHint = obj->display(painter, config);
+}
+
+void ZStackObjectPainter::Paint(
+    ZSliceCanvas *canvas, const ZStackObject *obj,
+    neutu::data3d::EDisplaySliceMode sliceMode,
+    neutu::data3d::EDisplayStyle style)
+{
+  if (canvas) {
+    ZSliceCanvasPaintHelper p(*canvas);
+    QPainter *painter = p.getPainter();
+    neutu::data3d::DisplayConfig config;
+    config.setTransform(canvas->getTransform());
+    config.setStyle(style);
+    config.setSliceMode(sliceMode);
+    canvas->setPainted(obj->display(painter, config));
+  }
+}
+
+template<typename InputIterator>
+void ZStackObjectPainter::Paint(
+    ZSliceCanvas *canvas,
+    const InputIterator &first, const InputIterator &last,
+    neutu::data3d::EDisplaySliceMode sliceMode,
+    neutu::data3d::EDisplayStyle style)
+{
+  neutu::data3d::DisplayConfig config;
+  config.setTransform(canvas->getTransform());
+  config.setStyle(style);
+  config.setSliceMode(sliceMode);
+
+  ZSliceCanvasPaintHelper p(*canvas);
+  QPainter *painter = p.getPainter();
+
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+    canvas->setPainted(obj->display(painter, config));
+  }
+}
+
+template<typename InputIterator>
+void ZStackObjectPainter::Paint(ZSliceCanvas *canvas,
+    const InputIterator &first, const InputIterator &last,
+    std::function<bool(const ZStackObject*)> pred,
+    neutu::data3d::EDisplaySliceMode sliceMode,
+    neutu::data3d::EDisplayStyle style)
+{
+  neutu::data3d::DisplayConfig config;
+  config.setTransform(canvas->getTransform());
+  config.setStyle(style);
+  config.setSliceMode(sliceMode);
+
+  ZSliceCanvasPaintHelper p(*canvas);
+  QPainter *painter = p.getPainter();
+
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZStackObject *obj = *iter;
+    if (pred(obj)) {
+      canvas->setPainted(obj->display(painter, config));
+    }
+  }
+}
+
+void ZStackObjectPainter::Paint(
+      ZSliceCanvas *canvas, const QList<ZStackObject*> &objList,
+      std::function<bool(const ZStackObject*)> pred,
+      neutu::data3d::EDisplaySliceMode sliceMode,
+      neutu::data3d::EDisplayStyle style)
+{
+  Paint(canvas, objList.begin(), objList.end(), pred, sliceMode, style);
+}
+
+#if 0
 
 void ZStackObjectPainter::setDisplayStyle(ZStackObject::EDisplayStyle style)
 {
@@ -48,43 +128,6 @@ void ZStackObjectPainter::paint(
   paint(obj, painter, slice, m_style, m_axis);
 }
 
-ZLineSegment ZStackObjectPainter::GetFocusSegment(
-    const ZLineSegment &seg, bool &visible, int dataFocus)
-{
-  ZLineSegment result = seg;
-  visible = false;
-
-  double upperZ = dataFocus + 0.5;
-  double lowerZ = dataFocus - 0.5;
-
-  if (neutu::WithinOpenRange(seg.getStartPoint().getZ(), lowerZ, upperZ) &&
-      neutu::WithinOpenRange(seg.getEndPoint().getZ(), lowerZ, upperZ)) {
-    visible = true;
-  } else {
-    if (seg.getStartPoint().getZ() > seg.getEndPoint().getZ()) {
-      result.flip();
-    }
-
-    if (result.getStartPoint().getZ() < upperZ &&
-        result.getEndPoint().getZ() > lowerZ) {
-      visible = true;
-      double dz = result.getEndPoint().getZ() - result.getStartPoint().getZ();
-      double lambda1 = (dataFocus - result.getStartPoint().getZ() - 0.5) / dz;
-      double lambda2 = lambda1 + 1.0 / dz;
-      if (lambda1 < 0.0) {
-        lambda1 = 0.0;
-      }
-      if (lambda2 > 1.0) {
-        lambda2 = 1.0;
-      }
-
-      result.set(result.getIntercept(lambda1), result.getIntercept(lambda2));
-    }
-  }
-
-  return result;
-}
-
 void ZStackObjectPainter::paint(
     const ZLineSegment &seg, double width, const QColor &color,
     ZPainter &painter, int slice)
@@ -123,3 +166,44 @@ void ZStackObjectPainter::paint(
     }
   }
 }
+#endif
+
+#if 0
+ZLineSegment ZStackObjectPainter::GetFocusSegment(
+    const ZLineSegment &seg, bool &visible, int dataFocus)
+{
+  ZLineSegment result = seg;
+  visible = false;
+
+  double upperZ = dataFocus + 0.5;
+  double lowerZ = dataFocus - 0.5;
+
+  if (neutu::WithinOpenRange(seg.getStartPoint().getZ(), lowerZ, upperZ) &&
+      neutu::WithinOpenRange(seg.getEndPoint().getZ(), lowerZ, upperZ)) {
+    visible = true;
+  } else {
+    if (seg.getStartPoint().getZ() > seg.getEndPoint().getZ()) {
+      result.flip();
+    }
+
+    if (result.getStartPoint().getZ() < upperZ &&
+        result.getEndPoint().getZ() > lowerZ) {
+      visible = true;
+      double dz = result.getEndPoint().getZ() - result.getStartPoint().getZ();
+      double lambda1 = (dataFocus - result.getStartPoint().getZ() - 0.5) / dz;
+      double lambda2 = lambda1 + 1.0 / dz;
+      if (lambda1 < 0.0) {
+        lambda1 = 0.0;
+      }
+      if (lambda2 > 1.0) {
+        lambda2 = 1.0;
+      }
+
+      result.set(result.getIntercept(lambda1), result.getIntercept(lambda2));
+    }
+  }
+
+  return result;
+}
+#endif
+

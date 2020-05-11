@@ -122,6 +122,7 @@ ZCuboid ZLocsegChain::getBoundBox() const
   return ZCuboid();
 }
 
+#if 0
 void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
                            neutu::EAxis sliceAxis) const
 {
@@ -203,6 +204,8 @@ void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
   }
 }
+#endif
+
 
 int ZLocsegChain::swcFprint(FILE *fp, int start_id, int parent_id,
                             double z_scale)

@@ -780,11 +780,11 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyiddialog.ui \
     dialogs/zdviddialog.ui \
     dialogs/flyembodyfilterdialog.ui \
+    dialogs/flyembodysplitprojectdialog.ui \
+    dialogs/dvidskeletonizedialog.ui \
     protocols/protocolassignmentdialog.ui \
     protocols/protocolchooseassignmentdialog.ui \
     tilemanager.ui \
-    dialogs/flyembodysplitprojectdialog.ui \
-    dialogs/dvidskeletonizedialog.ui \
     newprojectmainwindow.ui \
     dialogs/shapepaperdialog.ui \
     dialogs/dvidoperatedialog.ui \
@@ -794,12 +794,12 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/swcexportdialog.ui \
     dialogs/ztestdialog.ui \
     dialogs/ztestdialog2.ui \
-    zflyemcontrolform.ui \
-    dialogs/flyembodyinfodialog.ui \
-    protocols/protocolchooser.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
+    zflyemcontrolform.ui \
+    dialogs/flyembodyinfodialog.ui \
+    protocols/protocolchooser.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \

@@ -22,11 +22,18 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
   void display(ZPainter &painter, const DisplayConfig &config) const override;
+  */
+  /*
   void viewSpaceAlignedDisplay(
-        QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const override;
+        QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const;
+        */
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::FLYEM_TODO_ITEM;

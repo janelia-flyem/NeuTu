@@ -357,6 +357,7 @@ bool ZFlyEmToDoList::isReady() const
   return m_isReady;
 }
 
+#if 0
 void ZFlyEmToDoList::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -435,6 +436,7 @@ void ZFlyEmToDoList::display(
     }
   }
 }
+#endif
 
 ZFlyEmToDoItem& ZFlyEmToDoList::getItem(
     int x, int y, int z, EDataScope scope)

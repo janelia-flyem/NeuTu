@@ -590,9 +590,9 @@ void Neu3Window::updateBrowseSize()
 {
   if (m_browseMode == EBrowseMode::NATIVE) {
     if (m_sliceWidget != NULL) {
-      QRect rect = m_sliceWidget->getViewPort();
-      m_browseWidth = rect.width();
-      m_browseHeight = rect.height();
+      ZAffineRect rect = m_sliceWidget->getViewPort();
+      m_browseWidth = neutu::iround(rect.getWidth());
+      m_browseHeight = neutu::iround(rect.getHeight());
     }
   }
 }
@@ -610,7 +610,7 @@ void Neu3Window::processCameraRotation()
 void Neu3Window::trackSliceViewPort() const
 {
   if (m_sliceWidget != NULL) {
-    LDEBUG() << "Slice viewport:" << m_sliceWidget->getViewPort();
+    LDEBUG() << "Slice viewport: " + neutu::ToString(m_sliceWidget->getViewPort());
   }
 }
 

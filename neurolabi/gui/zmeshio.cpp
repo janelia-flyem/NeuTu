@@ -20,6 +20,8 @@
 #include "logging/zqslog.h"
 #include "common/memorystream.h"
 
+#undef COLOR
+
 namespace {
 
 void createMaterials(aiScene* pScene)

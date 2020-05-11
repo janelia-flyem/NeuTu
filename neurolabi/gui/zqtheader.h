@@ -65,6 +65,7 @@ typedef double Zqreal;
 #include <QRect>
 #include <QDebug>
 #include <QPen>
+#include "qt/gui/utilities.h"
 #endif
 
 #endif // ZQTHEADER_H

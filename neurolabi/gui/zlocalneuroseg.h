@@ -29,19 +29,27 @@ public:
 public:
   static ZLocalNeuroseg& instance();
 
-  static void display(const Local_Neuroseg *locseg, double z_scale,
-                      QImage *image, int n = 0, Palette_Color color = Palette_Color::RED,
-                      EDisplayStyle style = EDisplayStyle::NORMAL, int label = 0);
+  static void display(
+      const Local_Neuroseg *locseg, double z_scale,
+      QImage *image, int n, Palette_Color color,
+      neutu::data3d::EDisplayStyle style, int label);
   ZCuboid getBoundBox() const override;
 
 public:
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis axis) const override;
-  void display(QImage *image, int n, Palette_Color color,
-               EDisplayStyle style = EDisplayStyle::NORMAL, int label = 0) const;
-  void display(ZPainter &painter, int sliceIndex, EDisplayStyle option,
-               const QColor &color) const;
+
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
+  void display(
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+      neutu::EAxis axis) const override;
+  void display(
+      QImage *image, int n, Palette_Color color,
+      zstackobject::EDisplayStyle style = zstackobject::EDisplayStyle::NORMAL, int label = 0) const;
+  void display(
+      ZPainter &painter, int sliceIndex, zstackobject::EDisplayStyle option,
+      const QColor &color) const;
   using ZStackObject::display; // fix warning -Woverloaded-virtual
+  */
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);

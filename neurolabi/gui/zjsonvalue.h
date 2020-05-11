@@ -36,9 +36,9 @@ public:
    *
    * \param data The input integer
    */
-  ZJsonValue(int data);
-  ZJsonValue(double data);
-  ZJsonValue(const char *data);
+  explicit ZJsonValue(int data);
+  explicit ZJsonValue(double data);
+  explicit ZJsonValue(const char *data);
 
   ZJsonValue& operator= (const ZJsonValue &value);
 

@@ -650,7 +650,7 @@ const QColor& ZSwcTree::getNodeColor(const Swc_Tree_Node *tn, bool focused) cons
 }
 #endif
 
-#if defined(_QT_GUI_USED_)
+#if 0
 void ZSwcTree::displaySkeleton(
     ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const
 {
@@ -848,6 +848,7 @@ void ZSwcTree::displaySelectedNode(
 }
 #endif
 
+#if 0
 void ZSwcTree::display(ZPainter &painter, int slice,
                        ZStackObject::EDisplayStyle style,
                        neutu::EAxis axis) const
@@ -896,6 +897,12 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   displaySelectedNode(painter, slice, axis);
 
 #endif
+}
+#endif
+
+bool ZSwcTree::display(QPainter *painter, const DisplayConfig &config) const
+{
+  return false;
 }
 
 int ZSwcTree::size()

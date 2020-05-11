@@ -16,7 +16,7 @@ void ZCrossHair::init()
   setHitProtocal(EHitProtocol::HIT_WIDGET_POS);
 }
 
-
+#if 0
 void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                          ZStackObject::EDisplayStyle /*style*/,
                          neutu::EAxis sliceAxis) const
@@ -67,6 +67,7 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                    */
 
 }
+#endif
 
 bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis)
 {

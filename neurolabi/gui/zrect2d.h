@@ -30,10 +30,16 @@ public:
   bool contains(double x, double y) const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
+  virtual void display(
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
                        neutu::EAxis sliceAxis) const override;
-  bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+
+  bool display(
+      QPainter *rawPainter, int z, zstackobject::EDisplayStyle option,
+      zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+  */
 
 //  virtual const std::string& className() const;
   bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;

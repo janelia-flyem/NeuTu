@@ -1,13 +1,15 @@
 #include "zflyemorthomvc.h"
-#include "zflyemorthodoc.h"
 
 #include "logging/zlog.h"
+#include "data3d/displayconfig.h"
+
 #include "mvc/utilities.h"
 #include "mvc/zstackpresenter.h"
 #include "mvc/zstackview.h"
 
 #include "zwidgetmessage.h"
 
+#include "zflyemorthodoc.h"
 #include "zflyemsupervisor.h"
 #include "zflyemproofpresenter.h"
 #include "zflyemtodolist.h"
@@ -135,7 +137,7 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
     }
 
     getView()->updateContrastProtocal();
-    getView()->reset(false);
+//    getView()->reset(false);
 //    if (getSupervisor() != NULL) {
 //      getSupervisor()->setDvidTarget(doc->getDvidTarget());
 //    }
@@ -158,10 +160,11 @@ void ZFlyEmOrthoMvc::updateStackFromCrossHair()
 
   ZFlyEmOrthoDoc *doc = getCompleteDocument();
   if (doc != NULL) {
-    ZPoint pt = doc->getCrossHairCenter();
-    pt.setZ(getView()->sliceIndex());
-    ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
-    updateStack(dataPos);
+    ZPoint dataPos = getView()->getAnchorPoint(neutu::data3d::ESpace::MODEL);
+//    ZPoint pt = doc->getCrossHairCenter();
+//    pt.setZ(getView()->sliceIndex());
+//    ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
+    updateStack(dataPos.toIntPoint());
   }
 }
 
@@ -196,9 +199,11 @@ void ZFlyEmOrthoMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
       viewParam == getView()->getViewParameter() && m_autoReload) {
     ZFlyEmOrthoDoc *doc = getCompleteDocument();
     if (doc != NULL) {
-      ZPoint pt = doc->getCrossHairCenter();
-      pt.setZ(getView()->sliceIndex());
-      ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
+//      ZPoint pt = doc->getCrossHairCenter();
+//      pt.setZ(getView()->sliceIndex());
+//      ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
+      ZIntPoint dataPos =
+          getView()->getAnchorPoint(neutu::data3d::ESpace::MODEL).toIntPoint();
       if (!doc->getDataRange().contains(dataPos)) {
         doc->updateStack(dataPos);
 //        updateStack(dataPos);

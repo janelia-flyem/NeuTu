@@ -153,6 +153,7 @@ void ZDvidSparsevolSlice::forceUpdate(
   }
 }
 
+/*
 void ZDvidSparsevolSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -162,3 +163,4 @@ void ZDvidSparsevolSlice::display(
     ZObject3dScan::display(painter, slice, option, sliceAxis);
   }
 }
+*/

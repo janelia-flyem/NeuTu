@@ -9,6 +9,7 @@
 #include "zpainter.h"
 #endif
 
+#include "common/math.h"
 #include "geometry/zintcuboid.h"
 #include "common/utilities.h"
 #include "geometry/zcuboid.h"
@@ -98,12 +99,15 @@ ZStackObject* ZStackObject::clone() const
   return nullptr;
 }
 
-bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
-                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
-                           neutu::EAxis /*sliceAxis*/) const
+#if 0
+bool ZStackObject::display(
+    QPainter * /*painter*/, int /*z*/,
+    EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
+    neutu::EAxis /*sliceAxis*/) const
 {
   return false;
 }
+#endif
 
 void ZStackObject::setLabel(uint64_t label)
 {
@@ -244,24 +248,16 @@ double ZStackObject::getPenWidth() const
   return width;
 }
 
-void ZStackObject::display(ZPainter &painter, const DisplayConfig &config) const
-{
-#if defined(_QT_GUI_USED_)
-  int slice = config.getSlice(painter.getZOffset());
-  display(painter, slice, config.alignedConfig.style, config.sliceAxis);
-#endif
-}
-
 bool ZStackObject::isSliceVisible(int /*z*/, neutu::EAxis /*axis*/) const
 {
   return isVisible();
 }
 
-void ZStackObject::viewSpaceAlignedDisplay(
-      QPainter */*painter*/, const ViewSpaceAlignedDisplayConfig &/*config*/) const
-{
+//void ZStackObject::viewSpaceAlignedDisplay(
+//      QPainter */*painter*/, const ViewSpaceAlignedDisplayConfig &/*config*/) const
+//{
 
-}
+//}
 
 ZStackObject *ZStackObject::aligned(
     const ZAffinePlane &/*plane*/, neutu::EAxis /*sliceAxis*/) const
@@ -273,6 +269,17 @@ bool ZStackObject::isSliceVisible(
     int z, neutu::EAxis axis, const ZAffinePlane &/*plane*/) const
 {
   return isSliceVisible(z, axis);
+}
+
+bool ZStackObject::isSliceVisible(
+    const DisplayConfig &/*config*/, int /*canvasWidth*/, int /*canvasHeight*/) const
+{
+  return true;
+}
+
+bool ZStackObject::isSliceVisible(const DisplayConfig &/*config*/) const
+{
+  return true;
 }
 
 bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)

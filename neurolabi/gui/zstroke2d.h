@@ -49,10 +49,17 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+
+  /*
+  void display(ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
-  bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+  bool display(QPainter *rawPainter, int z, zstackobject::EDisplayStyle option,
+               zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+*/
 
   void labelBinary(Stack *stack) const;
 

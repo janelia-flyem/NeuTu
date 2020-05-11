@@ -45,9 +45,12 @@ public:
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option,
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
       neutu::EAxis sliceAxis) const override;
+      */
 
 public:
   /*!

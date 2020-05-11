@@ -123,7 +123,9 @@ public:
   void toggleObjectVisible();
   void suppressObjectVisible(bool v);
   bool isObjectVisible();
-  void setObjectStyle(ZStackObject::EDisplayStyle style);
+  void setObjectStyle(neutu::data3d::EDisplayStyle style);
+  void setSliceMode(neutu::data3d::EDisplaySliceMode mode);
+  neutu::data3d::EDisplaySliceMode getSliceMode() const;
 
   bool hasDrawable(ZStackObject::ETarget target) const;
 
@@ -222,7 +224,10 @@ public:
 
 //  void setViewPortCenter(int x, int y, int z);
 
-  const QPointF stackPositionFromMouse(MouseButtonAction mba);
+//  const QPointF stackPositionFromMouse(MouseButtonAction mba);
+
+  ZPoint getModelPositionFromMouse(MouseButtonAction mba) const;
+  ZPoint getModelPositionFromGlobalCursor(const QPoint &pos) const;
 
   ZPoint getLastMousePosInStack();
 
@@ -252,13 +257,14 @@ public:
 
   //void moveImage(int mouseX, int mouseY);
   void moveViewPort(int dx, int dy);
+  void moveViewPort(const ZPoint &src, int a, int b);
 
   /*!
    * \brief Move the viewport to a certain position.
    *
    * Move the viewport to (\a x, \a y) if possible.
    */
-  void moveViewPortTo(int x, int y);
+//  void moveViewPortTo(int x, int y);
 
   /*!
    * \brief Move a data point to the specified mouse position.
@@ -266,7 +272,7 @@ public:
    * Move the point at the canvas coordinates (\a srcX, \a srcY) under
    * the mouse point at (\a mouseX, \a mouseY), which are widget coordinates.
    */
-  void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
+//  void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
 
   void moveCrossHairToMouse(int mouseX, int mouseY);
 
@@ -432,6 +438,8 @@ public slots:
 
   void processObjectModified(const ZStackObjectInfoSet &objSet);
 
+  void setSliceViewTransform(const ZSliceViewTransform &transform);
+
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
@@ -481,8 +489,8 @@ protected:
   bool processKeyPressEventForObject(QKeyEvent *event);
 
   bool isPointInStack(double x, double y);
-  QPointF mapFromWidgetToStack(const QPoint &pos);
-  QPointF mapFromGlobalToStack(const QPoint &pos);
+//  QPointF mapFromWidgetToStack(const QPoint &pos);
+//  QPointF mapFromGlobalToStack(const QPoint &pos);
 
   bool estimateActiveStrokeWidth();
 
@@ -512,7 +520,8 @@ protected:
   std::vector<double> m_grayScale;
   std::vector<double> m_grayOffset;
   int m_threshold;
-  ZStackObject::EDisplayStyle m_objStyle;
+  neutu::data3d::EDisplayStyle m_objStyle;
+
   //MouseState m_mouseState;
   bool m_mouseLeftButtonPressed;
   bool m_mouseRightButtonPressed;

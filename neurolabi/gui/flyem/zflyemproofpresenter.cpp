@@ -691,14 +691,16 @@ void ZFlyEmProofPresenter::setSplitEnabled(bool s)
 void ZFlyEmProofPresenter::tryAddBookmarkMode()
 {
   exitStrokeEdit();
-  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
+//  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryAddBookmarkMode(pos.x(), pos.y());
 }
 
 void ZFlyEmProofPresenter::tryTodoItemMode()
 {
   exitStrokeEdit();
-  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
+//  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryAddTodoItemMode(pos.x(), pos.y());
 }
 

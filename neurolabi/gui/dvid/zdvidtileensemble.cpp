@@ -433,6 +433,7 @@ void ZDvidTileEnsemble::forceUpdate()
   update(param);
 }
 
+#if 0
 void ZDvidTileEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -543,6 +544,7 @@ void ZDvidTileEnsemble::display(
   }
 //  std::cout << "Draw image time: " << toc() << std::endl;
 }
+#endif
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 {

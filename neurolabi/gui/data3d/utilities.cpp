@@ -1,6 +1,6 @@
 #include "utilities.h"
 
-std::string zstackobject::ToString(ZStackObject::ETarget target)
+std::string neutu::data3d::ToString(ZStackObject::ETarget target)
 {
   switch (target) {
   case ZStackObject::ETarget::NONE:

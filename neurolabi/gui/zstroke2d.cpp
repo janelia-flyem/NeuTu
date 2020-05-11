@@ -150,6 +150,14 @@ void ZStroke2d::setEraser(bool enabled)
   */
 }
 
+#if 0
+void ZStroke2d::display(
+      QPainter *painter, const DisplayConfig &config) const
+{
+
+}
+
+
 void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
                         neutu::EAxis sliceAxis) const
 {
@@ -337,6 +345,7 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
 
   return painted;
 }
+#endif
 
 ZStack* ZStroke2d::toLabelStack(int label) const
 {
@@ -388,6 +397,7 @@ ZStack* ZStroke2d::toLabelStack(int label) const
 
   return stack;
 }
+
 
 void ZStroke2d::labelImage(QImage *image) const
 {

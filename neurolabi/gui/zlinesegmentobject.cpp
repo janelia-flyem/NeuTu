@@ -52,6 +52,7 @@ QPointF ZLineSegmentObject::getEndXY() const
   return QPointF(m_segment.getEndPoint().x(), m_segment.getEndPoint().y());
 }
 
+#if 0
 void ZLineSegmentObject::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -151,6 +152,7 @@ void ZLineSegmentObject::display(
     }
   }
 }
+#endif
 
 bool ZLineSegmentObject::isSliceVisible(int z, neutu::EAxis sliceAxis) const
 {

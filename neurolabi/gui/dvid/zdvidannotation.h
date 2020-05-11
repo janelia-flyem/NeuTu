@@ -43,8 +43,13 @@ public:
 
   ZDvidAnnotation* clone() const override;
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
+               */
 
   bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
 

@@ -10,8 +10,13 @@ public:
   ZIntCuboidObj();
 
 public:
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+  /*
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                        neutu::EAxis sliceAxis) const override;
+                       */
 //  virtual const std::string& className() const;
 
   bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;

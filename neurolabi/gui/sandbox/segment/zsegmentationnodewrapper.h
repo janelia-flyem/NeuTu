@@ -22,8 +22,13 @@ public:
 
 public:
   virtual const std::string& className() const {static std::string name("ZSegmentationNodeWrapper");return name;}
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+  /*
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const override;
+      */
   virtual bool hit(double x, double y, double z) override;
   string getNodeID()const{return m_id;}
   ZCuboid getBoundBox() const override;

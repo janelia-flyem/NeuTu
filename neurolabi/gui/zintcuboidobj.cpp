@@ -86,6 +86,7 @@ void NextMark(int &x, int intv, int &remain)
 }
 }
 
+#if 0
 void ZIntCuboidObj::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -167,6 +168,7 @@ void ZIntCuboidObj::display(
     }
   }
 }
+#endif
 
 bool ZIntCuboidObj::hit(double x, double y, neutu::EAxis axis)
 {

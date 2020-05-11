@@ -41,7 +41,7 @@ ZInteractiveContext::ZInteractiveContext()
 
   m_exitingEdit = false;
   m_blockingContextMenu = false;
-  m_sliceAxis = neutu::EAxis::Z;
+//  m_sliceAxis = neutu::EAxis::Z;
   m_acceptingRect = false;
   m_rectSpan = false;
   m_keyIndex = 1;
@@ -239,5 +239,28 @@ bool ZInteractiveContext::turnOffEditMode()
   change_edit_mode(m_swcEditMode, SWC_EDIT_OFF, toggled);
 
   return toggled;
+}
+
+void ZInteractiveContext::setSliceMode(neutu::data3d::EDisplaySliceMode mode)
+{
+  m_displayConfig.setSliceMode(mode);
+}
+
+neutu::data3d::EDisplaySliceMode ZInteractiveContext::getSliceMode() const
+{
+  return m_displayConfig.getSliceMode();
+}
+
+void ZInteractiveContext::setSliceViewTransform(
+    const ZSliceViewTransform &transform)
+{
+  m_displayConfig.setTransform(transform);
+//  m_transform = transform;
+}
+
+ZSliceViewTransform ZInteractiveContext::getSliceViewTransform() const
+{
+  return m_displayConfig.getTransform();
+//  return m_transform;
 }
 

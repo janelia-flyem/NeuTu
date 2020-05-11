@@ -320,6 +320,7 @@ void ZFlyEmToDoItem::PaintOutline(
   }
 }
 
+#if 0
 void ZFlyEmToDoItem::viewSpaceAlignedDisplayC(
       QPainter *painter, const ViewSpaceAlignedDisplayConfig &config,
       const ZPoint &center) const
@@ -442,7 +443,9 @@ void ZFlyEmToDoItem::viewSpaceAlignedDisplay(
 {
   viewSpaceAlignedDisplayC(painter, config, getPosition().toPoint());
 }
+#endif
 
+#if 0
 void ZFlyEmToDoItem::display(ZPainter &painter, const DisplayConfig &config) const
 {
   if (config.sliceAxis == neutu::EAxis::ARB) {
@@ -611,7 +614,7 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle option,
   }
 #endif
 }
-
+#endif
 
 bool ZFlyEmToDoItem::isChecked() const
 {

@@ -304,7 +304,7 @@ void ZStackFrame::addDocData(ZStackDocReader &reader)
     if (m_doc->getStack()->kind() != GREY) {
       m_presenter->optimizeStackBc();
     }
-    m_view->reset();
+//    m_view->reset();
   }
 
   setWindowTitle(m_doc->stackSourcePath().c_str());
@@ -413,6 +413,9 @@ void ZStackFrame::updateSignalSlot(T connectAction)
   updateDocSignalSlot(connectAction);
   connectAction(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()),
                 Qt::AutoConnection);
+  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
+                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
+                Qt::AutoConnection);
 //  connectAction(this, SIGNAL(closed(ZStackFrame*)), this, SLOT(closeAllChildFrame()));
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //          m_presenter, SLOT(processSliceChangeEvent(int)));
@@ -467,11 +470,13 @@ void ZStackFrame::updateDocument()
     }
   }
 
+  /*
   if (m_doc->hasStack()) {
     if (m_view != NULL) {
       m_view->reset();
     }
   }
+  */
 
   setWindowTitle(m_doc->stackSourcePath().c_str());
 
@@ -662,7 +667,7 @@ void ZStackFrame::importImageSequence(const char *filePath)
   if (m_doc->getStack()->kind() != GREY) {
     m_presenter->optimizeStackBc();
   }
-  m_view->reset();
+//  m_view->reset();
 }
 
 Z3DWindow* ZStackFrame::viewSegmentationMesh()
@@ -1372,6 +1377,9 @@ void ZStackFrame::setViewPortCenter(int x, int y, int z)
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
+  view()->zoomTo(x, y, z, radius + radius);
+
+  /*
 //  x -= document()->getStackOffset().getX();
 //  y -= document()->getStackOffset().getY();
 //  z -= document()->getStackOffset().getZ();
@@ -1385,6 +1393,7 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
 
   view()->setViewPortCenter(x, y, z, neutu::EAxisSystem::SHIFTED);
+  */
 
 //  presenter()->setViewPortCenter(x, y, z);
 }
@@ -1537,7 +1546,7 @@ ZStackFrame* ZStackFrame::spinoffStackSelection(
     ZStack *substack = m_doc->getStack()->createSubstack(selected);
 
     frame->document()->loadStack(substack);
-    frame->view()->reset();
+//    frame->view()->reset();
   }
 
   return frame;

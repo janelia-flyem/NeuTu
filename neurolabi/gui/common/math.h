@@ -21,6 +21,16 @@ int ifloor<double>(const double &v);
 extern template
 int ifloor<float>(const float &v);
 
+template<typename T>
+int iceil(const T &v);
+
+extern template
+int iceil<double>(const double &v);
+
+extern template
+int iceil<float>(const float &v);
+
+
 }
 
 

@@ -22,8 +22,14 @@ public:
 //  virtual const std::string& className() const;
 
 public:
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const {
+    return false;
+  }
+  /*
   virtual void display(ZPainter &painter, int slice,
                        EDisplayStyle option, neutu::EAxis sliceAxis) const;
+                       */
 
   ZPoint getCenter() const {
     return m_center;

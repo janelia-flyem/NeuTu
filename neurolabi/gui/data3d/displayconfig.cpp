@@ -1,6 +1,6 @@
 #include "displayconfig.h"
 
-zstackobject::ViewSpaceAlignedDisplayConfig::ViewSpaceAlignedDisplayConfig()
+neutu::data3d::ViewSpaceAlignedDisplayConfig::ViewSpaceAlignedDisplayConfig()
 {
 
 }
@@ -12,16 +12,22 @@ int zstackobject::ViewSpaceAlignedDisplayConfig::getZ() const
 }
 */
 
-zstackobject::EDisplayStyle
-zstackobject::ViewSpaceAlignedDisplayConfig::getStyle() const
+neutu::data3d::EDisplayStyle
+neutu::data3d::ViewSpaceAlignedDisplayConfig::getStyle() const
 {
   return m_style;
 }
 
-zstackobject::EDisplaySliceMode
-zstackobject::ViewSpaceAlignedDisplayConfig::getSliceMode() const
+neutu::data3d::EDisplaySliceMode
+neutu::data3d::ViewSpaceAlignedDisplayConfig::getSliceMode() const
 {
   return m_sliceMode;
+}
+
+ZViewPlaneTransform
+neutu::data3d::ViewSpaceAlignedDisplayConfig::getTransform() const
+{
+  return m_transform;
 }
 
 /*
@@ -31,15 +37,26 @@ void zstackobject::ViewSpaceAlignedDisplayConfig::setZ(int z)
 }
 */
 
-void zstackobject::ViewSpaceAlignedDisplayConfig::setStyle(EDisplayStyle style)
+void neutu::data3d::ViewSpaceAlignedDisplayConfig::setStyle(EDisplayStyle style)
 {
   m_style = style;
 }
 
-void zstackobject::ViewSpaceAlignedDisplayConfig::setSliceMode(
+void neutu::data3d::ViewSpaceAlignedDisplayConfig::setSliceMode(
     EDisplaySliceMode mode)
 {
   m_sliceMode = mode;
+}
+
+void neutu::data3d::ViewSpaceAlignedDisplayConfig::setTransform(
+    const ZViewPlaneTransform &transform)
+{
+  m_transform = transform;
+}
+void neutu::data3d::ViewSpaceAlignedDisplayConfig::setTransform(
+    double dx, double dy, double s)
+{
+  m_transform.set(dx, dy, s);
 }
 
 /*
@@ -52,7 +69,7 @@ int zstackobject::ViewSpaceAlignedDisplayConfig::getSlice(int z0) const
 
 //DisplayConfig
 
-zstackobject::DisplayConfig::DisplayConfig()
+neutu::data3d::DisplayConfig::DisplayConfig()
 {
 
 }
@@ -72,30 +89,41 @@ int zstackobject::DisplayConfig::getSlice(int z0)
 }
 */
 
-neutu::EAxis zstackobject::DisplayConfig::getSliceAxis() const
+neutu::EAxis neutu::data3d::DisplayConfig::getSliceAxis() const
 {
   return m_transform.getSliceAxis();
 }
 
-zstackobject::EDisplayStyle zstackobject::DisplayConfig::getStyle()
+neutu::data3d::EDisplayStyle neutu::data3d::DisplayConfig::getStyle() const
 {
   return m_alignedConfig.getStyle();
 }
 
-
-ZAffinePlane zstackobject::DisplayConfig::getCutPlane() const
+neutu::data3d::EDisplaySliceMode neutu::data3d::DisplayConfig::getSliceMode() const
 {
-  return getCutRect().getAffinePlane();
+  return m_alignedConfig.getSliceMode();
 }
 
-ZAffineRect zstackobject::DisplayConfig::getCutRect() const
+ZAffinePlane neutu::data3d::DisplayConfig::getCutPlane() const
+{
+  return m_transform.getCutPlane();
+}
+
+ZAffineRect neutu::data3d::DisplayConfig::getCutRect(double width, double height) const
 {
   ZAffineRect rect;
   rect.setPlane(m_transform.getCutPlane());
-  rect.setSize(m_width, m_height);
+  rect.setSize(width, height);
 
   return rect;
 }
+
+/*
+double zstackobject::DisplayConfig::getCutDepth() const
+{
+  return m_transform.getCutDepth();
+}
+*/
 
 /*
 void zstackobject::DisplayConfig::setZ(int z)
@@ -105,25 +133,53 @@ void zstackobject::DisplayConfig::setZ(int z)
 }
 */
 
-void zstackobject::DisplayConfig::setStyle(EDisplayStyle style)
+void neutu::data3d::DisplayConfig::setStyle(EDisplayStyle style)
 {
   m_alignedConfig.setStyle(style);
 }
 
-void zstackobject::DisplayConfig::setSliceMode(EDisplaySliceMode mode)
+void neutu::data3d::DisplayConfig::setSliceMode(EDisplaySliceMode mode)
 {
   m_alignedConfig.setSliceMode(mode);
 }
 
-void zstackobject::DisplayConfig::setCutPlane(const ZAffinePlane &plane)
+void neutu::data3d::DisplayConfig::setCutPlane(const ZAffinePlane &plane)
 {
   m_transform.setCutPlane(plane);
 }
 
-void zstackobject::DisplayConfig::setCutPlane(
+void neutu::data3d::DisplayConfig::setCutPlane(
     neutu::EAxis sliceAxis, double cutDepth)
 {
   m_transform.setCutPlane(sliceAxis, cutDepth);
+}
+
+ZModelViewTransform neutu::data3d::DisplayConfig::getWorldViewTransform() const
+{
+  return m_transform;
+}
+
+ZViewPlaneTransform neutu::data3d::DisplayConfig::getViewCanvasTransform() const
+{
+  return m_alignedConfig.getTransform();
+}
+
+void neutu::data3d::DisplayConfig::setViewCanvasTransform(
+    double dx, double dy, double s)
+{
+  m_alignedConfig.setTransform(dx, dy, s);
+}
+
+ZSliceViewTransform neutu::data3d::DisplayConfig::getTransform() const
+{
+  return ZSliceViewTransform(m_transform, m_alignedConfig.getTransform());
+}
+
+void neutu::data3d::DisplayConfig::setTransform(
+    const ZSliceViewTransform &transform)
+{
+  m_alignedConfig.setTransform(transform.getViewCanvasTransform());
+  m_transform = transform.getModelViewTransform();
 }
 
 /*
@@ -141,18 +197,34 @@ void zstackobject::DisplayConfig::setSliceAxis(neutu::EAxis axis)
 
 //DisplayConfigBuilder
 
-zstackobject::DisplayConfigBuilder::DisplayConfigBuilder()
+neutu::data3d::DisplayConfigBuilder::DisplayConfigBuilder()
 {
 }
 
-zstackobject::DisplayConfigBuilder::operator DisplayConfig()
+neutu::data3d::DisplayConfigBuilder::operator DisplayConfig()
 {
   return m_result;
 }
 
-void zstackobject::DisplayConfigBuilder::cutPlane(
+neutu::data3d::DisplayConfigBuilder&
+neutu::data3d::DisplayConfigBuilder::style(EDisplayStyle style)
+{
+  m_result.setStyle(style);
+  return *this;
+}
+
+neutu::data3d::DisplayConfigBuilder&
+neutu::data3d::DisplayConfigBuilder::sliceMode(EDisplaySliceMode mode)
+{
+  m_result.setSliceMode(mode);
+  return *this;
+}
+
+
+neutu::data3d::DisplayConfigBuilder &neutu::data3d::DisplayConfigBuilder::cutPlane(
     neutu::EAxis axis, double cutDepth)
 {
   m_result.setCutPlane(axis, cutDepth);
+  return *this;
 }
 

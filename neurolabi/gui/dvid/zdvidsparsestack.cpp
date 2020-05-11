@@ -170,6 +170,7 @@ void ZDvidSparseStack::setLabelType(neutu::EBodyLabelType type)
   m_labelType = type;
 }
 
+#if 0
 void ZDvidSparseStack::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
@@ -187,6 +188,7 @@ void ZDvidSparseStack::display(
     }
   }
 }
+#endif
 
 void ZDvidSparseStack::setCancelFillValue(bool flag)
 {

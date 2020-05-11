@@ -72,10 +72,16 @@ public:
     return ZStackObject::EType::MESH;
   }
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+
+  /*
   virtual void display(
-      ZPainter &, int , EDisplayStyle ,
+      ZPainter &, int , zstackobject::EDisplayStyle ,
       neutu::EAxis ) const override
   {}
+  */
 
 //  void setLabel(uint64_t label) override;
 //  uint64_t getLabel() const;

@@ -108,6 +108,7 @@ public:
    * \param n Number of elements of the array.
    */
   void setEntry(const char *key, const double *array, size_t n);
+  void setEntry(const char *key, const std::vector<double> &value);
 
   /*!
    * \brief Set an entry of the object with an integer array
@@ -151,6 +152,9 @@ public:
    */
   void setEntry(const char *key, ZJsonValue &value);
   void setEntry(const std::string &key, ZJsonValue &value);
+
+  void setEntry(const char *key, const ZJsonValue &value);
+  void setEntry(const std::string &key, const ZJsonValue &value);
 
   /*!
    * \brief Add an entry

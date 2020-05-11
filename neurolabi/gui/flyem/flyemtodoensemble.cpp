@@ -15,6 +15,7 @@ FlyEmTodoEnsemble::~FlyEmTodoEnsemble()
 
 }
 
+#if 0
 void FlyEmTodoEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
@@ -35,3 +36,4 @@ void FlyEmTodoEnsemble::display(
     });
   }
 }
+#endif

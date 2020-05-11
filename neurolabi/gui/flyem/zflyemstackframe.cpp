@@ -42,27 +42,6 @@ void ZFlyEmStackFrame::createDocument()
 
 bool ZFlyEmStackFrame::importSegmentationBundle(const std::string &filePath)
 {
-  /*
-  flyem::ZSegmentationBundle bundle;
-  bundle.importJsonFile(filePath);
-
-  //bundle.update();
-
-  ZStack *stack = bundle.deliverGreyScaleStack();
-*/
-  /*
-  if (stack == NULL) {
-    return false;
-  } else {
-    if (stack->channel() == 0) {
-      delete stack;
-      cout << "Empty stack" << endl;
-      return false;
-    }
-  }
-*/
-  //m_doc->setStackMask(bundle.createBodyStack());
-  //m_doc->loadStack(stack);
   ZFlyEmStackDoc *pDoc = completeDocument();
 
   pDoc->importSegmentation(filePath);
@@ -76,7 +55,7 @@ bool ZFlyEmStackFrame::importSegmentationBundle(const std::string &filePath)
 
   if (m_doc->hasStackData()) {
     m_presenter->optimizeStackBc();
-    m_view->reset();
+//    m_view->reset();
   }
 
   return true;
@@ -149,7 +128,7 @@ ZStackFrame* ZFlyEmStackFrame::spinoffSegmentationSelection(
     ZStack *substack = doc->stackMask()->createSubstack(selected);
 
     frame->document()->loadStack(substack);
-    frame->view()->reset();
+//    frame->view()->reset();
   }
 
   return frame;

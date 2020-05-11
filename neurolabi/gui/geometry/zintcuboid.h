@@ -6,6 +6,7 @@
 #include "common/neutudefs.h"
 
 class ZJsonArray;
+class ZPoint;
 
 class ZIntCuboid
 {
@@ -70,6 +71,8 @@ public:
   void translateX(int dx);
 
   void translate(const ZIntPoint &offset);
+  void translate(int dx, int dy, int dz);
+
   /*!
    * \brief Scale the box
    *
@@ -182,6 +185,8 @@ public:
 
   ZIntPoint getCenter() const;
   void setCenter(const ZIntPoint &center);
+
+  ZPoint getExactCenter() const;
 
   /*!
    * \brief Downscale the cuboid.

@@ -45,9 +45,15 @@ ZCuboid ZLocalRect::getBoundBox() const
   return ZCuboid();
 }
 
+bool ZLocalRect::display(QPainter *painter, const DisplayConfig &config) const
+{
+  return false;
+}
 
-void ZLocalRect::display(ZPainter &painter, int slice, EDisplayStyle style,
-                         neutu::EAxis sliceAxis) const
+#if 0
+void ZLocalRect::display(
+    ZPainter &painter, int slice, zstackobject::EDisplayStyle style,
+    neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != neutu::EAxis::Z) {
     return;
@@ -59,6 +65,7 @@ void ZLocalRect::display(ZPainter &painter, int slice, EDisplayStyle style,
   ZLocalNeuroseg tmpseg(&locseg);
   tmpseg.display(painter, slice, style, sliceAxis);
 }
+#endif
 
 void ZLocalRect::fitStack(const Stack *stack, Receptor_Fit_Workspace *ws)
 {

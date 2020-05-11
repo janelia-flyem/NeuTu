@@ -85,6 +85,12 @@ void ZRect2d::preparePen(QPen &pen) const
   pen.setCosmetic(m_usingCosmeticPen);
 }
 
+bool ZRect2d::display(QPainter *painter, const DisplayConfig &config) const
+{
+  return false;
+}
+
+#if 0
 void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
                       neutu::EAxis sliceAxis) const
 {
@@ -155,6 +161,7 @@ bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
 
   return true;
 }
+#endif
 
 void ZRect2d::setMaxCorner(int x, int y)
 {

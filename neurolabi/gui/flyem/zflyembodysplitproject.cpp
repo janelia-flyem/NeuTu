@@ -2770,6 +2770,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
 
 void ZFlyEmBodySplitProject::viewFullGrayscale()
 {
+#if 0
   ZDvidReader &reader = getMainReader();
   if (reader.good()) {
     ZStackFrame *frame = getDataFrame();
@@ -2822,6 +2823,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
 #endif
     }
   }
+#endif
 }
 
 /*

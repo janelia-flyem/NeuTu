@@ -103,6 +103,8 @@ public:
 
   static ZStack* LoadFromFile(const std::string &path);
 
+  static ZStack* MakeCheckerboardStack(int width, int height, int depth);
+
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);
 };

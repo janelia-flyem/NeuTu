@@ -23,7 +23,7 @@ public:
 //  void setDvidTarget(const ZDvidTarget &target);
   void setDvid(const ZDvidEnv &env) override;
 
-  void updateViewParam(const ZArbSliceViewParam &param);
+//  void updateViewParam(const ZArbSliceViewParam &param);
   void resetViewParam(const ZArbSliceViewParam &param);
   void processViewChangeCustom(const ZStackViewParam &viewParam) override;
 

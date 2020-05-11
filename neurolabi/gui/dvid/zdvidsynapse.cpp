@@ -12,6 +12,7 @@
 #include "zstackball.h"
 #include "c_json.h"
 #include "zlinesegmentobject.h"
+#include "data3d/displayconfig.h"
 #include "dvid/zdvidannotation.h"
 //#include "tz_constant.h"
 #include "dvid/zdvidreader.h"
@@ -518,7 +519,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       }
 
       line.setVisualEffect(neutu::display::Line::VE_LINE_PROJ);
-      line.display(painter, slice, option, sliceAxis);
+//      line.display(painter, slice, option, sliceAxis);
 
       /*
       ZIntPoint pos = *iter;

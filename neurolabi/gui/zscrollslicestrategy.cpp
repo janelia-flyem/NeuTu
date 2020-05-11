@@ -45,5 +45,5 @@ ZStackViewParam ZScrollSliceStrategy::scroll(
 void ZScrollSliceStrategy::scroll(int step)
 {
   ZStackViewParam param = scroll(m_view->getViewParameter(), step);
-  m_view->updateViewParam(param);
+//  m_view->updateViewParam(param);
 }

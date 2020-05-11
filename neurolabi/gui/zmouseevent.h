@@ -5,6 +5,7 @@
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
 #include "common/neutudefs.h"
+#include "data3d/zsliceviewtransform.h"
 
 class QMouseEvent;
 
@@ -23,23 +24,24 @@ public:
 
   bool isNull() const;
 
-  void set(QMouseEvent *event, int z);
-  void set(QMouseEvent *event, EAction action, int z);
-  void setSliceAxis(neutu::EAxis axis);
+  void set(QMouseEvent *event, const ZSliceViewTransform &t);
+  void set(QMouseEvent *event, EAction action, const ZSliceViewTransform &t);
+//  void setSliceAxis(neutu::EAxis axis);
+  void setSliceViewTransform(const ZSliceViewTransform &t);
   neutu::EAxis getSliceAxis() const;
 
   //void setStackPosition(const ZPoint &pt);
   //void setStackPosition(double x, double y, double z);
 
-  void setRawStackPosition(const ZPoint &pt);
-  void setRawStackPosition(double x, double y, double z);
+//  void setRawStackPosition(const ZPoint &pt);
+//  void setRawStackPosition(double x, double y, double z);
 
   void setStackPosition(const ZPoint &pt);
   void setDataPosition(const ZPoint &pt);
 
-  void setPressEvent(QMouseEvent *event, int z);
-  void setReleaseEvent(QMouseEvent *event, int z);
-  void setMoveEvent(QMouseEvent *event, int z);
+  void setPressEvent(QMouseEvent *event, const ZSliceViewTransform &t);
+  void setReleaseEvent(QMouseEvent *event, const ZSliceViewTransform &t);
+  void setMoveEvent(QMouseEvent *event, const ZSliceViewTransform &t);
 
   inline EAction getAction() const {
     return m_action;
@@ -71,14 +73,17 @@ public:
   }
 
   ZPoint getPosition(neutu::ECoordinateSystem cs) const;
+  ZPoint getPosition(neutu::data3d::ESpace space) const;
 
   inline const ZIntPoint& getWidgetPosition() const {
     return m_widgetPosition;
   }
 
+  /*
   inline const ZPoint& getRawStackPosition() const {
     return m_rawStackPosition;
   }
+  */
 
   inline const ZPoint& getStackPosition() const {
     return m_stackPosition;
@@ -117,11 +122,12 @@ private:
   Qt::KeyboardModifiers m_modifiers;
   ZIntPoint m_widgetPosition;
   ZIntPoint m_globalPosition;
-  ZPoint m_rawStackPosition; //If z is negative, it means a projection
+//  ZPoint m_rawStackPosition; //If z is negative, it means a projection
   ZPoint m_stackPosition;
   ZPoint m_dataPosition;
   bool m_isInStack;
-  neutu::EAxis m_sliceAxis;
+//  neutu::EAxis m_sliceAxis;
+  ZSliceViewTransform m_sliceViewTransform;
 };
 
 #endif // ZMOUSEEVENT_H

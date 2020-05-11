@@ -121,6 +121,11 @@ bool ZPlane::approxEquals(const ZPlane &plane) const
   return m_v1.approxEquals(plane.m_v1) && m_v2.approxEquals(plane.m_v2);
 }
 
+bool ZPlane::operator== (const ZPlane &p) const
+{
+  return m_v1 == p.m_v1 && m_v2 == p.m_v2;
+}
+
 std::ostream& operator<<(std::ostream& stream, const ZPlane &p)
 {
   stream << p.getV1() << " x " << p.getV2();

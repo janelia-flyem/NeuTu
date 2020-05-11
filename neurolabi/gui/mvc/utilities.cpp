@@ -12,102 +12,63 @@
 #include "geometry/zgeometry.h"
 
 QString neutu::mvc::ComposeStackDataInfo(
-    ZStackDoc *doc, double cx, double cy, int z, neutu::EAxis axis,
-    neutu::mvc::ViewInfoFlags f)
+    ZStackDoc *doc, double x, double y, double z, neutu::mvc::ViewInfoFlags f)
 {
   QString info;
 
-  int x = std::floor(cx);
-  int y = std::floor(cy);
-
-  int wx = x;
-  int wy = y;
-  int wz = z;
-
-  zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
+  x = std::floor(x);
+  y = std::floor(y);
+  z = std::floor(z);
 
   ZStack *stack = doc->getStack();
 
-  if (x >= 0 && y >= 0) {
-    if (HasFlag(f, neutu::mvc::ViewInfoFlag::RAW_STACK_COORD)) {
-      std::ostringstream stream;
+  if (HasFlag(f, neutu::mvc::ViewInfoFlag::DATA_COORD)) {
+    info = QString("(%1, %2, %3)").arg(x).arg(y).arg(z);
+  }
 
-      stream << "(";
-      if (x >= 0) {
-        stream << x << ", ";
-      }
-      if (y >= 0) {
-        stream << y;
-      }
-      if (z >= 0) {
-        stream << " , " << z;
-      }
+  if (!info.isEmpty()) {
+    info += QString(": ");
+  }
 
-      stream << ")";
-      info = stream.str().c_str();
-    }
-
-    if (z < 0) {
-      info += " (MIP)";
-    }
-
-    if (!info.isEmpty()) {
-      info += QString(": ");
-    }
-
-    if (stack != NULL) {
-      if (HasFlag(f, neutu::mvc::ViewInfoFlag::IMAGE_VALUE)) {
-        if (!stack->isVirtual()) {
-          if (stack->channelNumber() == 1) {
-            info += QString("%4").arg(stack->value(wx, wy, wz));
-          } else {
-            info += QString("(");
-            for (int i=0; i<stack->channelNumber(); i++) {
-              if (i==0) {
-                info += QString("%1").arg(stack->value(wx, wy, wz, i));
-              } else {
-                info += QString(", %1").arg(stack->value(wx, wy, wz, i));
-              }
+  if (stack != NULL) {
+    if (HasFlag(f, neutu::mvc::ViewInfoFlag::IMAGE_VALUE)) {
+      if (!stack->isVirtual()) {
+        if (stack->channelNumber() == 1) {
+          info += QString("%4").arg(stack->getIntValue(x, y, z));
+        } else {
+          info += QString("(");
+          for (int i=0; i<stack->channelNumber(); i++) {
+            if (i==0) {
+              info += QString("%1").arg(stack->getIntValue(x, y, z, i));
+            } else {
+              info += QString(", %1").arg(stack->getIntValue(x, y, z, i));
             }
-            info += QString(")");
           }
+          info += QString(")");
         }
       }
+    }
+  }
 
-      if (HasFlag(f, neutu::mvc::ViewInfoFlag::MASK_VALUE)) {
-        ZStack *mask = doc->stackMask();
-        if (mask != NULL) {
-          if (!info.isEmpty()) {
-            info += " | ";
-          }
-          info += "Mask: ";
-          if (mask->channelNumber() == 1) {
-            info += QString("%4").arg(mask->value(wx, wy, wz));
+  if (HasFlag(f, neutu::mvc::ViewInfoFlag::MASK_VALUE)) {
+    ZStack *mask = doc->stackMask();
+    if (mask != NULL) {
+      if (!info.isEmpty()) {
+        info += " | ";
+      }
+      info += "Mask: ";
+      if (mask->channelNumber() == 1) {
+        info += QString("%4").arg(mask->getIntValue(x, y, z));
+      } else {
+        info += QString("(");
+        for (int i=0; i<mask->channelNumber(); i++) {
+          if (i==0) {
+            info += QString("%1").arg(mask->getIntValue(x, y, z, i));
           } else {
-            info += QString("(");
-            for (int i=0; i<mask->channelNumber(); i++) {
-              if (i==0) {
-                info += QString("%1").arg(mask->value(wx, wy, wz, i));
-              } else {
-                info += QString(", %1").arg(mask->value(wx, wy, wz, i));
-              }
-            }
-            info += QString(")");
+            info += QString(", %1").arg(mask->getIntValue(x, y, z, i));
           }
         }
-      }
-
-      if (HasFlag(f, neutu::mvc::ViewInfoFlag::DATA_COORD)) {
-        if (stack->hasOffset()) {
-          ZIntPoint stackOffset = doc->getStackOffset();
-          if (!info.isEmpty()) {
-            info += "; ";
-          }
-
-          info += QString("(%1, %2, %3)").
-              arg(stackOffset.getX() + wx).arg(stackOffset.getY() + wy).
-              arg(stackOffset.getZ() + wz);
-        }
+        info += QString(")");
       }
     }
   }
@@ -115,26 +76,29 @@ QString neutu::mvc::ComposeStackDataInfo(
   return info;
 }
 
-QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
+QString neutu::mvc::ComposeViewInfo(ZStackView *view, const ZPoint &dataPos)
 {
   QString info;
 
+  /*
   int z = view->sliceIndex();
   if (view->buddyPresenter()->interactiveContext().isProjectView()) {
     z = -1;
   }
+  */
 
   //    QPointF pos = imageWidget()->canvasCoordinate(widgetPos);
-  ZPoint pos(widgetPos.x(), widgetPos.y(), z);
+//  ZPoint pos(dataPos.x(), dataPos.y(), 0);
 
-  ZViewProj vp = view->getViewProj();
+//  ZViewProj vp = view->getViewProj();
+  ZSliceViewTransform t = view->getSliceViewTransform();
   ZStackDoc *doc = view->buddyDocument().get();
   if (view->viewingInfo(neutu::mvc::ViewInfoFlag::WINDOW_SCALE)) {
-    if (vp.getZoom() > 0.00001) {
+    if (t.getScale() > 0.00001) {
       if (doc->getResolution().getUnit() ==
           ZResolution::EUnit::UNIT_NANOMETER) {
         double s = neutu::iround(
-              view->imageWidget()->screenSize().width() / vp.getZoom() *
+              view->imageWidget()->screenSize().width() / t.getScale() *
               doc->getResolution().voxelSizeX());
         QString unit = "nm";
         if (s > 1000.0) {
@@ -148,61 +112,22 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
         }
       } else {
         info += QString(" Screen Width: ~%1 pixels").arg(
-              neutu::iround(view->imageWidget()->screenSize().width() / vp.getZoom()));
+              neutu::iround(view->imageWidget()->screenSize().width() / t.getScale()));
       }
+      info += QString(" x%1").arg(t.getScale(), 0, 'g', 3);
       info += "  ";
     }
   }
 
-  neutu::EAxis axis = view->getSliceAxis();
-  if (doc->hasStackData()) {
-    ZPoint pt = ZPositionMapper::WidgetToRawStack(pos, vp);
-    info += ComposeStackDataInfo(
-          doc, pt.x(), pt.y(), pt.z(), axis, view->getViewInfoFlag());
-  } else {
-    ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(*doc, axis);
+//  ZPoint pt = t.inverseTransform(pos);
+  info += ComposeStackDataInfo(
+        doc, dataPos.x(), dataPos.y(), dataPos.z(), view->getViewInfoFlag());
 
-    QPointF stackPos = ZPositionMapper::WidgetToStack(
-          widgetPos.x(), widgetPos.y(), vp);
-    ZPoint dataPos;
-    if (axis == neutu::EAxis::ARB) {
-      if (view->viewingInfo(neutu::mvc::ViewInfoFlag::DATA_COORD)) {
-        dataPos = ZPositionMapper::StackToData(
-              ZPoint(stackPos.x(), stackPos.y(),
-                     view->getZ(neutu::ECoordinateSystem::STACK)),
-              view->getViewCenter().toPoint(), view->getAffinePlane());
-#ifdef _DEBUG_
-        std::cout << "Stack pos: " << stackPos.x() << ", " << stackPos.y() << std::endl;
-        std::cout << "Data pos: " << dataPos.toString() << std::endl;
-        std::cout << "Arb plane: " << view->getAffinePlane().getOffset() << std::endl;
-        std::cout << std::endl;
-#endif
-        info += QString("(%1, %2, %3)").
-            arg(neutu::iround(dataPos.getX())).
-            arg(neutu::iround(dataPos.getY())).
-            arg(neutu::iround(dataPos.getZ()));
-      }
-    } else {
-      dataPos = ZPositionMapper::StackToData(
-            ZPositionMapper::WidgetToStack(
-              pos, vp, box.getMinCorner().getZ()), axis);
-      if (view->viewingInfo(neutu::mvc::ViewInfoFlag::RAW_STACK_COORD)) {
-        info += QString("(%1, %2, %3)").arg(pos.x()).arg(pos.y()).arg(z);
-      }
-      if (view->viewingInfo(neutu::mvc::ViewInfoFlag::DATA_COORD)) {
-        if (!info.isEmpty()) {
-          info += "; ";
-        }
-        info += QString("(%1, %2, %3)").
-            arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
-            arg(iround(dataPos.getZ()));
-      }
-    }
-  }
 
   return info;
 }
 
+/*
 ZPoint neutu::mvc::MapWidgetPosToData(
     const ZStackView *view, const ZPoint &widgetPos)
 {
@@ -223,3 +148,4 @@ ZPoint neutu::mvc::MapWidgetPosToData(
 
   return dataPos;
 }
+*/

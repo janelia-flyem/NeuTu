@@ -33,6 +33,7 @@ public slots:
   void setRangeQuietly(int min, int max);
   void setText(int value);
   void setText();
+  void notifyValueChanged(int value);
 
 protected slots:
   void updateArrowState(int value);

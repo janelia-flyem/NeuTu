@@ -28,7 +28,7 @@ ZSlider::ZSlider(bool useArrow, QWidget *parent) : QWidget(parent)
                    arg(m_slider->maximum()));
   m_label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-  connect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+  connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(notifyValueChanged(int)));
   connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(setText()));
 
   if (useArrow) {
@@ -90,10 +90,14 @@ void ZSlider::setRange(int min, int max)
 
 void ZSlider::setRangeQuietly(int min, int max)
 {
-  disconnect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
-  m_slider->setRange(min, max);
-  setText(m_slider->value());
-  connect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+  if (m_slider->minimum() != min || m_slider->maximum() != max) {
+    disconnect(m_slider, SIGNAL(valueChanged(int)),
+               this, SLOT(notifyValueChanged(int)));
+    m_slider->setRange(min, max);
+    setText(m_slider->value());
+    connect(m_slider, SIGNAL(valueChanged(int)),
+            this, SLOT(notifyValueChanged(int)));
+  }
 }
 
 void ZSlider::setText()
@@ -161,10 +165,12 @@ void ZSlider::initValue(int value)
 void ZSlider::setValueQuietly(int value)
 {
   if (m_slider->value() != value) {
-    disconnect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+    disconnect(m_slider, SIGNAL(valueChanged(int)),
+               this, SLOT(notifyValueChanged(int)));
     m_slider->setValue(value);
     ZOUT(LTRACE(), 5) << "Value: " << value << '\n';
-    connect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
+    connect(m_slider, SIGNAL(valueChanged(int)),
+            this, SLOT(notifyValueChanged(int)));
   }
 }
 
@@ -181,4 +187,9 @@ int ZSlider::minimum()
 int ZSlider::maximum()
 {
   return m_slider->maximum();
+}
+
+void ZSlider::notifyValueChanged(int value)
+{
+  emit valueChanged(value);
 }

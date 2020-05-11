@@ -1037,3 +1037,18 @@ ZStack* ZStackFactory::LoadFromFile(const std::string &path)
 
   return stack;
 }
+
+ZStack* ZStackFactory::MakeCheckerboardStack(int width, int height, int depth)
+{
+  ZStack *stack = ZStackFactory::MakeZeroStack(width, height, depth);
+  for (int k = 0; k < stack->depth(); ++k) {
+    for (int j = 0; j < stack->height(); j++) {
+      for (int i = 0; i < stack->width(); i++) {
+        stack->setIntValue(
+              i, j, k, 0, (k % 2 == (i % 2 == j % 2)) * 255);
+      }
+    }
+  }
+
+  return stack;
+}

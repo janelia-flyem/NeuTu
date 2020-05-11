@@ -351,6 +351,11 @@
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemarbdoc.h"
 #include "vis2d/zslicepainter.h"
+#include "vis2d/zslicecanvas.h"
+#include "vis2d/utilities.h"
+#include "data3d/displayconfig.h"
+#include "widgets/zimagewidget.h"
+#include "vis2d/zimageslicefactory.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -26489,7 +26494,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack grayscale;
   grayscale.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1.tif");
 
@@ -30754,7 +30759,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   int x;
   std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
 #endif
@@ -31177,7 +31182,213 @@ void ZTest::test(MainWindow *host)
         std::to_string(stack->height()) + ".tif");
 #endif
 
-#if 1
+#if 0
+  ZSliceCanvas canvas(2048, 2048);
+
+  ZStack *stack = ZStackFactory::MakeCheckerboardStack(2048, 2048, 1);
+  tic();
+
+  for (size_t i = 0; i < 1000; ++i) {
+    ZImage image(canvas.getWidth(), canvas.getHeight(), QImage::Format_Indexed8);
+    for (size_t i = 0; i < 255; ++i) {
+      image.setColor(i, qRgb(255, 0, 0));
+    }
+    image.setData(zistack->array8());
+    canvas.fromImage(image);
+  }
+  ptoc();
+#endif
+
+#if 0
+  ZSliceCanvas canvas(32, 32);
+  ZSliceViewTransform t;
+  t.setCutCenter(ZPoint(16, 16, 0), 16, 16);
+  canvas.setTransform(t);
+
+  ZStack *stack = ZStackFactory::MakeCheckerboardStack(
+        canvas.getWidth(), canvas.getHeight(), 1);
+
+  ZImage image(canvas.getWidth(), canvas.getHeight(), QImage::Format_Indexed8);
+  image.setData(stack->array8());
+
+  canvas.fromImage(image);
+
+//  canvas.save(GET_TEST_DATA_DIR + "/_test.tif");
+
+  QPixmap pixmap(64, 64);
+  pixmap.fill(Qt::gray);
+  pixmap.setDevicePixelRatio(2.0);
+
+  ZSliceViewTransform t2;
+  t2.setCutCenter(ZPoint(16, 16, 0), 16, 16);
+//  t2.setCutCenter(ZPoint(1.5, 1.5, 0));
+//  t2.setScale(2.0);
+//  t2.canvasAdjust(64, 64, 0.5, 0.5);
+
+  canvas.paintTo(&pixmap, t2);
+  pixmap.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test.tif"));
+
+#endif
+
+#if 0
+  ZStackBall ball;
+  ball.set(0, 0, 0, 10);
+  ball.setColor(255, 0, 0);
+
+  QPixmap canvas(512, 512);
+  canvas.fill(Qt::transparent);
+
+  QPainter painter(&canvas);
+  zstackobject::DisplayConfig config;
+  ZSliceViewTransform t;
+  t.setCutPlane(neutu::EAxis::Z, ZPoint(0, 0, 0));
+  t.setScale(5.0);
+  t.canvasAdjust(canvas.width(), canvas.height(), 0.5, 0.5);
+//  t.setModelViewTransform(neutu::EAxis::Z, )
+  config.setTransform(t);
+
+  ball.display(&painter, config);
+
+  ball.set(30, 0, 5, 10);
+  ball.setColor(0, 255, 0);
+  ball.display(&painter, config);
+
+  ball.set(60, 0, 8, 10);
+  ball.setColor(0, 0, 255);
+  ball.setSelected(true);
+  ball.display(&painter, config);
+
+  canvas.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test.tif"));
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+//  int x0 = 10;
+//  int y0 = 20;
+//  int x1 = 500;
+//  int y1 = 500;
+
+  ZAffineRect rect;
+  rect.setCenter(99.5, 100.1, 100);
+  rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+  rect.setSize(100.5, 200.5);
+  QImage image = neutu::vis2d::GetSlice(stack, rect);
+  std::cout << rect << std::endl;
+  image.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test.tif"));
+#endif
+
+#if 0
+  ZImageWidget *widget = new ZImageWidget(nullptr);
+  std::shared_ptr<ZSliceCanvas> canvas =
+      widget->getValidCanvas(ZImageWidget::CANVAS_ROLE_IMAGE);
+
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  ZSliceViewTransform t;
+  t.setCutPlane(neutu::EAxis::Z, ZPoint(0, 0, 0));
+  t.setScale(1.0);
+  t.canvasAdjust(100, 100, 0.5, 0.5);
+  widget->setSliceViewTransform(t);
+
+  ZImageSliceFactory::Make(
+        stack, t.getModelViewTransform(), 100, 100, canvas.get());
+
+  canvas->getPixmap().save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test.tif"));
+
+  widget->show();
+#endif
+
+#if 0
+  QPixmap canvas(256, 256);
+  canvas.fill(Qt::gray);
+
+  ZSliceViewTransform t;
+  t.setCutPlane(neutu::EAxis::Z, ZPoint(0, 0, 0));
+  t.setScale(5.0);
+  t.canvasAdjust(canvas.width(), canvas.height(), 0.5, 0.5);
+
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  ZAffineRect rect;
+//  rect.setCenter(0, 0, 100);
+//  rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+//  rect.setSize(100.5, 200.5);
+  rect = t.getCutRect(canvas.width(), canvas.height());
+//  QImage image = neutu::vis2d::GetSlice(stack, rect);
+//  std::cout << rect << std::endl;
+
+  ZSliceCanvas imgCanvas = neutu::vis2d::GetSliceCanvas(stack, rect);
+  /*
+  ZSliceViewTransform t2;
+  t2.setCutPlane(neutu::EAxis::Z, rect.getCenter());
+  t2.setAnchor((rect.getWidth() - 1) / 2.0, (rect.getHeight() - 1) / 2.0);
+//  t2.setCutPlane(rect.getCenter(), rect.getV1(), rect.getV2());
+  imgCanvas.setTransform(t2);
+  imgCanvas.fromImage(image);
+  */
+  imgCanvas.paintTo(&canvas, t);
+
+  ZStackBall ball;
+  ball.set(0, 0, 0, 10);
+  ball.setColor(255, 0, 0);
+
+  QPainter painter(&canvas);
+
+  zstackobject::DisplayConfig config;
+//  t.setModelViewTransform(neutu::EAxis::Z, )
+  config.setTransform(t);
+
+  ball.display(&painter, config);
+
+  ball.set(30, 0, 5, 10);
+  ball.setColor(0, 255, 0);
+  ball.display(&painter, config);
+
+  ball.set(60, 0, 8, 10);
+  ball.setColor(0, 0, 255);
+  ball.setSelected(true);
+  ball.display(&painter, config);
+
+  canvas.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test.tif"));
+
+#endif
+
+
+#if 0
+  ZStackBall ball;
+  ball.set(0, 0, 0, 10);
+  ball.setColor(255, 0, 0);
+
+  QPixmap canvas(512, 512);
+  canvas.fill(Qt::transparent);
+
+  QPainter painter(&canvas);
+  zstackobject::DisplayConfig config;
+  ZSliceViewTransform t;
+  t.setCutPlane(neutu::EAxis::Y, ZPoint(0, 0, 0));
+  t.setScale(2.0);
+  t.canvasAdjust(canvas.width(), canvas.height(), 0.5, 0.5);
+//  t.setModelViewTransform(neutu::EAxis::Z, )
+  config.setTransform(t);
+
+  ball.display(&painter, config);
+
+  ball.set(30, 0, 5, 10);
+  ball.setColor(0, 255, 0);
+  ball.display(&painter, config);
+
+  ball.set(60, 0, 8, 10);
+  ball.setColor(0, 0, 255);
+  ball.setSelected(true);
+  ball.display(&painter, config);
+
+  canvas.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test.tif"));
+
+#endif
+
+#if 0
   ZStack *stack = ZStackFactory::MakeZeroStack(32, 16, 1);
   for (int j = 0; j < stack->height(); j++) {
     for (int i = 0; i < stack->width(); i++) {
@@ -31219,8 +31430,15 @@ void ZTest::test(MainWindow *host)
   slicePainter.drawCircle(&painter, 1.8, 1.8, 1);
   slicePainter.drawRect(&painter, 1.8, 1.8, 1);
 
+  pen.setCosmetic(false);
+  painter.setPen(pen);
+  slicePainter.drawPoint(&painter, 1, 1);
+
+  pen.setCosmetic(true);
+  painter.setPen(pen);
+
   ZSlice3dPainter s3Painter;
-  s3Painter.setViewPlaneTransform(t);
+  s3Painter.setViewCanvasTransform(t);
   s3Painter.drawBall(&painter, 5, 6, 0.0, 3, 1.0, 1.0);
   s3Painter.drawBall(&painter, 5, 6, 1.0, 3, 1.0, 1.0);
   s3Painter.drawBall(&painter, 5, 6, 2.0, 3, 1.0, 0.0);
@@ -31252,7 +31470,7 @@ void ZTest::test(MainWindow *host)
         &painter, ZLineSegment(ZPoint(-1, 2, 3), ZPoint(1, 11, 12)));
 
 
-  pixmap.save((GET_TEST_DATA_DIR + "/test.png").c_str());
+  pixmap.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
 
 #if 0
@@ -31334,6 +31552,125 @@ void ZTest::test(MainWindow *host)
 
   pixmap.save((GET_TEST_DATA_DIR + "/test.png").c_str());
 
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::makeIndexStack(3, 4, 5);
+  stack->setOffset(1, 2, 3);
+  int x0 = 2;
+  int y0 = 3;
+  int x1 = 10;
+  int y1 = 10;
+  int z = 3;
+  C_Stack::printValue(stack->c_stack());
+  QImage image = neutu::vis2d::GetSliceY(*stack, x0, y0, x1, y1, z);
+  std::cout << "(" << x0 << ", " << y0 << ")"
+            << "->" << "(" << x1 << ", " << y1 << ")" << std::endl;
+  for (int j = 0; j < image.height(); ++j) {
+    for (int i = 0; i < image.width(); ++i) {
+      std::cout << image.pixelIndex(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+#endif
+
+#if 0
+  ZStack *stack = new ZStack;
+  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->view()->setSliceAxis(neutu::EAxis::Z);
+  frame->loadStack(stack);
+  ZStackBall *ball = new ZStackBall(125, 125, 125, 10);
+  ball->setColor(255, 0, 0);
+  frame->document()->addObject(ball);
+
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+#endif
+
+#if 1
+  ZSliceCanvas canvas(80, 80);
+  ZSliceViewTransform t;
+  t.setCutCenter(8, 8, 0);
+  t.setScale(5.0);
+  t.setAnchor(40.0, 40.0);
+  canvas.setTransform(t);
+  canvas.clear(Qt::gray);
+
+//  ZSliceCanvasPaintHelper helper(canvas);
+
+
+  ZStack *stack = ZStackFactory::MakeCheckerboardStack(16, 16, 1);
+  ZModelViewTransform tmv;
+  tmv.setCutCenter(t.getCutCenter());
+  ZSliceCanvas *imgCanvas = ZImageSliceFactory::Make(
+        *stack, tmv, 16, 16, nullptr);
+  imgCanvas->paintTo(canvas.getPixmapRef(), t);
+
+    /*
+  ZSliceCanvasPaintHelper helper(canvas);
+  auto painter = helper.getSlicePainter();
+  QPen pen;
+  pen.setColor(Qt::red);
+  pen.setCosmetic(true);
+  helper.getPainter()->setPen(pen);
+//  neutu::DrawPoint(*helper.getPainter(), 1, 1, neutu::PixelCentered(true));
+  painter->drawPoint(helper.getPainter(), 1.0, 1.0, 0);
+  */
+
+
+
+  ZSliceCanvasPaintHelper helper(canvas);
+//  QPainter *painter = helper.getPainter();
+  QPen pen;
+  pen.setColor(Qt::red);
+  pen.setCosmetic(false);
+  helper.setPen(pen);
+  helper.setBrush(Qt::red);
+  helper.drawPoint(3, 3, 0);
+//  helper.drawPoint(1, 1, 0);
+
+
+  helper.drawBall(8, 8, 0, 3, 1, 1);
+
+  /*
+  QTransform painterTransform;
+  painterTransform.setMatrix(5.0, 0, 0, 0, 5.0, 0, 0, 0, 1);
+  painter->setTransform(painterTransform);
+  painter->setPen(pen);
+
+//  painter->drawPoint(QPointF(1, 1));
+  neutu::DrawPoint(*painter, 1, 1, neutu::PixelCentered(true));
+
+  std::cout << "Canvas size: " << imgCanvas->getWidth()
+            << " x " << imgCanvas->getHeight() << std::endl;
+  std::cout << imgCanvas->getTransform() << std::endl;
+*/
+
+
+
+  /*
+  ZSliceCanvas objCanvas(16, 16);
+  objCanvas.setTransform(imgCanvas->getTransform());
+
+  ZSliceCanvasPaintHelper helper(objCanvas);
+//  auto painter = helper.getSlicePainter();
+  QPen pen;
+  pen.setColor(QColor(255, 0, 0, 128));
+  pen.setCosmetic(false);
+  pen.setBrush(QBrush(QColor(255, 0, 0, 128)));
+  helper.setPen(pen);
+  helper.drawBall(8, 8, 0, 3, 1, 0.5);
+//  helper.getPainter()->setPen(pen);
+//  neutu::DrawPoint(*helper.getPainter(), 1, 1, neutu::PixelCentered(true));
+//  painter->drawPoint(helper.getPainter(), 1.0, 1.0, 0);
+  objCanvas.paintTo(canvas.getPixmapRef(), t);
+  */
+
+
+//  objCanvas.getPixmap().save((GET_TEST_DATA_DIR + "/_test2.png").c_str());
+//  imgCanvas->getPixmap().save((GET_TEST_DATA_DIR + "/_test2.png").c_str());
+  canvas.getPixmap().save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
 
   std::cout << "Done." << std::endl;

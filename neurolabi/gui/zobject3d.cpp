@@ -170,8 +170,14 @@ bool ZObject3d::load(const char *filePath)
   return false;
 }
 
+bool ZObject3d::display(QPainter *painter, const DisplayConfig &config) const
+{
+  return false;
+}
+
+#if 0
 void ZObject3d::display(
-    ZPainter &painter, int slice, EDisplayStyle option,
+    ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
     neutu::EAxis sliceAxis) const
 {  
   UNUSED_PARAMETER(option);
@@ -260,6 +266,7 @@ void ZObject3d::display(
   UNUSED_PARAMETER(option);
 #endif
 }
+#endif
 
 void ZObject3d::labelStack(Stack *stack) const
 {

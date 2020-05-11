@@ -108,6 +108,11 @@ void ZIntCuboid::translate(const ZIntPoint &offset)
   m_maxCorner += offset;
 }
 
+void ZIntCuboid::translate(int dx, int dy, int dz)
+{
+  translate(ZIntPoint(dx, dy, dz));
+}
+
 void ZIntCuboid::scale(const ZIntPoint &s)
 {
   ZIntPoint dim(getWidth(), getHeight(), getDepth());
@@ -504,6 +509,11 @@ int ZIntCuboid::getDim(neutu::EAxis axis) const
   }
 
   return 0;
+}
+
+ZPoint ZIntCuboid::getExactCenter() const
+{
+  return getMinCorner().toPoint() + getSize().toPoint() / 2.0;
 }
 
 ZIntPoint ZIntCuboid::getCenter() const

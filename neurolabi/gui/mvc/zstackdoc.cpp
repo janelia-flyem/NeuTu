@@ -5940,10 +5940,12 @@ void ZStackDoc::notifySparseObjectModified()
 void ZStackDoc::notifyStackModified(bool rangeChanged)
 {
   LDEBUG() << "Stack modified";
+  /*
   if (rangeChanged) {
     emit stackRangeChanged();
   }
-  emit stackModified(false);
+  */
+  emit stackModified(rangeChanged);
 //  emit stackBoundBoxChanged();
 }
 
@@ -10409,7 +10411,7 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
       if ((m_excludeSet.count(obj->getType()) == 0) &&
           (m_excludeTarget.count(obj->getTarget()) == 0) &&
           obj->isVisible()) {
-        LDEBUG() << "Updating " << zstackobject::ToString(obj->getTarget())
+        LDEBUG() << "Updating " << neutu::data3d::ToString(obj->getTarget())
                  << ZStackObject::GetTypeName(obj->getType()) << obj->getSource();
 
         if (player->updateData(param)) {

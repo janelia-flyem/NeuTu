@@ -10,6 +10,7 @@
 #include "common/math.h"
 #include "tz_rastergeom.h"
 #include "misc/miscutility.h"
+#include "geometry/2d/rectangle.h"
 
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
@@ -21,6 +22,8 @@
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
+#include "vis2d/zslicepainter.h"
+#include "data3d/displayconfig.h"
 
 
 ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
@@ -30,7 +33,7 @@ ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 
 ZImageWidget::~ZImageWidget()
 {
-  delete m_widgetCanvas;
+//  delete m_widgetCanvas;
 }
 
 void ZImageWidget::init()
@@ -60,6 +63,10 @@ void ZImageWidget::init()
   setMouseTracking(true);
   m_leftButtonMenu = new QMenu(this);
   m_rightButtonMenu = new QMenu(this);
+
+  m_canvasList.resize(CANVAS_ROLE_COUNT);
+
+  m_sliceViewTransform.setMinScale(0.4);
 //  m_paintBundle = NULL;
 //  m_tileCanvas = NULL;
 //  m_objectCanvas = NULL;
@@ -70,15 +77,77 @@ void ZImageWidget::init()
 //  m_sliceAxis = neutube::EAxis::Z;
 }
 
-void ZImageWidget::maximizeViewPort()
+std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(ECanvasRole role) const
+{
+  return m_canvasList[role];
+}
+
+void ZImageWidget::validateCanvas(ECanvasRole role)
+{
+  std::shared_ptr<ZSliceCanvas> &canvas = m_canvasList[role];
+  if (!canvas) {
+    canvas = std::shared_ptr<ZSliceCanvas>(new ZSliceCanvas);
+  }
+
+  double scale = getSliceViewTransform().getScale();
+  if (scale <= 1.0 ||
+      (role != CANVAS_ROLE_OBJECT && role != CANVAS_ROLE_DYNAMIC_OBJECT)) {
+    canvas->set(
+          width(), height(), m_sliceViewTransform,
+          ZSliceCanvas::ESetOption::DIFF_CLEAR);
+  } else {
+    int w = neutu::iround(width() * scale);
+    int h = neutu::iround(height() * scale);
+    ZSliceViewTransform t = m_sliceViewTransform;
+    t.setScale(1.0);
+    t.setAnchor(m_viewAnchorX * w, m_viewAnchorY * h);
+    canvas->set(width(), height(), t, ZSliceCanvas::ESetOption::DIFF_CLEAR);
+  }
+}
+
+std::shared_ptr<ZSliceCanvas> ZImageWidget::getValidCanvas(ECanvasRole role)
+{
+  validateCanvas(role);
+  return getCanvas(role);
+}
+
+std::shared_ptr<ZSliceCanvas> ZImageWidget::getClearCanvas(ECanvasRole role)
+{
+  validateCanvas(role);
+  getCanvas(role)->resetCanvas();
+
+  return getCanvas(role);
+}
+
+
+void ZImageWidget::maximizeViewPort(const ZIntCuboid &worldRange)
 {
   qDebug() << "ZImageWidget::maximizeViewPort";
-  m_viewProj.maximizeViewPort();
+//  m_viewProj.maximizeViewPort();
+  m_sliceViewTransform.fitModelRange(worldRange, width(), height());
+  notifyTransformChanged();
 }
 
 void ZImageWidget::enableOffsetAdjustment(bool on)
 {
   m_offsetAdjustment = on;
+}
+
+QPointF ZImageWidget::getAnchorPoint() const
+{
+  return QPointF(width() * m_viewAnchorX, height() * m_viewAnchorY);
+}
+
+ZPoint ZImageWidget::getAnchorPoint(neutu::data3d::ESpace space) const
+{
+  QPointF pt = getAnchorPoint();
+  return m_sliceViewTransform.transform(
+        ZPoint(pt.x(), pt.y(), 0), neutu::data3d::ESpace::CANVAS, space);
+}
+
+ZAffineRect ZImageWidget::getViewPort() const
+{
+  return m_sliceViewTransform.inverseTransformRect(0, 0, width(), height());
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
@@ -93,7 +162,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
   std::cout << "ZImageWidget::paintEvent() starts, index=" << m_paintBundle->sliceIndex() << std::endl;
 #endif
 
-  if (!canvasSize().isEmpty() && !isPaintBlocked()) {
+  if (m_sliceViewTransform.getScale() > 0.0 && !isPaintBlocked()) {
     ZPainter painter;
 
 #ifdef _DEBUG_2
@@ -120,9 +189,27 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
                      Qt::gray);
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
                      bgBrush);
+
+    for (auto canvas : m_canvasList) {
+      if (canvas) {
+        if (canvas->isPainted()) {
+          canvas->paintTo(this, m_sliceViewTransform);
+        }
+      }
+    }
+
+    paintObject();
+
+    if (m_showingZoomHint) {
+      paintZoomHint();
+    } else {
+      paintCrossHair();
+    }
+  }
 //    painter.restore();
 //    QSize size = projectSize();
 
+#if 0
     if (m_image != NULL) {
       painter.drawImage(m_viewProj, *m_image);
 #ifdef _DEBUG_2
@@ -208,6 +295,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     }
     //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
+#endif
 }
 
 
@@ -230,7 +318,7 @@ void ZImageWidget::setMask(ZImage *mask, int channel)
 //    m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
   }
 }
-
+#if 0
 void ZImageWidget::setTileCanvas(ZPixmap *canvas)
 {
   m_tileCanvas = canvas;
@@ -272,16 +360,21 @@ void ZImageWidget::setViewProj(const QPoint &pt, double zoom)
 {
   setViewProj(pt.x(), pt.y(), zoom);
 }
+#endif
 
-
-void ZImageWidget::zoomTo(const QPoint &center, int width)
+void ZImageWidget::zoomTo(const QPoint &center, int w)
 {
-  m_viewProj.zoomTo(center, width);
+  m_sliceViewTransform.zoomToViewRect(
+        center.x() - w, center.y() - w,
+        center.x() + w, center.y() + w, width(), height());
+//  m_viewProj.zoomTo(center, width);
   updateView();
 }
 
 bool ZImageWidget::isBadView() const
 {
+  return m_sliceViewTransform.getScale() <= m_sliceViewTransform.getMinScale();
+  /*
   QRectF projRect = projectRegion();
 
   if (projRect.isEmpty() || !projRect.intersects(m_viewProj.getWidgetRect())) {
@@ -293,27 +386,79 @@ bool ZImageWidget::isBadView() const
   }
 
   return false;
+  */
 }
 
-void ZImageWidget::restoreFromBadView()
+void ZImageWidget::setSliceAxis(neutu::EAxis axis)
+{
+  m_sliceViewTransform.setCutPlane(axis);
+  notifyTransformChanged();
+}
+
+neutu::EAxis ZImageWidget::getSliceAxis() const
+{
+  return m_sliceViewTransform.getSliceAxis();
+}
+
+bool ZImageWidget::isModelWithinWidget() const
+{
+  if (m_sliceViewTransform.getScale() > 0.0) {
+    ZPoint minCorner = m_modelRange.getMinCorner().toPoint();
+    ZPoint maxCorner = m_modelRange.getMaxCorner().toPoint();
+    ZPoint center = (minCorner + maxCorner) / 2.0;
+
+    center = m_sliceViewTransform.transform(center);
+    ZPoint dims = m_sliceViewTransform.transformBoxSize(
+          m_modelRange.getSize().toPoint());
+
+    neutu::geom2d::Rectangle dataRange;
+    dataRange.setCenter(center.getX(), center.getY(), dims.getX(), dims.getY());
+
+    neutu::geom2d::Rectangle canvasRange;
+    canvasRange.set(0, 0, neutu::geom2d::Dims(width(), height()));
+
+    return canvasRange.intersecting(dataRange);
+  }
+
+  return false;
+}
+
+void ZImageWidget::restoreFromBadView(const ZIntCuboid &worldRange)
 {
   if (isBadView()) {
-    maximizeViewPort();
+    maximizeViewPort(worldRange);
   }
 }
 
+/*
+void ZImageWidget::resetTransform()
+{
+  m_sliceViewTransform.setCutCenter(m_modelRange.getCenter().toPoint());
+  maximizeViewPort(m_modelRange);
+}
+*/
+
 void ZImageWidget::setViewPort(const QRect &rect)
 {
-  m_viewProj.setViewPort(rect);
+  m_sliceViewTransform.zoomToViewRect(
+        rect.left(), rect.top(), rect.right(), rect.bottom(),
+        width(), height());;
+//  m_viewProj.setViewPort(rect);
   updateView();
 }
 
 void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
 {
-  m_viewProj.setZoomWithFixedPoint(zoomRatio, m_viewProj.mapPointBack(ref));
+  ZPoint fixPoint = m_sliceViewTransform.inverseTransform(ref.x(), ref.y());
+
+  m_sliceViewTransform.setScale(zoomRatio);
+  m_sliceViewTransform.translateModelViewTransform(fixPoint, ref.x(), ref.y());
+
+//  m_viewProj.setZoomWithFixedPoint(zoomRatio, m_viewProj.mapPointBack(ref));
   updateView();
 }
 
+/*
 void ZImageWidget::setView(double zoomRatio, const QPoint &zoomOffset)
 {
   m_viewProj.set(zoomOffset, zoomRatio);
@@ -325,19 +470,25 @@ void ZImageWidget::setViewPortOffset(int x, int y)
   m_viewProj.setOffset(x, y);
   updateView();
 }
+*/
 
 void ZImageWidget::setViewPortCenterQuitely(int cx, int cy)
 {
+  /*
   m_viewProj.setOffset(cx - (viewPort().width() - 1) / 2,
                        cy - (viewPort().height() - 1) / 2);
+                       */
 }
+
 
 void ZImageWidget::setZoomRatio(double zoomRatio)
 {
-  m_viewProj.setZoom(zoomRatio);
+  m_sliceViewTransform.setScale(zoomRatio);
+
+//  m_viewProj.setZoom(zoomRatio);
   updateView();
 }
-
+/*
 QSizeF ZImageWidget::projectSize() const
 {
   return projectRegion().size();
@@ -348,6 +499,7 @@ QRectF ZImageWidget::projectRegion() const
   return m_viewProj.getProjRect();
 }
 
+
 QRect ZImageWidget::viewPort() const
 {
   return m_viewProj.getViewPort();
@@ -357,11 +509,24 @@ QRect ZImageWidget::canvasRegion() const
 {
   return m_viewProj.getCanvasRect();
 }
+*/
 
 #define VIEW_PORT_AREA_THRESHOLD 25000000
 
 void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 {
+  if (m_sliceViewTransform.getScale() < m_sliceViewTransform.getMaxScale()) {
+    double newScale =
+        m_sliceViewTransform.getScale() * m_sliceViewTransform.getScaleStep();
+    if (usingRef) {
+      m_sliceViewTransform.setScaleFixingCanvasMapped(newScale, x, y);
+    } else {
+      m_sliceViewTransform.setScale(newScale);
+    }
+
+    notifyTransformChanged();
+  }
+  /*
   if (usingRef) {
     QPointF viewPoint = m_viewProj.mapPointBack(QPointF(x, y));
     m_viewProj.increaseZoom(viewPoint.x(), viewPoint.y());
@@ -369,21 +534,26 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
     QPoint viewPoint = m_viewProj.getViewPort().center();
     m_viewProj.increaseZoom(viewPoint.x(), viewPoint.y());
   }
+  */
 
-  updateView();
+//  updateView();
 }
 
 void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
 {
-  if (usingRef) {
-    QPointF viewPoint = m_viewProj.mapPointBack(QPointF(x, y));
-    m_viewProj.decreaseZoom(viewPoint.x(), viewPoint.y());
-  } else {
-    QPoint viewPoint = m_viewProj.getViewPort().center();
-    m_viewProj.decreaseZoom(viewPoint.x(), viewPoint.y());
-  }
+  if (m_sliceViewTransform.getScale() > m_sliceViewTransform.getMinScale()) {
+    double newScale =
+        m_sliceViewTransform.getScale() / m_sliceViewTransform.getScaleStep();
 
-  updateView();
+    if (usingRef) {
+      m_sliceViewTransform.setScaleFixingCanvasMapped(newScale, x, y);
+    } else {
+      m_sliceViewTransform.setScale(newScale);
+    }
+
+    notifyTransformChanged();
+  }
+//  updateView();
 }
 
 void ZImageWidget::increaseZoomRatio()
@@ -398,26 +568,52 @@ void ZImageWidget::decreaseZoomRatio()
 
 void ZImageWidget::moveViewPort(const QPoint &src, const QPointF &dst)
 {
-  m_viewProj.move(src, dst);
-  updateView();
+  m_sliceViewTransform.translateModelViewTransform(
+        ZPoint(src.x(), src.y(), 0), ZPoint(dst.x(), dst.y(), 0),
+        ZSliceViewTransform::EPointMatchPolicy::CANVAS_TO_CANVAS);
+//  m_viewProj.move(src, dst);
+//  updateView();
+  notifyTransformChanged();
 }
 
-void ZImageWidget::moveViewPort(int x, int y)
+void ZImageWidget::moveViewPort(int dx, int dy)
 {
-  m_viewProj.move(x, y);
-  updateView();
+  m_sliceViewTransform.translateModelViewTransform(
+        ZPoint(0, 0, 0), ZPoint(dx, dy, 0),
+        ZSliceViewTransform::EPointMatchPolicy::CANVAS_TO_CANVAS);
+//  m_viewProj.move(x, y);
+//  updateView();
+  notifyTransformChanged();
+}
+
+void ZImageWidget::moveViewPort(const ZPoint &src, const QPointF &dst)
+{
+  m_sliceViewTransform.translateModelViewTransform(src, dst.x(), dst.y());
+  notifyTransformChanged();
 }
 
 void ZImageWidget::zoom(double zoomRatio)
 {
-  m_viewProj.setZoom(zoomRatio);
-  updateView();
+  m_sliceViewTransform.setScale(zoomRatio);
+//  m_viewProj.setZoom(zoomRatio);
+//  updateView();
+  notifyTransformChanged();
 }
 
 template<typename ZStackObjectPtr>
-void ZImageWidget::paintObjectTmpl(
-    ZPainter &painter, const QList<ZStackObjectPtr> &objList)
+bool ZImageWidget::paintObjectTmpl(
+    QPainter *painter, const QList<ZStackObjectPtr> &objList)
 {
+  neutu::data3d::DisplayConfig config;
+  config.setTransform(m_sliceViewTransform);
+  bool painted = false;
+  for (auto obj : objList) {
+    painted = obj->display(painter, config);
+  }
+
+  return painted;
+
+#if 0
   double zoomRatio = m_viewProj.getZoom();
   ZStackObjectPainter paintHelper;
 
@@ -447,42 +643,47 @@ void ZImageWidget::paintObjectTmpl(
 
   for (auto obj : objList) {
     if (obj->getType() == ZStackObject::EType::CROSS_HAIR) {
+      QPainter rawPainter(this);
+      obj->display(
+            &rawPainter, zstackobject::DisplayConfigBuilder().cutPlane(sliceAxis, 0));
+      /*
       ZPainter rawPainter(this);
       rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
       obj->display(rawPainter, m_paintBundle->sliceIndex(),
                    ZStackObject::EDisplayStyle::NORMAL, sliceAxis);
+                   */
     } else {
       paintHelper.paint(
             obj, painter, sliceIndex, m_paintBundle->displayStyle(), sliceAxis);
     }
   }
+#endif
 }
 
-void ZImageWidget::paintObject(
-    ZPainter &painter, const QList<std::shared_ptr<ZStackObject>> &objList)
+bool ZImageWidget::paintObject(
+    QPainter *painter, const QList<std::shared_ptr<ZStackObject>> &objList)
 {
-  paintObjectTmpl(painter, objList);
+  return paintObjectTmpl(painter, objList);
 }
 
-void ZImageWidget::paintObject(
-    ZPainter &painter, const QList<ZStackObject*> &objList)
+bool ZImageWidget::paintObject(QPainter *painter, const QList<ZStackObject*> &objList)
 {
-  paintObjectTmpl(painter, objList);
+  return paintObjectTmpl(painter, objList);
 }
 
 bool ZImageWidget::paintWidgetCanvas(ZImage *canvas)
 {
   bool painted = false;
   if (m_paintBundle && canvas) {
-    ZPainter painter;
+    QPainter painter;
     if (painter.begin(canvas)) {
       QList<std::shared_ptr<ZStackObject>> objList =
           m_paintBundle->getVisibleDynamicObjectList();
       if (m_paintBundle->getSliceAxis() == neutu::EAxis::ARB) {
-        m_paintBundle->alignToCutPlane(objList);
+//        m_paintBundle->alignToCutPlane(objList);
       }
-      paintObject(painter, objList);
-      painted = painter.isPainted();
+      painted = paintObject(&painter, objList);
+//      painted = painter.isPainted();
       painter.end();
 
 #ifdef _DEBUG_2
@@ -505,6 +706,7 @@ ZImage *ZImageWidget::makeWidgetCanvas() const
 
 void ZImageWidget::updateWidgetCanvas(ZPixmap *canvas)
 {
+#if 0
   if (m_widgetCanvas != canvas) {
     delete m_widgetCanvas;
     m_widgetCanvas = canvas;
@@ -515,11 +717,59 @@ void ZImageWidget::updateWidgetCanvas(ZPixmap *canvas)
 #endif
     update();
   }
+#endif
 }
 
-/*
+int ZImageWidget::getCutDepth() const
+{
+  return getSliceViewTransform().getCutCenter().getSliceCoord(getSliceAxis());
+}
+
+int ZImageWidget::getMinCutDepth() const
+{
+  return m_modelRange.getMinCorner().getSliceCoord(getSliceAxis());
+}
+
+int ZImageWidget::getMaxCutDepth() const
+{
+  return m_modelRange.getMaxCorner().getSliceCoord(getSliceAxis());
+}
+
+void ZImageWidget::adjustMinScale()
+{
+  ZPoint dims = m_sliceViewTransform.getModelViewTransform().transformBoxSize(
+        m_modelRange.getSize().toPoint());
+  m_sliceViewTransform.setMinScale(
+        std::min(width() * 0.25 / dims.getX(), height() * 0.25 / dims.getY()));
+}
+
+void ZImageWidget::adjustTransformWithResize()
+{
+#ifdef _DEBUG_2
+  std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+#endif
+//  m_sliceViewTransform.translateModelViewTransform(
+//        m_sliceViewTransform.getCutCenter(),
+//        m_viewAnchorX * width(), m_viewAnchorY * height());
+  m_sliceViewTransform.setAnchor(
+        m_viewAnchorX * width(), m_viewAnchorY * height());
+  adjustMinScale();
+
+#ifdef _DEBUG_2
+  std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+#endif
+}
+
+
 void ZImageWidget::paintDynamicObject()
 {
+  auto canvas = getValidCanvas(ECanvasRole::CANVAS_ROLE_WIDGET);
+  QList<std::shared_ptr<ZStackObject>> objList =
+      m_paintBundle->getVisibleDynamicObjectList();
+  ZSliceCanvasPaintHelper p(*canvas);
+  paintObject(p.getPainter(), objList);
+
+  /*
   if (m_paintBundle) {
     ZPainter painter;
     if (m_widgetCanvas == nullptr) {
@@ -541,25 +791,38 @@ void ZImageWidget::paintDynamicObject()
     QPainter widgetPainter(this);
     widgetPainter.drawPixmap(0, 0, *m_widgetCanvas);
   }
+  */
 }
-*/
+
 
 void ZImageWidget::paintObject()
 {
   if (m_paintBundle) {
-    ZPainter painter;
+    QPainter painter;
     if (!painter.begin(this)) {
       std::cout << "......failed to begin painter" << std::endl;
       return;
     }
 
-    QList<ZStackObject*> visibleObject = m_paintBundle->getVisibleObjectList();
-    paintObject(painter, visibleObject);
 
+    QList<ZStackObject*> visibleObject = m_paintBundle->getVisibleObjectList(
+          ZStackObject::ETarget::WIDGET);
+
+    paintObject(&painter, visibleObject);
+//    paintObject(painter, visibleObject);
+
+    /*
+    if (getCanvas(ECanvasRole::CANVAS_ROLE_WIDGET)) {
+      getCanvas(ECanvasRole::CANVAS_ROLE_WIDGET)->paintTo(
+            this, m_sliceViewTransform);
+    }
+    */
+    /*
     if (m_widgetCanvas) {
       QPainter widgetPainter(this);
       widgetPainter.drawPixmap(0, 0, *m_widgetCanvas);
     }
+    */
 
 #if 0
     double zoomRatio = m_viewProj.getZoom();
@@ -694,11 +957,23 @@ void ZImageWidget::paintZoomHint()
 
   painter.setRenderHint(QPainter::Antialiasing, false);
 
-  if ((viewPort().size().width() < canvasSize().width()
-       || viewPort().size().height() < canvasSize().height()) &&
-      m_isViewHintVisible) {
+  ZPoint dims = m_sliceViewTransform.transformBoxSize(
+        ZPoint(m_modelRange.getWidth(), m_modelRange.getHeight(),
+               m_modelRange.getDepth()));
+
+  neutu::geom2d::Rectangle fullViewPort;
+  fullViewPort.setCenter(0, 0, dims.x(), dims.y());
+  fullViewPort.round();
+
+  neutu::geom2d::Rectangle viewPort =
+      m_sliceViewTransform.getViewportV(width(), height());
+  viewPort.round();
+
+
+  if (!viewPort.contains(fullViewPort) &&m_isViewHintVisible) {
     painter.setPen(QPen(QColor(0, 0, 255, 128)));
 
+    /*
     double ratio = std::min(
           m_viewProj.getWidgetRect().width() * 0.2 / canvasSize().width(),
           m_viewProj.getWidgetRect().height() * 0.2 / canvasSize().height());
@@ -713,6 +988,7 @@ void ZImageWidget::paintZoomHint()
     painter.drawRect(ratio * (viewPort().left() - canvasRegion().left()),
                      ratio * (viewPort().top() - canvasRegion().top()),
                      ratio * viewPort().width(), ratio * viewPort().height());
+                     */
   }
 }
 
@@ -726,14 +1002,19 @@ void ZImageWidget::paintCrossHair()
 
   painter.setRenderHint(QPainter::Antialiasing, true);
   painter.setPen(QPen(QColor(0, 0, 255, 64)));
+
+  /*
   int x1 = m_viewProj.getWidgetRect().right();
   int y1 = m_viewProj.getWidgetRect().bottom();
 
   double cx = x1 * 0.5;
   double cy = y1 * 0.5;
+  */
 
-  painter.drawLine(QPointF(cx, 0), QPointF(cx, y1));
-  painter.drawLine(QPointF(0, cy), QPointF(x1, cy));
+  double ca = width() * m_viewAnchorX;
+  double cb = width() * m_viewAnchorY;
+  painter.drawLine(QPointF(ca, 0), QPointF(ca, height()));
+  painter.drawLine(QPointF(0, cb), QPointF(width(), cb));
 }
 
 QSize ZImageWidget::minimumSizeHint() const
@@ -749,15 +1030,19 @@ QSize ZImageWidget::minimumSizeHint() const
 
 QSize ZImageWidget::sizeHint() const
 {
+  return QSize(512, 512);
+  /*
   if (projectRegion().size().isEmpty()) {
     return minimumSizeHint();
   } else {
     return QSize(std::ceil(projectRegion().width()),
                  std::ceil(projectRegion().height()));
   }
+  */
 }
 
 
+#if 0
 void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 {
   resetViewProj(x0, y0, w, h, QRect());
@@ -773,7 +1058,10 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
   updateView();
 #endif
 }
+#endif
 
+
+/*
 void ZImageWidget::resetViewProj(int x0, int y0, int w, int h, const QRect &viewPort)
 {
   setCanvasRegion(x0, y0, w, h);
@@ -788,6 +1076,7 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h, const QRect &view
   updateView();
 }
 
+
 void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
 {
 #ifdef _DEBUG_2
@@ -800,6 +1089,7 @@ void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
     m_viewProj.setCanvasRect(QRect(x0, y0, w, h));
   }
 }
+*/
 
 #if 0
 bool ZImageWidget::isColorTableRequired()
@@ -827,13 +1117,17 @@ void ZImageWidget::addColorTable()
 
 QSize ZImageWidget::screenSize() const
 {
+  return size();
+  /*
   if (canvasSize().isEmpty()) {
     return QSize(0, 0);
   } else {
     return size();
   }
+  */
 }
 
+#if 0
 QSize ZImageWidget::canvasSize() const
 {
   return canvasRegion().size();
@@ -846,10 +1140,12 @@ QSize ZImageWidget::canvasSize() const
   */
 }
 
+
 QPointF ZImageWidget::canvasCoordinate(QPoint widgetCoord) const
 {
   return worldCoordinate((widgetCoord)) - canvasRegion().topLeft();
 }
+
 
 QPointF ZImageWidget::worldCoordinate(QPoint widgetCoord) const
 {
@@ -867,6 +1163,7 @@ QPointF ZImageWidget::worldCoordinate(QPoint widgetCoord) const
 
   return pt;
 }
+#endif
 
 QMenu* ZImageWidget::leftMenu()
 {
@@ -965,6 +1262,21 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
   neutu::LogMouseEvent(event, "ZImageWidget");
 //  KINFO << "Mouse scrolled in ZImageWidget";
 
+  /*
+  int numSteps = -event->delta();
+  if ((abs(numSteps) > 0) && (abs(numSteps) < 120)) {
+    if (numSteps > 0) {
+      numSteps = 1;
+    } else {
+      numSteps = -1;
+    }
+  } else {
+    numSteps /= 120;
+  }
+
+  moveCutDepth(numSteps);
+  */
+
   emit mouseWheelRolled(event);
 }
 
@@ -972,7 +1284,24 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
   LDEBUG() << "ZImageWidget::resizeEvent" << size() << isVisible();
 
-  m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
+#ifdef _DEBUG_2
+  std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+#endif
+
+  if (m_isReady) {
+    adjustTransformWithResize();
+    emit transformChanged();
+  }
+
+//  m_sliceViewTransform.canvasAdjust(
+//        width(), height(), m_viewAnchorX, m_viewAnchorY);
+
+#ifdef _DEBUG_2
+  std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+#endif
+
+//  emit transformChanged();
+//  m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
 
 //  setValidViewPort(m_viewPort);
 }
@@ -983,8 +1312,18 @@ void ZImageWidget::showEvent(QShowEvent *event)
   QWidget::showEvent(event);
 
   if (!m_isReady && isVisible()) {
-    m_viewProj.maximizeViewPort();
+    m_sliceViewTransform.setCutCenter(m_modelRange.getCenter().toPoint());
+    m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
+    adjustMinScale();
+
+#ifdef _DEBUG_2
+    std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+#endif
+//    maximizeViewPort(m_modelRange);
+//    m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
+//    m_viewProj.maximizeViewPort();
     m_isReady = true;
+    notifyTransformChanged();
   }
 }
 
@@ -1008,6 +1347,7 @@ bool ZImageWidget::event(QEvent *event)
   return QWidget::event(event);
 }
 
+/*
 int ZImageWidget::getMaxZoomRatio() const
 {
   int ratio = static_cast<int>(
@@ -1016,29 +1356,35 @@ int ZImageWidget::getMaxZoomRatio() const
   return std::min(std::min(canvasSize().width(), canvasSize().height()),
                   std::max(ratio, 32));
 }
+*/
 
-
+/*
 double ZImageWidget::getAcutalZoomRatioX() const
 {
   return m_viewProj.getZoom();
 //  return static_cast<double>(m_projRegion.width()) / m_viewPort.width();
 }
+*/
 
+/*
 double ZImageWidget::getAcutalZoomRatioY() const
 {
   return m_viewProj.getZoom();
 //  return static_cast<double>(m_projRegion.height()) / m_viewPort.height();
 }
+*/
 
 void ZImageWidget::updateView()
 {
   //View port adjustment
+  /*
   if (m_offsetAdjustment) {
     int zoom = neutu::iround(std::log2(getViewProj().getZoom())) + 1;
     if (zoom > 0) {
       m_viewProj.alignOffset(zgeom::GetZoomScale(zoom));
     }
   }
+  */
 
   if (!isPaintBlocked()) {
     update();
@@ -1049,6 +1395,25 @@ void ZImageWidget::updateView()
 QSize ZImageWidget::getMaskSize() const
 {
   QSize maskSize(0, 0);
+
+  auto canvas = getCanvas(ECanvasRole::CANVAS_ROLE_MASK);
+  if (canvas) {
+    maskSize.setWidth(canvas->getWidth());
+    maskSize.setHeight(canvas->getHeight());
+  }
+
+  canvas = getCanvas(ECanvasRole::CANVAS_ROLE_TILE);
+  if (canvas) {
+    if (canvas->getWidth() > maskSize.width()) {
+      maskSize.setWidth(canvas->getWidth());
+    }
+    if (canvas->getHeight() > maskSize.height()) {
+      maskSize.setHeight(canvas->getHeight());
+    }
+  }
+
+#if 0
+
   for (QVector<ZImage*>::const_iterator iter = m_mask.begin();
        iter != m_mask.end(); ++iter) {
     const ZImage *image = *iter;
@@ -1071,6 +1436,8 @@ QSize ZImageWidget::getMaskSize() const
     }
   }
 
+#endif
+
   return maskSize;
 }
 
@@ -1088,6 +1455,7 @@ void ZImageWidget::removeCanvas(ZImage *canvas)
   }
 }
 
+/*
 void ZImageWidget::removeCanvas(ZPixmap *canvas)
 {
   if (m_objectCanvas == canvas) {
@@ -1100,17 +1468,116 @@ void ZImageWidget::removeCanvas(ZPixmap *canvas)
     setDynamicObjectCanvas(NULL);
   }
 }
+*/
+
+QSizeF ZImageWidget::getViewportSize() const
+{
+  return QSizeF(width() / getSliceViewTransform().getScale(),
+                height() / getSliceViewTransform().getScale());
+}
+
+const ZSliceViewTransform &ZImageWidget::getSliceViewTransform() const
+{
+  return m_sliceViewTransform;
+}
+
+void ZImageWidget::notifyTransformChanged()
+{
+  if (m_isReady) {
+    emit transformChanged();
+  }
+
+  emit transformControlSyncNeeded();
+
+#ifdef _DEBUG_2
+  std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+#endif
+}
+
+void ZImageWidget::setSliceViewTransform(const ZSliceViewTransform &t)
+{
+  m_sliceViewTransform = t;
+  notifyTransformChanged();
+}
+
+void ZImageWidget::setCutCenter(double x, double y, double z)
+{
+  m_sliceViewTransform.setCutCenter(x, y, z);
+  notifyTransformChanged();
+}
+
+void ZImageWidget::setCutCenter(const ZPoint &center)
+{
+  setCutCenter(center.getX(), center.getY(), center.getZ());
+}
+
+void ZImageWidget::setCutCenter(const ZIntPoint &center)
+{
+  setCutCenter(center.getX(), center.getY(), center.getZ());
+}
+
+void ZImageWidget::moveCutDepth(double dz)
+{
+  double z = 0.0;
+  double minZ = 0.0;
+  double maxZ = 0.0;
+  if (getSliceAxis() == neutu::EAxis::ARB) {
+    ZPoint modelCenter = m_modelRange.getExactCenter();
+    ZPoint currentCenter = m_sliceViewTransform.getCutCenter();
+    z = (currentCenter - modelCenter).dot(
+          m_sliceViewTransform.getCutPlaneNormal());
+    minZ = -m_modelRange.getDiagonalLength() / 2.0;
+    maxZ = -minZ;
+  } else {
+    minZ = m_modelRange.getMinCorner().getSliceCoord(getSliceAxis());
+    maxZ = m_modelRange.getMaxCorner().getSliceCoord(getSliceAxis());
+    ZPoint currentCenter = m_sliceViewTransform.getCutCenter();
+    z = currentCenter.getSliceCoord(getSliceAxis());
+  }
+
+  if (z + dz < minZ) {
+    dz = minZ - z;
+  } else if (z + dz > maxZ) {
+    dz = maxZ - z;
+  }
+
+  if (dz != 0.0) {
+    m_sliceViewTransform.moveCutDepth(dz);
+    notifyTransformChanged();
+  }
+}
+
+ZPoint ZImageWidget::getCutCenter() const
+{
+  return m_sliceViewTransform.getCutCenter();
+}
+
+ZPoint ZImageWidget::transform(
+    const ZPoint &pt, neutu::data3d::ESpace src, neutu::data3d::ESpace dst) const
+{
+  return getSliceViewTransform().transform(pt, src, dst);
+}
+
+void ZImageWidget::recordTransform()
+{
+  m_prevSliceViewTransform = getSliceViewTransform();
+}
+
+void ZImageWidget::setModelRange(const ZIntCuboid &range)
+{
+  m_modelRange = range;
+}
 
 void ZImageWidget::reset()
 {
   m_image = NULL;
   m_mask.clear();
-  m_objectCanvas = NULL;
-  m_tileCanvas = NULL;
-  m_activeDecorationCanvas = NULL;
-  m_dynamicObjectCanvas = NULL;
+//  m_objectCanvas = NULL;
+//  m_tileCanvas = NULL;
+//  m_activeDecorationCanvas = NULL;
+//  m_dynamicObjectCanvas = NULL;
 
-  m_viewProj.reset();
+//  m_viewProj.reset();
 //  m_viewPort.setSize(QSize(0, 0));
 //  m_canvasRegion.setSize(QSize(0, 0));
 //  m_projRegion.setSize(QSize(0, 0));

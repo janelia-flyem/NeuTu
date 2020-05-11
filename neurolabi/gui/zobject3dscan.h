@@ -470,9 +470,12 @@ public:
   void exportImageSlice(int minZ, int maxZ, const std::string outputFolder) const;
   void exportImageSlice(const std::string outputFolder) const;
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option,
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
       neutu::EAxis sliceAxis) const override;
+      */
 //  virtual const std::string& className() const;
 
   void dilate();

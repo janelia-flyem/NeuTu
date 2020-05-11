@@ -22,6 +22,7 @@ class QMainWindow;
 class ZIntPoint;
 class ZPoint;
 class ZStressTestOptionDialog;
+class ZAffineRect;
 
 /*!
  * \brief The MVC class for stack operation
@@ -77,10 +78,10 @@ public:
   virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
   ZIntPoint getViewCenter() const;
-  double getWidthZoomRatio() const;
-  double getHeightZoomRatio() const;
+//  double getWidthZoomRatio() const;
+//  double getHeightZoomRatio() const;
   QSize getViewScreenSize() const;
-  QRect getViewPort() const;
+  ZAffineRect getViewPort() const;
   void setDefaultViewPort(const QRect &rect);
 
   void toggleStressTest();

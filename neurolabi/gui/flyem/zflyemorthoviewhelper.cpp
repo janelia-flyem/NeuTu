@@ -137,6 +137,7 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
 
 void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
 {
+#if 0
   if (getMasterMvc() != NULL) {
 #ifdef _DEBUG_2
     std::cout << "Sync viewport from " << getMasterView()->getSliceAxis()
@@ -207,5 +208,7 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     mvc->getView()->printViewParam();
 #endif
   }
+#endif
+
 }
 

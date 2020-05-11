@@ -6,6 +6,7 @@
 #endif
 #include <QApplication>
 #include <QFileInfo>
+#include <QProcess>
 
 #include "neutube.h"
 #include "zneurontracer.h"

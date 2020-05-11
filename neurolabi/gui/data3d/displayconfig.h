@@ -3,10 +3,10 @@
 
 #include "geometry/zaffinerect.h"
 
-#include "zworldviewtransform.h"
-#include "zviewplanetransform.h"
+#include "zsliceviewtransform.h"
 
-namespace zstackobject {
+namespace neutu {
+namespace data3d {
 
 enum class EDisplayStyle {
   NORMAL, SOLID, BOUNDARY, SKELETON
@@ -25,11 +25,13 @@ public:
 //  int getZ() const;
   EDisplayStyle getStyle() const;
   EDisplaySliceMode getSliceMode() const;
+  ZViewPlaneTransform getTransform() const;
 
 //  void setZ(int z);
   void setStyle(EDisplayStyle style);
   void setSliceMode(EDisplaySliceMode mode);
   void setTransform(const ZViewPlaneTransform &transform);
+  void setTransform(double dx, double dy, double s);
 
 //  int getSlice(int z0) const;
 
@@ -49,9 +51,11 @@ public:
 //  int getSlice(int z0);
   neutu::EAxis getSliceAxis() const;
 
-  EDisplayStyle getStyle();
+  EDisplayStyle getStyle() const;
+  EDisplaySliceMode getSliceMode() const;
   ZAffinePlane getCutPlane() const;
-  ZAffineRect getCutRect() const;
+  ZAffineRect getCutRect(double width, double height) const;
+//  double getCutDepth() const;
 
 //  void setZ(int z);
   void setStyle(EDisplayStyle style);
@@ -61,15 +65,19 @@ public:
   void setCutPlane(neutu::EAxis sliceAxis, double cutDepth);
   void setCanvasRange(double width, double height);
 
+  void setViewCanvasTransform(double dx, double dy, double s);
+
+  ZSliceViewTransform getTransform() const;
+  void setTransform(const ZSliceViewTransform &transform);
+
+  ZModelViewTransform getWorldViewTransform() const;
+  ZViewPlaneTransform getViewCanvasTransform() const;
+
 //  void setCutRect(const ZAffineRect &rect);
 //  void setSliceAxis(neutu::EAxis axis);
 
 private:
-  ZWorldViewTransform m_transform;
-  double m_width;
-  double m_height;
-//  neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
-//  ZAffineRect m_cutRect;
+  ZModelViewTransform m_transform;
   ViewSpaceAlignedDisplayConfig m_alignedConfig;
 };
 
@@ -80,15 +88,16 @@ public:
 
   operator DisplayConfig();
 //  void z(int z);
-  void style(EDisplayStyle style);
-  void sliceMode(EDisplaySliceMode mode);
+  DisplayConfigBuilder& style(EDisplayStyle style);
+  DisplayConfigBuilder& sliceMode(EDisplaySliceMode mode);
 //  void axis(neutu::EAxis axis);
-  void cutPlane(neutu::EAxis axis, double cutDepth);
+  DisplayConfigBuilder& cutPlane(neutu::EAxis axis, double cutDepth);
 
 private:
   DisplayConfig m_result;
 };
 
+}
 }
 
 #endif // DISPLAYCONFIG_H

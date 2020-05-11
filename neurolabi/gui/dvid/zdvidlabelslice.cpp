@@ -113,6 +113,7 @@ void ZDvidLabelSlice::updatePixmap(ZPixmap *pixmap) const
 #endif
 }
 
+#if 0
 void ZDvidLabelSlice::display(
     ZPainter &painter, int /*slice*/, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -144,6 +145,7 @@ void ZDvidLabelSlice::display(
     }
   }
 }
+#endif
 
 void ZDvidLabelSlice::setCenterCut(int width, int height)
 {

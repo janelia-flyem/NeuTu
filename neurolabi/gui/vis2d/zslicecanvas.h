@@ -1,0 +1,126 @@
+#ifndef ZSLICECANVAS_H
+#define ZSLICECANVAS_H
+
+#include <memory>
+#include <string>
+
+#include <QPixmap>
+#include <QPainter>
+#include <QString>
+
+#include "data3d/zsliceviewtransform.h"
+#include "zslicepainter.h"
+
+class ZSliceCanvas
+{
+public:
+  ZSliceCanvas();
+  ZSliceCanvas(int width, int height);
+
+  /*!
+   * \brief Set the canvas to transparent and unpainted
+   */
+  void resetCanvas();
+
+  void resetCanvas(int width, int height);
+  void resetCanvas(int width, int height, const ZSliceViewTransform &transform);
+  enum class ESetOption {
+    NO_CLEAR, //No canvas clearup
+    DIFF_CLEAR, //Clear only when parameters changed
+    FORCE_CLEAR, //Clear anyway
+  };
+
+  enum class ECanvasStatus {
+    RAW, //Cavas created but not inited
+    CLEAN, //Clean canvas, which is completely transparent
+    PAINTED //Painted canvas
+  };
+
+  void setCanvasStatus(ECanvasStatus status);
+
+  void set(int width, int height, ESetOption option);
+  void set(int width, int height, const ZSliceViewTransform &transform,
+           ESetOption option);
+
+  /*!
+   * \brief Fit the canvas to the target size
+   */
+  void fitTarget(int width, int height);
+
+  void setTransform(const ZSliceViewTransform &transform);
+  ZSliceViewTransform getTransform() const;
+
+  bool paintTo(QPaintDevice *device, const ZSliceViewTransform &painterTransform);
+
+  void setPainted(bool painted);
+  void setVisible(bool visible);
+
+  bool isPainted() const;
+  bool isVisible() const;
+
+  QSize getSize() const;
+  int getWidth() const;
+  int getHeight() const;
+
+  QImage toImage() const;
+  void fromImage(const QImage &image);
+  void fromImage(const QImage &image, double u0, double v0);
+
+  const QPixmap& getPixmap() const;
+  QPixmap* getPixmapRef();
+
+  void save(const char* filePath) const;
+  void save(const std::string &filePath) const;
+  void save(const QString &filePath) const;
+
+  void clear(const QColor &color);
+
+  friend class ZSliceCanvasPaintHelper;
+
+private:
+  void beginPainter(QPainter *painter);
+
+private:
+  ZSliceViewTransform m_transform;
+  QPixmap m_pixmap;
+  ECanvasStatus m_status = ECanvasStatus::RAW;
+  bool m_isVisible = false;
+};
+
+/*!
+ * \brief The helper class for canvas painting
+ *
+ * The class helps the program use a correct painter.
+ *
+ * Usage:
+ * ZSliceCanvasPaintHelper p(canvas);
+ * QPainter *painter = p.getPainter();
+ * ...
+ *
+ */
+class ZSliceCanvasPaintHelper {
+public:
+  ZSliceCanvasPaintHelper(ZSliceCanvas &canvas);
+
+  QPainter* getPainter();
+  ZSlice3dPainter* getSlicePainter();
+
+  void drawBall(double cx, double cy, double cz, double r,
+      double depthScale, double fadingFactor);
+  void drawBall(const ZPoint &center, double r,
+      double depthScale, double fadingFactor);
+  void drawBoundBox(double cx, double cy, double cz, double r,
+      double depthScale);
+  void drawBoundBox(const ZPoint &center, double r, double depthScale);
+  void drawLine(const ZLineSegment &line);
+  void drawPoint(double x, double y, double z);
+
+  void setPen(const QPen &pen);
+  void setBrush(const QBrush &brush);
+
+private:
+  QPainter m_painter;
+  ZSlice3dPainter m_slicePainter;
+};
+
+#endif // ZSLICECANVAS_H

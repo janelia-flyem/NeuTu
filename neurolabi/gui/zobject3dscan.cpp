@@ -2315,6 +2315,12 @@ static QList<std::vector<QPoint> > extract_contour(
 }
 #endif
 
+bool ZObject3dScan::display(QPainter *painter, const DisplayConfig &config) const
+{
+  return false;
+}
+
+#if 0
 void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
                             neutu::EAxis sliceAxis) const
 {
@@ -2463,6 +2469,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   UNUSED_PARAMETER(style);
 #endif
 }
+#endif
 
 void ZObject3dScan::setDsIntv(int x, int y, int z)
 {

@@ -96,6 +96,7 @@ int ZDvidGraySlice::getZoom() const
   return m_helper->getZoom();
 }
 
+#if 0
 void ZDvidGraySlice::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -116,6 +117,7 @@ void ZDvidGraySlice::display(
     painter.drawPixmap(getX(), getY(), m_pixmap);
   }
 }
+#endif
 
 void ZDvidGraySlice::updateContrast(bool highContrast)
 {

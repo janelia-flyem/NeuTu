@@ -22,8 +22,13 @@ public:
   Local_Neuroseg* toLocalNeuroseg() const override;
 
 public:
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const override;
+
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
+  void display(
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+      neutu::EAxis sliceAxis) const override;
+      */
   ZCuboid getBoundBox() const override;
 
 public:

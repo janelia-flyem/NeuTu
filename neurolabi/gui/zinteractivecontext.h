@@ -7,6 +7,7 @@
 
 #include <QRect>
 #include "common/neutudefs.h"
+#include "data3d/displayconfig.h"
 
 class ZPoint;
 class ZImageWidget;
@@ -179,8 +180,13 @@ public:
 
   bool isFreeMode() const;
 
-  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
-  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
+  void setSliceViewTransform(const ZSliceViewTransform &transform);
+  ZSliceViewTransform getSliceViewTransform() const;
+
+  void setSliceMode(neutu::data3d::EDisplaySliceMode mode);
+  neutu::data3d::EDisplaySliceMode getSliceMode() const;
+//  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
+//  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
 
   void setAcceptingRect(bool on) { m_acceptingRect = on; }
   bool acceptingRect() const { return m_acceptingRect; }
@@ -205,8 +211,12 @@ private:
   bool m_blockingContextMenu;
   bool m_acceptingRect;
   bool m_rectSpan;
-  neutu::EAxis m_sliceAxis;
+//  neutu::EAxis m_sliceAxis;
   int m_keyIndex;
+
+  neutu::data3d::DisplayConfig m_displayConfig;
+//  ZSliceViewTransform m_transform;
+//  neutu::data3d::EDisplaySliceMode m_sliceMode;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;
   //QRect m_viewPort;

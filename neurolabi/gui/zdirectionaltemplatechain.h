@@ -23,8 +23,12 @@ public:
 //    virtual const std::string& className() const;
 
 public:
+    virtual bool display(
+        QPainter *painter, const DisplayConfig &config) const {}
+    /*
     virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                          neutu::EAxis sliceAxis) const override;
+                         */
     void trace(const ZStack *stack, Trace_Workspace *tws);
     void append(ZDirectionalTemplate* dt);
     void prepend(ZDirectionalTemplate* dt);

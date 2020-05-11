@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
 
 #include <cstring>
 
-#include <QProcess>
 #include <QDir>
 #include <QSplashScreen>
 #include <QElapsedTimer>

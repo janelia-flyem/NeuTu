@@ -371,7 +371,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
 //  }
   ZStackDocHitTest hitManager;
   hitManager.setSliceAxis(event.getSliceAxis());
-  if (event.getRawStackPosition().z() < 0) {
+  if (m_context->isProjectView()) {
     hitManager.hitTest(const_cast<ZStackDoc*>(
                          getDocument()), stackPosition.x(), stackPosition.y());
   } else {

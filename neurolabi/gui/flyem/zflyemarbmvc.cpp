@@ -85,6 +85,7 @@ ZFlyEmArbPresenter* ZFlyEmArbMvc::getCompletePresenter() const
   return qobject_cast<ZFlyEmArbPresenter*>(getPresenter());
 }
 
+/*
 void ZFlyEmArbMvc::updateViewParam(const ZArbSliceViewParam &param)
 {
 #ifdef _DEBUG_2
@@ -93,6 +94,7 @@ void ZFlyEmArbMvc::updateViewParam(const ZArbSliceViewParam &param)
   getCompletePresenter()->setViewParam(param);
   getView()->updateViewParam(param);
 }
+*/
 
 //void ZFlyEmArbMvc::updateViewParam(const ZStackViewParam &param)
 //{
@@ -101,13 +103,13 @@ void ZFlyEmArbMvc::updateViewParam(const ZArbSliceViewParam &param)
 
 void ZFlyEmArbMvc::resetViewParam(const ZArbSliceViewParam &param)
 {
-  getCompletePresenter()->setViewParam(param);
+//  getCompletePresenter()->setViewParam(param);
   getView()->resetViewParam(param);
 }
 
 void ZFlyEmArbMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
-  getCompletePresenter()->setViewParam(viewParam.getSliceViewParam());
+//  getCompletePresenter()->setViewParam(viewParam.getSliceViewParam());
   emit sliceViewChanged(viewParam.getSliceViewParam());
 }
 

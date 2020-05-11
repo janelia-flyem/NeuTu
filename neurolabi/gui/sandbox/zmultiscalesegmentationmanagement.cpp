@@ -11,19 +11,24 @@
 #include <QLineEdit>
 #include <set>
 #include <map>
+
 #include "time.h"
 #include "zmultiscalesegmentationmanagement.h"
 #include "zstackobject.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "zobject3dscanarray.h"
+#include "data3d/displayconfig.h"
+
 #include "mvc/zstackframe.h"
-#include "zsandbox.h"
+#include "mvc/zstackdoc.h"
 #include "mvc/zstackdocdatabuffer.h"
+
 #include "imgproc/zstackprocessor.h"
 #include "imgproc/zwatershedmst.h"
-#include "mvc/zstackdoc.h"
+
 #include "segment/zsegmentationnodewrapper.h"
 #include "mainwindow.h"
+#include "zsandbox.h"
 
 
 using std::queue;
@@ -88,12 +93,15 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
     wrapper->addCallBackOnDeselection(onDeselectMask);
     wrapper->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
     wrapper->setSelectable(true);
+    /*
     if(m_show_contour->isChecked()){
       wrapper->setDisplayStyle(ZStackObject::EDisplayStyle::BOUNDARY);
     } else {
       wrapper->setDisplayStyle(ZStackObject::EDisplayStyle::SOLID);
     }
-    m_frame->document()->getDataBuffer()->addUpdate(wrapper, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
+    */
+    m_frame->document()->getDataBuffer()->addUpdate(
+          wrapper, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
   }
 }
 

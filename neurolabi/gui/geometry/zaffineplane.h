@@ -18,6 +18,14 @@ public:
   void set(const ZPoint &offset, const ZPoint &v1, const ZPoint &v2);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
   void setOffset(const ZPoint &offset);
+  void setOffset(double x, double y, double z);
+
+  /*!
+   * \brief Tranlate offset along a certain axis
+   *
+   * It sets \a v*normal when axis is neutu::EAxis::ARB.
+   */
+  void addOffset(double v, neutu::EAxis axis);
 
   ZPoint getV1() const;
   ZPoint getV2() const;
@@ -35,6 +43,7 @@ public:
   void translate(double dx, double dy, double dz);
   void translate(const ZPoint &dv);
   void translateDepth(double d);
+  void translateOnPlane(double du, double dv);
 
   /*!
    * \brief Align a point with the affine plane
@@ -49,6 +58,8 @@ public:
   std::string toString() const;
 
   bool approxEquals(const ZAffinePlane &plane) const;
+
+  bool operator== (const ZAffinePlane &p) const;
 
 private:
   ZPoint m_offset;

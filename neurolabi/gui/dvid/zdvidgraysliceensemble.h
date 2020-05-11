@@ -24,8 +24,14 @@ public:
     return ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE;
   }
 
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
+               */
 
   void prepare(const ZDvidTarget &target);
   void prepare(const ZDvidEnv &env);

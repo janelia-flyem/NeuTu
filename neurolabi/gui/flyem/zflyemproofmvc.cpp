@@ -17,7 +17,7 @@
 
 #include "zjsondef.h"
 #include "zflyemproofdoc.h"
-
+#include "data3d/displayconfig.h"
 #include "mvc/zstackview.h"
 #include "mvc/zstackdochelper.h"
 #include "mvc/zstackpresenter.h"
@@ -5199,7 +5199,7 @@ void ZFlyEmProofMvc::chopBody()
       const QString threadId = "ZFlyEmBodySplitProject::chopBody";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
-        ZIntPoint center = getView()->getCenter();
+        ZIntPoint center = getView()->getCutCenter().toIntPoint();
         int v = center.getZ();
         neutu::EAxis axis = chopDlg->getAxis();
         if (axis == neutu::EAxis::X) {

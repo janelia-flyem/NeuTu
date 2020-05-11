@@ -22,8 +22,12 @@ public:
     return ZStackObject::EType::DVID_SPARSE_STACK;
   }
 
+  virtual bool display(
+      QPainter *painter, const DisplayConfig &config) const {}
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
+               */
 
 //  const std::string& className() const;
 

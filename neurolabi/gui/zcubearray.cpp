@@ -372,12 +372,6 @@ ZCubeArray::~ZCubeArray()
 
 }
 
-void ZCubeArray::display(
-    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
-    neutu::EAxis /*sliceAxis*/) const
-{
-}
-
 void ZCubeArray::setMesh(ZMesh *mesh)
 {
   m_mesh = ZSharedPointer<ZMesh>(mesh);

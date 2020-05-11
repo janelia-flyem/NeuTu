@@ -56,6 +56,10 @@ public:
   inline void setY(double y) { m_y = y; }
   inline void setZ(double z) { m_z = z; }
 
+  inline void addX(double x) { m_x += x; }
+  inline void addY(double y) { m_y += y; }
+  inline void addZ(double z) { m_z += z; }
+
   double distanceTo(const ZPoint &pt) const;
   double distanceTo(double x, double y, double z) const;
   double length() const;
@@ -126,6 +130,7 @@ public:
   void rotate(double theta, double psi, const ZPoint &center);
 
   ZIntPoint toIntPoint() const;
+  std::vector<double> toArray() const;
 
   friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);
 

@@ -6,11 +6,20 @@
 #include "zstackobjectrole.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zaffinerect.h"
+//#include "data3d/displayconfig.h"
 
 class ZPainter;
 class ZIntCuboid;
 class ZCuboid;
 
+namespace neutu {
+namespace data3d {
+class DisplayConfig;
+enum class EDisplayStyle;
+enum class EDisplaySliceMode;
+class ViewSpaceAlignedDisplayConfig;
+}
+}
 
 /*!
  * \brief The abstract class of representing an 3D object
@@ -96,9 +105,15 @@ public:
     BLUE = 0, GREEN, RED, ALPHA
   };
 
+  using EDisplayStyle = neutu::data3d::EDisplayStyle;
+  using EDisplaySliceMode = neutu::data3d::EDisplaySliceMode;
+  using DisplayConfig = neutu::data3d::DisplayConfig;
+  using ViewSpaceAlignedDisplayConfig = neutu::data3d::ViewSpaceAlignedDisplayConfig;
+  /*
   enum class EDisplayStyle {
     NORMAL, SOLID, BOUNDARY, SKELETON
   };
+  */
 
   enum class ETarget {
     NONE,
@@ -106,10 +121,12 @@ public:
     ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D, WIDGET_CANVAS
   };
 
+  /*
   enum class EDisplaySliceMode {
     PROJECTION, //Display Z-projection of the object
     SINGLE      //Display a cross section of the object
   };
+  */
 
   enum class EHitProtocol {
     HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
@@ -150,6 +167,7 @@ public:
   void addCallBackOnDeselection(CallBack callback){
     m_deselectionCallbacks.push_back(callback);}
 
+  #if 0
   /*!
    * \brief Display an object to widget
    *
@@ -163,7 +181,7 @@ public:
    *    current slice -(\a slice + 1).
    */
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option,
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
       neutu::EAxis sliceAxis) const = 0;
 
   /*!
@@ -173,8 +191,8 @@ public:
    *         if there is something painted.
    */
   virtual bool display(
-      QPainter *painter, int z, EDisplayStyle option,
-      EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
+      QPainter *painter, int z, zstackobject::EDisplayStyle option,
+      zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
   struct ViewSpaceAlignedDisplayConfig {
     int z = 0;
@@ -200,11 +218,24 @@ public:
        return alignedConfig.style;
      }
   };
+#endif
 
-  virtual void display(ZPainter &painter, const DisplayConfig &config) const;
+  /*!
+   * \brief The main painting function
+   *
+   * \return false if the object is not actually painted. Note the return value
+   * is only a hint. Even if it returns true, it does not mean that the object
+   * is actually painted.
+   */
+  virtual bool display(
+      QPainter *painter, const DisplayConfig &config) const = 0;
 
-  virtual void viewSpaceAlignedDisplay(
-      QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const;
+  bool isVisible(const DisplayConfig &config) const {
+    return true;
+  }
+
+//  virtual void viewSpaceAlignedDisplay(
+//      QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const;
 
   /*!
    * \brief Get an aligned object if possible.
@@ -218,8 +249,8 @@ public:
   inline void setVisible(bool visible) { m_isVisible = visible; }
   inline void toggleVisible() { m_isVisible = !m_isVisible; }
 
-  inline void setDisplayStyle(EDisplayStyle style) { m_style = style; }
-  inline EDisplayStyle displayStyle() const { return m_style; }
+//  inline void setDisplayStyle(zstackobject::EDisplayStyle style) { m_style = style; }
+//  inline zstackobject::EDisplayStyle displayStyle() const { return m_style; }
 
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
@@ -227,6 +258,9 @@ public:
   virtual bool isSliceVisible(int z, neutu::EAxis axis) const;
   virtual bool isSliceVisible(
       int z, neutu::EAxis axis, const ZAffinePlane &plane) const;
+  virtual bool isSliceVisible(const DisplayConfig &config) const;
+  virtual bool isSliceVisible(
+      const DisplayConfig &config, int canvasWidth, int canvasHeight) const;
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
@@ -450,7 +484,7 @@ protected:
 
 //protected:
   EHitProtocol m_hitProtocal = EHitProtocol::HIT_DATA_POS;
-  EDisplayStyle m_style = EDisplayStyle::SOLID;
+//  zstackobject::EDisplayStyle m_style = zstackobject::EDisplayStyle::SOLID;
   QColor m_color;
   ETarget m_target = ETarget::WIDGET;
   EType m_type = EType::UNIDENTIFIED;

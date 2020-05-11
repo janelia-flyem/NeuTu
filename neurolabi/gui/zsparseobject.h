@@ -30,8 +30,14 @@ public:
 
   void setLabel(uint64_t label);
 
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int z, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+               */
 
   void append(const ZObject3dScan &obj);
 

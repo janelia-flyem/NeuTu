@@ -695,6 +695,7 @@ void ZDvidSynapseEnsemble::updateFromCacheUnsync(int z)
   }
 }
 
+#if 0
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -792,6 +793,7 @@ void ZDvidSynapseEnsemble::display(
     }
   }
 }
+#endif
 
 void ZDvidSynapseEnsemble::clearCache()
 {

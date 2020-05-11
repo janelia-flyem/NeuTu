@@ -134,7 +134,7 @@
 #include "dialogs/zflyemroidialog.h"
 #include "dialogs/shapepaperdialog.h"
 #include "zsleeper.h"
-
+#include "data3d/displayconfig.h"
 #include "dialogs/dvidoperatedialog.h"
 #include "dialogs/synapseimportdialog.h"
 //#include "dialogs/flyembodymergeprojectdialog.h"

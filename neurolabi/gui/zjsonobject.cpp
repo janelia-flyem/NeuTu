@@ -334,6 +334,12 @@ void ZJsonObject::setEntry(const char *key, const double *array, size_t n)
   setEntryWithoutKeyCheck(key, C_Json::makeArray(array, n), true);
 }
 
+void ZJsonObject::setEntry(const char *key, const std::vector<double> &value)
+{
+  setEntry(key, value.data(), value.size());
+}
+
+
 void ZJsonObject::setEntry(const char *key, const int *array, size_t n)
 {
   if (!isValidKey(key)) {
@@ -421,6 +427,20 @@ void ZJsonObject::setEntry(const char *key, ZJsonValue &value)
 }
 
 void ZJsonObject::setEntry(const std::string &key, ZJsonValue &value)
+{
+  setEntry(key.c_str(), value);
+}
+
+void ZJsonObject::setEntry(const char *key, const ZJsonValue &value)
+{
+  if (!isValidKey(key)) {
+    return;
+  }
+
+  setEntryWithoutKeyCheck(key, value.getValue());
+}
+
+void ZJsonObject::setEntry(const std::string &key, const ZJsonValue &value)
 {
   setEntry(key.c_str(), value);
 }

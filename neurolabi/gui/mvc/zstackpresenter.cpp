@@ -13,7 +13,7 @@
 #include "zstack.hxx"
 #include "zstackdoc.h"
 #include "swctreenode.h"
-
+#include "data3d/displayconfig.h"
 #include "widgets/zimagewidget.h"
 #include "dialogs/channeldialog.h"
 #include "neutubeconfig.h"
@@ -1125,11 +1125,12 @@ void ZStackPresenter::prepareView()
   //m_interactiveContext.setView(buddyView()->imageWidget()->projectRegion(),
   //                             buddyView()->imageWidget()->viewPort());
 //  m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
-  m_mouseEventProcessor.setSliceAxis(buddyView()->getSliceAxis());
-  m_mouseEventProcessor.setArbSlice(buddyView()->getAffinePlane());
+//  m_mouseEventProcessor.setSliceAxis(buddyView()->getSliceAxis());
+//  m_mouseEventProcessor.setArbSlice(buddyView()->getAffinePlane());
   m_mouseEventProcessor.setDocument(getSharedBuddyDocument());
+  setSliceViewTransform(buddyView()->getSliceViewTransform());
 
-  setSliceAxis(buddyView()->getSliceAxis());
+//  setSliceAxis(buddyView()->getSliceAxis());
 
 //  m_swcKeyMapper.setTag(buddyDocument()->getTag());
 }
@@ -1207,7 +1208,16 @@ bool ZStackPresenter::hasObjectToShow() const
   return false;
 }
 
-const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
+ZPoint ZStackPresenter::getModelPositionFromGlobalCursor(
+    const QPoint &pos) const
+{
+  QPoint widgetPos = buddyView()->imageWidget()->mapFromGlobal(pos);
+  return buddyView()->imageWidget()->transform(
+        ZPoint(widgetPos.x(), widgetPos.y(), 0), neutu::data3d::ESpace::CANVAS,
+        neutu::data3d::ESpace::MODEL);
+}
+
+ZPoint ZStackPresenter::getModelPositionFromMouse(MouseButtonAction mba) const
 {
   int x, y;
   switch (mba) {
@@ -1240,7 +1250,10 @@ const QPointF ZStackPresenter::stackPositionFromMouse(MouseButtonAction mba)
     y = 0;
   }
 
-  return buddyView()->imageWidget()->canvasCoordinate(QPoint(x, y));
+  return buddyView()->imageWidget()->transform(
+        ZPoint(x, y, 0), neutu::data3d::ESpace::CANVAS,
+        neutu::data3d::ESpace::MODEL);
+//  return buddyView()->imageWidget()->canvasCoordinate(QPoint(x, y));
 }
 
 ZPoint ZStackPresenter::getLastMousePosInStack()
@@ -1305,9 +1318,7 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
   }
 
   const ZMouseEvent& mouseEvent =
-      m_mouseEventProcessor.process(
-        event, ZMouseEvent::EAction::RELEASE, buddyView()->getViewProj(),
-        getSliceIndex());
+      m_mouseEventProcessor.process(event, ZMouseEvent::EAction::RELEASE);
 
   if (mouseEvent.isNull()) {
     return;
@@ -1326,6 +1337,7 @@ void ZStackPresenter::moveCrossHairToMouse(int mouseX, int mouseY)
   emit movingCrossHairTo(mouseX, mouseY);
 }
 
+#if 0
 void ZStackPresenter::moveImageToMouse(
     double srcX, double srcY, int mouseX, int mouseY)
 {
@@ -1353,7 +1365,7 @@ void ZStackPresenter::moveImageToMouse(
   moveViewPortTo(iround(x), iround(y));
 #endif
 
-  buddyView()->move(
+  buddyView()->moveViewPort(
         QPoint(neutu::iround(srcX), neutu::iround(srcY)), QPointF(mouseX, mouseY));
 
   /*
@@ -1369,18 +1381,26 @@ void ZStackPresenter::moveImageToMouse(
   moveViewPortTo(iround(x), iround(y));
   */
 }
+#endif
 
 void ZStackPresenter::moveViewPort(int dx, int dy)
 {
   buddyView()->moveViewPort(dx, dy);
-  buddyView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+//  buddyView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
+void ZStackPresenter::moveViewPort(const ZPoint &src, int a, int b)
+{
+  buddyView()->moveViewPort(src, a, b);
+}
+
+/*
 void ZStackPresenter::moveViewPortTo(int x, int y)
 {
   buddyView()->setViewPortOffset(x, y);
 //  buddyView()->updateImageScreen(ZStackView::EUpdateOption::UPDATE_QUEUED);
 }
+*/
 
 void ZStackPresenter::increaseZoomRatio()
 {
@@ -1415,8 +1435,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::EAction::MOVE, buddyView()->getViewProj(),
-        getSliceIndex());
+        event, ZMouseEvent::EAction::MOVE);
 
   if (mouseEvent.isNull()) {
     return;
@@ -1433,17 +1452,21 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   process(op);
 }
 
+#if 0
 QPointF ZStackPresenter::mapFromWidgetToStack(const QPoint &pos)
 {
+  /*
   return buddyView()->imageWidget()->canvasCoordinate(pos) +
       QPoint(buddyDocument()->getStackOffset().getX(),
              buddyDocument()->getStackOffset().getY());
+             */
 }
 
 QPointF ZStackPresenter::mapFromGlobalToStack(const QPoint &pos)
 {
   return mapFromWidgetToStack(buddyView()->imageWidget()->mapFromGlobal(pos));
 }
+#endif
 
 bool ZStackPresenter::isContextMenuOn()
 {
@@ -1481,8 +1504,7 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::EAction::PRESS, buddyView()->getViewProj(),
-        getSliceIndex());
+        event, ZMouseEvent::EAction::PRESS);
   if (mouseEvent.isNull()) {
     return;
   }
@@ -1838,9 +1860,8 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     if (m_interactiveContext.isStackSliceView()) {
       if (interactiveContext().markingPuncta() && buddyDocument()->hasStackData() &&
           (!buddyDocument()->getStack()->isVirtual())) {
-        QPointF dataPos = stackPositionFromMouse(MOVE);
-        buddyDocument()->markPunctum(dataPos.x(), dataPos.y(),
-                                     buddyView()->sliceIndex());
+        ZPoint dataPos = getModelPositionFromMouse(MOVE);
+        buddyDocument()->markPunctum(dataPos.x(), dataPos.y(), dataPos.z());
         processed = true;
       }
     }
@@ -1965,8 +1986,7 @@ bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
 void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
 {
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::EAction::DOUBLE_CLICK,  buddyView()->getViewProj(),
-        getSliceIndex());
+        event, ZMouseEvent::EAction::DOUBLE_CLICK);
 
   if (mouseEvent.isNull()) {
     return;
@@ -2029,6 +2049,16 @@ void ZStackPresenter::setObjectStyle(ZStackObject::EDisplayStyle style)
     buddyView()->redrawObject();
 //    updateView();
   }
+}
+
+void ZStackPresenter::setSliceMode(neutu::data3d::EDisplaySliceMode mode)
+{
+  m_interactiveContext.setSliceMode(mode);
+}
+
+neutu::data3d::EDisplaySliceMode ZStackPresenter::getSliceMode() const
+{
+  return m_interactiveContext.getSliceMode();
 }
 
 bool ZStackPresenter::isObjectVisible()
@@ -2194,25 +2224,24 @@ void ZStackPresenter::traceTube()
 
 void ZStackPresenter::fitSegment()
 {
-  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  ZPoint dataPos = getModelPositionFromMouse(LEFT_RELEASE);
+//  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
   /*
   buddyDocument()->fitseg(dataPos.x(), dataPos.y(),
                           m_mouseLeftReleasePosition[2]);
                           */
   if (buddyDocument()->getStack()->depth() == 1) {
-    buddyDocument()->fitRect(dataPos.x(), dataPos.y(),
-            m_mouseLeftReleasePosition[2]);
+    buddyDocument()->fitRect(dataPos.x(), dataPos.y(), dataPos.z());
   } else {
-    buddyDocument()->fitseg(dataPos.x(), dataPos.y(),
-                             m_mouseLeftReleasePosition[2]);
+    buddyDocument()->fitseg(dataPos.x(), dataPos.y(), dataPos.z());
   }
 }
 
 void ZStackPresenter::fitEllipse()
 {
-  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
-  buddyDocument()->fitEllipse(dataPos.x(), dataPos.y(),
-                              m_mouseLeftReleasePosition[2]);
+  ZPoint dataPos = getModelPositionFromMouse(LEFT_RELEASE);
+//  ZPoint dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  buddyDocument()->fitEllipse(dataPos.x(), dataPos.y(), dataPos.z());
 }
 
 void ZStackPresenter::markPuncta()
@@ -2235,9 +2264,9 @@ void ZStackPresenter::markPuncta()
 
 void ZStackPresenter::dropSegment()
 {
-  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
-  buddyDocument()->dropseg(dataPos.x(), dataPos.y(),
-                           m_mouseLeftReleasePosition[2]);
+  ZPoint dataPos = getModelPositionFromMouse(LEFT_RELEASE);
+//  QPointF dataPos = stackPositionFromMouse(LEFT_RELEASE);
+  buddyDocument()->dropseg(dataPos.x(), dataPos.y(), dataPos.z());
 }
 
 
@@ -2341,6 +2370,16 @@ void ZStackPresenter::processObjectModified(const ZStackObjectInfoSet &objSet)
   buddyView()->paintObject(objSet.getTarget());
 }
 
+void ZStackPresenter::setSliceViewTransform(
+    const ZSliceViewTransform &transform)
+{
+  if (transform.getSliceAxis() !=
+      m_interactiveContext.getSliceViewTransform().getSliceAxis()) {
+    setSliceAxis(transform.getSliceAxis());
+  }
+  m_interactiveContext.setSliceViewTransform(transform);
+}
+
 void ZStackPresenter::notifyUser(const QString &msg)
 {
   if (getParentFrame() != NULL) {
@@ -2439,7 +2478,8 @@ void ZStackPresenter::toggleSwcSkeleton(bool state)
 
 void ZStackPresenter::trySwcAddNodeMode()
 {
-  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
+//  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   trySwcAddNodeMode(pos.x(), pos.y());
 }
 
@@ -2453,13 +2493,15 @@ void ZStackPresenter::trySwcAddNodeMode(double x, double y)
 
 void ZStackPresenter::tryPaintStrokeMode()
 {
-  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
+//  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryDrawStrokeMode(pos.x(), pos.y(), false);
 }
 
 void ZStackPresenter::tryDrawRectMode()
 {
-  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
+//  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryDrawRectMode(pos.x(), pos.y());
 }
 
@@ -2470,7 +2512,8 @@ void ZStackPresenter::cancelRectRoi()
 
 void ZStackPresenter::tryEraseStrokeMode()
 {
-  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
+//  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryDrawStrokeMode(pos.x(), pos.y(), true);
 }
 
@@ -3048,7 +3091,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   ZIntPoint widgetPos = event.getWidgetPosition();
   QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
   ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
-  ZPoint currentRawStackPos = event.getPosition(neutu::ECoordinateSystem::RAW_STACK);
+//  ZPoint currentRawStackPos = event.getPosition(neutu::ECoordinateSystem::RAW_STACK);
 
   buddyDocument()->getObjectGroup().resetSelector();
 
@@ -3557,14 +3600,15 @@ bool ZStackPresenter::process(ZStackOperator &op)
       grabButton = Qt::LeftButton;
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          grabButton, ZMouseEvent::EAction::PRESS, neutu::ECoordinateSystem::STACK);
+          grabButton, ZMouseEvent::EAction::PRESS, neutu::data3d::ESpace::MODEL);
 #ifdef _DEBUG_
   std::cout << "======> Grab position: " << grabPosition.toString() << std::endl;
 #endif
 //    grabPosition.shiftSliceAxis(getSliceAxis());
-    moveImageToMouse(
-          grabPosition.x(), grabPosition.y(),
-          currentWidgetPos.x(), currentWidgetPos.y());
+  moveViewPort(grabPosition, currentWidgetPos.x(), currentWidgetPos.y());
+//    moveImageToMouse(
+//          grabPosition.x(), grabPosition.y(),
+//          currentWidgetPos.x(), currentWidgetPos.y());
   }
     break;
   case ZStackOperator::OP_CROSSHAIR_MOVE:
@@ -3747,10 +3791,12 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_STACK_LOCATE_SLICE:
     if (buddyDocument()->hasStackData()) {
       interactiveContext().setViewMode(ZInteractiveContext::VIEW_NORMAL);
+      /*
       int sliceIndex =
           buddyDocument()->maxIntesityDepth(currentRawStackPos.x(),
                                             currentRawStackPos.y());
       buddyView()->setSliceIndex(sliceIndex);
+      */
       interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
     }
     break;
@@ -4085,7 +4131,7 @@ ZStackObject* ZStackPresenter::getActiveObject(EObjectRole role) const
 
 void ZStackPresenter::setSliceAxis(neutu::EAxis axis)
 {
-  m_interactiveContext.setSliceAxis(axis);
+//  m_interactiveContext.setSliceAxis(axis);
   for (QList<ZStackObject*>::iterator iter = m_activeDecorationList.begin();
        iter != m_activeDecorationList.end(); ++iter) {
     ZStackObject *obj = *iter;

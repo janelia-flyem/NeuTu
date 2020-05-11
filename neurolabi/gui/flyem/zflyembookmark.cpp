@@ -12,6 +12,8 @@
 #include "zjsonparser.h"
 #include "zjsonarray.h"
 #include "zjsonfactory.h"
+#include "vis2d/zslicepainter.h"
+#include "vis2d/utilities.h"
 
 ZFlyEmBookmark::ZFlyEmBookmark()
 {
@@ -261,6 +263,17 @@ void ZFlyEmBookmark::setCustom(bool state)
   }
 }
 
+bool ZFlyEmBookmark::display(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
+
+  paintHelper.drawBall(painter, getCenter(), getRadius(), 2.0, 0.5);
+
+  return paintHelper.getPaintedHint();
+}
+
+#if 0
 void ZFlyEmBookmark::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -288,7 +301,7 @@ void ZFlyEmBookmark::display(
 //    }
   }
 }
-
+#endif
 
 
 bool ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)

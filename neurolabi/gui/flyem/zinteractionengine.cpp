@@ -3,6 +3,7 @@
 #include "z3dinteractionhandler.h"
 #include "zstackoperator.h"
 #include "zstackdockeyprocessor.h"
+#include "data3d/displayconfig.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_objStyle(ZStackObject::EDisplayStyle::NORMAL),

@@ -386,6 +386,11 @@ ZIntPoint ZPoint::toIntPoint() const
   return ZIntPoint(neutu::iround(x()), neutu::iround(y()), neutu::iround(z()));
 }
 
+std::vector<double> ZPoint::toArray() const
+{
+  return std::vector<double>({m_x, m_y, m_z});
+}
+
 void ZPoint::rotate(double theta, double psi)
 {
   Geo3d_Rotate_Coordinate(&(m_x), &(m_y), &(m_z),

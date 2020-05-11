@@ -19,6 +19,7 @@
 #include "zstackobjectinfo.h"
 #include "zstackviewparam.h"
 #include "zarbsliceviewparam.h"
+#include "data3d/zsliceviewtransform.h"
 
 void neutu::RegisterMetaType()
 {
@@ -38,6 +39,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<ZStackViewParam>("ZStackViewParam");
   qRegisterMetaType<ZArbSliceViewParam>("ZArbSliceViewParam");
   qRegisterMetaType<ZIntPoint>("ZIntPoint");
+  qRegisterMetaType<ZSliceViewTransform>("ZSliceViewTransform");
 }
 
 ZMessageReporter* neutu::getMessageReporter()

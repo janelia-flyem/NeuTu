@@ -189,11 +189,11 @@ void ZFlyEmOrthoWidget::moveTo(double x, double y, double z)
 
 void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
 {
-  ZOUT(LTRACE(), 5) << "Proj region:"
-                    << m_xyMvc->getView()->imageWidget()->projectRegion();
+//  ZOUT(LTRACE(), 5) << "Proj region:"
+//                    << m_xyMvc->getView()->imageWidget()->projectRegion();
   getDocument()->updateStack(center);
-  ZOUT(LTRACE(), 5) << "Proj region:"
-                    << m_xyMvc->getView()->imageWidget()->projectRegion();
+//  ZOUT(LTRACE(), 5) << "Proj region:"
+//                    << m_xyMvc->getView()->imageWidget()->projectRegion();
   m_xyMvc->getView()->updateViewBox();
   /*
   m_xyMvc->getPresenter()->optimizeStackBc();

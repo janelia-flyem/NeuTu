@@ -17,6 +17,7 @@ ZDirectionalTemplateChain::~ZDirectionalTemplateChain()
   m_chain.clear();
 }
 
+/*
 void ZDirectionalTemplateChain::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
@@ -24,6 +25,7 @@ void ZDirectionalTemplateChain::display(
     m_chain.at(i)->display(painter, slice, option, sliceAxis);
   }
 }
+*/
 
 void ZDirectionalTemplateChain::append(ZDirectionalTemplate *dt)
 {

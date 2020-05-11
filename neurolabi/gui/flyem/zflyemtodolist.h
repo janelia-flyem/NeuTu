@@ -89,8 +89,14 @@ public:
   void setReady(bool ready);
   bool isReady() const;
 
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const {
+    return false;
+  }
+#if 0
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+#endif
 
   bool removeItem(const ZIntPoint &pt, EDataScope scope);
   bool removeItem(int x, int y, int z, EDataScope scope);

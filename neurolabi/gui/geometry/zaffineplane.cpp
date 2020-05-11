@@ -49,6 +49,29 @@ void ZAffinePlane::setOffset(const ZPoint &offset)
   m_offset = offset;
 }
 
+void ZAffinePlane::setOffset(double x, double y, double z)
+{
+  m_offset.set(x, y, z);
+}
+
+void ZAffinePlane::addOffset(double v, neutu::EAxis axis)
+{
+  switch (axis) {
+  case neutu::EAxis::X:
+    m_offset.addX(v);
+    break;
+  case neutu::EAxis::Y:
+    m_offset.addY(v);
+    break;
+  case neutu::EAxis::Z:
+    m_offset.addZ(v);
+    break;
+  case neutu::EAxis::ARB:
+    m_offset += getNormal() * v;
+    break;
+  }
+}
+
 ZPlane ZAffinePlane::getPlane() const
 {
   return m_plane;
@@ -67,6 +90,11 @@ void ZAffinePlane::translate(const ZPoint &dv)
 void ZAffinePlane::translateDepth(double d)
 {
   translate(getNormal() * d);
+}
+
+void ZAffinePlane::translateOnPlane(double du, double dv)
+{
+  translate(getV1() * du + getV2() * dv);
 }
 
 double ZAffinePlane::computeSignedDistance(const ZPoint &pt) const
@@ -104,6 +132,11 @@ std::string ZAffinePlane::toString() const
   std::ostringstream stream;
   stream << *this;
   return stream.str();
+}
+
+bool ZAffinePlane::operator== (const ZAffinePlane &p) const
+{
+  return m_offset == p.m_offset && m_plane == p.m_plane;
 }
 
 bool ZAffinePlane::approxEquals(const ZAffinePlane &plane) const

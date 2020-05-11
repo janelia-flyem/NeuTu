@@ -14,6 +14,7 @@
 #include "z3dscene.h"
 #include "zpainter.h"
 #include "zopenglwidget.h"
+#include "data3d/displayconfig.h"
 
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
   : QGraphicsView(parent)
@@ -273,10 +274,16 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
 
+
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
-    drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
-                      ZStackObject::EDisplaySliceMode::SINGLE, neutu::EAxis::Z);
+    drawable->display(
+          painter,
+          neutu::data3d::DisplayConfigBuilder().style(
+            neutu::data3d::EDisplayStyle::NORMAL).cutPlane(neutu::EAxis::Z, 0));
+
+//    drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
+//                      ZStackObject::EDisplaySliceMode::SINGLE, neutu::EAxis::Z);
   }
 #else
   UNUSED_PARAMETER(painter);

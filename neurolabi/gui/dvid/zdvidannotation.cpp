@@ -58,6 +58,7 @@ void ZDvidAnnotation::setRadius(double r)
   m_radius = r;
 }
 
+#if 0
 void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
                            neutu::EAxis sliceAxis) const
 {
@@ -149,6 +150,8 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
     painter.drawRect(rect);
   }
 }
+#endif
+
 
 void ZDvidAnnotation::setPosition(const ZIntPoint &pos)
 {

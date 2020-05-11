@@ -217,8 +217,13 @@ public:
 //  uint64_t getLabel() const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis axis) const override;
+  bool display(
+        QPainter *painter, const DisplayConfig &config) const override;
+#if 0
+  virtual void display(
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+      neutu::EAxis axis) const override;
+#endif
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -852,7 +857,7 @@ private:
   void displaySkeleton(
       ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const;
   void displayNode(ZPainter &painter, double dataFocus, int slice, bool isProj,
-      ZStackObject::EDisplayStyle style, neutu::EAxis axis) const;
+      neutu::data3d::EDisplayStyle style, neutu::EAxis axis) const;
   void displaySelectedNode(ZPainter &painter, int slice, neutu::EAxis axis)
   const;
 #endif

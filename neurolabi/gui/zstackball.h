@@ -49,21 +49,27 @@ public:
 public:
   ZCuboid getBoundBox() const override;
 
+  /*
   void display(ZPainter &painter, int slice,
-               EDisplayStyle option, neutu::EAxis sliceAxis) const override;
-  bool display(QPainter *painter, int z, EDisplayStyle option,
-                       EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
-  void display(ZPainter &painter, const DisplayConfig &config) const override;
-
+               zstackobject::EDisplayStyle option, neutu::EAxis sliceAxis) const override;
+  bool display(QPainter *painter, int z, zstackobject::EDisplayStyle option,
+               zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+               */
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const override;
+  /*
   void viewSpaceAlignedDisplay(
-        QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const override;
-
+        QPainter *painter,
+      const zstackobject::ViewSpaceAlignedDisplayConfig &config) const override;
+*/
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
+  /*
   void displayHelper(
-      ZPainter *painter, int slice, EDisplayStyle style,
+      ZPainter *painter, int slice, zstackobject::EDisplayStyle style,
       neutu::EAxis sliceAxis) const;
+      */
 
   bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
   bool isSliceVisible(

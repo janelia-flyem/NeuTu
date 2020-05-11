@@ -100,8 +100,15 @@ public:
 
   void setRange(const ZIntCuboid &dataRange);
 
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const {
+    return false;
+  }
+
+#if 0
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+#endif
 
   void clearCache();
 
