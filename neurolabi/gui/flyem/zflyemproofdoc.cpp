@@ -1642,7 +1642,6 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
       m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
       m_dataBuffer->deliver();
 
-
       ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
       mesh->setSource(obj->getSource());
       m_dataBuffer->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
@@ -1655,9 +1654,9 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
   }
 }
 
-/*
 void ZFlyEmProofDoc::loadRoiFunc()
 {
+  //For loading ROI in 2D view
   if (!getDvidTarget().getRoiName().empty()) {
     if (!m_roiReader.isReady()) {
       m_roiReader.open(getDvidTarget());
@@ -1668,7 +1667,6 @@ void ZFlyEmProofDoc::loadRoiFunc()
     addRoiMask(obj);
   }
 }
-*/
 
 /*
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
@@ -1737,8 +1735,8 @@ void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
     loadStack(stack);
 
     //Download ROI
-//    m_futureMap["loadRoiFunc"] =
-//        QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
+    m_futureMap["loadRoiFunc"] =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
   }
 
 
