@@ -108,6 +108,8 @@ public:
   void setDvidFromUrl(const QString &url);
   virtual void setDvid(const ZDvidEnv &env);
 
+  void setDvidFromName(const std::string &name);
+
   void clear();
 
   void exitCurrentDoc();

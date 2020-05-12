@@ -30752,7 +30752,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   int x;
   std::cout << "neulib.core test: " << neulib::ToString(&x) << std::endl;
 #endif
@@ -31146,7 +31146,7 @@ void ZTest::test(MainWindow *host)
             << std::endl;
 #endif
 
-#if 1
+#if 0
   ZBlockGrid grid;
   grid.setGridSize(3, 3, 3);
   grid.setBlockSize(32, 32, 32);
@@ -31160,6 +31160,10 @@ void ZTest::test(MainWindow *host)
     ZIntCuboid box = grid.getBlockBox(ZIntPoint(i, j, k));
     std::cout << box.toString() << std::endl;
   });
+#endif
+
+#if 1
+  host->startProofread("local_test");
 #endif
 
   std::cout << "Done." << std::endl;

@@ -233,6 +233,8 @@ struct MainConfig {
   std::string userName;
   QStringList fileList;
   QString configPath;
+//  bool defaultConfigPathUsed = true;
+  QString databaseName;
 };
 
 MainConfig get_program_config(int argc, char *argv[])
@@ -284,8 +286,18 @@ MainConfig get_program_config(int argc, char *argv[])
     }
 
     if (!config.fileList.isEmpty()) {
-      if (config.fileList.front().endsWith(".json")) {
-        config.configPath = config.fileList.front();
+      for (const QString &input : config.fileList) {
+        if (input.startsWith("config:")) {
+          config.configPath = input.mid(7);
+//          config.defaultConfigPathUsed = false;
+        } else if (input.startsWith("dname:")) {
+          config.databaseName = input.mid(6);
+        }
+      }
+      if (config.configPath.isEmpty()) {
+        if (config.fileList.front().endsWith(".json")) {
+          config.configPath = config.fileList.front();
+        }
       }
     }
   }
@@ -353,6 +365,7 @@ void configure(MainConfig &mainConfig)
   }
 
 #ifdef _FLYEM_
+//  config.UseDefaultFlyEmConfig(mainConfig.defaultConfigPathUsed);
   LoadFlyEmConfig(mainConfig.configPath, config, true);
   /*
   if (mainConfig.isGuiEnabled()) {

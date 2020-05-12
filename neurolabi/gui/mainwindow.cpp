@@ -7034,7 +7034,7 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), neutu::EMessageType::INFORMATION);
 }
 
-ZProofreadWindow *MainWindow::startProofread()
+ZProofreadWindow *MainWindow::startProofread(const QString &databaseName)
 {
   ZProofreadWindow *window = ZProofreadWindow::Make();
 
@@ -7054,6 +7054,10 @@ ZProofreadWindow *MainWindow::startProofread()
                          neutube::EMessageType::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
   }
 #endif
+
+  if (!databaseName.isEmpty()) {
+    window->loadDatabaseFromName(databaseName);
+  }
 
   return window;
 }

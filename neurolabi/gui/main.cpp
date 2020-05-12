@@ -194,8 +194,14 @@ int main(int argc, char *argv[])
 #  endif
 #endif
       } else {
+        ZProofreadWindow *proofreadWindow = nullptr;
 #if !defined(_DEBUG_) && !defined(_NEU3_)
-        mainWin->startProofread();
+        proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+#endif
+#if defined(_DEBUG_)
+        if (!mainConfig.databaseName.isEmpty()) {
+          proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+        }
 #endif
       }
 

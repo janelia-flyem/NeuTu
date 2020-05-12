@@ -1923,6 +1923,18 @@ void ZFlyEmProofMvc::prepareTile(ZDvidTileEnsemble *te)
   patchFetcher->start(100);
 }
 
+void ZFlyEmProofMvc::setDvidFromName(const std::string &name)
+{
+  ZDvidTarget target = getDvidDialog()->getDvidTarget(name);
+  if (target.isValid()) {
+    setDvid(ZDvidEnv(target));
+  } else {
+    ZDialogFactory::Error(
+          "Failed to Load Dataset",
+          ("Invalid DVID target name: " + name).c_str(), this);
+  }
+}
+
 void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
 {
   if (getCompleteDocument() == NULL) {

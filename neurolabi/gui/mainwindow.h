@@ -214,7 +214,7 @@ public slots:
 //  void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
-  ZProofreadWindow * startProofread();
+  ZProofreadWindow * startProofread(const QString &databaseName = "");
 //  void launchSplit(const QString &str);
 
 private:

@@ -1065,6 +1065,13 @@ void ZProofreadWindow::showAndRaise()
   raise();
 }
 
+void ZProofreadWindow::loadDatabaseFromName(const QString &name)
+{
+  if (!name.isEmpty()) {
+    getMainMvc()->setDvidFromName(name.toStdString());
+  }
+}
+
 void ZProofreadWindow::loadDatabase()
 {
   QString filename = ZDialogFactory::GetOpenFileName(
