@@ -24,7 +24,9 @@ build:
 
 requirements:
   build:
-    - gxx_linux-64 # [linux]
+    - gxx_linux-64 7.3.0 # [linux]
+    - binutils_linux-64 2.34 hc952b39_18 # [linux]
+    - binutils_impl_linux-64 2.34 h53a641e_0 # [linux]
     - cmake
 
   host:
