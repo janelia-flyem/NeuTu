@@ -712,7 +712,7 @@ private:
   QProgressDialog *m_progress;
   BcAdjustDialog *m_bcDlg;
   HelpDialog *m_helpDlg;
-  DiagnosisDialog *m_DiagnosisDlg;
+  DiagnosisDialog *m_DiagnosisDlg = nullptr;
   ResolutionDialog *m_resDlg;
   ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
 

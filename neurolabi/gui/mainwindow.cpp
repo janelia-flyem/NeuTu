@@ -412,7 +412,7 @@ void MainWindow::initDialog()
   connect(m_bcDlg, SIGNAL(autoAdjustTriggered()), this, SLOT(autoBcAdjust()));
 
   m_helpDlg = new HelpDialog(this);
-  m_DiagnosisDlg = new DiagnosisDialog(this);
+//  m_DiagnosisDlg = new DiagnosisDialog(this);
   m_penWidthDialog = new PenWidthDialog(this);
   m_resDlg = new ResolutionDialog(this);
 
@@ -4924,6 +4924,10 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 
 void MainWindow::on_actionDiagnosis_triggered()
 {
+  if (m_DiagnosisDlg == nullptr) {
+    m_DiagnosisDlg = new DiagnosisDialog(this);
+  }
+
   m_DiagnosisDlg->show();
   QStringList info;
 
