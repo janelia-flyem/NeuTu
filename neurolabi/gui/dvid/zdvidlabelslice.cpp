@@ -299,10 +299,10 @@ void ZDvidLabelSlice::updateRgbTable()
 
     //  const QVector<QColor>& colorTable = colorScheme->getColorTable();
     //  m_rgbTable.resize(colorTable.size());
-    m_rgbTable.resize(colorScheme->getColorNumber());
+    m_rgbTable.resize(colorScheme->getColorNumber() - 1);
     for (int i = 0; i < m_rgbTable.size(); ++i) {
       //    const QColor &color = colorTable[i];
-      QColor color = colorScheme->getBodyColorFromIndex(i);
+      QColor color = colorScheme->getBodyColorFromIndex(i + 1);
       m_rgbTable[i] = (164 << 24) + (color.red() << 16) + (color.green() << 8) +
           (color.blue());
     }
@@ -654,7 +654,7 @@ QColor ZDvidLabelSlice::getLabelColor(
 {
   QColor color;
   if (hasCustomColorMap()) {
-    color = getCustomColor(label);
+    color = getCustomColor(getMappedLabel(label, labelType));
     if (color.alpha() != 0) {
       color.setAlpha(164);
     }

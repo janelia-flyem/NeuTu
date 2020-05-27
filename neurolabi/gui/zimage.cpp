@@ -851,10 +851,9 @@ void ZImage::drawLabelField(
     uint64_t *data, const QVector<int> &colorTable, int bgColor, int selColor)
 {
   int colorCount = colorTable.size();
+  int h = height();
+  int w = width();
   if (colorCount > 0) {
-    int h = height();
-    int w = width();
-
     for (int j = 0; j < h; j++) {
       int *line = (int*) scanLine(j);
       for (int i = 0; i < w; i++) {
@@ -864,7 +863,19 @@ void ZImage::drawLabelField(
         } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
-          *line++ = colorTable[v % colorCount] ;
+          *line++ = colorTable[(v - 1) % colorCount] ;
+        }
+      }
+    }
+  } else {
+    for (int j = 0; j < h; j++) {
+      int *line = (int*) scanLine(j);
+      for (int i = 0; i < w; i++) {
+        uint64_t v = *data++;
+        if (v == neutu::LABEL_ID_SELECTION) {
+          *line++ = selColor;
+        } else {
+          *line++ = bgColor;
         }
       }
     }
@@ -891,13 +902,14 @@ void ZImage::drawLabelFieldTranspose(
         } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
-          *line++ = colorTable[v % colorCount] ;
+          *line++ = colorTable[(v - 1) % colorCount] ;
         }
       }
     }
   }
 }
 
+#if 0
 void ZImage::drawLabelField(
     uint64_t *data, const QVector<QColor> &colorTable, uint8_t alpha)
 {
@@ -969,6 +981,7 @@ void ZImage::drawLabelField(
     }
   }
 }
+#endif
 
 void ZImage::drawRaster(const void *data, int kind, double scale,
 			double offset, int threshold)

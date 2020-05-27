@@ -25,4 +25,5 @@ int ZFlyEmRandomBodyColorScheme::getBodyColorIndex(uint64_t bodyId) const
 void ZFlyEmRandomBodyColorScheme::update()
 {
   buildConvRandomColorTable(65535, ZRandomGenerator::UniqueSeed());
+  m_colorTable.prepend(QColor(0, 0, 0, 0));
 }
