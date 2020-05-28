@@ -3643,7 +3643,8 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
       }
     }
   } else {
-    if (!isCoarseLevel(zoom)) { //Skip coarse Level
+    bool usingNgMesh = false; //Temporary fix: Disable ng mesh to avoid mesh inconsistency
+    if (!isCoarseLevel(zoom) && usingNgMesh) { //Skip coarse Level
       //Checking order: merged mesh -> ngmesh -> normal mesh
       std::string mergeKey =
           ZDvidUrl::GetMeshKey(config.getBodyId(), ZDvidUrl::EMeshType::MERGED);

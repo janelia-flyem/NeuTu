@@ -31056,13 +31056,22 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 #endif
 
-#if 0
-  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   std::vector<uint64_t> bodyArray =
-      reader->readConsistentMergedMeshKeys("5901278576.merge");
+      reader->readConsistentMergedMeshKeys("390564398.merge");
 
   std::cout << neutu::ToString(bodyArray, ", ") << std::endl;
 
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "390564398.merge");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+  for (uint64_t bodyId : bodyArray) {
+    ZMesh *mesh = reader->readMesh(
+          "segmentation_meshes", std::to_string(bodyId) + ".ngmesh");
+    mesh->save(
+          GET_TEST_DATA_DIR + "/tmp/meshes/" + std::to_string(bodyId) + ".obj");
+  }
 #endif
 
 #if 0
@@ -31162,7 +31171,7 @@ void ZTest::test(MainWindow *host)
   });
 #endif
 
-#if 1
+#if 0
   host->startProofread("local_test");
 #endif
 
