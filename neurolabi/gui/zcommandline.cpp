@@ -924,6 +924,7 @@ int ZCommandLine::runGeneral()
     }
 
     std::string commandName = ZJsonParser::stringValue(config["command"]);
+    std::cout << "Running command " << commandName << "..." << std::endl;
     ZCommandModule *module = getModule(commandName);
     if (module != NULL) {
       return module->run(m_input, m_output, config);

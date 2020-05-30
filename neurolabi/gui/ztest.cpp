@@ -31056,7 +31056,31 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 #endif
 
-#if 1
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi_8300");
+  std::cout << writer->getDvidTarget().toJsonObject().dumpString(2) << std::endl;
+
+  std::vector<uint64_t> bodyArray;
+  std::ifstream f(GET_TEST_DATA_DIR + "/bodyfix.txt");
+  std::string line;
+  while (std::getline(f, line)) {
+//    std::cout << line << std::endl;
+    std::vector<std::string> tokens = ZString::ToWordArray(line);
+    for (size_t i = 0; i < tokens.size(); ++i) {
+      if (tokens[i] == "as") {
+        std::cout << tokens[i + 1] << std::endl;
+        bodyArray.push_back(ZString(tokens[i + 1]).firstUint64());
+        break;
+      }
+    }
+  }
+
+  std::cout << bodyArray.size() << std::endl;
+
+  writer->mergeBody(79355095, bodyArray);
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   std::vector<uint64_t> bodyArray =
       reader->readConsistentMergedMeshKeys("390564398.merge");
