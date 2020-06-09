@@ -11,6 +11,7 @@
 #include "zpixmap.h"
 #include "zcontrastprotocol.h"
 #include "zuncopyable.h"
+#include "vis2d/zslicecanvas.h"
 
 //#include "zdvidtarget.h"
 
@@ -34,16 +35,14 @@ public:
   }
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
-    return false;
-  }
+      QPainter *painter, const DisplayConfig &config) const;
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
                */
   void clear();
 
-  void update(int z);
+//  void update(int z);
   bool update(const ZStackViewParam &viewParam);
   /*!
    * \brief Update an arbitrary cutting plane
@@ -64,10 +63,10 @@ public:
   const ZDvidReader& getWorkDvidReader() const;
 
   const ZDvidTarget& getDvidTarget() const;
-  int getX() const;
-  int getY() const;
+//  int getX() const;
+//  int getY() const;
   int getZ() const;
-  void setZ(int z);
+//  void setZ(int z);
   int getWidth() const;
   int getHeight() const;
   int getZoom() const;
@@ -100,9 +99,9 @@ public:
 //  ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
-  void setBoundBox(const ZRect2d &rect);
+//  void setBoundBox(const ZRect2d &rect);
 
-  QRect getViewPort() const;
+//  QRect getViewPort() const;
   ZStackViewParam getViewParam() const;
 
 
@@ -118,13 +117,15 @@ public:
 
   void setCenterCut(int width, int height);
 
+  /*
   const ZPixmap& getPixmap() const {
     return m_pixmap;
   }
-
-  const ZImage& getImage() const {
-    return m_image;
+  */
+  const QImage getImage() const {
+    return m_imageCanvas.toImage();
   }
+
 //  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
 
   bool consume(ZStack *stack, const ZStackViewParam &viewParam,
@@ -140,17 +141,17 @@ public: //for testing
 
 private:
 //  void updateImage();
-  void updateImage(const ZStack *stack);
+  void updateImage(const ZStack *stack, const ZAffineRect &rect);
   void forceUpdate(const ZStackViewParam &viewParam);
-  void forceUpdate(const QRect &viewPort, int z);
-  void forceUpdate(const ZArbSliceViewParam &sliceViewParam);
+//  void forceUpdate(const QRect &viewPort, int z);
+//  void forceUpdate(const ZArbSliceViewParam &sliceViewParam);
 
-  void updatePixmap();
+//  void updatePixmap();
   void updateContrast();
-  void invalidatePixmap();
-  void validatePixmap(bool v);
-  void validatePixmap();
-  bool isPixmapValid() const;
+//  void invalidateCanvas();
+//  void validatePixmap(bool v);
+//  void validatePixmap();
+//  bool isCanvasValid() const;
 
 //  bool validateSize(int *width, int *height);
   template<typename T>
@@ -169,14 +170,16 @@ private:
   }
 
 private:
+  ZSliceCanvas m_imageCanvas;
   ZImage m_image;
-  ZPixmap m_pixmap;
-  bool m_isPixmapValid = false;
+//  ZImage m_image;
+//  ZPixmap m_pixmap;
+//  bool m_isCanvasValid = false;
 
   bool m_usingContrastProtocol = false;
   ZContrastProtocol m_contrastProtocol;
 
-  QMutex m_pixmapMutex;
+//  QMutex m_pixmapMutex;
 //  ZStackViewParam m_currentViewParam;
 
 //  ZArbSliceViewParam m_sliceViewParam; //Only useful for A_AXIS

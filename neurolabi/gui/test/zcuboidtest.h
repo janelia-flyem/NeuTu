@@ -30,6 +30,9 @@ TEST(ZIntCuboid, compare)
   box2.setMinCorner(1, 2, 3);
   box2.setMaxZ(2);
   ASSERT_NE(box1, box2);
+
+  ASSERT_EQ(ZIntPoint(50, 101, 151), box1.getCenter());
+  ASSERT_EQ(ZPoint(50.5, 101, 151.5), box2.getExactCenter());
 }
 
 TEST(ZIntCuboid, size)
@@ -55,6 +58,36 @@ TEST(ZIntCuboid, scale)
 {
   ZIntCuboid box(ZIntPoint(0, 0, 0), ZIntPoint(1, 1, 1));
   box.scaleDownBlock(2);
+}
+
+TEST(ZIntCuboid, ToCuboid)
+{
+  ZIntCuboid box;
+  box.setMinCorner(-1, -2, -3);
+  box.setMaxCorner(1, 2, 3);
+
+  ZCuboid fbox = ZCuboid::FromIntCuboid(box);
+  ASSERT_EQ(ZPoint(-1.5, -2.5, -3.5), fbox.getMinCorner());
+  ASSERT_EQ(ZPoint(1.5, 2.5, 3.5), fbox.getMaxCorner());
+
+  ASSERT_EQ(box, fbox.toIntCuboid());
+
+  ASSERT_EQ(box.getWidth(), fbox.width());
+  ASSERT_EQ(box.getHeight(), fbox.height());
+  ASSERT_EQ(box.getDepth(), fbox.depth());
+}
+
+TEST(ZIntCuboid, Contains)
+{
+  ZIntCuboid box;
+  box.setMinCorner(-1, -2, -3);
+  box.setMaxCorner(1, 2, 3);
+
+  ASSERT_TRUE(box.contains(-1, -2, -3));
+  ASSERT_TRUE(box.contains(1, 2, 3));
+  ASSERT_FALSE(box.contains(-2, -2, -3));
+
+  ASSERT_TRUE(box.contains(box));
 
 }
 
@@ -511,6 +544,34 @@ TEST(ZIntCuboid, hasOverlap)
   box2.setMaxCorner(ZIntPoint(242, 159, 291));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
+}
+
+TEST(ZCuboid, ToIntCuboid)
+{
+  ZCuboid box;
+  box.setMinCorner(-1.5, -2.5, -3.5);
+  box.setMaxCorner(1.5, 2.5, 3.5);
+
+  ASSERT_EQ(ZIntCuboid(-1, -2, -3, 1, 2, 3), box.toIntCuboid());
+
+  box.setMinCorner(-1.1, -2.6, -3.5);
+  box.setMaxCorner(1.8, 2.49, 3.5);
+
+  ASSERT_EQ(ZIntCuboid(-1, -3, -3, 2, 2, 3), box.toIntCuboid());
+}
+
+TEST(ZCuboid, contains)
+{
+  ZCuboid box;
+  box.setMinCorner(-1.5, -2.5, -3.5);
+  box.setMaxCorner(1.5, 2.5, 3.5);
+
+  ASSERT_TRUE(box.contains(box));
+  ASSERT_TRUE(box.contains(ZPoint(-1.5, -2.5, -3.5)));
+  ASSERT_TRUE(box.contains(ZPoint(1.5, -2.5, -3.5)));
+  ASSERT_TRUE(box.contains(ZPoint(1.5, 2.5, -3.5)));
+  ASSERT_TRUE(box.contains(ZPoint(1.5, -2.5, 3.5)));
+
 }
 
 TEST(ZCuboid, intersectLine)

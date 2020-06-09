@@ -50,7 +50,10 @@ public:
   void setTransform(const ZSliceViewTransform &transform);
   ZSliceViewTransform getTransform() const;
 
-  bool paintTo(QPaintDevice *device, const ZSliceViewTransform &painterTransform);
+  bool paintTo(
+      QPaintDevice *device, const ZSliceViewTransform &painterTransform) const;
+  bool paintTo(
+      QPainter *painter, const ZSliceViewTransform &painterTransform) const;
 
   void setPainted(bool painted);
   void setVisible(bool visible);

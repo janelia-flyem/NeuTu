@@ -574,6 +574,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(ERole role)
 
 void ZFlyEmProofMvc::connectSignalSlot()
 {
+  ZStackMvc::connectSignalSlot();
   connect(getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
           this, SLOT(showOrthoWindow(double,double,double)));
   connect(getPresenter(), SIGNAL(orthoViewBigTriggered(double,double,double)),
@@ -1797,7 +1798,7 @@ void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
     foreach (ZDvidLabelSlice *slice, sliceList) {
       slice->setVisible(visible);
       if (visible) {
-        slice->update(getView()->getViewParameter(neutu::ECoordinateSystem::STACK));
+        slice->update(getView()->getViewParameter());
       }
     }
   }
@@ -1972,6 +1973,8 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
 //    LINFO() << "Set contrast";
 //    ZJsonObject contrastObj = reader.readContrastProtocal();
 //    getPresenter()->setHighContrastProtocal(contrastObj);
+
+    getView()->setWidgetReady(false);
 
     KINFO << "Init grayslice";
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice(
@@ -4732,7 +4735,7 @@ void ZFlyEmProofMvc::exitSplit()
     ZDvidLabelSlice *labelSlice =
         getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z, false);
     labelSlice->setVisible(true);
-    labelSlice->update(getView()->getViewParameter(neutu::ECoordinateSystem::STACK));
+    labelSlice->update(getView()->getViewParameter());
     labelSlice->setHitProtocal(ZStackObject::EHitProtocol::HIT_DATA_POS);
 //    labelSlice->setHittable(true);
 

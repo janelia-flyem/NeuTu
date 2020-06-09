@@ -132,7 +132,7 @@ public:
 
 //  const ZStackViewParam& getViewParam() const;
   int getCurrentZ() const;
-  QRect getDataRect() const;
+//  QRect getDataRect() const;
 
   void mapSelection();
 
@@ -167,7 +167,7 @@ public:
 
   void paintBuffer();
 
-  QRect getDataRect(const ZStackViewParam &viewParam) const;
+//  QRect getDataRect(const ZStackViewParam &viewParam) const;
 
   bool consume(ZArray *array, const ZStackViewParam &viewParam,
                int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
@@ -211,7 +211,7 @@ private:
 
   void updatePixmap(ZPixmap *pixmap) const;
   void updatePaintBuffer();
-  void setTransform(ZImage *image) const;
+//  void setTransform(ZImage *image) const;
 
   const ZDvidDataSliceHelper* getHelper() const {
     return m_helper.get();

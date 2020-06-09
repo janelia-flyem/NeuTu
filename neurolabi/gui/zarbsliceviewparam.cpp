@@ -119,7 +119,8 @@ ZAffinePlane ZArbSliceViewParam::getAffinePlane() const
 ZAffineRect ZArbSliceViewParam::getAffineRect() const
 {
   ZAffineRect rect;
-  rect.set(getCenter().toPoint(), getPlaneV1(), getPlaneV2(), getWidth(), getHeight());
+  rect.set(getCenter().toPoint(), getPlaneV1(), getPlaneV2(),
+           getWidth(), getHeight());
 
   return rect;
 }

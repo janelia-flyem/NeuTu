@@ -40,10 +40,10 @@ TEST(ZFlyEmProofDoc, DVID)
 
     ZDvidLabelSlice *slice = doc.getDvidLabelSlice(neutu::EAxis::Z, false);
     ZStackViewParam param;
-    param.setWidgetRect(QRect(0, 0, 800, 600));
-    param.setCanvasRect(QRect(479, 448, 1510, 1023));
-    param.setViewPort(479, 448, 1510, 1023);
-    param.setZ(1023);
+//    param.setWidgetRect(QRect(0, 0, 800, 600));
+//    param.setCanvasRect(QRect(479, 448, 1510, 1023));
+//    param.setViewPort(479, 448, 1510, 1023);
+//    param.setZ(1023);
     slice->update(param);
 
     ASSERT_TRUE(slice->hit(1017, 797, 1023));

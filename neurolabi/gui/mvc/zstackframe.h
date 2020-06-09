@@ -271,7 +271,7 @@ public slots:
   void notifyUser(const QString &message);
   void locateSwcNodeIn3DView();
   void notifyViewChanged(const ZStackViewParam &param);
-  void setView(const ZStackViewParam &param);
+//  void setView(const ZStackViewParam &param);
   void closeAllChildFrame();
   void showSetting();
   void autoTrace();

@@ -168,7 +168,8 @@ public:
   void zoom(double zoomRatio);
   void zoom(double zoomRatio, EViewPortAdjust option);
 
-  void zoomTo(const QPoint &center, int width);
+  void zoomTo(const QPoint &center, int w, int h);
+  void zoomTo(const ZPoint &pt, double w, double h, neutu::data3d::ESpace space);
 
   void setViewPort(const QRect &rect);
 
@@ -187,6 +188,7 @@ public:
 //  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
 
   void setModelRange(const ZIntCuboid &range);
+  ZIntCuboid getModelRange() const;
 //  void setCanvasRegion(int x0, int y0, int w, int h);
 
   //void setData(const uchar *data, int width, int height, QImage::Format format);
@@ -290,6 +292,9 @@ public:
   int getCutDepth() const;
   int getMinCutDepth() const;
   int getMaxCutDepth() const;
+
+  void resetView();
+  void setReady(bool ready);
 
 //  void resetTransform();
 

@@ -103,6 +103,16 @@ void ZDvidGraySliceEnsemble::prepare(const ZDvidEnv &env)
   prepare(env.getTargetList(ZDvidEnv::ERole::GRAYSCALE));
 }
 
+bool ZDvidGraySliceEnsemble::display(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  std::shared_ptr<ZDvidGraySlice> grayslice = getActiveSlice();
+  if (grayslice) {
+    return grayslice->display(painter, config);
+  }
+
+  return false;
+}
 
 bool ZDvidGraySliceEnsemble::update(const ZStackViewParam &viewParam)
 {

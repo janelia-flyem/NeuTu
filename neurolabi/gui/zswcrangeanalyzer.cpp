@@ -26,7 +26,7 @@ std::vector<ZEllipsoid> ZSwcRangeAnalyzer::computeLayerRange(const ZSwcTree &tre
     if (!nodeSet.empty()) {
       ZCuboid bound = SwcTreeNode::boundBox(nodeSet.begin(), nodeSet.end());
       ZEllipsoid ellipsoid;
-      ellipsoid.setCenter(bound.center());
+      ellipsoid.setCenter(bound.getCenter());
       double rxy = sqrt(bound.width() * bound.width() +
                         bound.height() * bound.height()) / 2.0;
       ellipsoid.setSize(rxy, rxy, bound.depth() / 2.0);

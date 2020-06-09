@@ -52,6 +52,11 @@ ZImage::ZImage(const ZImage &image) : QImage(image)
   m_z = image.m_z;
 }
 
+ZImage::ZImage(const QImage &image) : QImage(image)
+{
+
+}
+
 void ZImage::init()
 {
   if (width() > 0 && height() > 0) {

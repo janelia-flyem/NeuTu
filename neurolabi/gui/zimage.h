@@ -38,6 +38,7 @@ public:
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
   ZImage(const ZImage &image);
+  ZImage(const QImage &image);
 
   void clear();
 

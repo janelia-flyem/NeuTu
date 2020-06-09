@@ -102,7 +102,7 @@ std::vector<ZAffineRect> zgeom::IntPartition(
   return result;
 }
 
-void zgeom::transform(ZGeo3dScalarField *field,
+void zgeom::Transform(ZGeo3dScalarField *field,
                      const ZGeo3dTransform &transform)
 {
   transform.transform(field->getRawPointArray(), field->getPointNumber());
@@ -468,6 +468,16 @@ bool zgeom::Intersects(const ZAffineRect &r1, const ZAffineRect &r2)
   return false;
 }
 
+ZIntCuboid zgeom::GetIntBoundBox(const ZAffineRect &rect)
+{
+  ZIntCuboid box;
+  for (int i = 0; i < 4; ++i) {
+    ZPoint corner = rect.getCorner(i);
+    box.join(corner);
+  }
+  return box;
+}
+
 namespace {
 
 ZAffineRect get_face(const ZCuboid &box, int index)
@@ -475,32 +485,32 @@ ZAffineRect get_face(const ZCuboid &box, int index)
   ZAffineRect rect;
   switch (index) {
   case 0:
-    rect.setCenter((box.corner(0) + box.corner(3)) * 0.5);
+    rect.setCenter((box.getCorner(0) + box.getCorner(3)) * 0.5);
     rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     rect.setSize(neutu::iround(box.width()), neutu::iround(box.height()));
     break;
   case 1:
-    rect.setCenter((box.corner(4) + box.corner(7)) * 0.5);
+    rect.setCenter((box.getCorner(4) + box.getCorner(7)) * 0.5);
     rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     rect.setSize(neutu::iround(box.width()), neutu::iround(box.height()));
     break;
   case 2:
-    rect.setCenter(((box.corner(0) + box.corner(6)) * 0.5));
+    rect.setCenter(((box.getCorner(0) + box.getCorner(6)) * 0.5));
     rect.setPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
     rect.setSize(neutu::iround(box.depth()), neutu::iround(box.height()));
     break;
   case 3:
-    rect.setCenter(((box.corner(1) + box.corner(7)) * 0.5));
+    rect.setCenter(((box.getCorner(1) + box.getCorner(7)) * 0.5));
     rect.setPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
     rect.setSize(neutu::iround(box.depth()), neutu::iround(box.height()));
     break;
   case 4:
-    rect.setCenter(((box.corner(0) + box.corner(5)) * 0.5));
+    rect.setCenter(((box.getCorner(0) + box.getCorner(5)) * 0.5));
     rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
     break;
   case 5:
-    rect.setCenter(((box.corner(2) + box.corner(7)) * 0.5));
+    rect.setCenter(((box.getCorner(2) + box.getCorner(7)) * 0.5));
     rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
     break;

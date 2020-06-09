@@ -171,6 +171,32 @@ void ZModelViewTransform::moveCutDepth(double d)
   m_cutPlane.addOffset(d, getSliceAxis());
 }
 
+double ZModelViewTransform::getCutDepth(const ZPoint &startPlane) const
+{
+  double d = 0.0;
+  if (getSliceAxis() == neutu::EAxis::ARB) {
+    d = (getCutCenter() - startPlane).dot(getCutPlaneNormal());
+  } else {
+    d = getCutCenter().getSliceCoord(getSliceAxis()) -
+        startPlane.getSliceCoord(getSliceAxis());
+  }
+
+  return d;
+}
+
+void ZModelViewTransform::setCutDepth(const ZPoint &startPlane, double d)
+{
+  double d0 = 0;
+
+  if (getSliceAxis() == neutu::EAxis::ARB) {
+    d0 = (startPlane - getCutCenter()).dot(getCutPlaneNormal());
+  } else {
+    d0 = (getCutCenter() - startPlane).getSliceCoord(getSliceAxis());
+  }
+
+  moveCutDepth(d - d0);
+}
+
 void ZModelViewTransform::setCutPlane(const ZAffinePlane &plane)
 {
   m_cutPlane = plane;

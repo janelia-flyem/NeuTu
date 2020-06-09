@@ -65,14 +65,14 @@ public:
     ItemMap& getMap(int y, EAdjustment adjust);
 
     bool isValid() const { return m_status != STATUS_NULL; }
-    bool isReady() const { return m_status == STATUS_READY; }
-    bool isReady(const QRect &rect, const QRect &range) const;
+//    bool isReady() const { return m_status == STATUS_READY; }
+//    bool isReady(const QRect &rect, const QRect &range) const;
 
     void setStatus(EDataStatus status) {
       m_status = status;
     }
 
-    void setDataRect(const QRect &rect);
+    void setDataRect(const ZAffineRect &rect);
 
     bool contains(int x, int y) const;
 
@@ -81,7 +81,7 @@ public:
   private:
     int m_startY;
     EDataStatus m_status;
-    QRect m_dataRect;
+    ZAffineRect m_dataRect;
     static ItemMap m_emptyMap;
   };
 

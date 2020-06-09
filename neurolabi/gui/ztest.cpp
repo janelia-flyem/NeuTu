@@ -31588,23 +31588,24 @@ void ZTest::test(MainWindow *host)
   host->presentStackFrame(frame);
 #endif
 
-#if 1
-  ZSliceCanvas canvas(80, 80);
+#if 0
+  ZSliceCanvas canvas(75, 75);
   ZSliceViewTransform t;
-  t.setCutCenter(8, 8, 0);
+  t.setCutCenter(7.5, 7.5, 0);
   t.setScale(5.0);
-  t.setAnchor(40.0, 40.0);
+  t.setAnchor(37.5, 37.5);
   canvas.setTransform(t);
   canvas.clear(Qt::gray);
 
 //  ZSliceCanvasPaintHelper helper(canvas);
 
 
-  ZStack *stack = ZStackFactory::MakeCheckerboardStack(16, 16, 1);
+  ZStack *stack = ZStackFactory::MakeCheckerboardStack(15, 15, 1);
   ZModelViewTransform tmv;
   tmv.setCutCenter(t.getCutCenter());
   ZSliceCanvas *imgCanvas = ZImageSliceFactory::Make(
-        *stack, tmv, 16, 16, nullptr);
+        *stack, tmv, 15, 15, nullptr);
+  std::cout << imgCanvas->getTransform() << std::endl;
   imgCanvas->paintTo(canvas.getPixmapRef(), t);
 
     /*
@@ -31671,6 +31672,78 @@ void ZTest::test(MainWindow *host)
 //  objCanvas.getPixmap().save((GET_TEST_DATA_DIR + "/_test2.png").c_str());
 //  imgCanvas->getPixmap().save((GET_TEST_DATA_DIR + "/_test2.png").c_str());
   canvas.getPixmap().save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
+
+#if 0
+  ZSliceCanvas canvas(60, 60);
+  ZSliceViewTransform t;
+  t.setCutCenter(29.5, 29.5, 0);
+  t.setScale(1.0);
+  t.setAnchor(29.5, 29.5);
+  canvas.setTransform(t);
+  canvas.clear(Qt::gray);
+
+//  ZSliceCanvasPaintHelper helper(canvas);
+
+
+  ZStack *stack = ZStackFactory::MakeCheckerboardStack(15, 15, 1);
+  ZModelViewTransform tmv;
+  tmv.setCutCenter(32, 32, 0);
+  ZSliceCanvas *imgCanvas = ZImageSliceFactory::MakeXY(
+        *stack, 0, tmv, 8, 8, 2, nullptr);
+  std::cout << imgCanvas->getTransform() << std::endl;
+  imgCanvas->paintTo(canvas.getPixmapRef(), t);
+  canvas.getPixmap().save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidGraySlice slice;
+  slice.setDvidTarget(reader->getDvidTarget());
+  slice.setSliceAxis(neutu::EAxis::Z);
+  ZStackViewParam viewParam;
+  ZSliceViewTransform t;
+  t.setModelViewTransform(neutu::EAxis::Z, ZPoint(1023, 1023, 1023));
+  t.setViewCanvasTransform(127.5, 127.5, 1.0);
+  viewParam.set(t, 256, 256, neutu::data3d::ESpace::MODEL);
+  slice.update(viewParam);
+  slice.saveImage(GET_TEST_DATA_DIR + "/_test.png");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZStack *stack = reader->readGrayScaleLowtis(
+        ZIntPoint(99, 99, 124), ZPoint(1, 0, 0), ZPoint(0, 1, 0),
+        199, 199, 0, 0, 0, false);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 1
+//  ZStack *stack = new ZStack;
+//  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  ZStack *stack = ZStackFactory::MakeVirtualStack(2048, 2048, 2048);
+  std::shared_ptr<ZStackDoc> doc = std::shared_ptr<ZStackDoc>(new ZStackDoc);
+  ZStackMvc *frame = ZStackMvc::Make(nullptr, doc);
+  frame->connectSignalSlot();
+  doc->loadStack(stack);
+  ZStackBall *ball = new ZStackBall(1024, 1024, 1023, 100);
+  ball->setColor(255, 0, 0);
+  doc->addObject(ball);
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidGraySlice *slice = new ZDvidGraySlice;
+  slice->setDvidTarget(reader->getDvidTarget());
+  slice->setSliceAxis(neutu::EAxis::Z);
+  ZStackViewParam viewParam;
+  ZSliceViewTransform t;
+  t.setModelViewTransform(neutu::EAxis::Z, ZPoint(125, 125, 1023));
+  t.setViewCanvasTransform(127.5, 127.5, 1.0);
+  viewParam.set(t, 255, 255, neutu::data3d::ESpace::MODEL);
+  slice->update(viewParam);
+//  slice->saveImage(GET_TEST_DATA_DIR + "/_test.png");
+  doc->addObject(slice);
+
+  frame->show();
 #endif
 
   std::cout << "Done." << std::endl;

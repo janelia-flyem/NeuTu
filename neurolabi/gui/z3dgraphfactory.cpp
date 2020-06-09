@@ -256,7 +256,7 @@ Z3DGraph* Z3DGraphFactory::MakeBox(
   int startIndex = graph->getNodeNumber();
 
   for (int i = 0; i < 8; ++i) {
-    Z3DGraphNode node(box.corner(i), radius);
+    Z3DGraphNode node(box.getCorner(i), radius);
     node.setColor(QColor(128, 0, 128));
     graph->addNode(node);
   }
@@ -337,7 +337,7 @@ Z3DGraph* Z3DGraphFactory::makeBox(const ZCuboid &box, Z3DGraph *graph)
   int startIndex = graph->getNodeNumber();
 
   for (int i = 0; i < 8; ++i) {
-    Z3DGraphNode node(box.corner(i), m_nodeRadiusHint);
+    Z3DGraphNode node(box.getCorner(i), m_nodeRadiusHint);
     node.setColor(m_nodeColorHint);
     graph->addNode(node);
   }
@@ -376,7 +376,7 @@ Z3DGraph* Z3DGraphFactory::makeFaceGraph(
   Z3DGraph *graph = new Z3DGraph;
 
   for (int i = 0; i < 8; ++i) {
-    Z3DGraphNode node(box.corner(i), m_nodeRadiusHint);
+    Z3DGraphNode node(box.getCorner(i), m_nodeRadiusHint);
     node.setColor(m_nodeColorHint);
     graph->addNode(node);
   }

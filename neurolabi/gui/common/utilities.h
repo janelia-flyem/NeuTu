@@ -165,6 +165,12 @@ inline bool WithinCloseRange(const T &x, const T &minv, const T &maxv)
   return (x >= minv) && (x <= maxv);
 }
 
+template<typename T>
+inline bool WithinCloseOpenRange(const T &x, const T &minv, const T &maxv)
+{
+  return (x >= minv) && (x < maxv);
+}
+
 /*
 template<typename T>
 inline T ClipValue(const T &v, const T &lower, const T&upper)

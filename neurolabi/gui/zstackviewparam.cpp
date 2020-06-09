@@ -3,18 +3,118 @@
 #include <cmath>
 #include <sstream>
 
+#include "common/math.h"
 #include "geometry/zgeometry.h"
 #include "geometry/zaffineplane.h"
 #include "geometry/zaffinerect.h"
+#include "geometry/zcuboid.h"
 
 #include "zarbsliceviewparam.h"
 #include "zjsonobject.h"
 
 ZStackViewParam::ZStackViewParam()
 {
-  init(neutu::ECoordinateSystem::RAW_STACK);
 }
 
+ZStackViewParam::ZStackViewParam(
+    const ZSliceViewTransform &t, int width, int height,
+    neutu::data3d::ESpace sizeSpace)
+{
+  set(t, width, height, sizeSpace);
+}
+
+void ZStackViewParam::set(
+    const ZSliceViewTransform &t, int width, int height,
+    neutu::data3d::ESpace sizeSpace)
+{
+  m_transform = t;
+  m_viewportSize.set(width, height, sizeSpace);
+}
+
+void ZStackViewParam::setTransform(const ZSliceViewTransform &t)
+{
+  m_transform = t;
+}
+
+ZAffineRect ZStackViewParam::getCutRect() const
+{
+  return m_transform.getCutRect(
+        m_viewportSize.m_width, m_viewportSize.m_height, m_viewportSize.m_space);
+}
+
+ZAffineRect ZStackViewParam::getIntCutRect() const
+{
+  ZAffineRect rect = getCutRect();
+  ZPoint center = rect.getCenter();
+  rect.setCenter(center.toIntPoint().toPoint());
+  int width = neutu::iround(rect.getWidth());
+  int height = neutu::iround(rect.getHeight());
+  if (!center.hasIntCoord()) {
+    width += 2;
+    height += 2;
+  }
+  rect.setSize(width, height);
+
+  return rect;
+//  return getDiscretized().getCutRect();
+}
+
+ZAffineRect ZStackViewParam::getIntCutRect(const ZIntCuboid &modelRange) const
+{
+  ZAffineRect rect = getCutRect();
+  ZIntCuboid viewBox = m_transform.getViewBox(modelRange).toIntCuboid();
+  ZIntPoint newCenter = rect.getCenter().toIntPoint();
+  int width = neutu::iround(rect.getWidth());
+  int height = neutu::iround(rect.getHeight());
+  if (!rect.getCenter().hasIntCoord()) {
+    width += 2;
+    height += 2;
+  }
+
+  //Ajust corners
+  int x0 = -width / 2;
+  int x1 = width / 2 - 1;
+  int y0 = -height / 2;
+  int y1 = height / 2 -1;
+  if (x0 < viewBox.getMinX()) {
+    x0 = viewBox.getMinX();
+  }
+  if (x1 > viewBox.getMaxX()) {
+    x1 = viewBox.getMaxX();
+  }
+  if (y0 < viewBox.getMinY()) {
+    y0 = viewBox.getMinY();
+  }
+  if (y1 > viewBox.getMaxY()) {
+    y1 = viewBox.getMaxY();
+  }
+
+  int du = (x0 + x1 + 1) / 2;
+  int dv = (y0 + y1 + 1) / 2;
+  ZPoint adjustedCenter =
+      newCenter.toPoint() + m_transform.getCutPlane().getV1() * du +
+      m_transform.getCutPlane().getV2() * dv;
+  rect.setCenter(adjustedCenter.toIntPoint().toPoint());
+  rect.setSize(x1 - x0 + 1, y1 - y0 + 1);
+
+  return rect;
+}
+
+void ZStackViewParam::closeViewPort()
+{
+  m_backupViewportSize = m_viewportSize;
+  m_viewportSize.m_width = 0;
+  m_viewportSize.m_height = 0;
+//  m_viewportSize.closeViewPort();
+}
+
+void ZStackViewParam::openViewPort()
+{
+  m_viewportSize = m_backupViewportSize;
+//  m_viewProj.openViewPort();
+}
+
+/*
 ZStackViewParam::ZStackViewParam(neutu::ECoordinateSystem coordSys)
 {
   init(coordSys);
@@ -28,7 +128,9 @@ void ZStackViewParam::init(neutu::ECoordinateSystem coordSys)
   m_fixingZ = false;
   m_sliceAxis = neutu::EAxis::Z;
 }
+*/
 
+/*
 QRectF ZStackViewParam::getProjRect() const
 {
   return m_viewProj.getProjRect();
@@ -71,6 +173,7 @@ void ZStackViewParam::setViewPort(const QRect &rect, int z)
   setZ(z);
 }
 
+
 void ZStackViewParam::closeViewPort()
 {
   m_viewProj.closeViewPort();
@@ -99,6 +202,7 @@ void ZStackViewParam::setViewPort(double x0, double y0, double x1, double y1)
 
   setViewPort(viewPort);
 }
+*/
 
 #if 0
 void ZStackViewParam::setProjRect(const QRectF &rect)
@@ -107,25 +211,19 @@ void ZStackViewParam::setProjRect(const QRectF &rect)
 }
 #endif
 
+/*
 void ZStackViewParam::setExploreAction(neutu::View::EExploreAction action)
 {
   m_action = action;
 }
+*/
 
 bool ZStackViewParam::operator ==(const ZStackViewParam &param) const
 {
-  if (getSliceAxis() != param.getSliceAxis()) {
-    return false;
-  }
-
-  if (getSliceAxis() == neutu::EAxis::ARB) {
-    if (getSliceViewParam() != param.getSliceViewParam()) {
-      return false;
-    }
-  }
-
-  return m_z == param.m_z && m_coordSys == param.m_coordSys &&
-      getViewPort() == param.getViewPort();
+  return m_transform == param.m_transform &&
+      m_viewportSize.m_width == param.m_viewportSize.m_width &&
+      m_viewportSize.m_height == param.m_viewportSize.m_height &&
+      m_viewportSize.m_space == param.m_viewportSize.m_space;
 }
 
 bool ZStackViewParam::operator !=(const ZStackViewParam &param) const
@@ -135,28 +233,65 @@ bool ZStackViewParam::operator !=(const ZStackViewParam &param) const
 
 bool ZStackViewParam::contains(const ZStackViewParam &param) const
 {
-  if (getSliceAxis() == param.getSliceAxis()) {
-    if (getSliceAxis() == neutu::EAxis::ARB) {
-      return getSliceViewParam().contains(param.getSliceViewParam());
-    } else if (m_z == param.m_z) {
-      if (param.getViewPort().isEmpty()) {
-        return true;
-      } else {
-        return getViewPort().contains(param.getViewPort());
+  if (param.isViewportEmpty()) {
+    return m_transform.getCutPlane().contains(
+          param.m_transform.getCutPlane(), 0.5);
+  } else if (isViewportEmpty()) {
+    return false;
+  }
+
+  return getCutRect().contains(param.getCutRect(), 0.5);
+  /*
+  if (m_transform.getCutPlane().onSamePlane(param.m_transform.getCutPlane())) {
+    ZAffineRect rect2 = param.getCutRect();
+    double canvasWidth = getWidth(neutu::data3d::ESpace::CANVAS);
+    double canvasHeight = getHeight(neutu::data3d::ESpace::CANVAS);
+    for (int i = 0; i < 4; ++i) {
+      ZPoint corner = rect2.getCorner(i);
+      ZPoint canvasCorner = m_transform.transform(
+            corner, neutu::data3d::ESpace::MODEL, neutu::data3d::ESpace::CANVAS);
+      if (canvasCorner.getX() < 0.0 || canvasCorner.getX() > canvasWidth ||
+          canvasCorner.getY() < 0.0 || canvasCorner.getY() > canvasHeight) {
+        return false;
       }
     }
+
+    return true;
   }
 
   return false;
+  */
 }
 
+bool ZStackViewParam::contains(double x, double y, double z) const
+{
+  return contains(ZPoint(x, y, z));
+}
+
+bool ZStackViewParam::contains(const ZPoint &pt) const
+{
+  return getCutRect().contains(pt, 0.5);
+}
+
+/*
 bool ZStackViewParam::containsViewport(const ZStackViewParam &param) const
 {
   return getViewPort().contains(param.getViewPort());
 }
+*/
 
-bool ZStackViewParam::contains(int x, int y, int z)
+#if 0
+bool ZStackViewParam::contains(double x, double y, double z) const
 {
+  ZPoint pt = m_transform.transform(
+        ZPoint(x, y, z),
+        neutu::data3d::ESpace::MODEL, neutu::data3d::ESpace::CANVAS);
+
+  return (pt.getZ() < ZPoint::MIN_DIST) &&
+      (pt.getX() >= 0.0) && (pt.getX() <= m_viewportSize.m_width) &&
+      (pt.getY() >= 0.0) && (pt.getY() <= m_viewportSize.m_height);
+
+  /*
   zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
 
   if (z == m_z) {
@@ -164,9 +299,121 @@ bool ZStackViewParam::contains(int x, int y, int z)
   }
 
   return false;
+  */
+}
+#endif
+
+void ZStackViewParam::setSize(
+    int width, int height, neutu::data3d::ESpace sizeSpace)
+{
+  m_viewportSize.set(width, height, sizeSpace);
 }
 
+double ZStackViewParam::getWidth(neutu::data3d::ESpace space) const
+{
+  if (space == neutu::data3d::ESpace::CANVAS) {
+    return m_viewportSize.m_width;
+  }
 
+  return m_viewportSize.m_width * m_transform.getScale();
+}
+
+double ZStackViewParam::getHeight(neutu::data3d::ESpace space) const
+{
+  if (space == neutu::data3d::ESpace::CANVAS) {
+    return m_viewportSize.m_height;
+  }
+
+  return m_viewportSize.m_height * m_transform.getScale();
+}
+
+int ZStackViewParam::getIntWidth(neutu::data3d::ESpace space) const
+{
+  return neutu::iceil(getWidth(space));
+}
+
+int ZStackViewParam::getIntHeight(neutu::data3d::ESpace space) const
+{
+  return neutu::iceil(getHeight(space));
+}
+
+ZPoint ZStackViewParam::getCutCenter() const
+{
+  return m_transform.getCutCenter();
+}
+
+void ZStackViewParam::setCutCenter(const ZIntPoint &pt)
+{
+  m_transform.setCutCenter(pt.toPoint());
+}
+
+void ZStackViewParam::setCutDepth(const ZPoint &startPlane, double d)
+{
+  m_transform.setCutDepth(startPlane, d);
+}
+
+void ZStackViewParam::moveCutDepth(double d)
+{
+  m_transform.moveCutDepth(d);
+}
+
+double ZStackViewParam::getCutDepth(const ZPoint &startPlane) const
+{
+  return m_transform.getCutDepth(startPlane);
+}
+
+ZArbSliceViewParam ZStackViewParam::toArbSliceViewParam() const
+{
+  ZAffineRect rect = getIntCutRect();
+
+  ZArbSliceViewParam param;
+  param.setCenter(rect.getCenter().toIntPoint());
+  param.setPlane(rect.getV1(), rect.getV1());
+  param.setSize(rect.getWidth(), rect.getHeight());
+
+  /*
+  int width = getIntWidth(neutu::data3d::ESpace::MODEL);
+  int height = getIntHeight(neutu::data3d::ESpace::MODEL);
+  if (!getCutCenter().hasIntCoord()) {
+    ++width;
+    ++height;
+  }
+  param.setCenter(getCutCenter().toIntPoint());
+  param.setPlane(
+        m_transform.getCutPlane().getV1(), m_transform.getCutPlane().getV2());
+  param.setSize(width, height);
+  */
+
+  return param;
+}
+
+/*
+void ZStackViewParam::discretizeModel()
+{
+  if (m_viewportSize.m_space == neutu::data3d::ESpace::CANVAS) {
+    m_viewportSize.set(
+          getIntWidth(neutu::data3d::ESpace::MODEL),
+          getIntHeight(neutu::data3d::ESpace::MODEL),
+          neutu::data3d::ESpace::MODEL);
+  }
+
+  if (!getCutCenter().hasIntCoord()) {
+    m_viewportSize.m_width += 2;
+    m_viewportSize.m_height += 2;
+  }
+
+  setCutCenter(getCutCenter().toIntPoint());
+}
+
+ZStackViewParam ZStackViewParam::getDiscretized() const
+{
+  ZStackViewParam param = *this;
+  param.discretizeModel();
+  return param;
+}
+*/
+
+/*
 void ZStackViewParam::resize(int width, int height)
 {
   QRect viewPort = m_viewProj.getViewPort();
@@ -175,30 +422,39 @@ void ZStackViewParam::resize(int width, int height)
   viewPort.moveCenter(oldCenter);
   m_viewProj.setViewPort(viewPort);
 }
+*/
+
+bool ZStackViewParam::isViewportEmpty() const
+{
+  return m_transform.getScale() <= 0 ||
+      m_viewportSize.m_width <= 0 || m_viewportSize.m_height <= 0;
+}
 
 bool ZStackViewParam::isValid() const
 {
-  return m_viewProj.isValid();
+  return !isViewportEmpty();
 }
 
 void ZStackViewParam::invalidate()
 {
-  m_viewProj.setZoom(0);
+  m_viewportSize.set(0, 0);
 }
 
-size_t ZStackViewParam::getArea() const
+double ZStackViewParam::getArea(neutu::data3d::ESpace space) const
 {
-  return size_t(getViewPort().width()) * size_t(getViewPort().height());
+  return getWidth(space) * getHeight(space);
+//  return getCutRect().getArea();
+//  return size_t(getViewPort().width()) * size_t(getViewPort().height());
 }
 
 void ZStackViewParam::setSliceAxis(neutu::EAxis sliceAxis)
 {
-  m_sliceAxis = sliceAxis;
+  m_transform.setCutPlane(sliceAxis);
 }
 
 neutu::EAxis ZStackViewParam::getSliceAxis() const
 {
-  return m_sliceAxis;
+  return m_transform.getSliceAxis();
 }
 
 int ZStackViewParam::getZoomLevel() const
@@ -210,8 +466,7 @@ int ZStackViewParam::getZoomLevel() const
   }
 
   int scale = pow(2, zoom);
-  while (getViewPort().width() * getViewPort().height() /
-      scale / scale > 1024 * 1024) {
+  while (getArea(neutu::data3d::ESpace::MODEL) / scale / scale > 1024 * 1024) {
     zoom += 1;
     scale = pow(2, zoom);
   }
@@ -228,7 +483,7 @@ int ZStackViewParam::getZoomLevel(int maxLevel) const
 
   return zoom;
 }
-
+/*
 ZArbSliceViewParam ZStackViewParam::getSliceViewParam() const
 {
   ZArbSliceViewParam param;
@@ -306,14 +561,19 @@ ZAffinePlane ZStackViewParam::getArbSlicePlane() const
 
   return plane;
 }
+*/
 
 double ZStackViewParam::getZoomRatio() const
 {
-  return m_viewProj.getZoom();
+  return m_transform.getScale();
+//  return m_viewProj.getZoom();
 }
 
 bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
 {
+  return m_transform.getCutPlane().onSamePlane(
+        param.m_transform.getCutPlane());
+  /*
   bool result = false;
   if (m_sliceAxis == param.m_sliceAxis) {
     if (m_sliceAxis == neutu::EAxis::ARB) {
@@ -326,8 +586,10 @@ bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
   }
 
   return result;
+  */
 }
 
+/*
 std::string ZStackViewParam::toString() const
 {
   std::ostringstream stream;
@@ -340,7 +602,9 @@ std::string ZStackViewParam::toString() const
 
   return stream.str();
 }
+*/
 
+/*
 namespace {
 template<typename T1, typename T2>
 void point_to_array(const T1 &pt, T2 *v)
@@ -350,9 +614,18 @@ void point_to_array(const T1 &pt, T2 *v)
   v[2] = pt.getZ();
 }
 }
+*/
+
+ZSliceViewTransform ZStackViewParam::getSliceViewTransform() const
+{
+  return m_transform;
+}
 
 ZJsonObject ZStackViewParam::toJsonObject() const
 {
+  return m_transform.toJsonObject();
+
+  /*
   ZJsonObject jsonObj = m_viewProj.toJsonObject();
   jsonObj.setEntry("axis", neutu::EnumValue(m_sliceAxis));
   jsonObj.setEntry("z", m_z);
@@ -370,4 +643,5 @@ ZJsonObject ZStackViewParam::toJsonObject() const
   }
 
   return jsonObj;
+  */
 }

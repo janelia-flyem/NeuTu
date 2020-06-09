@@ -193,6 +193,9 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     for (auto canvas : m_canvasList) {
       if (canvas) {
         if (canvas->isPainted()) {
+#ifdef _DEBUG_2
+          canvas->save(GET_TEST_DATA_DIR + "/_test.png");
+#endif
           canvas->paintTo(this, m_sliceViewTransform);
         }
       }
@@ -362,13 +365,25 @@ void ZImageWidget::setViewProj(const QPoint &pt, double zoom)
 }
 #endif
 
-void ZImageWidget::zoomTo(const QPoint &center, int w)
+void ZImageWidget::zoomTo(const QPoint &center, int w, int h)
 {
   m_sliceViewTransform.zoomToViewRect(
-        center.x() - w, center.y() - w,
-        center.x() + w, center.y() + w, width(), height());
+        center.x() - w, center.y() - h,
+        center.x() + w, center.y() + h, width(), height());
 //  m_viewProj.zoomTo(center, width);
   updateView();
+}
+
+void ZImageWidget::zoomTo(
+    const ZPoint &pt, double w, double h, neutu::data3d::ESpace space)
+{
+  if (space == neutu::data3d::ESpace::CANVAS) {
+    m_sliceViewTransform.setScale(
+          m_sliceViewTransform.getScale() * std::min(w / width(), h / height()));
+  } else {
+    m_sliceViewTransform.setScale(std::min(w / width(), h / height()));
+  }
+  m_sliceViewTransform.setCutCenter(pt);
 }
 
 bool ZImageWidget::isBadView() const
@@ -1291,6 +1306,9 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
   if (m_isReady) {
     adjustTransformWithResize();
     emit transformChanged();
+  } else {
+    m_isReady = true;
+    resetView();
   }
 
 //  m_sliceViewTransform.canvasAdjust(
@@ -1306,15 +1324,29 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 //  setValidViewPort(m_viewPort);
 }
 
+void ZImageWidget::resetView()
+{
+  if (width() > 0 && height() > 0) {
+    adjustMinScale();
+    m_sliceViewTransform.setCutCenter(m_modelRange.getCenter().toPoint());
+    m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
+    notifyTransformChanged();
+  }
+}
+
+void ZImageWidget::setReady(bool ready)
+{
+  m_isReady = ready;
+}
+
 void ZImageWidget::showEvent(QShowEvent *event)
 {
   LDEBUG() << "ZImageWidget::showEvent" << size() << isVisible();
   QWidget::showEvent(event);
 
   if (!m_isReady && isVisible()) {
-    m_sliceViewTransform.setCutCenter(m_modelRange.getCenter().toPoint());
-    m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
-    adjustMinScale();
+    m_isReady = true;
+    resetView();
 
 #ifdef _DEBUG_2
     std::cout << "Transform: " << m_sliceViewTransform << std::endl;
@@ -1322,8 +1354,8 @@ void ZImageWidget::showEvent(QShowEvent *event)
 //    maximizeViewPort(m_modelRange);
 //    m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
 //    m_viewProj.maximizeViewPort();
-    m_isReady = true;
-    notifyTransformChanged();
+
+
   }
 }
 
@@ -1566,6 +1598,11 @@ void ZImageWidget::recordTransform()
 void ZImageWidget::setModelRange(const ZIntCuboid &range)
 {
   m_modelRange = range;
+}
+
+ZIntCuboid ZImageWidget::getModelRange() const
+{
+  return m_modelRange;
 }
 
 void ZImageWidget::reset()

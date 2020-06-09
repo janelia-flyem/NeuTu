@@ -52,6 +52,8 @@ public:
   void setCutPlane(neutu::EAxis sliceAxis, const ZPoint &cutCenter);
 
   void moveCutDepth(double d);
+  void setCutDepth(const ZPoint &startPlane, double d);
+  double getCutDepth(const ZPoint &startPlane) const;
 
   /*!
    * \brief Set the center of cut plane

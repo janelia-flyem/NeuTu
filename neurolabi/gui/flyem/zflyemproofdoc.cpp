@@ -3153,14 +3153,17 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
 
   if (reader->good()) {
     if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
-      ZArbSliceViewParam svp = viewParam.getSliceViewParam();
+//      ZStackViewParam newParam = viewParam;
+//      newParam.discretizeModel();
+
+//      ZArbSliceViewParam svp = viewParam.getSliceViewParam();
       array = reader->readLabels64Lowtis(
-            svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
-            svp.getWidth(), svp.getHeight(),
+            viewParam.getIntCutRect(),
             zoom, centerCutX, centerCutY, usingCenterCut);
     } else {
-      ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
-            viewParam.getViewPort(), viewParam.getZ());
+      ZIntCuboid box = zgeom::GetIntBoundBox(viewParam.getCutRect());
+//      ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
+//            viewParam.getViewPort(), viewParam.getZ());
 
 //      ZIntCuboid dataRange = m_labelInfo.getDataRange();
 //      if (!dataRange.isEmpty()) {
@@ -3194,14 +3197,14 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
     ZStack *array = NULL;
     if (workReader.good()) {
       if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
-        ZArbSliceViewParam svp = viewParam.getSliceViewParam();
-        array = workReader.readGrayScaleLowtis(
-              svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
-              svp.getWidth(), svp.getHeight(),
+//        ZArbSliceViewParam svp = viewParam.getSliceViewParam();
+        array = workReader.readGrayScaleLowtis(viewParam.getCutRect(),
               zoom, centerCutX, centerCutY, usingCenterCut);
       } else {
-        ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
-              viewParam.getViewPort(), viewParam.getZ());
+        ZIntCuboid box = zgeom::GetIntBoundBox(viewParam.getCutRect());
+
+//        ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
+//              viewParam.getViewPort(), viewParam.getZ());
 
         array = workReader.readGrayScaleLowtis(
               box.getMinCorner().getX(), box.getMinCorner().getY(),

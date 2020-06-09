@@ -1816,7 +1816,7 @@ void ZStackFrame::zoomToSelectedSwcNodes()
   if (document()->hasSelectedSwcNode()) {
     std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcNodeSet();
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
-    ZPoint center = cuboid.center();
+    ZPoint center = cuboid.getCenter();
 
     //check which stack the selected points belong to.
     //If needed, load the corresponding stack.
@@ -1921,11 +1921,13 @@ void ZStackFrame::notifyViewChanged(const ZStackViewParam &param)
   emit viewChanged(param);
 }
 
+/*
 void ZStackFrame::setView(const ZStackViewParam &param)
 {
   view()->setView(param);
 //  raise();
 }
+*/
 
 void ZStackFrame::customizeWidget()
 {

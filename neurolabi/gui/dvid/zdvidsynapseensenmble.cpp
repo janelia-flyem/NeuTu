@@ -161,7 +161,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
 
   int currentArea = 0;
   if (m_view != NULL) {
-    currentArea = m_view->getViewParameter().getArea();
+    currentArea = neutu::iround(
+          m_view->getViewParameter().getArea(neutu::data3d::ESpace::MODEL));
   }
 
   int blockIndex = m_dvidInfo.getBlockIndexZ(z);
@@ -172,10 +173,14 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
   int endZ = blockBox.getMaxCorner().getZ();
 
   if (currentArea > 0 && currentArea <= m_maxPartialArea) {
-    QRect viewPort = m_view->getViewParameter().getViewPort();
-    ZIntCuboid box(
-          viewPort.left(), viewPort.top(), blockBox.getMinCorner().getZ(),
-          viewPort.right(), viewPort.bottom(), blockBox.getMaxCorner().getZ());
+    ZIntCuboid box =
+        zgeom::GetIntBoundBox(m_view->getViewParameter().getCutRect());
+    box.setMinZ(blockBox.getMinZ());
+    box.setMaxZ(blockBox.getMaxZ());
+//    QRect viewPort = m_view->getViewParameter().getViewPort();
+//    ZIntCuboid box(
+//          viewPort.left(), viewPort.top(), blockBox.getMinCorner().getZ(),
+//          viewPort.right(), viewPort.bottom(), blockBox.getMaxCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
     if (m_dataFetcher == NULL /*|| getSliceAxis() == neutube::Z_AXIS*/) {
       syncedFetch(box, startZ, endZ, false);
@@ -238,7 +243,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(const QVector<int> &zs)
 
   int currentArea = 0;
   if (m_view != NULL) {
-    currentArea = m_view->getViewParameter().getArea();
+    currentArea = neutu::iround(
+          m_view->getViewParameter().getArea(neutu::data3d::ESpace::MODEL));
   }
 
   QSet<int> blockZSet;
@@ -443,7 +449,7 @@ int ZDvidSynapseEnsemble::getMaxZUnsync() const
 
 bool ZDvidSynapseEnsemble::hasLocalSynapseUnsync(int x, int y, int z) const
 {
-  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::ShiftSliceAxis(x, y, z, m_sliceAxis);
 
   int zIndex = z - m_startZ;
 
@@ -486,7 +492,7 @@ bool ZDvidSynapseEnsemble::removeSynapseUnsync(int x, int y, int z, EDataScope s
       int sx = x;
       int sy = y;
       int sz = z;
-      zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+      zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
       getSynapseMapUnsync(sy, sz).remove(sx);
       getSelector().deselectObject(ZIntPoint(x, y, z));
 
@@ -882,7 +888,7 @@ ZDvidSynapse& ZDvidSynapseEnsemble::getSynapseUnsync(
     int sx = x;
     int sy = y;
     int sz = z;
-    zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+    zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
 
     return getSliceUnsync(sz).getMap(sy)[sx];
   } else {

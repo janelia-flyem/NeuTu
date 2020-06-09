@@ -374,7 +374,7 @@ bool ZDvidLabelSlice::hasValidPaintBuffer() const
     int width = m_labelArray->getDim(0);
     int height = m_labelArray->getDim(1);
     int depth = m_labelArray->getDim(2);
-    zgeom::shiftSliceAxis(width, height, depth, getSliceAxis());
+    zgeom::ShiftSliceAxis(width, height, depth, getSliceAxis());
     if (m_paintBuffer->width() == width &&
         m_paintBuffer->height() == height) {
       valid = true;
@@ -423,12 +423,15 @@ void ZDvidLabelSlice::forceUpdate(
       clearLabelData();
     } else {
       int zoom = getFirstZoom(viewParam);
+      forceUpdate(viewParam.toArbSliceViewParam(), zoom);
+      /*
       if (m_sliceAxis == neutu::EAxis::ARB) {
-        forceUpdate(viewParam.getSliceViewParam(), zoom);
+        forceUpdate(viewParam.toArbSliceViewParam(), zoom);
       } else {
         QRect viewPort = viewParam.getViewPort();
         forceUpdate(viewPort, viewParam.getZ(), zoom);
       }
+      */
     }
   }
 
@@ -463,8 +466,8 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
         int y0 = box.getMinCorner().getY() / zoomRatio;
         int z0 = box.getMinCorner().getZ();
 
-        zgeom::shiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
-        zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+        zgeom::ShiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
+        zgeom::ShiftSliceAxisInverse(width, height, depth, getSliceAxis());
 
         m_labelArray = getHelper()->getDvidReader().readLabels64Raw(
               x0, y0, z0, width, height, depth, zoom);
@@ -508,7 +511,7 @@ void ZDvidLabelSlice::updatePaintBuffer()
     int height = m_labelArray->getDim(1);
     if (getSliceAxis() == neutu::EAxis::X || getSliceAxis() == neutu::EAxis::Y) {
       int depth = m_labelArray->getDim(2);
-      zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+      zgeom::ShiftSliceAxisInverse(width, height, depth, getSliceAxis());
     }
 
 #ifdef _DEBUG_2
@@ -521,10 +524,11 @@ void ZDvidLabelSlice::updatePaintBuffer()
     }
 
     paintBufferUnsync();
-    setTransform(m_paintBuffer);
+//    setTransform(m_paintBuffer);
   }
 }
 
+/*
 void ZDvidLabelSlice::setTransform(ZImage *image) const
 {
   ZStTransform transform;
@@ -533,6 +537,7 @@ void ZDvidLabelSlice::setTransform(ZImage *image) const
   transform.setOffset(-getHelper()->getX() * scale, -getHelper()->getY() * scale);
   image->setTransform(transform);
 }
+*/
 
 #if 0
 void ZDvidLabelSlice::update(int z)
@@ -569,6 +574,7 @@ void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)
 }
 */
 
+/*
 QRect ZDvidLabelSlice::getDataRect(const ZStackViewParam &viewParam) const
 {
   QRect viewPort = viewParam.getViewPort();
@@ -592,6 +598,7 @@ QRect ZDvidLabelSlice::getDataRect(const ZStackViewParam &viewParam) const
 
   return viewPort;
 }
+*/
 
 int ZDvidLabelSlice::getCurrentZ() const
 {
@@ -628,7 +635,7 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 
   bool updated = false;
 
-  if (viewParam.getViewPort().isEmpty()) {
+  if (viewParam.isViewportEmpty()) {
     if (m_labelArray != NULL) {
       clearLabelData();
       updated = true;
@@ -1150,6 +1157,8 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
       }
     }
   } else {
+    bool withinRange = getHelper()->hit(x, y, z);
+    /*
     int nx = neutu::iround(x);
     int ny = neutu::iround(y);
     int nz = neutu::iround(z);
@@ -1161,16 +1170,20 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
 //      ZDvidReader reader;
     bool withinRange = true;
     if (getSliceAxis() != neutu::EAxis::ARB) {
-      zgeom::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
+      zgeom::ShiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
       if (!getHelper()->getViewPort().contains(nx, ny) ||
               nz != getHelper()->getZ()) {
         withinRange = false;
       }
-      zgeom::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
+      zgeom::ShiftSliceAxis(nx, ny, nz, m_sliceAxis);
     }
+    */
 
     if (withinRange) {
       if (getHelper()->getDvidReader().isReady()) {
+        int nx = neutu::iround(x);
+        int ny = neutu::iround(y);
+        int nz = neutu::iround(z);
 //        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
         m_hitLabel = getMappedLabel(
               getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),

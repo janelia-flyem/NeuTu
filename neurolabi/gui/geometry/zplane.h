@@ -53,6 +53,7 @@ public:
 
   bool approxEquals(const ZPlane &plane) const;
   bool operator== (const ZPlane &p) const;
+  bool operator!= (const ZPlane &p) const;
 
 private:
   static bool IsValid(const ZPoint &v1, const ZPoint &v2);

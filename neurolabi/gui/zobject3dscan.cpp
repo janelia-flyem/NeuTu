@@ -536,7 +536,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   int sw = width;
   int sh = height;
   int sd = depth;
-  zgeom::shiftSliceAxis(sw, sh, sd, m_sliceAxis);
+  zgeom::ShiftSliceAxis(sw, sh, sd, m_sliceAxis);
 
   uint8_t *array = stack->array;
   uint8_t *arrayOrigin = array;
@@ -546,7 +546,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   size_t yStride = width;
   size_t zStride = area;
 
-  zgeom::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
+  zgeom::ShiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
   case neutu::EAxis::Z: //XY plane
@@ -2046,7 +2046,7 @@ size_t ZObject3dScan::getSegmentNumber() const
 
 void ZObject3dScan::translate(int dx, int dy, int dz)
 {
-  zgeom::shiftSliceAxis(dx, dy, dz, m_sliceAxis);
+  zgeom::ShiftSliceAxis(dx, dy, dz, m_sliceAxis);
 
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     m_stripeArray[i].translate(dx, dy, dz);
@@ -2057,7 +2057,7 @@ void ZObject3dScan::translate(int dx, int dy, int dz)
 
 void ZObject3dScan::scale(int sx, int sy, int sz)
 {
-  zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+  zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
 
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     m_stripeArray[i].scale(sx, sy, sz);
@@ -2889,7 +2889,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   int tx = neutu::iround(x);
   int ty = neutu::iround(y);
   int tz = neutu::iround(z);
-  zgeom::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
+  zgeom::ShiftSliceAxis(tx, ty, tz, m_sliceAxis);
   tx /= m_dsIntv.getX() + 1;
   ty /= m_dsIntv.getY() + 1;
   tz /= m_dsIntv.getZ() + 1;
@@ -3670,7 +3670,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
 //    addStripeFast(coord[2], coord[1]);
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
-    zgeom::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
+    zgeom::ShiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
     if (getSliceAxis() == neutu::EAxis::X) {
       for (int i = 0; i < runLength; ++i) {
@@ -4046,7 +4046,7 @@ void ZObject3dScan::addForeground(ZStack *stack)
     int z = seg.getZ();
     int y = seg.getY();
     for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
-      zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
+      zgeom::ShiftSliceAxis(x, y, z, m_sliceAxis);
       if (stack->getIntValue(x, y, z) > 0) {
         stack->addIntValue(x, y, z, 0, 1);
       }
@@ -4605,7 +4605,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
     cov[2] = (xyCorr - xMean * yMean) * factor;
   }
 
-  zgeom::shiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
+  zgeom::ShiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
 
   return cov;
 }
@@ -4630,7 +4630,7 @@ bool ZObject3dScan::contains(const ZIntPoint &pt)
 
 bool ZObject3dScan::contains(int x, int y, int z)
 {
-  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::ShiftSliceAxis(x, y, z, m_sliceAxis);
 
   canonize();
 

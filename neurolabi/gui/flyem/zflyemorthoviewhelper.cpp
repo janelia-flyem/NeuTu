@@ -74,6 +74,8 @@ ZPoint ZFlyEmOrthoViewHelper::getCrossCenter() const
 {
   ZPoint center;
   if (getMasterMvc() != NULL) {
+    center = getMasterMvc()->getView()->getCutCenter();
+    /*
     center = getMasterDoc()->getCrossHair()->getCenter();
     center.shiftSliceAxis(getMasterView()->getSliceAxis());
 #ifdef _DEBUG_
@@ -85,6 +87,7 @@ ZPoint ZFlyEmOrthoViewHelper::getCrossCenter() const
     center.setY(pt.y());
     center.setZ(getMasterView()->getCurrentZ());
     center.shiftSliceAxisInverse(getMasterView()->getSliceAxis());
+    */
   }
 
   return center;

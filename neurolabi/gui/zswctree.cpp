@@ -1429,12 +1429,12 @@ ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 
   for (int i = 0; i < 4; ++i) {
     Swc_Tree_Node *tn =
-        SwcTreeNode::MakePointer(box.corner(indexArray[index++]), radius);
+        SwcTreeNode::MakePointer(box.getCorner(indexArray[index++]), radius);
     SwcTreeNode::setParent(tn, tree->root());
     parent = tn;
 
     for (int j = 0; j < 3; ++j) {
-      tn = SwcTreeNode::MakePointer(box.corner(indexArray[index++]), radius);
+      tn = SwcTreeNode::MakePointer(box.getCorner(indexArray[index++]), radius);
       SwcTreeNode::setParent(tn, parent);
     }
   }

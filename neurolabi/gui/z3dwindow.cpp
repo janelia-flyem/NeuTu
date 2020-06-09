@@ -3224,7 +3224,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
       const std::set<Swc_Tree_Node*> &nodeSet = m_doc->getSelectedSwcNodeSet();
 
       ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
-      ZPoint center = cuboid.center();
+      ZPoint center = cuboid.getCenter();
       int cx, cy, cz;
 
       //-= document()->getStackOffset();

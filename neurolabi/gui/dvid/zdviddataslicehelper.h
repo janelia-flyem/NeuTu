@@ -31,7 +31,7 @@ public:
   }
 
   bool validateSize(int *width, int *height) const;
-  int updateParam(ZStackViewParam *param);
+  int updateParam(ZStackViewParam *param) const;
 
   int getZoom() const {
     return m_zoom;
@@ -42,6 +42,7 @@ public:
   const ZStackViewParam& getViewParam() const {
     return m_currentViewParam;
   }
+  neutu::EAxis getSliceAxis() const;
 
   int getMaxWidth() const {
     return m_maxWidth;
@@ -64,11 +65,11 @@ public:
   bool hasMaxSize() const;
   bool getMaxArea() const;
 
-  QRect getViewPort() const;
-  int getX() const;
-  int getY() const;
+//  QRect getViewPort() const;
+//  int getX() const;
+//  int getY() const;
   int getZ() const;
-  void setZ(int z);
+//  void setZ(int z);
   int getWidth() const;
   int getHeight() const;
   size_t getViewPortArea() const;
@@ -83,7 +84,7 @@ public:
 
   static ZIntCuboid GetBoundBox(const QRect &viewPort, int z);
   ZIntCuboid getBoundBox() const;
-  void setBoundBox(const ZRect2d &rect);
+//  void setBoundBox(const ZRect2d &rect);
 
   int getScale() const;
   void setZoom(int zoom);
@@ -128,6 +129,8 @@ public:
 
   void setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
   neutu::EDataSliceUpdatePolicy getPreferredUpdatePolicy() const;
+
+  bool hit(double x, double y, double z) const;
 
 private:
   /*!

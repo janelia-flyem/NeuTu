@@ -769,7 +769,8 @@ void flyem::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidIn
 {
   if (window != NULL) {
     ZRect2d rect;
-    rect.setZ(viewParam.getZ());
+    ZPoint center = viewParam.getCutCenter();
+    rect.setZ(center.getZ());
     //    rect.setZ(getCurrentZ());
     rect.setMinCorner(dvidInfo.getStartCoordinates().getX(),
                         dvidInfo.getStartCoordinates().getY());
@@ -782,15 +783,15 @@ void flyem::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidIn
     double lineWidth = 4.0;
     Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
 
-    if (viewParam.getViewPort().isValid()) {
+    if (viewParam.isValid()) {
       Z3DGraphNode node1;
       Z3DGraphNode node2;
 
       node1.setColor(QColor(0, 255, 0));
       node2.setColor(QColor(0, 255, 0));
 
-      double x = viewParam.getViewPort().center().x();
-      double y = viewParam.getViewPort().center().y();
+      double x = center.x();
+      double y = center.y();
 
       double width = lineWidth * 0.5;
       node1.set(x, rect.getMinY(), rect.getZ(), width);

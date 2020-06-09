@@ -973,7 +973,7 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
 {
   bool hit = false;
 
-  zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
 
   if (neutu::iround(z) == m_z) {
     hit = hitTest(x, y, getSliceAxis());

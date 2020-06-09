@@ -37,7 +37,7 @@ std::vector<ZIntPoint> ZFFNSkeletonModule::getSeedPos(ZStackDoc* doc)
   std::vector<ZIntPoint> points;
   ZIntPoint offset=m_src->getOffset();
   for(ZStroke2d* stroke:doc->getStrokeList()){
-    ZPoint center_=stroke->getBoundBox().center();
+    ZPoint center_=stroke->getBoundBox().getCenter();
     ZIntPoint center(center_.x(),center_.y(),center_.z());
     points.push_back(center-offset);
   }

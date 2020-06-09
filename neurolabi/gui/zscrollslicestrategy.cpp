@@ -37,7 +37,7 @@ ZStackViewParam ZScrollSliceStrategy::scroll(
     const ZStackViewParam &param, int step) const
 {
   ZStackViewParam newParam = param;
-  newParam.setSliceIndex(scroll(param.getSliceIndex(), step));
+//  newParam.setSliceIndex(scroll(param.getSliceIndex(), step));
 
   return newParam;
 }

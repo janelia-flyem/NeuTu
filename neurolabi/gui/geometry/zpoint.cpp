@@ -20,6 +20,7 @@
 
 const double ZPoint::MIN_DIST = 1e-5;
 const ZPoint ZPoint::INVALID_POINT = ZPoint::InvalidPoint();
+const ZPoint ZPoint::ORIGIN = ZPoint(0, 0, 0);
 
 ZPoint::ZPoint()
 {
@@ -383,7 +384,13 @@ ZPoint ZPoint::operator - () const
 
 ZIntPoint ZPoint::toIntPoint() const
 {
-  return ZIntPoint(neutu::iround(x()), neutu::iround(y()), neutu::iround(z()));
+  return ZIntPoint(neutu::nround(x()), neutu::nround(y()), neutu::nround(z()));
+}
+
+bool ZPoint::hasIntCoord() const
+{
+  return (std::ceil(getX()) == getX()) && (std::ceil(getY()) == getY()) &&
+      (std::ceil(getZ()) == getZ());
 }
 
 std::vector<double> ZPoint::toArray() const
@@ -426,12 +433,12 @@ bool ZPoint::operator <(const ZPoint &pt) const
 
 void ZPoint::shiftSliceAxis(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
 void ZPoint::shiftSliceAxisInverse(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
 double ZPoint::getSliceCoord(neutu::EAxis axis) const

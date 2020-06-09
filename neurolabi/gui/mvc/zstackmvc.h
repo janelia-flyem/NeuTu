@@ -66,7 +66,7 @@ public:
    */
   QRect getViewGeometry() const;
 
-  void connectSignalSlot();
+  virtual void connectSignalSlot();
   void disconnectAll();
 
   ZProgressSignal* getProgressSignal() const {
@@ -100,15 +100,15 @@ signals:
 
 public slots:
 //  void updateActiveViewData();
-  void processViewChange(const ZStackViewParam &viewParam);
-  void processViewChange();
+//  void processViewChange(const ZStackViewParam &viewParam);
+//  void processViewChange();
 
   virtual void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
   void zoomToL1(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
   void zoomTo(const ZIntPoint &pt, double zoomRatio);
-  void zoomTo(const ZStackViewParam &param);
+//  void zoomTo(const ZStackViewParam &param);
 //  void zoomWithWidthAligned(int x0, int x1, int cy);
 //  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
 //  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);

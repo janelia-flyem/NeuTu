@@ -70,9 +70,9 @@ TEST(SwcTreeNode, Attribute)
 
   tn = SwcTreeNode::MakePointer(5, 6, ZPoint(1, 2, 3), 4, 7);
   ZCuboid box = SwcTreeNode::boundBox(tn);
-  EXPECT_EQ(1, box.center().x());
-  EXPECT_EQ(2, box.center().y());
-  EXPECT_EQ(3, box.center().z());
+  EXPECT_EQ(1, box.getCenter().x());
+  EXPECT_EQ(2, box.getCenter().y());
+  EXPECT_EQ(3, box.getCenter().z());
   EXPECT_EQ(8, box.width());
   EXPECT_EQ(8, box.height());
   EXPECT_EQ(8, box.depth());

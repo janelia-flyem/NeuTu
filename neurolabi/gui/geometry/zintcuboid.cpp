@@ -194,6 +194,16 @@ void ZIntCuboid::join(int x, int y, int z)
   }
 }
 
+void ZIntCuboid::join(const ZIntPoint &pt)
+{
+  join(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZIntCuboid::join(const ZPoint &pt)
+{
+  join(pt.toIntPoint());
+}
+
 ZIntCuboid &ZIntCuboid::intersect(const ZIntCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {
@@ -513,13 +523,12 @@ int ZIntCuboid::getDim(neutu::EAxis axis) const
 
 ZPoint ZIntCuboid::getExactCenter() const
 {
-  return getMinCorner().toPoint() + getSize().toPoint() / 2.0;
+  return (getMinCorner().toPoint() + getMaxCorner().toPoint()) / 2.0;
 }
 
 ZIntPoint ZIntCuboid::getCenter() const
 {
-  return getMinCorner() +
-      ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
+  return (getMinCorner() + getMaxCorner()) / 2;
 }
 
 void ZIntCuboid::setCenter(const ZIntPoint &center)
@@ -596,6 +605,11 @@ void ZIntCuboid::downScale(int s)
     m_minCorner /= s;
     m_maxCorner /= s;
   }
+}
+
+std::ostream& operator<< (std::ostream &stream, const ZIntCuboid &box)
+{
+  return stream << "(" << box.m_minCorner << ", " << box.m_maxCorner << ")";
 }
 
 /*

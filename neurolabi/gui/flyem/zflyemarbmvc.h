@@ -25,7 +25,7 @@ public:
 
 //  void updateViewParam(const ZArbSliceViewParam &param);
   void resetViewParam(const ZArbSliceViewParam &param);
-  void processViewChangeCustom(const ZStackViewParam &viewParam) override;
+//  void processViewChangeCustom(const ZStackViewParam &viewParam) override;
 
 signals:
   void sliceViewChanged(const ZArbSliceViewParam &param);

@@ -24,6 +24,19 @@ TEST(ZIntPoint, Basic)
   ASSERT_EQ(0, pt.getValue(neutu::EAxis::ARB));
 }
 
+TEST(ZIntPoint, ToPoint)
+{
+  ZIntPoint pt(1, 2, 3);
+  ASSERT_EQ(ZPoint(1, 2, 3), pt.toPoint());
+  ASSERT_EQ(ZPoint(0.5, 1.5, 2.5), pt.toMinCorner());
+  ASSERT_EQ(ZPoint(1.5, 2.5, 3.5), pt.toMaxCorner());
+
+  pt.set(-1, -2, -3);
+  ASSERT_EQ(ZPoint(-1, -2, -3), pt.toPoint());
+  ASSERT_EQ(ZPoint(-0.5, -1.5, -2.5), pt.toMaxCorner());
+  ASSERT_EQ(ZPoint(-1.5, -2.5, -3.5), pt.toMinCorner());
+}
+
 TEST(ZPoint, Basic)
 {
   ZPoint pt(0, 0, 0);
@@ -77,6 +90,15 @@ TEST(ZPoint, toIntPoint)
 {
   ZPoint pt(1.0, 2.6, 4.1);
   ASSERT_EQ(ZIntPoint(1, 3, 4), pt.toIntPoint());
+
+  pt.set(1.5, 2.5, 3.5);
+  ASSERT_EQ(ZIntPoint(2, 3, 4), pt.toIntPoint());
+
+  pt.set(-1.5, -2.5, -3.5);
+  ASSERT_EQ(ZIntPoint(-1, -2, -3), pt.toIntPoint());
+
+  ASSERT_FALSE(pt.hasIntCoord());
+  ASSERT_TRUE(pt.toIntPoint().toPoint().hasIntCoord());
 }
 
 TEST(ZIntPoint, Operator)

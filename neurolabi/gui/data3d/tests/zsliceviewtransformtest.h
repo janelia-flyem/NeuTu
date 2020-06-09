@@ -2,12 +2,13 @@
 #define ZSLICEVIEWTRANSFORMTEST_H
 
 #include "data3d/zsliceviewtransform.h"
+#include "geometry/zcuboid.h"
 
 #ifdef _USE_GTEST_
 
 #include "gtest/gtest.h"
 
-TEST(ZSliceViewTranform, Set)
+TEST(ZSliceViewTransform, Set)
 {
   {
     ZSliceViewTransform t;
@@ -60,6 +61,13 @@ TEST(ZSliceViewTranform, Set)
   {
     ZSliceViewTransform t;
     t.setCutCenter(ZPoint(1, 2, 3), 10, 20);
+    t.setCutDepth(ZPoint(0, 0, 0), 10);
+    ASSERT_EQ(10, t.getCutDepth(ZPoint::ORIGIN));
+  }
+
+  {
+    ZSliceViewTransform t;
+    t.setCutCenter(ZPoint(1, 2, 3), 10, 20);
 
     t.translateModelViewTransform(100, 200, 300, 20, 30);
 
@@ -86,6 +94,14 @@ TEST(ZSliceViewTranform, Set)
 
   {
     ZSliceViewTransform t;
+    ZIntCuboid modelRange;
+    modelRange.set(0, 0, 0, 10, 20, 30);
+    t.fitModelRange(modelRange, 11, 21);
+    ASSERT_TRUE(ZPoint(0, 0, 0).approxEquals(t.transform(0, 0, 0)));
+  }
+
+  {
+    ZSliceViewTransform t;
     t.moveCutDepth(10);
     ASSERT_EQ(ZPoint(0, 0, 10), t.getCutCenter());
 
@@ -94,8 +110,8 @@ TEST(ZSliceViewTranform, Set)
     modelRange.translate(10, 20, 30);
 
     t.fitModelRange(modelRange, 10, 20);
-    ASSERT_EQ(0.1, t.getScale());
-    ASSERT_TRUE(ZPoint(0, 0, 165).approxEquals(t.transform(10, 20, 165)))
+    ASSERT_DOUBLE_EQ(0.1, t.getScale());
+    ASSERT_TRUE(ZPoint(-0.45, -0.45, 155).approxEquals(t.transform(10, 20, 165)))
         << t.transform(10, 20, 165) << t.transform(60, 120, 0);
   }
 
@@ -126,7 +142,7 @@ TEST(ZSliceViewTranform, Set)
   }
 }
 
-TEST(ZSliceViewTranform, transform)
+TEST(ZSliceViewTransform, Transform)
 {
   {
     ZSliceViewTransform t;
@@ -179,6 +195,19 @@ TEST(ZSliceViewTranform, transform)
     ASSERT_EQ(ZPoint(100, 200, 0), pt);
 
     ASSERT_EQ(ZPoint(10, 20, 30), t.inverseTransform(100, 200, 0));
+  }
+
+  {
+    ZSliceViewTransform t;
+    ZIntCuboid modelBox(-1, -2, -3, 1, 2, 3);
+    ZCuboid box = t.getViewBox(modelBox);
+    ASSERT_EQ(modelBox, box.toIntCuboid());
+
+    t.setCutPlane(neutu::EAxis::X);
+    box = t.getViewBox(modelBox);
+    modelBox.shiftSliceAxis(neutu::EAxis::X);
+    ASSERT_EQ(modelBox, box.toIntCuboid());
+//    std::cout << box.toIntCuboid() << std::endl;
   }
 }
 

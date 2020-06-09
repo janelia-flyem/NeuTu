@@ -1,4 +1,6 @@
 #include "zdviddataslicehelper.h"
+
+#include "common/math.h"
 #include "zrect2d.h"
 #include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
@@ -107,20 +109,32 @@ bool ZDvidDataSliceHelper::validateSize(int *width, int *height) const
   return changed;
 }
 
-int ZDvidDataSliceHelper::updateParam(ZStackViewParam *param)
+int ZDvidDataSliceHelper::updateParam(ZStackViewParam *param) const
 {
+  int width = param->getIntWidth(neutu::data3d::ESpace::MODEL);
+  int height = param->getIntHeight(neutu::data3d::ESpace::MODEL);
+  if (!param->getCutCenter().hasIntCoord()) {
+    ++width;
+    ++height;
+    param->setCutCenter(param->getCutCenter().toIntPoint());
+  }
+
   int maxZoomLevel = getMaxZoom();
   if (maxZoomLevel < 3) {
-    int width = param->getViewPort().width();
-    int height = param->getViewPort().height();
-    if (validateSize(&width, &height)) {
-      param->resize(width, height);
-    }
+    validateSize(&width, &height);
   }
+
+  param->setSize(width, height, neutu::data3d::ESpace::MODEL);
 
   return maxZoomLevel;
 }
 
+int ZDvidDataSliceHelper::getZ() const
+{
+  return neutu::iround(getViewParam().getCutDepth(ZPoint(0, 0, 0)));
+}
+
+/*
 QRect ZDvidDataSliceHelper::getViewPort() const
 {
   return getViewParam().getViewPort();
@@ -163,7 +177,7 @@ int ZDvidDataSliceHelper::getHeight() const
 
   return getViewPort().height();
 }
-
+*/
 size_t ZDvidDataSliceHelper::getViewPortArea() const
 {
   return size_t(getWidth()) * size_t(getHeight());
@@ -175,12 +189,27 @@ size_t ZDvidDataSliceHelper::getViewDataSize() const
   return getViewPortArea() / scale / scale;
 }
 
+int ZDvidDataSliceHelper::getWidth() const
+{
+  return m_currentViewParam.getIntWidth(neutu::data3d::ESpace::MODEL);
+}
+
+int ZDvidDataSliceHelper::getHeight() const
+{
+  return m_currentViewParam.getIntHeight(neutu::data3d::ESpace::MODEL);
+}
+
 size_t ZDvidDataSliceHelper::GetViewDataSize(
     const ZStackViewParam &viewParam, int zoom)
 {
   int scale = zgeom::GetZoomScale(zoom);
 
-  return viewParam.getArea() / scale / scale;
+  return viewParam.getArea(neutu::data3d::ESpace::MODEL) / scale / scale;
+}
+
+neutu::EAxis ZDvidDataSliceHelper::getSliceAxis() const
+{
+  return getViewParam().getSliceAxis();
 }
 
 void ZDvidDataSliceHelper::closeViewPort()
@@ -257,14 +286,7 @@ ZStackViewParam ZDvidDataSliceHelper::getValidViewParam(
 {
   ZStackViewParam newViewParam = viewParam;
 
-  int maxZoomLevel = getMaxZoom();
-  if (maxZoomLevel < 3) {
-    int width = viewParam.getViewPort().width();
-    int height = viewParam.getViewPort().height();
-    if (validateSize(&width, &height)) {
-      newViewParam.resize(width, height);
-    }
-  }
+  updateParam(&newViewParam);
 
   return newViewParam;
 }
@@ -310,6 +332,11 @@ void ZDvidDataSliceHelper::CanonizeQuality(int *zoom, int *centerCutX, int *cent
       }
     }
   }
+}
+
+bool ZDvidDataSliceHelper::hit(double x, double y, double z) const
+{
+  return m_currentViewParam.contains(x, y, z);
 }
 
 bool ZDvidDataSliceHelper::IsResIncreasing(
@@ -368,20 +395,7 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 {
   bool contained = false;
 
-  if (m_currentViewParam.getViewPort().isEmpty() &&
-      !viewParam.getViewPort().isEmpty()) {
-    if (m_currentViewParam.getSliceAxis() == neutu::EAxis::ARB) {
-      //Must be on the same plane to be contained
-      if (m_currentViewParam.getSliceViewParam().hasSamePlaneCenter(
-            viewParam.getSliceViewParam())) {
-        contained = true;
-      }
-    } else {
-      if (viewParam.getZ() == m_currentViewParam.getZ()) {
-        contained = true;
-      }
-    }
-  } else if (viewParam.contains(m_currentViewParam)) {
+  if (viewParam.contains(m_currentViewParam)) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
           m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
           m_actualUsingCenterCut,
@@ -421,7 +435,8 @@ ZIntCuboid ZDvidDataSliceHelper::GetBoundBox(const QRect &viewPort, int z)
 
 ZIntCuboid ZDvidDataSliceHelper::getBoundBox() const
 {
-  return GetBoundBox(getViewPort(), getZ());
+  return zgeom::GetIntBoundBox(m_currentViewParam.getCutRect());
+//  return GetBoundBox(getViewPort(), getZ());
 }
 
 void ZDvidDataSliceHelper::setMaxSize(int maxW, int maxH)
@@ -442,11 +457,13 @@ void ZDvidDataSliceHelper::setUnlimitedSize()
   setMaxSize(0, 0);
 }
 
+/*
 void ZDvidDataSliceHelper::setBoundBox(const ZRect2d &rect)
 {
   m_currentViewParam.setViewPort(
         QRect(rect.getX0(), rect.getY0(), rect.getWidth(), rect.getHeight()));
 }
+*/
 
 void ZDvidDataSliceHelper::setActualQuality(
     int zoom, int ccw, int cch, bool centerCut)

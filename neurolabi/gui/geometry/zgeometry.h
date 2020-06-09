@@ -28,11 +28,11 @@ std::vector<ZAffineRect> IntPartition(const ZAffineRect &rect, int row, int col)
 /*!
  * \brief Transform a 3D field
  */
-void transform(ZGeo3dScalarField *field, const ZGeo3dTransform &transform);
+void Transform(ZGeo3dScalarField *field, const ZGeo3dTransform &transform);
 template <typename T>
-void shiftSliceAxis(T &x, T &y, T &z, neutu::EAxis axis);
+void ShiftSliceAxis(T &x, T &y, T &z, neutu::EAxis axis);
 template <typename T>
-void shiftSliceAxisInverse(T &x, T &y, T &z, neutu::EAxis axis);
+void ShiftSliceAxisInverse(T &x, T &y, T &z, neutu::EAxis axis);
 
 std::vector<ZPoint> LineShpereIntersection(
     const ZPoint &lineStart, const ZPoint &lineNorm,
@@ -82,6 +82,8 @@ bool Intersects(const ZAffineRect &rect, const ZIntCuboid &box);
 bool Intersects(const ZAffineRect &rect, const ZLineSegment &seg);
 bool Intersects(const ZAffineRect &r1, const ZAffineRect &r2);
 
+ZIntCuboid GetIntBoundBox(const ZAffineRect &rect);
+
 namespace raster {
 
 void ForEachNeighbor(
@@ -120,7 +122,7 @@ void ForEachNeighbor<3>(
 
 
 template <typename T>
-void zgeom::shiftSliceAxis(T &x, T &y, T &z, neutu::EAxis axis)
+void zgeom::ShiftSliceAxis(T &x, T &y, T &z, neutu::EAxis axis)
 {
   switch (axis) {
   case neutu::EAxis::X:
@@ -138,7 +140,7 @@ void zgeom::shiftSliceAxis(T &x, T &y, T &z, neutu::EAxis axis)
 }
 
 template <typename T>
-void zgeom::shiftSliceAxisInverse(T &x, T &y, T &z, neutu::EAxis axis)
+void zgeom::ShiftSliceAxisInverse(T &x, T &y, T &z, neutu::EAxis axis)
 {
   switch (axis) {
   case neutu::EAxis::X:

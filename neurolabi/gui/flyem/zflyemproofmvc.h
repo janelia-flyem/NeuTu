@@ -608,7 +608,7 @@ private:
 
   void prepareTile(ZDvidTileEnsemble *te);
   void applySettings();
-  void connectSignalSlot();
+  void connectSignalSlot() override;
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 

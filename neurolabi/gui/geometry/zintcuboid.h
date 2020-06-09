@@ -1,6 +1,8 @@
 #ifndef ZINTCUBOID_H
 #define ZINTCUBOID_H
 
+#include <iostream>
+
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
 #include "common/neutudefs.h"
@@ -133,10 +135,16 @@ public:
   ZIntCuboid& join(const ZIntCuboid &cuboid);
 
   void join(int x, int y, int z);
+  void join(const ZIntPoint &pt);
 
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);
+
+  /*!
+   * \brief Expand the cuboid to make sure it includes a point in float coordinates
+   */
+  void join(const ZPoint &pt);
 
   void expandX(int dx);
   void expandY(int dy);
@@ -216,6 +224,8 @@ public:
 
   bool operator == (const ZIntCuboid &box) const;
   bool operator != (const ZIntCuboid &box) const;
+
+  friend std::ostream& operator<< (std::ostream &stream, const ZIntCuboid &box);
 
 private:
   ZIntPoint m_minCorner;

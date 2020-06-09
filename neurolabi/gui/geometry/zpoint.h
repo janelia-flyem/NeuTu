@@ -129,6 +129,7 @@ public:
   void rotate(double theta, double psi);
   void rotate(double theta, double psi, const ZPoint &center);
 
+  bool hasIntCoord() const;
   ZIntPoint toIntPoint() const;
   std::vector<double> toArray() const;
 
@@ -171,6 +172,7 @@ public:
 public:
   const static double MIN_DIST;
   const static ZPoint INVALID_POINT;
+  const static ZPoint ORIGIN;
 
 private:
   static ZPoint InvalidPoint();

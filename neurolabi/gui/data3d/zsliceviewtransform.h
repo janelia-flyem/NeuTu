@@ -12,6 +12,7 @@
 
 
 class ZAffineRect;
+class ZCuboid;
 
 /*!
  * \brief The class for trasnforming a 3D object onto a 2D slice
@@ -36,6 +37,15 @@ public:
   ZPoint getCutCenter() const;
   double getScale() const;
   ZAffineRect getCutRect(int canvasWidth, int canvasHeight) const;
+  ZAffineRect getCutRect(
+      int width, int height, neutu::data3d::ESpace sizeSpace) const;
+  /*!
+   * \brief Get cut rectangle with all integer paramters
+   */
+  ZAffineRect getIntCutRect(
+      int width, int height, neutu::data3d::ESpace sizeSpace);
+
+  ZAffinePlane getCutPlane() const;
 
   void setScale(double s);
   void incScale();
@@ -49,6 +59,7 @@ public:
   void setCutCenter(const ZPoint &pt);
   void setCutCenter(double x, double y, double z);
   void setCutPlane(const ZPoint &center, const ZPoint &v1, const ZPoint &v2);
+  void setCutPlane(const ZAffinePlane &plane);
   void setCutPlane(neutu::EAxis sliceAxis, const ZPoint &cutCenter);
   void setCutPlane(neutu::EAxis sliceAxis);
 
@@ -59,8 +70,10 @@ public:
    */
   void setCutCenter(const ZPoint &pt, double ca, double db);
 
+  void setModelViewTransform(const ZModelViewTransform &t);
   void setModelViewTransform(const ZAffinePlane &cutPlane);
   void setModelViewTransform(neutu::EAxis sliceAxis, double cutDepth);
+  void setModelViewTransform(neutu::EAxis sliceAxis, const ZPoint &cutCenter);
   void setViewCanvasTransform(double dx, double dy, double s);
 
   /*!
@@ -99,9 +112,13 @@ public:
   void setScaleFixingCanvasMapped(double s, double a, double b);
 
   void moveCutDepth(double z);
+  void setCutDepth(const ZPoint &startPlane, double d);
+  double getCutDepth(const ZPoint &startPlane) const;
 
   /*!
    * \brief Fit model range in a canvas
+   *
+   * It does not move the cut depth.
    */
   void fitModelRange(const ZIntCuboid &modelRange, int dstWidth, int dstHeight);
 
@@ -172,6 +189,8 @@ public:
   ZAffineRect inverseTransformRect(double x0, double y0, double x1, double y1) const;
 
   ZPoint transformBoxSize(const ZPoint &dim) const;
+
+  ZCuboid getViewBox(const ZIntCuboid modelBox) const;
 
   /*!
    * \brief Get view space viewport

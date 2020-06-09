@@ -2,6 +2,7 @@
 
 #include "geometry/zgeometry.h"
 #include "geometry/zaffinerect.h"
+#include "geometry/zcuboid.h"
 #include "zjsonobject.h"
 
 ZSliceViewTransform::ZSliceViewTransform()
@@ -31,9 +32,43 @@ ZPoint ZSliceViewTransform::getCutCenter() const
   return m_modelViewTransform.getCutCenter();
 }
 
+ZAffinePlane ZSliceViewTransform::getCutPlane() const
+{
+  return m_modelViewTransform.getCutPlane();
+}
+
 double ZSliceViewTransform::getScale() const
 {
   return getViewCanvasTransform().getScale();
+}
+
+ZAffineRect ZSliceViewTransform::getCutRect(
+    int width, int height, neutu::data3d::ESpace sizeSpace) const
+{
+  double canvasWidth = width;
+  double canvasHeight = height;
+  if (sizeSpace != neutu::data3d::ESpace::CANVAS) {
+    canvasWidth *= getScale();
+    canvasHeight *= getScale();
+  }
+
+  ZPoint newCutCenter = inverseTransform(canvasWidth / 2.0, canvasHeight / 2.0);
+
+  ZAffineRect rect;
+  rect.setCenter(newCutCenter);
+  rect.setPlane(m_modelViewTransform.getCutPlane().getV1(),
+                m_modelViewTransform.getCutPlane().getV2());
+
+  double modelWidth = width;
+  double modelHeight = height;
+  if (sizeSpace == neutu::data3d::ESpace::CANVAS) {
+    modelWidth /= getScale();
+    modelHeight /= getScale();
+  }
+
+  rect.setSize(modelWidth, modelHeight);
+
+  return rect;
 }
 
 ZAffineRect ZSliceViewTransform::getCutRect(
@@ -50,6 +85,18 @@ ZAffineRect ZSliceViewTransform::getCutRect(
   double modelHeight = canvasHeight / getScale();
 
   rect.setSize(modelWidth, modelHeight);
+
+  return rect;
+}
+
+ZAffineRect ZSliceViewTransform::getIntCutRect(
+    int width, int height, neutu::data3d::ESpace sizeSpace)
+{
+  ZAffineRect rect = getCutRect(width, height, sizeSpace);
+  if (!getCutCenter().hasIntCoord()) {
+    setCutCenter(getCutCenter().toIntPoint().toPoint());
+    rect.setSize(rect.getWidth() + 1, rect.getHeight() + 1);
+  }
 
   return rect;
 }
@@ -99,6 +146,11 @@ ZViewPlaneTransform ZSliceViewTransform::getViewCanvasTransform() const
   return m_viewCanvasTransform;
 }
 
+void ZSliceViewTransform::setModelViewTransform(const ZModelViewTransform &t)
+{
+  m_modelViewTransform = t;
+}
+
 void ZSliceViewTransform::setModelViewTransform(const ZAffinePlane &cutPlane)
 {
   m_modelViewTransform.setCutPlane(cutPlane);
@@ -108,6 +160,12 @@ void ZSliceViewTransform::setModelViewTransform(
     neutu::EAxis sliceAxis, double cutDepth)
 {
   m_modelViewTransform.setCutPlane(sliceAxis, cutDepth);
+}
+
+void ZSliceViewTransform::setModelViewTransform(
+    neutu::EAxis sliceAxis, const ZPoint &cutCenter)
+{
+  m_modelViewTransform.setCutPlane(sliceAxis, cutCenter);
 }
 
 void ZSliceViewTransform::setCutPlane(neutu::EAxis sliceAxis)
@@ -123,6 +181,16 @@ void ZSliceViewTransform::setViewCanvasTransform(double dx, double dy, double s)
 void ZSliceViewTransform::moveCutDepth(double z)
 {
   m_modelViewTransform.moveCutDepth(z);
+}
+
+void ZSliceViewTransform::setCutDepth(const ZPoint &startPlane, double d)
+{
+  m_modelViewTransform.setCutDepth(startPlane, d);
+}
+
+double ZSliceViewTransform::getCutDepth(const ZPoint &startPlane) const
+{
+  return m_modelViewTransform.getCutDepth(startPlane);
 }
 
 void ZSliceViewTransform::translateModelViewTransform(
@@ -176,7 +244,7 @@ void ZSliceViewTransform::translateModelViewTransform(
   m_modelViewTransform.transform(&x, &y, &z);
   m_viewCanvasTransform.inverseTransform(&a, &b);
   m_modelViewTransform.translateCutCenterOnPlane(x - a, y - b);
-//  m_modelViewTransform.moveCutDepth(z);
+  m_modelViewTransform.moveCutDepth(z);
   /*
   neutu::EAxis sliceAxis = getSliceAxis();
   switch(sliceAxis) {
@@ -266,14 +334,34 @@ void ZSliceViewTransform::fitModelRange(
       srcHeight = srcWidth = modelRange.getDiagonalLength();
     }*/
 
+    ZCuboid viewBox;
+
+    ZCuboid box = ZCuboid::FromIntCuboid(modelRange);
+    for (int i = 0; i < 8; ++i) {
+      ZPoint corner = box.getCorner(i);
+      ZPoint pc = transform(corner, neutu::data3d::ESpace::MODEL,
+                            neutu::data3d::ESpace::VIEW);
+      if (i == 0) {
+        viewBox.set(pc, pc);
+      } else {
+        viewBox.join(pc);
+      }
+    }
+
+    /*
     ZPoint dims = m_modelViewTransform.transformBoxSize(
           modelRange.getSize().toPoint());
+          */
 
-    double scale = std::min(dstWidth / dims.getX(), dstHeight / dims.getY());
+    double scale = std::min(
+          dstWidth / viewBox.width(), dstHeight / viewBox.height());
     setScale(scale);
-    ZPoint center = modelRange.getExactCenter();
-    setAnchor(dstWidth / 2.0, dstHeight / 2.0);
-    translateModelViewTransform(center, dstWidth / 2.0, dstHeight / 2.0);
+//    ZPoint center = modelRange.getExactCenter();
+    setAnchor((dstWidth - 1) / 2.0, (dstHeight - 1) / 2.0);
+    ZPoint viewCenter = viewBox.getCenter();
+    m_modelViewTransform.translateCutCenterOnPlane(
+          viewCenter.getX(), viewCenter.getY());
+//    translateModelViewTransform(center, dstWidth / 2.0, dstHeight / 2.0);
   }
 
   /*
@@ -396,6 +484,25 @@ ZPoint ZSliceViewTransform::transformBoxSize(const ZPoint &dim) const
   return newDim;
 }
 
+ZCuboid ZSliceViewTransform::getViewBox(const ZIntCuboid modelBox) const
+{
+  ZCuboid viewBox;
+
+  ZCuboid box = ZCuboid::FromIntCuboid(modelBox);
+  for (int i = 0; i < 8; ++i) {
+    ZPoint corner = box.getCorner(i);
+    ZPoint pc = transform(corner, neutu::data3d::ESpace::MODEL,
+                          neutu::data3d::ESpace::VIEW);
+    if (i == 0) {
+      viewBox.set(pc, pc);
+    } else {
+      viewBox.join(pc);
+    }
+  }
+
+  return viewBox;
+}
+
 neutu::geom2d::Rectangle ZSliceViewTransform::getViewportV(
     int canvasWidth, int canvasHeight) const
 {
@@ -434,6 +541,11 @@ void ZSliceViewTransform::setCutPlane(
     const ZPoint &center, const ZPoint &v1, const ZPoint &v2)
 {
   m_modelViewTransform.setCutPlane(center, v1, v2);
+}
+
+void ZSliceViewTransform::setCutPlane(const ZAffinePlane &plane)
+{
+  m_modelViewTransform.setCutPlane(plane);
 }
 
 void ZSliceViewTransform::setCutPlane(

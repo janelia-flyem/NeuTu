@@ -2017,7 +2017,7 @@ void ZStackPresenter::setObjectVisible(bool v)
     if (v) {
       ZStackDoc::ActiveViewObjectUpdater updater(getSharedBuddyDocument());
       updater.exclude(ZStackObject::EType::DVID_TILE_ENSEMBLE);
-      updater.update(buddyView()->getViewParameter(neutu::ECoordinateSystem::STACK));
+      updater.update(buddyView()->getViewParameter());
     }
 
     buddyView()->paintObject();

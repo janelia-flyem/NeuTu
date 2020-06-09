@@ -32,6 +32,15 @@ ZSlice3dPainter neutu::vis2d::Get3dSlicePainter(
   return painter;
 }
 
+QImage neutu::vis2d::GetSlice(const ZStack &stack, int z)
+{
+  int x0 = stack.getOffset().getX();
+  int y0 = stack.getOffset().getY();
+  int x1 = x0 + stack.width() - 1;
+  int y1 = y0 + stack.height() - 1;
+  return GetSlice(stack, x0, y0, x1, y1, z);
+}
+
 QImage neutu::vis2d::GetSlice(
     const ZStack &stack, int &x0, int &y0, int &x1, int &y1, int z)
 {
@@ -155,8 +164,8 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
     int x1 = 0;
     int y1 = 0;
     int z = 0;
-    int cx = 0;
-    int cy = 0;
+    double cx = 0;
+    double cy = 0;
     int cz = 0;
 
     ZIntCuboid box = stack.getBoundBox();
@@ -168,8 +177,8 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
         y0 = neutu::ifloor(rect.getCenter().getY() - halfHeight);
         y1 = neutu::iround(rect.getCenter().getY() + halfHeight);
         image = GetSlice(stack, x0, y0, x1, y1, z);
-        cx = (x0 + x1 + 1) / 2;
-        cy = (y0 + y1 + 1) / 2;
+        cx = (x0 + x1) / 2.0;
+        cy = (y0 + y1) / 2.0;
         cz = z;
       }
     } else if (rect.getV1() == ZPoint(0, 0, 1) &&
@@ -181,8 +190,8 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
         y0 = neutu::ifloor(rect.getCenter().getY() - halfHeight);
         y1 = neutu::iround(rect.getCenter().getY() + halfHeight);
         image = GetSliceX(stack, x0, y0, x1, y1, z);
-        cz = (x0 + x1 + 1) / 2;
-        cy = (y0 + y1 + 1) / 2;
+        cz = (x0 + x1) / 2.0;
+        cy = (y0 + y1) / 2.0;
         cx = z;
       }
     } else if (rect.getV1() == ZPoint(1, 0, 0) &&
@@ -194,8 +203,8 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
         y0 = neutu::ifloor(rect.getCenter().getZ() - halfHeight);
         y1 = neutu::iround(rect.getCenter().getZ() + halfHeight);
         image = GetSliceY(stack, x0, y0, x1, y1, z);
-        cx = (x0 + x1 + 1) / 2;
-        cz = (y0 + y1 + 1) / 2;
+        cx = (x0 + x1) / 2.0;
+        cz = (y0 + y1) / 2.0;
         cy = z;
       }
     }

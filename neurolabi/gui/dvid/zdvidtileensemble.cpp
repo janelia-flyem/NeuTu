@@ -19,6 +19,7 @@
 #include "zdvidpatchdatafetcher.h"
 #include "zdviddataslicehelper.h"
 #include "zutils.h"
+#include "geometry/zgeometry.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
@@ -352,16 +353,17 @@ bool ZDvidTileEnsemble::update(
       updated = true;
 
       if (m_dataFetcher != NULL && getDvidTarget().isTileLowQuality()) {
-        QRect highresViewPort = getHelper()->getViewPort();
-        if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {
+//        QRect highresViewPort = getHelper()->getViewPort();
+        ZAffineRect rect = getHelper()->getViewParam().getIntCutRect();
+        if (rect.getWidth() < 1024 || rect.getHeight() < 1024) {
           int z = getHelper()->getZ();
-          QPoint center = highresViewPort.center();
+//          QPoint center = highresViewPort.center();
           int width = 512;
           int height = 512;
-          int x0 = center.x() - width / 2 - 1;
-          int y0 = center.y() - height / 2 - 1;
-          int x1 = x0 + width;
-          int y1 = y0 + height;
+          int x0 = rect.getCenter().x() - width / 2 - 1;
+          int y0 = rect.getCenter().y() - height / 2 - 1;
+          int x1 = x0 + width - 1;
+          int y1 = y0 + height - 1;
 
           ZIntCuboid region(x0, y0, z, x1, y1, z);
           m_dataFetcher->submit(region);
@@ -405,7 +407,12 @@ bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
   bool updated = false;
 
   if (viewParam.isValid()) {
-    QRect fov = viewParam.getViewPort();
+    ZAffineRect rect = viewParam.getCutRect();
+    ZIntCuboid box = zgeom::GetIntBoundBox(rect);
+
+    QRect fov(QPoint(box.getMinX(), box.getMinY()),
+              QSize(box.getWidth(), box.getHeight()));
+//    QRect fov = viewParam.getViewPort();
     int resLevel = viewParam.getZoomLevel(m_tilingInfo.getMaxLevel());
     ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
     if (getHelper()->hasNewView(newViewParam)) {
@@ -418,7 +425,7 @@ bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
           tileIndices = m_tilingInfo.getCoverIndex(resLevel, fov);
         }
       }
-      updated = update(tileIndices, resLevel, viewParam.getZ());
+      updated = update(tileIndices, resLevel, rect.getCenter().getZ());
       getHelper()->setViewParam(viewParam);
     }
   }

@@ -68,6 +68,10 @@ TEST(ZGeometry, ZPlane)
     plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     ASSERT_TRUE(plane.getNormal().approxEquals(ZPoint(0, 0, 1)));
 
+    ASSERT_EQ(plane, plane);
+    ASSERT_NE(ZPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0)), plane);
+    ASSERT_NE(ZPlane(ZPoint(1, 0, 0), ZPoint(0, 0, 1)), plane);
+
     ASSERT_TRUE(plane.approxEquals(ZPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0))));
     ASSERT_FALSE(plane.approxEquals(ZPlane(ZPoint(0, 1, 0), ZPoint(1, 0, 0))));
 

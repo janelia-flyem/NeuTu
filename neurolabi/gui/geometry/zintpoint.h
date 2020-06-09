@@ -115,6 +115,8 @@ public:
   std::string toString() const;
 
   ZPoint toPoint() const;
+  ZPoint toMinCorner() const;
+  ZPoint toMaxCorner() const;
 
   /*!
    * \brief Test if the coordinates are (0, 0, 0)

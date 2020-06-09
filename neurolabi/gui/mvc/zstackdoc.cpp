@@ -4946,7 +4946,7 @@ QString ZStackDoc::rawDataInfo(double cx, double cy, int z, neutu::EAxis axis) c
   int wy = y;
   int wz = z;
 
-  zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
+  zgeom::ShiftSliceAxisInverse(wx, wy, wz, axis);
 
   if (x >= 0 && y >= 0) {
     std::ostringstream stream;

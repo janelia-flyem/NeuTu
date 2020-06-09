@@ -1,6 +1,7 @@
 #include "zaffineplane.h"
 
 #include <sstream>
+#include <cmath>
 
 ZAffinePlane::ZAffinePlane()
 {
@@ -113,6 +114,16 @@ bool ZAffinePlane::contains(const ZPoint &pt) const
   return m_plane.contains(pt - m_offset);
 }
 
+bool ZAffinePlane::contains(const ZAffinePlane &ap, double d) const
+{
+  if (isParallel(ap)) {
+    double dist = computeSignedDistance(ap.getOffset());
+    return (dist >= -d && dist < d);
+  }
+
+  return false;
+}
+
 bool ZAffinePlane::onSamePlane(const ZAffinePlane &ap) const
 {
   if (ap.m_plane.onSamePlane(m_plane)) {
@@ -120,6 +131,11 @@ bool ZAffinePlane::onSamePlane(const ZAffinePlane &ap) const
   }
 
   return false;
+}
+
+bool ZAffinePlane::isParallel(const ZAffinePlane &ap) const
+{
+  return ap.m_plane.onSamePlane(m_plane);
 }
 
 ZPoint ZAffinePlane::align(const ZPoint &pt) const
@@ -137,6 +153,11 @@ std::string ZAffinePlane::toString() const
 bool ZAffinePlane::operator== (const ZAffinePlane &p) const
 {
   return m_offset == p.m_offset && m_plane == p.m_plane;
+}
+
+bool ZAffinePlane::operator!= (const ZAffinePlane &p) const
+{
+  return m_offset != p.m_offset || m_plane != p.m_plane;
 }
 
 bool ZAffinePlane::approxEquals(const ZAffinePlane &plane) const

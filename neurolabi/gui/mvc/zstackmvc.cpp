@@ -166,7 +166,7 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(stackRangeChanged()),
                 m_view, SLOT(updateStackRange()), Qt::DirectConnection);
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
-                m_view, SLOT(processStackChange(bool)), Qt::QueuedConnection);
+                m_view, SLOT(processStackChange(bool)), Qt::AutoConnection);
 //  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
 //          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
 //  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
@@ -293,10 +293,12 @@ bool ZStackMvc::event(QEvent *event)
   return QWidget::event(event);
 }
 
+/*
 void ZStackMvc::processViewChange()
 {
   processViewChange(getView()->getViewParameter(neutu::ECoordinateSystem::STACK));
 }
+*/
 
 /*
 void ZStackMvc::updateActiveViewData()
@@ -305,12 +307,14 @@ void ZStackMvc::updateActiveViewData()
 }
 */
 
+/*
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
   processViewChangeCustom(viewParam);
 
   emit viewChanged();
 }
+*/
 
 QRect ZStackMvc::getViewGeometry() const
 {
@@ -630,13 +634,13 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 //  getView()->notifyViewChanged();
 }
 
+/*
 void ZStackMvc::zoomTo(const ZStackViewParam &param)
 {
   getView()->setView(param);
-  getView()->highlightPosition(param.getViewPort().center().x(),
-                               param.getViewPort().center().y(),
-                               param.getZ());
+  getView()->highlightPosition(param.getCutCenter().toIntPoint());
 }
+*/
 
 void ZStackMvc::zoomTo(int x, int y, int z, int width)
 {

@@ -45,9 +45,27 @@ public:
    */
   void scale(double su, double sv);
 
+
   ZAffinePlane getAffinePlane() const;
 
+  bool containsProjection(const ZPoint &pt) const;
+  bool contains(const ZPoint &pt) const;
+  bool contains(const ZAffineRect &rect) const;
+
+  /*!
+   * \brief Check a rectangle is with the band of another.
+   *
+   * It returns true if the affine plane of \a rect is within the plane band of
+   * the object and all corners of \a rect is projected inside the current
+   * rectangle.
+   */
+  bool contains(const ZAffineRect &rect, double d) const;
+
+  bool contains(const ZPoint &pt, double d) const;
+
   friend std::ostream& operator<<(std::ostream& stream, const ZAffineRect &r);
+  bool operator== (const ZAffineRect &p) const;
+  bool operator!= (const ZAffineRect &p) const;
 
 private:
   ZAffinePlane m_ap;

@@ -87,6 +87,75 @@ ZAffinePlane ZAffineRect::getAffinePlane() const
   return m_ap;
 }
 
+bool ZAffineRect::containsProjection(const ZPoint &pt) const
+{
+  ZPoint dp = pt - getCenter();
+
+  double u = dp.dot(getV1());
+  double halfWidth = m_width / 2.0;
+  if (u < -halfWidth || u > halfWidth) {
+    return false;
+  }
+
+  double v = dp.dot(getV2());
+  double halfHeight = m_height / 2.0;
+  if (v < -halfHeight || v > halfHeight) {
+    return false;
+  }
+
+  return true;
+}
+
+bool ZAffineRect::contains(const ZPoint &pt) const
+{
+  if (m_ap.contains(pt)) {
+    return containsProjection(pt);
+  }
+
+  return false;
+}
+
+bool ZAffineRect::contains(const ZAffineRect &rect) const
+{
+  for (int i = 0; i < 4; ++i) {
+    if (!contains(rect.getCorner(i))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool ZAffineRect::contains(const ZPoint &pt, double d) const
+{
+  double dist = m_ap.getPlane().computeSignedDistance(pt);
+  if (dist >= -d && dist < d) {
+    return containsProjection(pt);
+  }
+
+  return false;
+}
+
+bool ZAffineRect::contains(const ZAffineRect &rect, double d) const
+{
+  if (m_ap == rect.m_ap) {
+    return (m_width <= rect.m_width) && (m_height <= rect.m_height);
+  }
+
+  bool contained = false;
+  if (m_ap.contains(rect.m_ap, d)) {
+    contained = true;
+    for (int i = 0; i < 4; ++i) {
+      if (!containsProjection(rect.getCorner(i))) {
+        contained = false;
+        break;
+      }
+    }
+  }
+
+  return contained;
+}
+
 ZPoint ZAffineRect::getCorner(int index) const
 {
   ZPoint pt;
@@ -128,6 +197,16 @@ ZLineSegment ZAffineRect::getSide(int index) const
 
 
   return ZLineSegment(ZPoint::INVALID_POINT, ZPoint::INVALID_POINT);
+}
+
+bool ZAffineRect::operator== (const ZAffineRect &p) const
+{
+  return (m_width == p.m_width) && (m_height == p.m_height) && (m_ap == p.m_ap);
+}
+
+bool ZAffineRect::operator!= (const ZAffineRect &p) const
+{
+  return (m_width != p.m_width) || (m_height != p.m_height) || (m_ap != p.m_ap);
 }
 
 std::ostream& operator<<(std::ostream& stream, const ZAffineRect &r)

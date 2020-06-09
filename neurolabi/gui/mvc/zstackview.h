@@ -328,14 +328,12 @@ public:
   int getZ(neutu::ECoordinateSystem coordSys) const;
 
   ZPoint getCutCenter() const;
+  ZAffineRect getCutRect() const;
 //  ZIntPoint getCenter(
 //      neutu::ECoordinateSystem coordSys = neutu::ECoordinateSystem::STACK) const;
 
   ZAffineRect getViewPort() const;
   ZStackViewParam getViewParameter() const;
-  ZStackViewParam getViewParameter(
-      neutu::ECoordinateSystem coordSys,
-      neutu::View::EExploreAction action = neutu::View::EExploreAction::EXPLORE_UNKNOWN) const;
 
 //  QRectF getProjRegion() const;
   ZViewProj getViewProj() const;
@@ -376,6 +374,7 @@ public:
 
 //  void notifyViewPortChanged();
 
+  bool isViewChanged(const ZSliceViewTransform &t);
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
 //  void processViewChange(bool redrawing);
@@ -396,6 +395,7 @@ public:
 
   void addToolButton(QPushButton *button);
   void removeToolButton(QPushButton *button);
+  void setWidgetReady(bool ready);
 
 
 public: //Change view parameters
@@ -421,22 +421,23 @@ public: //Change view parameters
   ZPoint getAnchorPoint(neutu::data3d::ESpace space) const;
 
 public: //View parameters for arbitrary plane
-  ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
-  ZArbSliceViewParam getSliceViewParam() const;
+//  ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
+//  ZArbSliceViewParam getSliceViewParam() const;
   ZSliceViewTransform getSliceViewTransform() const;
+  void setSliceViewTransform(const ZSliceViewTransform &t);
 
   void updateDataInfo(const QPoint &widgetPos);
 //  void setSliceViewParam(const ZArbSliceViewParam &param);
 //  void showArbSliceViewPort();
 
 protected:
-  ZIntCuboid getViewBoundBox() const;
+//  ZIntCuboid getViewBoundBox() const;
   ZIntCuboid getCurrentStackRange() const;
   int getDepth() const;
 
   void clearCanvas();
-  template<typename T>
-  void resetCanvasWithStack(T &canvas, ZPainter *painter);
+//  template<typename T>
+//  void resetCanvasWithStack(T &canvas, ZPainter *painter);
 
 //  virtual void resetCanvasWithStack(
 //      ZMultiscalePixmap &canvas, ZPainter *painter);
@@ -471,7 +472,7 @@ protected:
    *
    * It is usually the same as the size of a stack slice.
    */
-  QSize getCanvasSize() const;
+//  QSize getCanvasSize() const;
 
   //help functions
   virtual void paintSingleChannelStackSlice(ZStack *stack, int slice);
@@ -566,7 +567,7 @@ public slots:
   void closeChildFrame();
 
 
-  void setView(const ZStackViewParam &param);
+//  void setView(const ZStackViewParam &param);
   void setViewPort(const QRect &rect);
   void maximizeViewPort();
 
@@ -740,7 +741,7 @@ protected:
       neutu::mvc::ViewInfoFlag::WINDOW_SCALE |
       neutu::mvc::ViewInfoFlag::IMAGE_VALUE;
 
-  ZIntCuboid m_currentStackRange;
+//  ZIntCuboid m_currentStackRange;
   ZPoint m_lastModelPosForDataInfo;
 
   std::shared_ptr<ZStackViewRecorder> m_recorder;

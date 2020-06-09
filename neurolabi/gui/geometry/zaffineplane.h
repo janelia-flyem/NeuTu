@@ -36,7 +36,18 @@ public:
   ZPlane getPlane() const;
 
   bool onSamePlane(const ZAffinePlane &ap) const;
+  bool isParallel(const ZAffinePlane &ap) const;
+
   bool contains(const ZPoint &pt) const;
+
+  /*!
+   * \brief Check if another plane lies within a band of the current plane.
+   *
+   * It returns true iff \a ap is parallel to the current plane and their
+   * distance is within [-d, d).
+   */
+  bool contains(const ZAffinePlane &ap, double d) const;
+
   double computeSignedDistance(const ZPoint &pt) const;
   double computeSignedDistance(double x, double y, double z) const;
 
@@ -60,6 +71,7 @@ public:
   bool approxEquals(const ZAffinePlane &plane) const;
 
   bool operator== (const ZAffinePlane &p) const;
+  bool operator!= (const ZAffinePlane &p) const;
 
 private:
   ZPoint m_offset;

@@ -272,6 +272,16 @@ ZPoint ZIntPoint::toPoint() const
   return ZPoint(getX(), getY(), getZ());
 }
 
+ZPoint ZIntPoint::toMinCorner() const
+{
+  return toPoint() - 0.5;
+}
+
+ZPoint ZIntPoint::toMaxCorner() const
+{
+  return toPoint() + 0.5;
+}
+
 bool ZIntPoint::isZero() const
 {
   return (getX() == 0) && (getY() == 0) && (getZ() == 0);
@@ -375,12 +385,12 @@ ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
 
 void ZIntPoint::shiftSliceAxis(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
 void ZIntPoint::shiftSliceAxisInverse(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
 int ZIntPoint::getSliceCoord(neutu::EAxis axis) const

@@ -12,12 +12,12 @@ TEST(ZDvidDataSliceHelper, Basic)
   ZDvidDataSliceHelper helper(ZDvidData::ERole::GRAYSCALE);
 
   ZStackViewParam viewParam;
-  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
-  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
-  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
+//  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+//  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+//  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
 
   helper.setViewParam(viewParam);
-  qDebug() << helper.getViewPort();
+//  qDebug() << helper.getViewPort();
   ASSERT_EQ(512, helper.getWidth());
   ASSERT_EQ(512, helper.getHeight());
 
@@ -38,7 +38,7 @@ TEST(ZDvidDataSliceHelper, Basic)
                 viewParam, helper.getZoom(), helper.getCenterCutWidth(),
                 helper.getCenterCutHeight(), helper.usingCenterCut()));
 
-  viewParam.setZ(viewParam.getZ() + 1);
+  viewParam.moveCutDepth(1);
   ASSERT_FALSE(helper.actualContainedIn(
                  viewParam, helper.getZoom(), helper.getCenterCutWidth(),
                  helper.getCenterCutHeight(), helper.usingCenterCut()));
@@ -50,9 +50,9 @@ TEST(ZDvidDataSliceHelper, Resolution)
   helper.setMaxZoom(5);
 
   ZStackViewParam viewParam;
-  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
-  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
-  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
+//  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+//  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+//  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
 
   helper.setViewParam(viewParam);
   helper.setZoom(1);

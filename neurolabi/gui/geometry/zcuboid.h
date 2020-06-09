@@ -38,7 +38,7 @@ public:
   void set(const ZPoint &getMinCorner, const ZPoint &getMaxCorner);
   void set(const ZIntPoint &getMinCorner, const ZIntPoint &getMaxCorner);
   void set(const ZIntCuboid &cuboid);
-  void set(const double *corner);
+  void set(const double *getCorner);
 
   void setMinCorner(const ZPoint &pt);
   void setMinCorner(double x, double y, double z);
@@ -86,6 +86,7 @@ public:
   void joinZ(double z);
 
   void join(double x, double y, double z);
+  void join(const ZPoint &pt);
   void join(const ZCuboid &box);
   void join(const ZIntCuboid &box);
 
@@ -96,8 +97,8 @@ public:
 
   void print();
 
-  ZPoint corner(int index) const;
-  ZPoint center() const;
+  ZPoint getCorner(int index) const;
+  ZPoint getCenter() const;
 
   inline const ZPoint& getMinCorner() const { return m_minCorner; }
   inline const ZPoint& getMaxCorner() const { return m_maxCorner; }
@@ -128,6 +129,7 @@ public:
   std::vector<double> toCornerVector() const;
 
   bool contains(const ZPoint &pt) const;
+  bool contains(const ZCuboid &box) const;
 
 private:
   static double computeDistance(double minX1, double maxX1,

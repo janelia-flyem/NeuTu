@@ -25,9 +25,7 @@ public:
   }
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
-    return false;
-  }
+      QPainter *painter, const DisplayConfig &config) const;
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;

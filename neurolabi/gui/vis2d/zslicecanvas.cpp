@@ -1,5 +1,7 @@
 #include "zslicecanvas.h"
 
+#include <QDebug>
+
 #include "common/math.h"
 
 ZSliceCanvas::ZSliceCanvas()
@@ -79,6 +81,7 @@ void ZSliceCanvas::set(
 
   if (!changed) {
     if (m_transform != transform) {
+      m_transform = transform;
       changed = true;
     }
   }
@@ -121,7 +124,7 @@ void ZSliceCanvas::beginPainter(QPainter *painter)
 }
 
 bool ZSliceCanvas::paintTo(
-    QPaintDevice *device, const ZSliceViewTransform &painterTransform)
+    QPaintDevice *device, const ZSliceViewTransform &painterTransform) const
 {
   bool paintable = true;
   if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
@@ -154,7 +157,55 @@ bool ZSliceCanvas::paintTo(
 
     QPainter painter(device);
     painter.setTransform(transform);
+#ifdef _DEBUG_
+    qDebug() << "painter transform:" << transform;
+#endif
     painter.drawPixmap(0, 0, m_pixmap);
+    return true;
+  }
+
+  return false;
+}
+
+bool ZSliceCanvas::paintTo(
+    QPainter *painter, const ZSliceViewTransform &painterTransform) const
+{
+  bool paintable = true;
+  if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
+    paintable = false;
+  } else {
+    if (painterTransform.getSliceAxis() == neutu::EAxis::ARB) {
+      if (!painterTransform.getCutPlaneNormal().approxEquals(
+            m_transform.getCutPlaneNormal())) {
+        paintable = false;
+      }
+    }
+  }
+
+  if (paintable) {
+    QTransform transform;
+    double s2 = painterTransform.getViewCanvasTransform().getScale();
+    double s1 = m_transform.getScale();
+    double s = s2 / s1;
+    ZPoint dc = m_transform.getModelViewTransform().getCutCenter() -
+        painterTransform.getModelViewTransform().getCutCenter();
+    double du = dc.dot(
+          m_transform.getModelViewTransform().getCutPlane().getV1()) * s2;
+    double dv = dc.dot(
+          m_transform.getModelViewTransform().getCutPlane().getV2()) * s2;
+    double tu =   painterTransform.getViewCanvasTransform().getTx() + du -
+        s * m_transform.getViewCanvasTransform().getTx();
+    double tv =  painterTransform.getViewCanvasTransform().getTy() + dv -
+        s * m_transform.getViewCanvasTransform().getTy();
+    transform.setMatrix(s, 0, 0, 0, s, 0, tu, tv, 1);
+
+    painter->save();
+    painter->setTransform(transform, true);
+#ifdef _DEBUG_
+    qDebug() << "painter transform:" << painter->transform();
+#endif
+    painter->drawPixmap(0, 0, m_pixmap);
+    painter->restore();
     return true;
   }
 
