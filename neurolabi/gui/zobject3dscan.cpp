@@ -2591,8 +2591,8 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         ZObject3dScan slice1 = getSlice(z0);
         ZObject3dScan slice2 = getSlice(z1);
 
-        ZIntPoint c1 = slice1.getCentroid().toIntPoint();
-        ZIntPoint c2 = slice2.getCentroid().toIntPoint();
+        ZIntPoint c1 = slice1.getCentroid().roundToIntPoint();
+        ZIntPoint c2 = slice2.getCentroid().roundToIntPoint();
         slice2.translate(c1.getX() - c2.getX(), c1.getY() - c2.getY(), 0);
 
         {

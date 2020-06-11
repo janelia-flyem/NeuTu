@@ -79,11 +79,9 @@ void ZSliceCanvas::set(
     changed = true;
   }
 
-  if (!changed) {
-    if (m_transform != transform) {
-      m_transform = transform;
-      changed = true;
-    }
+  if (m_transform != transform) {
+    m_transform = transform;
+    changed = true;
   }
 
   bool resetNeeded = false;

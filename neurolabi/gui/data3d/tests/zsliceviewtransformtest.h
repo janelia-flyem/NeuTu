@@ -111,7 +111,7 @@ TEST(ZSliceViewTransform, Set)
 
     t.fitModelRange(modelRange, 10, 20);
     ASSERT_DOUBLE_EQ(0.1, t.getScale());
-    ASSERT_TRUE(ZPoint(-0.45, -0.45, 155).approxEquals(t.transform(10, 20, 165)))
+    ASSERT_TRUE(ZPoint(0, 0, 155).approxEquals(t.transform(10, 20, 165)))
         << t.transform(10, 20, 165) << t.transform(60, 120, 0);
   }
 

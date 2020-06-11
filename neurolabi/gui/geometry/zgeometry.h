@@ -84,6 +84,28 @@ bool Intersects(const ZAffineRect &r1, const ZAffineRect &r2);
 
 ZIntCuboid GetIntBoundBox(const ZAffineRect &rect);
 
+/*!
+ * \brief Convert a float range to an int range
+ *
+ * It returns the minimal int range to contain [\a x0, \a x1) or x0 if x0 == x1.
+ *
+ * Since we use corner mapping to map between the integer and float system,
+ * \a x0 is mapped to floor(\a x0), and \a x1 is mapped to x1 - 1 if it is an
+ * integer number or floor(\a x1) if it is not.
+ *
+ * The behavior of this function is not defined if x0 > x1.
+ */
+std::pair<int, int> ToIntRange(double x0, double x1);
+
+/*!
+ * \brief Convert a float segment to an int segment
+ *
+ * It returns an integer segment that contains a segment centered at \a cx with
+ * lenght \a length. The returned segment is (cx, length) with cx as the right
+ * int center.
+ */
+std::pair<int, int> ToIntSegAtLeftCenter(double cx, double length);
+
 namespace raster {
 
 void ForEachNeighbor(

@@ -552,12 +552,12 @@ TEST(ZCuboid, ToIntCuboid)
   box.setMinCorner(-1.5, -2.5, -3.5);
   box.setMaxCorner(1.5, 2.5, 3.5);
 
-  ASSERT_EQ(ZIntCuboid(-1, -2, -3, 1, 2, 3), box.toIntCuboid());
+  ASSERT_EQ(ZIntCuboid(-2, -3, -4, 1, 2, 3), box.toIntCuboid());
 
   box.setMinCorner(-1.1, -2.6, -3.5);
   box.setMaxCorner(1.8, 2.49, 3.5);
 
-  ASSERT_EQ(ZIntCuboid(-1, -3, -3, 2, 2, 3), box.toIntCuboid());
+  ASSERT_EQ(ZIntCuboid(-2, -3, -4, 1, 2, 3), box.toIntCuboid());
 }
 
 TEST(ZCuboid, contains)

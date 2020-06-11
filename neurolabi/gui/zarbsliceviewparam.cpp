@@ -129,7 +129,7 @@ void ZArbSliceViewParam::move(double dx, double dy, double dz)
 {
   if (isValid()) {
     ZPoint dp = getPlaneV1() * dx + getPlaneV2() * dy + getPlaneNormal() * dz;
-    m_center += dp.toIntPoint();
+    m_center += dp.roundToIntPoint();
   }
 }
 

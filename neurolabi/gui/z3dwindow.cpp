@@ -2264,7 +2264,7 @@ static void AddTodoMarker(
     if (tree != NULL) {
       bodyId = tree->getLabel();
     }
-    ZIntPoint pt = SwcTreeNode::center(tn).toIntPoint();
+    ZIntPoint pt = SwcTreeNode::center(tn).roundToIntPoint();
     if (checked && (action != neutu::EToDoAction::NO_SOMA)) {
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
@@ -4374,7 +4374,7 @@ void Z3DWindow::showDetail(int x, int y)
         center *= 0.5;
       }
 
-      ZIntCuboid range = zgeom::MakeSphereBox(center.toIntPoint(), 256);
+      ZIntCuboid range = zgeom::MakeSphereBox(center.roundToIntPoint(), 256);
       doc->showMoreDetail(bodyId, range);
     }
   }
@@ -4680,8 +4680,8 @@ std::string Z3DWindow::updatePolyLinePairList(
         polyline2 = ZIntPointArray::MakePointer();
         polylinePairList.emplace_back(polyline1, polyline2);
       }
-      polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
-      polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+      polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().roundToIntPoint()));
+      polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().roundToIntPoint()));
     } else {
       polyline1.reset();
       polyline2.reset();

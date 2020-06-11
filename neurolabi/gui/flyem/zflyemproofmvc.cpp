@@ -4951,7 +4951,7 @@ void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
 
   m_orthoWindow->show();
   m_orthoWindow->raise();
-  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
+  m_orthoWindow->updateData(ZPoint(x, y, z).roundToIntPoint());
 }
 
 void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
@@ -4962,7 +4962,7 @@ void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
 
   m_orthoWindow->show();
   m_orthoWindow->raise();
-  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
+  m_orthoWindow->updateData(ZPoint(x, y, z).roundToIntPoint());
 }
 
 void ZFlyEmProofMvc::showTipDetectorWindow(const ZIntPoint &/*pt*/, uint64_t bodyId) {
@@ -5202,7 +5202,7 @@ void ZFlyEmProofMvc::chopBody()
       const QString threadId = "ZFlyEmBodySplitProject::chopBody";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
-        ZIntPoint center = getView()->getCutCenter().toIntPoint();
+        ZIntPoint center = getView()->getCutCenter().roundToIntPoint();
         int v = center.getZ();
         neutu::EAxis axis = chopDlg->getAxis();
         if (axis == neutu::EAxis::X) {

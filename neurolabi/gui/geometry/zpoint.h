@@ -130,7 +130,7 @@ public:
   void rotate(double theta, double psi, const ZPoint &center);
 
   bool hasIntCoord() const;
-  ZIntPoint toIntPoint() const;
+  ZIntPoint roundToIntPoint() const;
   std::vector<double> toArray() const;
 
   friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);

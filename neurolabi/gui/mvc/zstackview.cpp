@@ -1243,7 +1243,7 @@ void ZStackView::updateStackRange()
     if (isOriginallyEmpty) {
       imageWidget()->resetView();
     } else {
-      if (modelRange.contains(imageWidget()->getCutCenter().toIntPoint())) {
+      if (modelRange.contains(imageWidget()->getCutCenter().roundToIntPoint())) {
         syncTransformControl();
       } else {
         imageWidget()->setCutCenter(modelRange.getCenter());
@@ -2216,8 +2216,11 @@ void ZStackView::paintStackBuffer()
         ZImageSliceFactory::Make(
               *stack,
               imageWidget()->getSliceViewTransform().getModelViewTransform(),
-              viewportSize.width(), viewportSize.height(), canvas.get()
-              );
+              viewportSize.width(), viewportSize.height(), canvas.get());
+#ifdef _DEBUG_2
+        std::cout << "Saving image canvas ..." << std::endl;
+        canvas->save(GET_TEST_DATA_DIR + "/_test.png");
+#endif
       }
     }
   }
@@ -2603,8 +2606,11 @@ bool ZStackView::paintTileCanvasBuffer()
     auto canvas = imageWidget()->getValidCanvas(
           ZImageWidget::ECanvasRole::CANVAS_ROLE_TILE);
     paintObjectBuffer(*canvas, ZStackObject::ETarget::TILE_CANVAS);
-#ifdef _DEBUG_2
-    canvas->save(GET_TEST_DATA_DIR + "/_test.png");
+#ifdef _DEBUG_
+    if (canvas->isPainted()) {
+      std::cout << "Saving tile canvas ..." << std::endl;
+      canvas->save(GET_TEST_DATA_DIR + "/_test2.png");
+    }
 #endif
 //    updateTileCanvas();
 //    updateNewTileCanvas();
@@ -3498,7 +3504,7 @@ void ZStackView::setViewPortCenter(
 
 ZIntPoint ZStackView::getViewCenter() const
 {
-  return imageWidget()->getSliceViewTransform().getCutCenter().toIntPoint();
+  return imageWidget()->getSliceViewTransform().getCutCenter().roundToIntPoint();
   /*
   ZIntPoint center;
 

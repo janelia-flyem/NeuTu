@@ -1759,13 +1759,13 @@ void ZDvidWriter::writeBookmarkKey(const ZFlyEmBookmark &bookmark)
     json.setEntry("checked", true);
   }
 
-  writeJson(dvidUrl.getBookmarkKeyUrl(bookmark.getCenter().toIntPoint()),
+  writeJson(dvidUrl.getBookmarkKeyUrl(bookmark.getCenter().roundToIntPoint()),
             json, "{}");
 }
 
 void ZDvidWriter::deleteBookmarkKey(const ZFlyEmBookmark &bookmark)
 {
-  ZIntPoint center = bookmark.getCenter().toIntPoint();
+  ZIntPoint center = bookmark.getCenter().roundToIntPoint();
   std::stringstream stream;
   stream << center.getX() << "_" << center.getY() << "_" << center.getZ();
 
@@ -1847,7 +1847,7 @@ void ZDvidWriter::deleteBookmark(
   for (std::vector<ZFlyEmBookmark *>::const_iterator
        iter = bookmarkArray.begin(); iter != bookmarkArray.end(); ++iter) {
     const ZFlyEmBookmark *bookmark = *iter;
-    deleteBookmark(bookmark->getCenter().toIntPoint());
+    deleteBookmark(bookmark->getCenter().roundToIntPoint());
   }
 }
 

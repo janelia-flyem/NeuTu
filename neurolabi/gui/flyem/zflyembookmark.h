@@ -47,7 +47,7 @@ public:
   inline const QString& getStatus() const { return m_status; }
   inline const QString& getComment() const { return m_comment; }
   inline const QStringList& getTags() const { return m_tags; }
-  inline ZIntPoint getLocation() const { return getCenter().toIntPoint(); }
+  inline ZIntPoint getLocation() const { return getCenter().roundToIntPoint(); }
   inline EBookmarkType getBookmarkType() const { return m_bookmarkType; }
   QString getTypeString() const;
 

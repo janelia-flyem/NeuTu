@@ -430,6 +430,26 @@ TEST(ZGeometry, Raster)
   }
 }
 
+TEST(ZGeometry, Int)
+{
+  std::pair<int, int> range = zgeom::ToIntRange(0, 1);
+  ASSERT_EQ(0, range.first);
+  ASSERT_EQ(0, range.second);
+
+  range = zgeom::ToIntRange(0.5, 1.5);
+  ASSERT_EQ(0, range.first);
+  ASSERT_EQ(1, range.second);
+
+  range = zgeom::ToIntRange(1, 1);
+  ASSERT_EQ(1, range.first);
+  ASSERT_EQ(1, range.second);
+
+  range = zgeom::ToIntRange(-1.5, 1.5);
+  ASSERT_EQ(-2, range.first);
+  ASSERT_EQ(1, range.second);
+
+}
+
 #endif
 
 #endif // ZGEOMETRYTEST_H

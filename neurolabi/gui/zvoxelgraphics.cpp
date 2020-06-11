@@ -74,10 +74,10 @@ ZObject3d* ZVoxelGraphics::createPlaneObject(
     const ZIntPoint &start, const ZPoint &vec1,
     double len1, const ZPoint &vec2, double len2)
 {
-  ZIntPoint lineEnd = start + (vec1 * len1).toIntPoint();
+  ZIntPoint lineEnd = start + (vec1 * len1).roundToIntPoint();
   ZObject3d *baseLine = createLineObject(start, lineEnd);
 
-  lineEnd = start + (vec2 * len2).toIntPoint();
+  lineEnd = start + (vec2 * len2).roundToIntPoint();
   ZObject3d *scanLine = createLineObject(start, lineEnd);
 
   ZObject3d *obj = new ZObject3d;
@@ -103,8 +103,8 @@ ZObject3d* ZVoxelGraphics::createPlaneObject(
 
 ZObject3d* ZVoxelGraphics::createLineObject(const ZLineSegment &seg)
 {
-  return createLineObject(seg.getStartPoint().toIntPoint(),
-                          seg.getEndPoint().toIntPoint());
+  return createLineObject(seg.getStartPoint().roundToIntPoint(),
+                          seg.getEndPoint().roundToIntPoint());
 }
 
 ZObject3d* ZVoxelGraphics::createLineObject6c(
@@ -148,8 +148,8 @@ ZObject3d* ZVoxelGraphics::createLineObject6c(
 
 ZObject3d* ZVoxelGraphics::createLineObject6c(const ZLineSegment &seg)
 {
-  return createLineObject6c(seg.getStartPoint().toIntPoint(),
-                            seg.getEndPoint().toIntPoint());
+  return createLineObject6c(seg.getStartPoint().roundToIntPoint(),
+                            seg.getEndPoint().roundToIntPoint());
 }
 
 ZObject3d* ZVoxelGraphics::createPolylineObject(
@@ -231,7 +231,7 @@ ZObject3d* ZVoxelGraphics::createPolyPlaneObject(
 {
   ZObject3d *baseLine = createPolylineObject6c(polyline);
 
-  ZIntPoint lineEnd = polyline[0] + (vec2 * len2).toIntPoint();
+  ZIntPoint lineEnd = polyline[0] + (vec2 * len2).roundToIntPoint();
   ZObject3d *scanLine = createLineObject(polyline[0], lineEnd);
 
   ZObject3d *obj = new ZObject3d;
@@ -292,10 +292,10 @@ ZObject3d* ZVoxelGraphics::createTriangleObject(
 ZObject3d* ZVoxelGraphics::createQuadrangleObject(
     const ZLineSegment &seg1, const ZLineSegment &seg2)
 {
-  return createQuadrangleObject(seg1.getStartPoint().toIntPoint(),
-                                seg1.getEndPoint().toIntPoint(),
-                                seg2.getStartPoint().toIntPoint(),
-                                seg2.getEndPoint().toIntPoint());
+  return createQuadrangleObject(seg1.getStartPoint().roundToIntPoint(),
+                                seg1.getEndPoint().roundToIntPoint(),
+                                seg2.getStartPoint().roundToIntPoint(),
+                                seg2.getEndPoint().roundToIntPoint());
 }
 
 ZObject3d* ZVoxelGraphics::createQuadrangleObject(

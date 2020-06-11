@@ -274,12 +274,12 @@ ZPoint ZIntPoint::toPoint() const
 
 ZPoint ZIntPoint::toMinCorner() const
 {
-  return toPoint() - 0.5;
+  return toPoint();
 }
 
 ZPoint ZIntPoint::toMaxCorner() const
 {
-  return toPoint() + 0.5;
+  return toPoint() + 1.0;
 }
 
 bool ZIntPoint::isZero() const

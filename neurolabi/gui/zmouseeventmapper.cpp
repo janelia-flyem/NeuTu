@@ -271,7 +271,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
 //      ZPoint rawStackPosition = event.get();
       ZPoint dataPos = event.getDataPosition();
       ZIntCuboid dataBox = ZStackDocUtil::GetDataSpaceRange(*m_doc);
-      if (dataBox.contains(dataPos.toIntPoint())) {
+      if (dataBox.contains(dataPos.roundToIntPoint())) {
         //        if (m_doc->getStack()->containsRaw(rawStackPosition)) {
         bool hitTestOn =
             (/*m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||*/

@@ -755,7 +755,7 @@ void ZImageWidget::adjustMinScale()
   ZPoint dims = m_sliceViewTransform.getModelViewTransform().transformBoxSize(
         m_modelRange.getSize().toPoint());
   m_sliceViewTransform.setMinScale(
-        std::min(width() * 0.25 / dims.getX(), height() * 0.25 / dims.getY()));
+        std::min(width() * 0.5 / dims.getX(), height() * 0.5 / dims.getY()));
 }
 
 void ZImageWidget::adjustTransformWithResize()

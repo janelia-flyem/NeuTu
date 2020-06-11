@@ -184,7 +184,7 @@ void ZFlyEmOrthoWidget::syncMergeWithDvid()
 
 void ZFlyEmOrthoWidget::moveTo(double x, double y, double z)
 {
-  moveTo(ZPoint(x, y, z).toIntPoint());
+  moveTo(ZPoint(x, y, z).roundToIntPoint());
 }
 
 void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)

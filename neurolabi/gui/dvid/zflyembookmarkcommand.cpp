@@ -118,7 +118,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::redo()
              iter = m_bookmarkArray.begin(); iter != m_bookmarkArray.end();
              ++iter) {
           ZFlyEmBookmark *bookmark = *iter;
-          writer.deleteBookmark(bookmark->getCenter().toIntPoint());
+          writer.deleteBookmark(bookmark->getCenter().roundToIntPoint());
         }
       }
 

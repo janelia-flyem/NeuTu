@@ -84,6 +84,7 @@ public:
 
   static ZIntCuboid GetBoundBox(const QRect &viewPort, int z);
   ZIntCuboid getBoundBox() const;
+  ZIntCuboid getDataRange() const;
 //  void setBoundBox(const ZRect2d &rect);
 
   int getScale() const;
@@ -168,6 +169,7 @@ public:
 
   ZDvidReader m_reader;
   ZDvidReader m_workReader; //reader for worker thread
+  ZDvidInfo m_dvidInfo;
 };
 
 #endif // ZDVIDDATASLICEHELPER_H

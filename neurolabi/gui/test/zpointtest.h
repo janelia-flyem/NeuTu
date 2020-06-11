@@ -89,16 +89,16 @@ TEST(ZPoint, Relation)
 TEST(ZPoint, toIntPoint)
 {
   ZPoint pt(1.0, 2.6, 4.1);
-  ASSERT_EQ(ZIntPoint(1, 3, 4), pt.toIntPoint());
+  ASSERT_EQ(ZIntPoint(1, 3, 4), pt.roundToIntPoint());
 
   pt.set(1.5, 2.5, 3.5);
-  ASSERT_EQ(ZIntPoint(2, 3, 4), pt.toIntPoint());
+  ASSERT_EQ(ZIntPoint(2, 3, 4), pt.roundToIntPoint());
 
   pt.set(-1.5, -2.5, -3.5);
-  ASSERT_EQ(ZIntPoint(-1, -2, -3), pt.toIntPoint());
+  ASSERT_EQ(ZIntPoint(-1, -2, -3), pt.roundToIntPoint());
 
   ASSERT_FALSE(pt.hasIntCoord());
-  ASSERT_TRUE(pt.toIntPoint().toPoint().hasIntCoord());
+  ASSERT_TRUE(pt.roundToIntPoint().toPoint().hasIntCoord());
 }
 
 TEST(ZIntPoint, Operator)

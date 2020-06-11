@@ -45,14 +45,16 @@ double ZSliceViewTransform::getScale() const
 ZAffineRect ZSliceViewTransform::getCutRect(
     int width, int height, neutu::data3d::ESpace sizeSpace) const
 {
-  double canvasWidth = width;
-  double canvasHeight = height;
+//  double canvasWidth = width;
+//  double canvasHeight = height;
+  double cx = width / 2.0;
+  double cy = height / 2.0;
   if (sizeSpace != neutu::data3d::ESpace::CANVAS) {
-    canvasWidth *= getScale();
-    canvasHeight *= getScale();
+    cx *= getScale();
+    cx *= getScale();
   }
 
-  ZPoint newCutCenter = inverseTransform(canvasWidth / 2.0, canvasHeight / 2.0);
+  ZPoint newCutCenter = inverseTransform(cx, cy);
 
   ZAffineRect rect;
   rect.setCenter(newCutCenter);
@@ -74,19 +76,7 @@ ZAffineRect ZSliceViewTransform::getCutRect(
 ZAffineRect ZSliceViewTransform::getCutRect(
     int canvasWidth, int canvasHeight) const
 {
-  ZPoint newCutCenter = inverseTransform(canvasWidth / 2.0, canvasHeight / 2.0);
-
-  ZAffineRect rect;
-  rect.setCenter(newCutCenter);
-  rect.setPlane(m_modelViewTransform.getCutPlane().getV1(),
-                m_modelViewTransform.getCutPlane().getV2());
-
-  double modelWidth = canvasWidth / getScale();
-  double modelHeight = canvasHeight / getScale();
-
-  rect.setSize(modelWidth, modelHeight);
-
-  return rect;
+  return getCutRect(canvasWidth, canvasHeight, neutu::data3d::ESpace::CANVAS);
 }
 
 ZAffineRect ZSliceViewTransform::getIntCutRect(
@@ -94,7 +84,7 @@ ZAffineRect ZSliceViewTransform::getIntCutRect(
 {
   ZAffineRect rect = getCutRect(width, height, sizeSpace);
   if (!getCutCenter().hasIntCoord()) {
-    setCutCenter(getCutCenter().toIntPoint().toPoint());
+    setCutCenter(getCutCenter().roundToIntPoint().toPoint());
     rect.setSize(rect.getWidth() + 1, rect.getHeight() + 1);
   }
 
@@ -357,7 +347,7 @@ void ZSliceViewTransform::fitModelRange(
           dstWidth / viewBox.width(), dstHeight / viewBox.height());
     setScale(scale);
 //    ZPoint center = modelRange.getExactCenter();
-    setAnchor((dstWidth - 1) / 2.0, (dstHeight - 1) / 2.0);
+    setAnchor(dstWidth / 2.0, dstHeight / 2.0);
     ZPoint viewCenter = viewBox.getCenter();
     m_modelViewTransform.translateCutCenterOnPlane(
           viewCenter.getX(), viewCenter.getY());

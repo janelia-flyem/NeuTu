@@ -2839,10 +2839,10 @@ void ZStackPresenter::copyCurrentPosition()
   ZPoint pt = event.getDataPosition();
 
   ZGlobal::GetInstance().setDataPosition(pt.x(), pt.y(), pt.z());
-  ZGlobal::CopyToClipboard(pt.toIntPoint().toString());
+  ZGlobal::CopyToClipboard(pt.roundToIntPoint().toString());
 
   buddyDocument()->notify(
-        QString("%1 copied").arg(pt.toIntPoint().toString().c_str()));
+        QString("%1 copied").arg(pt.roundToIntPoint().toString().c_str()));
 }
 
 void ZStackPresenter::copyLabelId()
@@ -3133,7 +3133,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     buddyView()->setSliceIndex(buddyView()->sliceIndex() + 10);
     break;
   case ZStackOperator::OP_ZOOM_TO:
-    buddyView()->zoomTo(currentStackPos.toIntPoint());
+    buddyView()->zoomTo(currentStackPos.roundToIntPoint());
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
   {

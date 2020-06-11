@@ -81,7 +81,7 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntCuboid &box)
 ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
 {
   ZJsonObject json;
-  ZJsonArray posJson = MakeJsonArray(bookmark.getCenter().toIntPoint());
+  ZJsonArray posJson = MakeJsonArray(bookmark.getCenter().roundToIntPoint());
   json.setEntry("Pos", posJson);
   json.setEntry("Kind", "Note");
 

@@ -201,7 +201,7 @@ void ZIntCuboid::join(const ZIntPoint &pt)
 
 void ZIntCuboid::join(const ZPoint &pt)
 {
-  join(pt.toIntPoint());
+  join(pt.roundToIntPoint());
 }
 
 ZIntCuboid &ZIntCuboid::intersect(const ZIntCuboid &cuboid)
@@ -523,12 +523,12 @@ int ZIntCuboid::getDim(neutu::EAxis axis) const
 
 ZPoint ZIntCuboid::getExactCenter() const
 {
-  return (getMinCorner().toPoint() + getMaxCorner().toPoint()) / 2.0;
+  return getMinCorner().toPoint() + getSize() / 2.0;
 }
 
 ZIntPoint ZIntCuboid::getCenter() const
 {
-  return (getMinCorner() + getMaxCorner()) / 2;
+  return getMinCorner() + getSize() / 2;
 }
 
 void ZIntCuboid::setCenter(const ZIntPoint &center)
@@ -589,6 +589,11 @@ bool ZIntCuboid::operator !=(const ZIntCuboid &box) const
 {
   return m_minCorner != box.m_minCorner ||
       m_maxCorner != box.m_maxCorner;
+}
+
+ZIntCuboid operator -(const ZIntCuboid &box, const ZIntPoint &pt)
+{
+  return ZIntCuboid(box.getMinCorner() - pt, box.getMaxCorner() - pt);
 }
 
 void ZIntCuboid::downScale(int sx, int sy, int sz)

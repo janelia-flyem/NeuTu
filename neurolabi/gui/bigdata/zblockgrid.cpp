@@ -142,7 +142,7 @@ void ZBlockGrid::forEachIntersectedBlock(
     const ZAffineRect &plane, std::function<void(int i, int j, int k)> f)
 {
   std::queue<ZIntPoint> blockQueue;
-  ZIntPoint seedBlock = getBlockIndex(plane.getCenter().toIntPoint());
+  ZIntPoint seedBlock = getBlockIndex(plane.getCenter().roundToIntPoint());
   blockQueue.push(seedBlock);
   std::unordered_map<std::string, bool> checked;
   while (!blockQueue.empty()) {

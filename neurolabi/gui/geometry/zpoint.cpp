@@ -382,7 +382,7 @@ ZPoint ZPoint::operator - () const
   return ZPoint(-x(), -y(), -z());
 }
 
-ZIntPoint ZPoint::toIntPoint() const
+ZIntPoint ZPoint::roundToIntPoint() const
 {
   return ZIntPoint(neutu::nround(x()), neutu::nround(y()), neutu::nround(z()));
 }

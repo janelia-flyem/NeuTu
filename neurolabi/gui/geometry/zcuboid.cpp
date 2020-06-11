@@ -63,8 +63,8 @@ void ZCuboid::set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 void ZCuboid::set(const ZIntCuboid &cuboid)
 {
   if (!cuboid.isEmpty()) {
-    set(cuboid.getMinCorner().toPoint() - 0.5,
-        cuboid.getMaxCorner().toPoint() + 0.5);
+    set(cuboid.getMinCorner().toPoint(),
+        cuboid.getMaxCorner().toPoint() + 1.0);
   }
 }
 
@@ -687,10 +687,22 @@ bool ZCuboid::intersectLine(
 ZIntCuboid ZCuboid::toIntCuboid() const
 {
   ZIntCuboid cuboid;
-  cuboid.setMinCorner(m_minCorner.toIntPoint());
-  cuboid.setMaxCorner(ZIntPoint(neutu::hround(m_maxCorner.getX()),
-                                neutu::hround(m_maxCorner.getY()),
-                                neutu::hround(m_maxCorner.getZ())));
+  cuboid.setMinCorner(ZIntPoint(neutu::ifloor(m_minCorner.getX()),
+                                neutu::ifloor(m_minCorner.getY()),
+                                neutu::ifloor(m_minCorner.getZ())));
+  int x = neutu::ifloor(m_maxCorner.getX());
+  int y = neutu::ifloor(m_maxCorner.getY());
+  int z = neutu::ifloor(m_maxCorner.getZ());
+  if (double(x) == m_maxCorner.getX()) {
+    --x;
+  }
+  if (double(y) == m_maxCorner.getY()) {
+    --y;
+  }
+  if (double(z) == m_maxCorner.getZ()) {
+    --z;
+  }
+  cuboid.setMaxCorner(ZIntPoint(x, y, z));
 
   return cuboid;
 }

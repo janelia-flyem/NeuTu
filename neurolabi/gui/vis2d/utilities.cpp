@@ -52,6 +52,11 @@ QImage neutu::vis2d::GetSlice(
     y0 = std::max(box.getMinY(), y0);
     y1 = std::min(box.getMaxY(), y1);
 
+#ifdef _DEBUG_
+    std::cout << "Slice Range: (" << x0 << ", " << y0 << "), ("
+              << x1 << ", " << y1 << ")" << std::endl;
+#endif
+
     if (x0 < x1 && y0 < y1) {
       int width = x1 - x0 + 1;
       int height = y1 - y0 + 1;
@@ -177,8 +182,8 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
         y0 = neutu::ifloor(rect.getCenter().getY() - halfHeight);
         y1 = neutu::iround(rect.getCenter().getY() + halfHeight);
         image = GetSlice(stack, x0, y0, x1, y1, z);
-        cx = (x0 + x1) / 2.0;
-        cy = (y0 + y1) / 2.0;
+        cx = (x0 + x1 + 1) / 2.0;
+        cy = (y0 + y1 + 1) / 2.0;
         cz = z;
       }
     } else if (rect.getV1() == ZPoint(0, 0, 1) &&
@@ -190,8 +195,8 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
         y0 = neutu::ifloor(rect.getCenter().getY() - halfHeight);
         y1 = neutu::iround(rect.getCenter().getY() + halfHeight);
         image = GetSliceX(stack, x0, y0, x1, y1, z);
-        cz = (x0 + x1) / 2.0;
-        cy = (y0 + y1) / 2.0;
+        cz = (x0 + x1 + 1) / 2.0;
+        cy = (y0 + y1 + 1) / 2.0;
         cx = z;
       }
     } else if (rect.getV1() == ZPoint(1, 0, 0) &&
@@ -203,8 +208,8 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
         y0 = neutu::ifloor(rect.getCenter().getZ() - halfHeight);
         y1 = neutu::iround(rect.getCenter().getZ() + halfHeight);
         image = GetSliceY(stack, x0, y0, x1, y1, z);
-        cx = (x0 + x1) / 2.0;
-        cz = (y0 + y1) / 2.0;
+        cx = (x0 + x1 + 1) / 2.0;
+        cz = (y0 + y1 + 1) / 2.0;
         cy = z;
       }
     }

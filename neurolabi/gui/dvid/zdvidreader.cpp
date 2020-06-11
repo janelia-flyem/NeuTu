@@ -3471,7 +3471,7 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
   if (tree != NULL) {
     Swc_Tree_Node *tn = tree->getThickestNode();
     if (tn != NULL) {
-      pt = SwcTreeNode::center(tn).toIntPoint();
+      pt = SwcTreeNode::center(tn).roundToIntPoint();
     }
     /*
     if (!tree->isEmpty()) {
@@ -4191,7 +4191,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
     stack = new ZStack(GREY, box, 1);
 
     try {
-      std::vector<int> offset = GetOffset(x0, y0, z0);
+      std::vector<int> offset({x0, y0, z0});
 
       if (zoom == getDvidTarget().getMaxGrayscaleZoom() ||
           box.getWidth() < cx || box.getHeight() < cy) {
@@ -4202,15 +4202,8 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 //        zoom -= 1;
       }
 
-      std::vector<double> dim1vec;
-      dim1vec.push_back(vx1);
-      dim1vec.push_back(vy1);
-      dim1vec.push_back(vz1);
-
-      std::vector<double> dim2vec;
-      dim2vec.push_back(vx2);
-      dim2vec.push_back(vy2);
-      dim2vec.push_back(vz2);
+      std::vector<double> dim1vec({vx1, vy1, vz1});
+      std::vector<double> dim2vec({vx2, vy2, vz2});
 
 #ifdef _DEBUG_2
       STD_COUT << "Stack info:";
@@ -4261,7 +4254,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
     const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const
 {
   return readGrayScaleLowtis(
-        ar.getCenter().toIntPoint(), ar.getV1(), ar.getV2(),
+        ar.getCenter().roundToIntPoint(), ar.getV1(), ar.getV2(),
         neutu::iround(ar.getWidth()), neutu::iround(ar.getHeight()),
         zoom, cx, cy, centerCut);
 }
@@ -4279,7 +4272,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const
 {
   return readLabels64Lowtis(
-        ar.getCenter().toIntPoint(), ar.getV1(), ar.getV2(),
+        ar.getCenter().roundToIntPoint(), ar.getV1(), ar.getV2(),
         neutu::iround(ar.getWidth()), neutu::iround(ar.getHeight()),
         zoom, cx, cy, centerCut);
 }

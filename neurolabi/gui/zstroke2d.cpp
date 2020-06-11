@@ -996,7 +996,7 @@ void ZStroke2d::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     ZCuboid cuboid = getBoundBox();
-    box->setMinCorner(cuboid.getMinCorner().toIntPoint());
-    box->setMaxCorner(cuboid.getMaxCorner().toIntPoint());
+    box->setMinCorner(cuboid.getMinCorner().roundToIntPoint());
+    box->setMaxCorner(cuboid.getMaxCorner().roundToIntPoint());
   }
 }

@@ -164,7 +164,7 @@ void ZFlyEmOrthoMvc::updateStackFromCrossHair()
 //    ZPoint pt = doc->getCrossHairCenter();
 //    pt.setZ(getView()->sliceIndex());
 //    ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
-    updateStack(dataPos.toIntPoint());
+    updateStack(dataPos.roundToIntPoint());
   }
 }
 
@@ -203,7 +203,7 @@ void ZFlyEmOrthoMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 //      pt.setZ(getView()->sliceIndex());
 //      ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
       ZIntPoint dataPos =
-          getView()->getAnchorPoint(neutu::data3d::ESpace::MODEL).toIntPoint();
+          getView()->getAnchorPoint(neutu::data3d::ESpace::MODEL).roundToIntPoint();
       if (!doc->getDataRange().contains(dataPos)) {
         doc->updateStack(dataPos);
 //        updateStack(dataPos);

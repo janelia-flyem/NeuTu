@@ -154,7 +154,7 @@ ZStackViewParam ZFlyEmGrayscaleDialog::getViewParam() const
 void ZFlyEmGrayscaleDialog::useViewCenter()
 {
   ZStackViewParam viewParam = getViewParam();
-  setCenter(viewParam.getCutCenter().toIntPoint() - getSize() / 2);
+  setCenter(viewParam.getCutCenter().roundToIntPoint() - getSize() / 2);
   /*
   QRect viewPort = viewParam.getViewPort();
   if (viewPort.isValid()) {
@@ -170,7 +170,7 @@ void ZFlyEmGrayscaleDialog::useViewPort()
   ZStackViewParam viewParam = getViewParam();
 //  QRect viewPort = viewParam.getViewPort();
   if (viewParam.isValid()) {
-    setCenter(viewParam.getCutCenter().toIntPoint());
+    setCenter(viewParam.getCutCenter().roundToIntPoint());
 //    setOffset(viewPort.left(), viewPort.top(), viewParam.getZ());
     setWidth(viewParam.getIntWidth(neutu::data3d::ESpace::MODEL));
     setHeight(viewParam.getIntHeight(neutu::data3d::ESpace::MODEL));
@@ -183,7 +183,7 @@ void ZFlyEmGrayscaleDialog::useCurrentOffset()
   ZStackViewParam viewParam = getViewParam();
 //  QRect viewPort = viewParam.getViewPort();
   if (viewParam.isValid()) {
-    setCenter(viewParam.getCutCenter().toIntPoint());
+    setCenter(viewParam.getCutCenter().roundToIntPoint());
   }
 }
 

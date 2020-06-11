@@ -10425,7 +10425,8 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
         }
         ZTask *task = player->getFutureTask(m_doc.get());
         if (task != NULL) {
-          m_doc->addTask(task);
+          //Temporary disabling to recover some basic functions first
+//          m_doc->addTask(task);
         }
       }
     }

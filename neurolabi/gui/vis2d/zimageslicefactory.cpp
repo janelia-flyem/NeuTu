@@ -32,7 +32,7 @@ ZSliceCanvas* ZImageSliceFactory::Make(
   } else {
     t.setCutPlane(transform.getSliceAxis(), rect.getCenter());
   }
-  t.setAnchor((rect.getWidth() - 1) / 2.0, (rect.getHeight() - 1) / 2.0);
+  t.setAnchor(rect.getWidth() / 2.0, rect.getHeight() / 2.0);
   /*
   t.setAnchor(neutu::ifloor((rect.getWidth() - 1) / 2.0),
               neutu::ifloor((rect.getHeight() - 1) / 2.0));

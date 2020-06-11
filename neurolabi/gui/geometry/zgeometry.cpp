@@ -478,6 +478,28 @@ ZIntCuboid zgeom::GetIntBoundBox(const ZAffineRect &rect)
   return box;
 }
 
+std::pair<int, int> zgeom::ToIntRange(double x0, double x1)
+{
+  std::pair<int, int> result;
+  result.first = neutu::ifloor(x0);
+  result.second = neutu::ifloor(x1);
+  if ((double(result.second) == x1) && (result.first != result.second)) {
+    --result.second;
+  }
+
+  return result;
+}
+
+std::pair<int, int> zgeom::ToIntSegAtLeftCenter(double cx, double length)
+{
+  double halfLength = length * 0.5;
+  std::pair<int, int> range = ToIntRange(cx - halfLength, cx + halfLength);
+
+  int intLength = range.second - range.first + 1;
+  return std::pair<int, int>(
+        range.first + intLength / 2, intLength);
+}
+
 namespace {
 
 ZAffineRect get_face(const ZCuboid &box, int index)

@@ -284,7 +284,7 @@ ZStack* ZStackFactory::MakeDensityMap(const ZPointArray &ptArray, double sigma)
   pt2 += radius;
 
 
-  ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
+  ZIntCuboid stackBox(pt1.roundToIntPoint(), pt2.roundToIntPoint());
   ZStack *stack = NULL;
 
   if (ptArray.size() < 1000) {
@@ -388,7 +388,7 @@ ZStack* ZStackFactory::MakeDensityMap(
   pt2 += radius;
 
 
-  ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
+  ZIntCuboid stackBox(pt1.roundToIntPoint(), pt2.roundToIntPoint());
   ZStack *stack = NULL;
 
   if (ptArray.size() < 1000) {
@@ -495,7 +495,7 @@ ZStack* ZStackFactory::MakeSeedStack(const ZWeightedPointArray &ptArray)
   ZPoint pt1 = boundBox.getMinCorner();
   ZPoint pt2 = boundBox.getMaxCorner();
 
-  ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
+  ZIntCuboid stackBox(pt1.roundToIntPoint(), pt2.roundToIntPoint());
   ZStack *stack = MakeZeroStack(GREY, stackBox);
 
   for (ZWeightedPointArray::const_iterator iter = ptArray.begin();

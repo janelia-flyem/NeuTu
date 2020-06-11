@@ -21,6 +21,19 @@ void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
 {
   m_reader.open(target);
   m_workReader.openRaw(m_reader.getDvidTarget());
+  switch (m_dataRole) {
+  case ZDvidData::ERole::GRAYSCALE:
+  case ZDvidData::ERole::MULTISCALE_2D:
+    m_dvidInfo = ZDvidGlobal::Memo::ReadGrayscaleInfo(m_reader.getDvidTarget());
+    break;
+  case ZDvidData::ERole::SEGMENTATION:
+  case ZDvidData::ERole::SPARSEVOL:
+    m_dvidInfo = ZDvidGlobal::Memo::ReadSegmentationInfo(
+          m_reader.getDvidTarget());
+  default:
+    break;
+  }
+
   updateCenterCut();
 }
 
@@ -46,6 +59,11 @@ void ZDvidDataSliceHelper::updateMaxZoom()
   default:
     break;
   }
+}
+
+ZIntCuboid ZDvidDataSliceHelper::getDataRange() const
+{
+  return m_dvidInfo.getDataRange();
 }
 
 int ZDvidDataSliceHelper::getMaxZoom() const
@@ -116,7 +134,7 @@ int ZDvidDataSliceHelper::updateParam(ZStackViewParam *param) const
   if (!param->getCutCenter().hasIntCoord()) {
     ++width;
     ++height;
-    param->setCutCenter(param->getCutCenter().toIntPoint());
+    param->setCutCenter(param->getCutCenter().roundToIntPoint());
   }
 
   int maxZoomLevel = getMaxZoom();

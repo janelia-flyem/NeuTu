@@ -31625,7 +31625,7 @@ void ZTest::test(MainWindow *host)
 //  QPainter *painter = helper.getPainter();
   QPen pen;
   pen.setColor(Qt::red);
-  pen.setCosmetic(false);
+  pen.setCosmetic(true);
   helper.setPen(pen);
   helper.setBrush(Qt::red);
   helper.drawPoint(3, 3, 0);
@@ -31718,7 +31718,7 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
+#if 0
 //  ZStack *stack = new ZStack;
 //  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
   ZStack *stack = ZStackFactory::MakeVirtualStack(2048, 2048, 2048);
@@ -31744,6 +31744,14 @@ void ZTest::test(MainWindow *host)
   doc->addObject(slice);
 
   frame->show();
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZStack *stack = reader->readGrayScaleLowtis(
+        3, 3, 100, 1, 0, 0, 0, 1, 0, 6, 6, 0, 0, 0, false);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  stack->printInfo();
 #endif
 
   std::cout << "Done." << std::endl;

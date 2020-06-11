@@ -50,7 +50,7 @@ bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y)
 bool ZStackDocHitTest::hitTest(
     ZStackDoc *doc, const ZPoint &pt, const ZIntPoint &widgetPosition)
 {
-  m_hitObject = doc->hitTest(pt.toIntPoint(), widgetPosition, getSliceAxis());
+  m_hitObject = doc->hitTest(pt.roundToIntPoint(), widgetPosition, getSliceAxis());
   return m_hitObject != NULL;
 
 //  return hitTest(doc, pt.x(), pt.y(), pt.z());

@@ -79,14 +79,14 @@ TEST(ZStackViewParam, Size)
   ASSERT_EQ(128, param.getWidth(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(128, param.getHeight(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(128*128, param.getArea(neutu::data3d::ESpace::CANVAS));
-  ASSERT_EQ(256, param.getWidth(neutu::data3d::ESpace::MODEL));
-  ASSERT_EQ(256, param.getHeight(neutu::data3d::ESpace::MODEL));
-  ASSERT_EQ(256*256, param.getArea(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(64, param.getWidth(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(64, param.getHeight(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(64*64, param.getArea(neutu::data3d::ESpace::MODEL));
 
   ASSERT_EQ(128, param.getIntWidth(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(128, param.getIntHeight(neutu::data3d::ESpace::CANVAS));
-  ASSERT_EQ(256, param.getIntWidth(neutu::data3d::ESpace::MODEL));
-  ASSERT_EQ(256, param.getIntHeight(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(64, param.getIntWidth(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(64, param.getIntHeight(neutu::data3d::ESpace::MODEL));
 }
 
 TEST(ZStackViewParam, Discrete)
@@ -98,7 +98,8 @@ TEST(ZStackViewParam, Discrete)
 
   ASSERT_TRUE(param.getIntCutRect().contains(param.getCutRect()))
       << param.getIntCutRect() << std::endl << param.getCutRect();
-  ASSERT_FALSE(param.getCutRect().contains(param.getIntCutRect()));
+  ASSERT_FALSE(param.getCutRect().contains(param.getIntCutRect()))
+      << param.getIntCutRect() << std::endl << param.getCutRect();;
 
   t.setScale(2.0);
   param.setTransform(t);
@@ -136,6 +137,7 @@ TEST(ZStackViewParam, Contains)
   ASSERT_FALSE(param.contains(ZPoint(63.5, 63.5, 0.5)));
   ASSERT_TRUE(param.contains(ZPoint(128, 128, -0.5)));
   ASSERT_TRUE(param.contains(ZPoint(191.5, 191.5, -0.5)));
+  ASSERT_FALSE(param.contains(ZPoint(192, 191.5, -0.5)));
 
   t.setAnchor(64, 64);
   param.setTransform(t);
@@ -160,8 +162,25 @@ TEST(ZStackViewParam, CutRect)
   t.setAnchor(5, 10);
   param.set(t, 10, 20, neutu::data3d::ESpace::MODEL);
   rect = param.getCutRect();
-  std::cout << rect << std::endl;
+//  std::cout << rect << std::endl;
+  ASSERT_EQ(ZPoint(1, 2, 3), rect.getCenter());
+  ASSERT_EQ(10, rect.getWidth());
+  ASSERT_EQ(20, rect.getHeight());
 
+  rect = param.getIntCutRect();
+  ASSERT_EQ(ZPoint(1, 2, 3), rect.getCenter());
+  ASSERT_EQ(10, rect.getWidth());
+  ASSERT_EQ(20, rect.getHeight());
+
+  rect = param.getIntCutRect(ZIntCuboid(0, 1, 2, 3, 4, 5));
+  ASSERT_EQ(ZPoint(2, 3, 3), rect.getCenter());
+  ASSERT_EQ(4, rect.getWidth());
+  ASSERT_EQ(4, rect.getHeight());
+
+  rect = param.getIntCutRect(ZIntCuboid(0, 1, 2, 4, 7, 5));
+  ASSERT_EQ(ZPoint(2, 4, 3), rect.getCenter());
+  ASSERT_EQ(5, rect.getWidth());
+  ASSERT_EQ(7, rect.getHeight());
 //  std::cout << rect << std::endl;
 }
 

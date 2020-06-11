@@ -881,7 +881,7 @@ void ZFlyEmProofPresenter::tryAddTodoItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddTodoItem(pt.toIntPoint());
+  tryAddTodoItem(pt.roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddToMergeItem()
@@ -889,7 +889,7 @@ void ZFlyEmProofPresenter::tryAddToMergeItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddToMergeItem(pt.toIntPoint());
+  tryAddToMergeItem(pt.roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddToSplitItem()
@@ -897,7 +897,7 @@ void ZFlyEmProofPresenter::tryAddToSplitItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddToSplitItem(pt.toIntPoint());
+  tryAddToSplitItem(pt.roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
@@ -905,7 +905,7 @@ void ZFlyEmProofPresenter::tryAddToSupervoxelSplitItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddToSupervoxelSplitItem(pt.toIntPoint());
+  tryAddToSupervoxelSplitItem(pt.roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddTraceToSomaItem()
@@ -913,7 +913,7 @@ void ZFlyEmProofPresenter::tryAddTraceToSomaItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddTraceToSomaItem(pt.toIntPoint());
+  tryAddTraceToSomaItem(pt.roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddNoSomaItem()
@@ -921,19 +921,19 @@ void ZFlyEmProofPresenter::tryAddNoSomaItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddNoSomaItem(pt.toIntPoint());
+  tryAddNoSomaItem(pt.roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDiagnosticItem()
 {
   tryAddDiagnosticItem(
-        getLastMouseReleasePosition(Qt::RightButton).toIntPoint());
+        getLastMouseReleasePosition(Qt::RightButton).roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddSegmentationDiagnosticItem()
 {
   tryAddSegmentationDiagnosticItem(
-        getLastMouseReleasePosition(Qt::RightButton).toIntPoint());
+        getLastMouseReleasePosition(Qt::RightButton).roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem()
@@ -941,7 +941,7 @@ void ZFlyEmProofPresenter::tryAddDoneItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddDoneItem(pt.toIntPoint());
+  tryAddDoneItem(pt.roundToIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
@@ -992,7 +992,7 @@ void ZFlyEmProofPresenter::runTipDetection() {
     ZPoint pt = event.getDataPosition();
     uint64_t bodyId = getCompleteDocument()->getLabelId(pt.getX(), pt.getY(), pt.getZ());
 
-    emit tipDetectRequested(pt.toIntPoint(), bodyId);
+    emit tipDetectRequested(pt.roundToIntPoint(), bodyId);
 }
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
@@ -1067,7 +1067,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     if (isHighlight()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
       ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
-      ZIntPoint pos = currentStackPos.toIntPoint();
+      ZIntPoint pos = currentStackPos.roundToIntPoint();
       emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
     }
     break;
@@ -1189,16 +1189,16 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
-    tryAddSynapse(currentDataPos.toIntPoint(), true);
+    tryAddSynapse(currentDataPos.roundToIntPoint(), true);
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD_ORPHAN:
-    tryAddSynapse(currentDataPos.toIntPoint(), false);
+    tryAddSynapse(currentDataPos.roundToIntPoint(), false);
     break;
   case ZStackOperator::OP_FLYEM_TODO_ADD:
-    tryAddTodoItem(currentDataPos.toIntPoint());
+    tryAddTodoItem(currentDataPos.roundToIntPoint());
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_MOVE:
-    tryMoveSynapse(currentDataPos.toIntPoint());
+    tryMoveSynapse(currentDataPos.roundToIntPoint());
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     if (m_interactiveContext.synapseEditMode() !=

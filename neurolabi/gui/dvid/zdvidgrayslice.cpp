@@ -150,7 +150,7 @@ bool ZDvidGraySlice::hasLowresRegion() const
   }
 
 //  QRect viewport = getViewPort();//m_currentViewParam.getViewPort();
-  ZAffineRect rect = getViewParam().getIntCutRect();
+  ZAffineRect rect = getViewParam().getIntCutRect(getHelper()->getDataRange());
   if (rect.getWidth() > getHelper()->getCenterCutWidth() ||
       rect.getHeight() > getHelper()->getCenterCutHeight()) {
     return true;
@@ -202,11 +202,16 @@ void ZDvidGraySlice::updateImage(
 
 //    t.setCutPlane(rect.getAffinePlane());
     t.setScale(1.0 / zgeom::GetZoomScale(getZoom()));
-    //Assuming lowtis uses right integer center
+    //Assuming lowtis uses left integer center
     t.setAnchor((stack->width()) / 2, (stack->height()) / 2);
 
     m_imageCanvas.setTransform(t);
     updateContrast();
+
+#ifdef _DEBUG_2
+        std::cout << "Saving image canvas ..." << std::endl;
+        m_image.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
 
 //    m_imageCanvas.fromImage(m_image);
     /*
@@ -505,7 +510,7 @@ bool ZDvidGraySlice::consume(
       getHelper()->setActualQuality(zoom, centerCutX, centerCutY, usingCenterCut);
       getHelper()->setViewParam(viewParam);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
-      updateImage(stack, viewParam.getIntCutRect());
+      updateImage(stack, viewParam.getIntCutRect(getHelper()->getDataRange()));
       succ = true;
     } else {
       delete stack;
@@ -542,7 +547,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
   if (isVisible()) {
     int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
     setZoom(viewParam.getZoomLevel(maxZoomLevel));
-    ZAffineRect rect = viewParam.getIntCutRect();
+    ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
 //    int scale = zgeom::GetZoomScale(getZoom());
     if (maxZoomLevel < 3) {
       int width = rect.getWidth();
@@ -553,7 +558,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     }
 
     ZStack *stack = getDvidReader().readGrayScaleLowtis(
-          rect.getCenter().toIntPoint(), rect.getV1(), rect.getV2(),
+          rect.getCenter().roundToIntPoint(), rect.getV1(), rect.getV2(),
           rect.getWidth(), rect.getHeight(),
           getZoom(), getHelper()->getCenterCutWidth(),
           getHelper()->getCenterCutHeight(), true);
@@ -561,7 +566,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
           getZoom(), getHelper()->getCenterCutWidth(),
           getHelper()->getCenterCutHeight(), true);
     updateImage(stack, rect);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Saving stack" << std::endl;
     stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif

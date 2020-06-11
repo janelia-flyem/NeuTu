@@ -3617,11 +3617,11 @@ void ZFlyEmProofDoc::downloadBookmark()
           (bookmark->getUserName().length() == int(currentUserName.length()));
       if (good) {
         ZJsonObject checkJson =
-            getDvidReader().readBookmarkJson(bookmark->getCenter().toIntPoint());
+            getDvidReader().readBookmarkJson(bookmark->getCenter().roundToIntPoint());
         good = (!checkJson.isEmpty());
       }
       if (good) {
-        if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+        if (getDvidReader().isBookmarkChecked(bookmark->getCenter().roundToIntPoint())) {
           bookmark->setChecked(true);
           ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
           //        bookmarkObj.setProperty("checked", "1");
@@ -3652,7 +3652,7 @@ void ZFlyEmProofDoc::downloadBookmark()
           bookmark->loadJsonObject(bookmarkObj);
           addObject(bookmark, true);
           bookmark->addUserTag();
-          if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+          if (getDvidReader().isBookmarkChecked(bookmark->getCenter().roundToIntPoint())) {
             bookmark->setChecked(true);
           }
           m_dvidWriter.writeBookmark(*bookmark);
@@ -4242,7 +4242,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       if (bookmark->loadJsonObject(bookmarkObj)) {
         if (getBookmarkReader().isBookmarkChecked(
-              bookmark->getCenter().toIntPoint())) {
+              bookmark->getCenter().roundToIntPoint())) {
           bookmark->setChecked(true);
         }
         bookmark->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
@@ -5886,7 +5886,7 @@ void ZFlyEmProofDoc::notifyAssignedBookmarkModified()
 void ZFlyEmProofDoc::notifyBookmarkEdited(const ZFlyEmBookmark *bookmark)
 {
   if (bookmark != NULL) {
-    ZIntPoint center = bookmark->getCenter().toIntPoint();
+    ZIntPoint center = bookmark->getCenter().roundToIntPoint();
     emit bookmarkEdited(center.getX(), center.getY(), center.getZ());
   }
 }

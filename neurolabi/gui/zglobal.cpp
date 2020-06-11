@@ -96,7 +96,7 @@ void ZGlobal::setDataPosition(const ZIntPoint &pt)
 
 void ZGlobal::setDataPosition(const ZPoint &pt)
 {
-  setDataPosition(pt.toIntPoint());
+  setDataPosition(pt.roundToIntPoint());
 }
 
 void ZGlobal::clearStackPosition()

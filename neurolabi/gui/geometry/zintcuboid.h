@@ -225,6 +225,8 @@ public:
   bool operator == (const ZIntCuboid &box) const;
   bool operator != (const ZIntCuboid &box) const;
 
+  friend ZIntCuboid operator - (const ZIntCuboid &box, const ZIntPoint &pt);
+
   friend std::ostream& operator<< (std::ostream &stream, const ZIntCuboid &box);
 
 private:

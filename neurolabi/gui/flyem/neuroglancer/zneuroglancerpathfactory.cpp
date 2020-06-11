@@ -26,7 +26,7 @@ ZJsonObject make_bookmark_annotation_json(const ZFlyEmBookmark &bookmark)
 {
   ZJsonObject obj;
   int pos[3];
-  ZIntPoint center = bookmark.getCenter().toIntPoint();
+  ZIntPoint center = bookmark.getCenter().roundToIntPoint();
   pos[0] = center.getX();
   pos[1] = center.getY();
   pos[2] = center.getZ();
