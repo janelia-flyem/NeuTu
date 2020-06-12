@@ -1,6 +1,8 @@
 #ifndef ZNEUROGLANCERPATHFACTORY_H
 #define ZNEUROGLANCERPATHFACTORY_H
 
+#include <memory>
+
 #include <QString>
 #include <QList>
 
