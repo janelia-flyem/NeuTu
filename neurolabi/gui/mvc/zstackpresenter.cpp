@@ -448,6 +448,10 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK:
       connect(action, SIGNAL(triggered()), this, SLOT(copyNeuroglancerLink()));
       break;
+    case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(copyNeuroglancerLinkAtRectRoi()));
+      break;
     default:
       connected = false;
       break;
@@ -2837,7 +2841,17 @@ void ZStackPresenter::copyLink(const QString &/*option*/) const
 
 void ZStackPresenter::copyNeuroglancerLink()
 {
-  copyLink("neuroglancer");
+  ZJsonObject obj;
+  obj.setEntry("type", "neuroglancer");
+  copyLink(obj.dumpString(0).c_str());
+}
+
+void ZStackPresenter::copyNeuroglancerLinkAtRectRoi()
+{
+  ZJsonObject obj;
+  obj.setEntry("type", "neuroglancer");
+  obj.setEntry("location", "rectroi");
+  copyLink(obj.dumpString(0).c_str());
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()

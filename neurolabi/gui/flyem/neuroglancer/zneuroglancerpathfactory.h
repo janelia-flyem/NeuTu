@@ -4,11 +4,14 @@
 #include <QString>
 #include <QList>
 
+#include "geometry/zpoint.h"
+
 class ZDvidTarget;
 class ZIntPoint;
-class ZPoint;
 class ZFlyEmBookmark;
 class ZDvidEnv;
+class ZResolution;
+class ZNeuroglancerLayerSpec;
 
 class ZNeuroglancerPathFactory
 {
@@ -25,6 +28,11 @@ public:
       const ZPoint &position,
       const QList<ZFlyEmBookmark*> bookmarkList = QList<ZFlyEmBookmark*>());
 
+  static QString MakePath(
+      const ZDvidEnv &env, const ZResolution &voxelSize,
+      const ZPoint &position, double scale,
+      const QList<std::shared_ptr<ZNeuroglancerLayerSpec>> &additionalLayers =
+      QList<std::shared_ptr<ZNeuroglancerLayerSpec>>());
 
 };
 

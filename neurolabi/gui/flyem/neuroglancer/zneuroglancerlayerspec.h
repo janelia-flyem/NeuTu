@@ -44,6 +44,10 @@ public:
     m_name = name;
   }
 
+  void setShader(const std::string &shader) {
+    m_shader = shader;
+  }
+
   virtual ZJsonObject toJsonObject() const;
 
 //  std::string toPathString() const;
@@ -52,6 +56,7 @@ public:
   static const char* KEY_SOURCE;
   static const char* KEY_TYPE;
   static const char* KEY_NAME;
+  static const char* KEY_SHADER;
 
   static const char* TYPE_SEGMENTATION;
   static const char* TYPE_GRAYSCALE;
@@ -62,6 +67,7 @@ private:
   std::string m_source;
   std::string m_type;
   std::string m_name;
+  std::string m_shader;
 };
 
 #endif // ZNEUROGLANCERLAYERSPEC_H

@@ -7,6 +7,7 @@
 #include "qt/gui/loghelper.h"
 #include "zglobal.h"
 
+#include "zjsonobjectparser.h"
 #include "zkeyoperationconfig.h"
 #include "zinteractivecontext.h"
 #include "mvc/zstackdoc.h"
@@ -25,6 +26,8 @@
 #include "zflyemtododelegate.h"
 #include "zflyemproofdocutil.h"
 #include "neuroglancer/zneuroglancerpathfactory.h"
+#include "neuroglancer/zneuroglancerlayerspecfactory.h"
+#include "neuroglancer/zneuroglancerannotationlayerspec.h"
 
 
 #ifdef _WIN32
@@ -1326,10 +1329,19 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 
 void ZFlyEmProofPresenter::copyLink(const QString &option) const
 {
-  if (option == "neuroglancer") {
+  ZJsonObject obj;
+  obj.decode(option.toStdString(), true);
+
+  ZJsonObjectParser parser;
+  if (parser.getValue(obj, "type", "") == "neuroglancer") {
     const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
+
+    if (parser.getValue(obj, "location", "") == "rectroi") {
+      ZRect2d rect = buddyDocument()->getRect2dRoi();
+      pt.set(rect.getCenter().toPoint());
+    }
 
 //    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
 
@@ -1340,10 +1352,19 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
 //    QList<ZFlyEmBookmark*> bookmarkList =
 //        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
 
+    QList<std::shared_ptr<ZNeuroglancerLayerSpec>> additionalLayers;
+    ZRect2d rect = buddyDocument()->getRect2dRoi();
+    if (rect.isValid()) {
+      auto layer = ZNeuroglancerLayerSpecFactory::MakeLocalAnnotationLayer(
+            "local_annotation");
+      layer->addAnnotation(rect.getBoundBox());
+      additionalLayers.append(layer);
+    }
+
     QString path = ZNeuroglancerPathFactory::MakePath(
-          getCompleteDocument()->getDvidEnv(),
-          ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
-          pt/*, bookmarkList*/);
+          getCompleteDocument()->getDvidEnv(), res,
+          pt, buddyView()->getViewParameter().getZoomRatio(),
+          additionalLayers);
     ZGlobal::CopyToClipboard(
           GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());
   }

@@ -31199,6 +31199,25 @@ void ZTest::test(MainWindow *host)
   host->startProofread("local_test");
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidInfo dvidInfo = reader->readGrayScaleInfo();
+
+  ZNeuroglancerPath ngpath;
+  ngpath.addLayer(ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(
+                    reader->getDvidTarget()));
+  ZNeuroglancerNavigation nav;
+  nav.setVoxelSize(dvidInfo.getVoxelResolution());
+  nav.setZoomScale2D(2.0);
+
+  ngpath.setNavigation(nav);
+
+  std::cout << ngpath.toJsonObject().dumpString(2) << std::endl;
+  std::cout << ngpath.getPath() << std::endl;
+  std::cout << QString(QUrl(ngpath.getPath().c_str()).toEncoded()).toStdString()
+            << std::endl;
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

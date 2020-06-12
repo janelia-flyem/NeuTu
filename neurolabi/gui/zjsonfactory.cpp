@@ -63,6 +63,16 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
   return array;
 }
 
+ZJsonArray ZJsonFactory::MakeJsonArray(const ZPoint &pt)
+{
+  ZJsonArray array;
+  array.append(pt.getX());
+  array.append(pt.getY());
+  array.append(pt.getZ());
+
+  return array;
+}
+
 ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntCuboid &box)
 {
   ZJsonArray array;

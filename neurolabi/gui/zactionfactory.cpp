@@ -411,6 +411,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_COPY_NEUROGLANCER_LINK:
+  case ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI:
     action = new QAction("Copy Neuroglancer Link", parent);
     action->setIcon(QFontIcon::icon(10697));
     break;
@@ -531,7 +532,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_CANCEL_RECT_ROI:
     action = new QAction("Cancel", parent);
     action->setToolTip("Cancel the current rectangle ROI");
-    action->setIcon(QIcon(":/images/cancel.png"));
+//    action->setIcon(QIcon(":/images/cancel.png"));
+    action->setIcon(QFontIcon::icon(8998, Qt::red));
     break;
   case ACTION_PUNCTA_CHANGE_COLOR:
     action = new QAction("Change Color of Selected Puncta", parent);

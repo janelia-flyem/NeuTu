@@ -60,6 +60,18 @@ ZNeuroglancerLayerSpecFactory::MakeSkeletonLayer(const ZDvidTarget &target)
 }
 
 std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
+ZNeuroglancerLayerSpecFactory::MakeLocalAnnotationLayer(const std::string &name)
+{
+  std::shared_ptr<ZNeuroglancerAnnotationLayerSpec> layer =
+      std::make_shared<ZNeuroglancerAnnotationLayerSpec>();
+  layer->setName(name);
+  layer->setColor(255, 255, 255);
+  layer->setSource("local://annotations");
+
+  return layer;
+}
+
+std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
 ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
     const ZDvidTarget &target, ZDvidData::ERole dataRole,
     const std::string &linkedSegmentationLayer)
@@ -69,7 +81,7 @@ ZNeuroglancerLayerSpecFactory::MakePointAnnotationLayer(
   if (dataRole == ZDvidData::ERole::BOOKMARK ||
       dataRole == ZDvidData::ERole::SYNAPSE) {
     layer = std::make_shared<ZNeuroglancerAnnotationLayerSpec>();
-    layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
+//    layer->setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
     layer->setLinkedSegmentation(linkedSegmentationLayer);
     std::string dataName = target.getBookmarkName();
     std::string queryString;
