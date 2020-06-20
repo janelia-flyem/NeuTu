@@ -23,7 +23,7 @@ ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
   m_profile = NULL;
   m_filterStack = NULL;
   m_isOwner = isOwner;
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
 }
 
 ZLocalNeuroseg::~ZLocalNeuroseg()

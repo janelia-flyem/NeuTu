@@ -547,6 +547,10 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 
   mvc->initViewButton();
 
+  mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
+
+  mvc->connectSignalSlot();
+
   return mvc;
 }
 
@@ -559,15 +563,20 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidEnv &env, ERole role)
   return mvc;
 }
 
+ZFlyEmProofMvc* ZFlyEmProofMvc::Make(neutu::EAxis axis)
+{
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
+  ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
+        NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), axis, ERole::ROLE_WIDGET);
+
+  return mvc;
+}
+
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(ERole role)
 {
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
-//  doc->setTag(neutube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
         NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), neutu::EAxis::Z, role);
-  mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
-
-  mvc->connectSignalSlot();
 
   return mvc;
 }
@@ -1901,9 +1910,12 @@ const ZDvidInfo& ZFlyEmProofMvc::getDvidInfo() const
 
 void ZFlyEmProofMvc::setLabelAlpha(int alpha)
 {
+  getCompleteDocument()->updateSegmentationOpacity(alpha / 255.0);
+  /*
   getView()->setDynamicObjectAlpha(alpha);
   getView()->paintDynamicObjectBuffer();
   getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+  */
 //  getCompletePresenter()->setLabelAlpha(alpha);
 //  getCompleteDocument()->setLabelSliceAlpha(alpha);
 }
@@ -1922,6 +1934,18 @@ void ZFlyEmProofMvc::prepareTile(ZDvidTileEnsemble *te)
           Qt::QueuedConnection);
   te->setDataFetcher(patchFetcher);
   patchFetcher->start(100);
+}
+
+void ZFlyEmProofMvc::setDvidFromName(const std::string &name)
+{
+  ZDvidTarget target = getDvidDialog()->getDvidTarget(name);
+  if (target.isValid()) {
+    setDvid(ZDvidEnv(target));
+  } else {
+    ZDialogFactory::Error(
+          "Failed to Load Dataset",
+          ("Invalid DVID target name: " + name).c_str(), this);
+  }
 }
 
 void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
@@ -1996,6 +2020,8 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
       prepareTile(te);
     }
     updateContrast();
+    setLabelAlpha(
+          getCompletePresenter()->getSegmentationOpacity());
   }
 
 //  getView()->reset(false);
@@ -2587,8 +2613,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(checkInSelectedBodyAdmin()));
   connect(getPresenter(), SIGNAL(bodyCheckoutTriggered(neutu::EBodySplitMode)),
           this, SLOT(checkOutBody(neutu::EBodySplitMode)));
-  connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
-          this, SLOT(processViewChange()));
+//  connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
+//          this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToTBar()),
           this, SLOT(goToTBar()));
   connect(getCompletePresenter(), SIGNAL(goingToBody()),
@@ -2994,36 +3020,25 @@ void ZFlyEmProofMvc::highlightSelectedObject(
           uint64_t bodyId = *iter;
           ZDvidSparsevolSlice *obj = doc->makeDvidSparsevol(labelSlice, bodyId);
           obj->update(getView()->getViewParameter());
-          /*
-          ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
-          obj->setTarget(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
-          obj->setSliceAxis(labelSlice->getSliceAxis());
-          obj->setReader(doc->getSparseVolReader());
-//          obj->setDvidTarget(getDvidTarget());
-          obj->setLabel(bodyId);
-          obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-          obj->setColor(labelSlice->getLabelColor(
-                          bodyId, neutube::BODY_LABEL_ORIGINAL));
-                          */
           doc->addObject(obj);
         }
       } else {
         labelSlice->addVisualEffect(
               neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
-        labelSlice->paintBuffer();
         doc->processObjectModified(labelSlice);
       }
     } else {
       labelSlice->removeVisualEffect(
             neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
       if (usingSparseVol) {
-        labelSlice->paintBuffer();
         doc->notifyActiveViewModified();
       } else {
-        labelSlice->paintBuffer();
         doc->processObjectModified(labelSlice);
       }
     }
+
+    labelSlice->invalidatePaintBuffer();
+
     doc->endObjectModifiedMode();
     doc->processObjectModified();
 
@@ -3768,7 +3783,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
 //  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(
 //        bodyId, neutu::EBodyLabelType::BODY);
 
-  body->setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
+  body->setTarget(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
   body->setSource(
         ZStackObjectSourceFactory::MakeSplitObjectSource());
@@ -5619,13 +5634,13 @@ void ZFlyEmProofMvc::showRoiMask(bool visible)
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
   ZDvidLabelSlice *slice =
-      getCompleteDocument()->getActiveLabelSlice(neutu::EAxis::Z);
+      getCompleteDocument()->getActiveLabelSlice(getView()->getSliceAxis());
   if (slice != NULL) {
     slice->setVisible(visible);
     if (visible) {
       slice->update(getView()->getViewParameter());
     }
-    getCompleteDocument()->processObjectModified(slice);
+    getCompleteDocument()->bufferObjectModified(slice);
     getCompleteDocument()->processObjectModified();
   }
 }

@@ -189,7 +189,7 @@ public: //attributes
   bool hasObject(ZStackObjectRole::TRole role) const;
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
-  bool hasObject(ZStackObject::ETarget target) const;
+  bool hasObject(neutu::data3d::ETarget target) const;
   bool hasObject(const ZStackObject *obj) const;
 
   ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
@@ -210,7 +210,7 @@ public: //attributes
   bool hasPuncta() const;
   // hasDrawable() returns true iff it has a drawable object.
   bool hasDrawable() const;
-  bool hasDrawable(ZStackObject::ETarget target) const;
+  bool hasDrawable(neutu::data3d::ETarget target) const;
   bool hasSparseObject() const;
 
   virtual bool hasSparseStack() const;
@@ -815,7 +815,7 @@ public:
 
 //  virtual ZStack* getDenseFormOfSparseStack() const;
 
-//  QSet<ZStackObject::ETarget>
+//  QSet<neutu::data3d::ETarget>
 //  updateActiveViewObject(const ZStackViewParam &param);
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
@@ -958,15 +958,15 @@ public:
   void endObjectModifiedMode();
 
 //  void notifyObjectModified(bool sync = true);
-  void notifyObjectModified(ZStackObject::EType type);
+//  void notifyObjectModified(ZStackObject::EType type);
   void notifyObjectModified(const ZStackObjectInfoSet &infoSet);
   void notifyObjectModified(const ZStackObjectInfo &info);
 
   void bufferObjectModified(ZStackObject::EType type, bool sync = true);
-  void bufferObjectModified(ZStackObject::ETarget target, bool sync = true);
+  void bufferObjectModified(neutu::data3d::ETarget target, bool sync = true);
 //  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet,
 //                            bool sync = true);
-//  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+//  void bufferObjectModified(const QSet<neutu::data3d::ETarget> &targetSet,
 //                            bool sync = true);
   void bufferObjectModified(
       ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
@@ -978,7 +978,7 @@ public:
       const ZStackObjectInfo &info, ZStackObjectInfo::TState state,
       bool sync);
   void bufferObjectModified(
-      const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
+      const QSet<neutu::data3d::ETarget> &targetSet, bool sync = true);
 
 
   /*!
@@ -1014,21 +1014,21 @@ public:
    */
   void notifySwcModified();
 
-  void notifyPunctumModified();
-  void notifyMeshModified();
-  void notifyChainModified();
-  void notifyObj3dModified();
-  void notifyObject3dScanModified();
-  void notifyStackPatchModified();
-  void notifySparseObjectModified();
+//  void notifyPunctumModified();
+//  void notifyMeshModified();
+//  void notifyChainModified();
+//  void notifyObj3dModified();
+//  void notifyObject3dScanModified();
+//  void notifyStackPatchModified();
+//  void notifySparseObjectModified();
   void notifyStackModified(bool rangeChanged);
   void notifySparseStackModified();
   void notifyVolumeModified();
-  void notifyStrokeModified();
+//  void notifyStrokeModified();
   //void notifyAllObjectModified();
-  void notify3DGraphModified();
-  void notify3DCubeModified();
-  void notifyTodoModified();
+//  void notify3DGraphModified();
+//  void notify3DCubeModified();
+//  void notifyTodoModified();
 
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
@@ -1130,7 +1130,7 @@ public:
     void exclude(ZStackObject::EType type) {
       m_excludeSet.insert(type);
     }
-    void exclude(ZStackObject::ETarget target) {
+    void exclude(neutu::data3d::ETarget target) {
       m_excludeTarget.insert(target);
     }
 
@@ -1139,7 +1139,7 @@ public:
     void update(const ZStackViewParam &param);
 //    void update(const ZArbSliceViewParam &param);
 
-    const std::set<ZStackObject::ETarget>& getUpdatedTargetSet() {
+    const std::set<neutu::data3d::ETarget>& getUpdatedTargetSet() {
       return m_updatedTarget;
     }
 
@@ -1153,8 +1153,8 @@ public:
   private:
     ZSharedPointer<ZStackDoc> m_doc;
     std::set<ZStackObject::EType> m_excludeSet;
-    std::set<ZStackObject::ETarget> m_excludeTarget;
-    std::set<ZStackObject::ETarget> m_updatedTarget;
+    std::set<neutu::data3d::ETarget> m_excludeTarget;
+    std::set<neutu::data3d::ETarget> m_updatedTarget;
   };
 
   void addObjectUnsync(ZStackObject *obj, bool uniqueSource = true);
@@ -1338,22 +1338,22 @@ signals:
   void segmentationUpdated();
   void stackReadDone();
   void stackLoaded();
-  void punctaModified();
-  void meshModified();
+//  void punctaModified();
+//  void meshModified();
   void swcModified();
-  void seedModified();
-  void chainModified();
-  void obj3dModified();
-  void object3dScanModified();
-  void stackPatchModified();
-  void sparseObjectModified();
-  void strokeModified();
-  void graph3dModified();
-  void cube3dModified();
-  void todoModified();
+//  void seedModified();
+//  void chainModified();
+//  void obj3dModified();
+//  void object3dScanModified();
+//  void stackPatchModified();
+//  void sparseObjectModified();
+//  void strokeModified();
+//  void graph3dModified();
+//  void cube3dModified();
+//  void todoModified();
   void objectModified();
-//  void objectModified(ZStackObject::ETarget);
-//  void objectModified(QSet<ZStackObject::ETarget>);
+//  void objectModified(neutu::data3d::ETarget);
+//  void objectModified(QSet<neutu::data3d::ETarget>);
   void objectModified(ZStackObjectInfoSet);
   void objectModified(ZStackObjectInfo);
 
@@ -1422,6 +1422,7 @@ protected:
   void requestStackUpdate(ZStack *stack);
 
   virtual bool _loadFile(const QString &filePath);
+  virtual void _processObjectModified(const ZStackObjectInfoSet &infoSet);
 
 private:
   void localSeededWatershed();

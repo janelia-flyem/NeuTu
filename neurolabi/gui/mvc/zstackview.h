@@ -25,6 +25,7 @@
 #include "mvc/mvcdef.h"
 #include "concurrent/zworkerwrapper.h"
 #include "data3d/zsliceviewtransform.h"
+#include "zstackobjectpaintsorter.h"
 
 class ZStackDoc;
 class ZStackPresenter;
@@ -195,6 +196,8 @@ public:
   neutu::EAxis getSliceAxis() const;// { return m_sliceAxis; }
   ZAffinePlane getAffinePlane() const;
 
+  void setCutPlane(neutu::EAxis axis);
+
   /*!
    * \brief Get stack data from the buddy document
    */
@@ -244,7 +247,7 @@ public:
 
   bool paintTileCanvasBuffer();
 
-  //void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
+  //void paintObjectBuffer(ZImage *canvas, neutu::data3d::ETarget target);
 
   void paintActiveDecorationBuffer();
   void paintDynamicObjectBuffer();
@@ -253,9 +256,11 @@ public:
   ZStack* getStrokeMask(uint8_t maskValue);
   ZStack* getStrokeMask(neutu::EColor color);
 
+  ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
 
-  void exportObjectMask(const std::string &filePath);
-  void exportObjectMask(neutu::EColor color, const std::string &filePath);
+
+//  void exportObjectMask(const std::string &filePath);
+//  void exportObjectMask(neutu::EColor color, const std::string &filePath);
 
   inline void setSizeHintOption(neutu::ESizeHintOption option) {
     m_sizeHintOption = option;
@@ -427,8 +432,13 @@ public: //View parameters for arbitrary plane
   void setSliceViewTransform(const ZSliceViewTransform &t);
 
   void updateDataInfo(const QPoint &widgetPos);
+
+  void updateObjectCanvasVisbility(bool visible);
 //  void setSliceViewParam(const ZArbSliceViewParam &param);
 //  void showArbSliceViewPort();
+
+  void invalidateObjectSorter();
+  void updateObjectSorter();
 
 protected:
 //  ZIntCuboid getViewBoundBox() const;
@@ -454,8 +464,8 @@ protected:
 //  void updateTileCanvas();
 //  void updateDynamicObjectCanvas();
 //  void updateActiveDecorationCanvas();
-  void updatePaintBundle(bool requestingWidgetCanvasUpdate = true);
-//  void updateCanvas(ZStackObject::ETarget target);
+//  void updatePaintBundle(bool requestingWidgetCanvasUpdate = true);
+//  void updateCanvas(neutu::data3d::ETarget target);
 
 //  ZPainter* getTileCanvasPainter();
 //  ZPainter* getObjectCanvasPainter();
@@ -480,14 +490,14 @@ protected:
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
 
-  std::set<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
-  std::set<ZStackObject::ETarget> updateViewData();
+  std::set<neutu::data3d::ETarget> updateViewData(const ZStackViewParam &param);
+  std::set<neutu::data3d::ETarget> updateViewData();
 
   void init();
 
-//  ZPainter* getPainter(ZStackObject::ETarget target);
-//  ZPixmap* getCanvas(ZStackObject::ETarget target);
-  void setCanvasVisible(ZStackObject::ETarget target, bool visible);
+//  ZPainter* getPainter(neutu::data3d::ETarget target);
+//  ZPixmap* getCanvas(neutu::data3d::ETarget target);
+//  void setCanvasVisible(neutu::data3d::ETarget target, bool visible);
 //  void resetDepthControl();
 
   void setSliceRange(int minSlice, int maxSlice);
@@ -529,8 +539,8 @@ public slots:
   void paintStack();
   void paintMask();
   void paintObject();
-  void paintObject(QList<ZStackObject *> selected,
-                   QList<ZStackObject *> deselected);
+//  void paintObject(QList<ZStackObject *> selected,
+//                   QList<ZStackObject *> deselected);
   void paintObject(const ZStackObjectInfoSet &selected,
                    const ZStackObjectInfoSet &deselected);
   void paintActiveDecoration();
@@ -573,14 +583,14 @@ public slots:
 
   void updateZSpinBoxValue();
 
-  void paintObject(ZStackObject::ETarget target);
-  void paintObject(const std::set<ZStackObject::ETarget> &targetSet);
+  void paintObject(neutu::data3d::ETarget target);
+  void paintObject(const std::set<neutu::data3d::ETarget> &targetSet);
 
   void dump(const QString &msg);
 
   void hideThresholdControl();
 
-  void setDynamicObjectAlpha(int alpha);
+//  void setDynamicObjectAlpha(int alpha);
   void resetViewProj();
 
   void enableCustomCheckBox(
@@ -613,16 +623,19 @@ private:
 //  void updateSliceViewParam();
   void prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter);
 
-  /*!
-   * \brief Update the buffer of object canvas.
-   */
-  void paintObjectBuffer();
-  bool paintObjectBuffer(ZStackObject::ETarget target);
-  void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
-  bool paintObjectBuffer(QPainter *painter, ZStackObject::ETarget target);
-  bool paintObjectBuffer(ZSliceCanvas &canvas, ZStackObject::ETarget target);
+  std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
 
-  ZStack* getObjectMask(uint8_t maskValue);
+
+  void paintObjectBuffer(ZSliceCanvas &canvas, neutu::data3d::ETarget target);
+
+  void updateObjectBuffer(
+      neutu::data3d::ETarget target, const QList<ZStackObject*> &objList);
+  void updateObjectBuffer(neutu::data3d::ETarget target);
+
+  template<template<class...> class Container>
+  void updateObjectBuffer(const Container<neutu::data3d::ETarget> &targetList);
+
+//  ZStack* getObjectMask(uint8_t maskValue);
 
   //Stack space offset
   int getZ0() const;
@@ -631,16 +644,16 @@ private:
   /*!
    * \brief Get object mask of a certain color
    */
-  ZStack* getObjectMask(neutu::EColor color, uint8_t maskValue);
+//  ZStack* getObjectMask(neutu::EColor color, uint8_t maskValue);
 
   void configurePainter(ZStackObjectPainter &painter);
 
   void logViewParam();
 //  void setCentralView(int width, int height);
-  void syncArbViewCenter();
+//  void syncArbViewCenter();
 
-  void requestWidgetCanvasUpdate();
-  void addWidgetCanvasTask();
+//  void requestWidgetCanvasUpdate();
+//  void addWidgetCanvasTask();
   void notifyWidgetCanvasUpdate(ZPixmap *canvas);
 //  void notifyWidgetCanvasUpdate(ZImage *canvas);
 
@@ -678,16 +691,16 @@ protected:
   ZImage *m_imageMask = NULL;
 //  ZPixmap *m_objectCanvas;
 
-  ZSliceCanvas *m_dynamicObjectCanvas = NULL;
-  double m_dynamicObjectOpacity;
+//  ZSliceCanvas *m_dynamicObjectCanvas = NULL;
+//  double m_dynamicObjectOpacity;
 
-  ZSliceCanvas *m_objectCanvas = NULL;
+//  ZSliceCanvas *m_objectCanvas = NULL;
 //  ZPainter m_objectCanvasPainter;
 
 //  neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
 
 //  ZPainter m_tileCanvasPainter;
-  ZSliceCanvas *m_activeDecorationCanvas = NULL;
+//  ZSliceCanvas *m_activeDecorationCanvas = NULL;
 //  ZMultiscalePixmap m_tileCanvas;
   ZSliceCanvas *m_tileCanvas = NULL;
   ZImageWidget *m_imageWidget;
@@ -713,7 +726,8 @@ protected:
 
   neutu::ESizeHintOption m_sizeHintOption;
 
-  ZPaintBundle m_paintBundle;
+//  ZPaintBundle m_paintBundle;
+  ZStackObjectPaintSorter m_paintSorter;
   bool m_isRedrawBlocked;
 //  QMutex m_mutex;
 

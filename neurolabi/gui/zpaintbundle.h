@@ -147,7 +147,7 @@ public:
 
   void addDrawableList(const QList<ZStackObject*>& lst);
 
-  void addDynamicObject(ZStackObject *obj);
+  void addWidgetObject(ZStackObject *obj);
   void clearDynamicObjectList();
 
   void setSliceViewTransform(const ZSliceViewTransform &t);
@@ -176,29 +176,31 @@ public:
     m_stackOffset = offset;
   }
 
+  /*
   inline const ZIntPoint& getStackOffset() const {
     return m_stackOffset;
   }
+  */
 
-  QList<ZStackObject*> getVisibleObjectList(ZStackObject::ETarget target) const;
-  QList<std::shared_ptr<ZStackObject> > getVisibleDynamicObjectList() const;
+  QList<ZStackObject*> getVisibleObjectList(neutu::data3d::ETarget target) const;
+  QList<std::shared_ptr<ZStackObject> > getVisibleWidgetObjectList() const;
 //  void alignToCutPlane(const QList<std::shared_ptr<ZStackObject>> &objList) const;
-  bool hasDynamicObject() const;
+  bool hasWidgetObject() const;
 
 private:
 //  template<typename T1, typename T2> friend class impl::drawable_iter;
 
   QList<ZStackObject*> m_objList;
 
-  QList<std::shared_ptr<ZStackObject>> m_dynamicObjectList; //Dynamically changing object; owned by the painter itself
-  mutable QMutex m_dynamicObjectListMutex;
+  QList<std::shared_ptr<ZStackObject>> m_widgetObjectList; //Dynamically changing object; owned by the painter itself
+  mutable QMutex m_widgetObjectListMutex;
 
   neutu::data3d::DisplayConfig m_displayConfig;
 //  ZStackObject::EDisplayStyle m_style;
 //  ZSliceViewTransform m_sliceViewTransform;
 //  ZStackViewParam m_viewParam;
   ZIntPoint m_stackOffset;
-//  ZStackObject::ETarget m_target = ZStackObject::ETarget::WIDGET;
+//  neutu::data3d::ETarget m_target = neutu::data3d::ETarget::WIDGET;
 };
 
 #endif // ZPAINTBUNDLE_H

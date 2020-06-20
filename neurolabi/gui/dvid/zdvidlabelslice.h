@@ -1,6 +1,8 @@
 #ifndef ZDVIDLABELSLICE_H
 #define ZDVIDLABELSLICE_H
 
+#include <vector>
+
 #include <QCache>
 #include <QMutex>
 
@@ -13,6 +15,7 @@
 #include "zobject3dscanarray.h"
 #include "zimage.h"
 #include "zselector.h"
+#include "vis2d/zslicecanvas.h"
 
 #include "flyem/zflyembodycolorscheme.h"
 #include "flyem/zflyembodymerger.h"
@@ -26,6 +29,7 @@ class ZArbSliceViewParam;
 class ZTask;
 class ZStackDoc;
 class ZDvidDataSliceTaskFactory;
+class ZDvidReader;
 
 class ZDvidLabelSlice : public ZStackObject, ZUncopyable
 {
@@ -38,24 +42,19 @@ public:
     return ZStackObject::EType::DVID_LABEL_SLICE;
   }
 
+  void setOpacity(double opacity);
   void setMaxSize(const ZStackViewParam &viewParam, int maxWidth, int maxHeight);
 
   bool update(const ZStackViewParam &viewParam);
-//  bool update(const QRect &dataRect, int zoom, int z);
-//  void update(int z);
-//  void update();
 
   void setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
 
   void updateFullView(const ZStackViewParam &viewParam);
-//  void disableFullView();
 
   void setSliceAxis(neutu::EAxis sliceAxis);
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
-    return false;
-  }
+      QPainter *painter, const DisplayConfig &config) const override;
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
@@ -133,6 +132,7 @@ public:
 //  const ZStackViewParam& getViewParam() const;
   int getCurrentZ() const;
 //  QRect getDataRect() const;
+  ZIntCuboid getDataRange() const;
 
   void mapSelection();
 
@@ -166,6 +166,7 @@ public:
   bool refreshReaderBuffer();
 
   void paintBuffer();
+  void invalidatePaintBuffer();
 
 //  QRect getDataRect(const ZStackViewParam &viewParam) const;
 
@@ -177,6 +178,11 @@ public:
   void setTaskFactory(std::unique_ptr<ZDvidDataSliceTaskFactory> &&factory);
 
   void allowBlinking(bool on);
+
+  void saveCanvas(const std::string &path);
+
+  const ZDvidReader& getDvidReader() const;
+  const ZDvidReader& getWorkDvidReader() const;
 
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
@@ -209,8 +215,9 @@ private:
   ZFlyEmBodyMerger::TLabelMap getLabelMap() const;
   void clearLabelData();
 
-  void updatePixmap(ZPixmap *pixmap) const;
+//  void updatePixmap(ZPixmap *pixmap) const;
   void updatePaintBuffer();
+  void updateCanvas();
 //  void setTransform(ZImage *image) const;
 
   const ZDvidDataSliceHelper* getHelper() const {
@@ -229,17 +236,21 @@ private:
   bool hasValidPaintBuffer() const;
 
 private:
+  ZSliceCanvas m_imageCanvas;
+  ZImage *m_paintBuffer;
+  double m_opacity = 0.3;
+
   ZObject3dScanArray m_objArray;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_defaultColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
 
-  QVector<int> m_rgbTable;
+  std::vector<int> m_rgbTable;
 
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
   ZFlyEmBodyMerger *m_bodyMerger;
-  ZImage *m_paintBuffer;
+
 
   ZArray *m_labelArray;
   ZArray *m_mappedLabelArray;

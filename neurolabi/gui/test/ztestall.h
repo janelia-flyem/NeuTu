@@ -103,8 +103,12 @@
 #include "test/zdvidurltest.h"
 #include "test/zflyembodycolorschemetest.h"
 
+#include "data3d/tests/utilitiestest.h"
 #include "data3d/tests/zmodelviewtranformtest.h"
 #include "data3d/tests/zviewplanetransformtest.h"
 #include "data3d/tests/zsliceviewtransformtest.h"
+
+#include "mvc/tests/zstackobjectpaintsortertest.h"
+
 
 #endif // ZTESTALL_H

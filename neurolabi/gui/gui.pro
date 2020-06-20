@@ -1176,6 +1176,9 @@ SOURCES += main.cpp \
     protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
     protocols/bodyprefetchqueue.cpp \
+    protocols/taskbodyhistory.cpp \
+    protocols/taskbodycleave.cpp \
+    protocols/taskbodymerge.cpp \
     zopenglwidget.cpp \
     zstackreader.cpp \
     dvid/zdvidpath.cpp \
@@ -1184,9 +1187,6 @@ SOURCES += main.cpp \
     zcontrastprotocol.cpp \
     dialogs/zflyemmergeuploaddialog.cpp \
     zmeshfactory.cpp \
-    protocols/taskbodyhistory.cpp \
-    protocols/taskbodycleave.cpp \
-    protocols/taskbodymerge.cpp \
     zstackdoc3dhelper.cpp \
     zstackobjectinfo.cpp \
     zstackdocproxy.cpp \

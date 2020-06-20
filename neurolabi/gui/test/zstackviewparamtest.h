@@ -184,6 +184,33 @@ TEST(ZStackViewParam, CutRect)
 //  std::cout << rect << std::endl;
 }
 
+TEST(ZStackViewParam, Viewport)
+{
+  ZStackViewParam param;
+  param.setViewport(128, 128, neutu::data3d::ESpace::CANVAS);
+  param.openViewPort();
+  ASSERT_FALSE(param.isViewportEmpty());
+  ASSERT_TRUE(param.isValid());
+
+  param.closeViewPort();
+  ASSERT_TRUE(param.isViewportEmpty());
+  ASSERT_FALSE(param.isValid());
+  ASSERT_EQ(0, param.getWidth(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(0, param.getHeight(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(0, param.getIntWidth(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(0, param.getIntHeight(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(0, param.getArea(neutu::data3d::ESpace::CANVAS));
+
+  param.openViewPort();
+  ASSERT_FALSE(param.isViewportEmpty());
+  ASSERT_TRUE(param.isValid());
+  ASSERT_EQ(128, param.getWidth(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(128, param.getHeight(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(128, param.getIntWidth(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(128, param.getIntHeight(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(128*128, param.getArea(neutu::data3d::ESpace::CANVAS));
+}
+
 #endif
 
 #endif // ZSTACKVIEWPARAMTEST_H

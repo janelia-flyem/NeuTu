@@ -128,7 +128,7 @@ bool ZAffineRect::contains(const ZAffineRect &rect) const
 
 bool ZAffineRect::contains(const ZPoint &pt, double d) const
 {
-  double dist = m_ap.getPlane().computeSignedDistance(pt);
+  double dist = m_ap.computeSignedDistance(pt);
   if (dist >= -d && dist < d) {
     return containsProjection(pt);
   }

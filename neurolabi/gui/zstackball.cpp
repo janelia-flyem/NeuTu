@@ -137,23 +137,27 @@ bool ZStackBall::isSliceVisible(
 bool ZStackBall::display(QPainter *painter, const DisplayConfig &config) const
 {
 #if _QT_GUI_USED_
-  ZSlice3dPainter s3Painter;
-  s3Painter.setModelViewTransform(config.getWorldViewTransform());
-  s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
-  neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+  if (isVisible()) {
+    ZSlice3dPainter s3Painter;
+    s3Painter.setModelViewTransform(config.getWorldViewTransform());
+    s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
-  QPen pen(getColor());
-  pen.setCosmetic(true);
-  painter->setPen(pen);
+    QPen pen(getColor());
+    pen.setCosmetic(true);
+    painter->setPen(pen);
 
-  double depthScale = 0.5;
-  s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
+    double depthScale = 0.5;
+    s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
 
-  if (isSelected()) {
-    painter->setPen(Qt::yellow);
-    s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
+    if (isSelected()) {
+      painter->setPen(Qt::yellow);
+      s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
+    }
+    return s3Painter.getPaintedHint();
   }
-  return s3Painter.getPaintedHint();
+
+  return false;
 #else
   return false;
 

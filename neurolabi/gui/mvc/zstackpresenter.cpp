@@ -80,7 +80,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(true);
   stroke->setPenetrating(true);
   stroke->hideStart(false);
-  stroke->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_STROKE, stroke);
 
   stroke = new ZStroke2d;
@@ -88,7 +88,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(false);
   stroke->setPenetrating(true);
   stroke->hideStart(true);
-  stroke->setTarget(ZStackObject::ETarget::WIDGET);
+  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_SWC, stroke);
 
   stroke = new ZStroke2d;
@@ -96,7 +96,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setFilled(false);
   stroke->setPenetrating(true);
   stroke->hideStart(true);
-  stroke->setTarget(ZStackObject::ETarget::WIDGET);
+  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_SYNAPSE, stroke);
 
   stroke = new ZStroke2d;
@@ -105,7 +105,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setPenetrating(true);
   stroke->hideStart(true);
   stroke->setWidth(10.0);
-  stroke->setTarget(ZStackObject::ETarget::WIDGET);
+  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_BOOKMARK, stroke);
 
   stroke = new ZStroke2d;
@@ -115,7 +115,7 @@ void ZStackPresenter::initActiveObject()
   stroke->hideStart(true);
   stroke->setWidth(10.0);
   stroke->setColor(QColor(200, 128, 200));
-  stroke->setTarget(ZStackObject::ETarget::WIDGET);
+  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_TODO_ITEM, stroke);
 }
 
@@ -448,6 +448,10 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK:
       connect(action, SIGNAL(triggered()), this, SLOT(copyNeuroglancerLink()));
       break;
+    case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(copyNeuroglancerLinkAtRectRoi()));
+      break;
     default:
       connected = false;
       break;
@@ -477,6 +481,25 @@ QAction* ZStackPresenter::makeAction(ZActionFactory::EAction item)
   }
 
   return action;
+}
+
+void ZStackPresenter::updateActiveDecoration()
+{
+  foreach(ZStackObject *obj, m_activeDecorationList) {
+    if (obj->isVisible()) {
+      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+      if (stroke) {
+        stroke->updateWithLast(
+              buddyView()->getCurrentMousePosition(neutu::data3d::ESpace::MODEL));
+#ifdef _DEBUG_
+        std::cout << "Current stroke: ";
+        stroke->print();
+#endif
+        buddyDocument()->bufferObjectModified(stroke);
+      }
+    }
+  }
+  buddyDocument()->processObjectModified();
 }
 
 void ZStackPresenter::clearData()
@@ -979,6 +1002,19 @@ ZStackObject* ZStackPresenter::getFirstOnActiveObject() const
   return NULL;
 }
 
+QList<ZStackObject*> ZStackPresenter::getActiveDecorationList(
+    std::function<bool(const ZStackObject*)> pred) const
+{
+  QList<ZStackObject*> objList;
+  for (ZStackObject *obj : m_activeDecorationList) {
+    if (pred(obj)) {
+      objList.append(obj);
+    }
+  }
+
+  return objList;
+}
+
 void ZStackPresenter::setActiveObjectSize(EObjectRole role, double radius)
 {
   ZStackObject *obj = getActiveObject(role);
@@ -999,15 +1035,9 @@ void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
 {
   turnOffActiveObject();
   ZStackObject *obj = getActiveObject(role);
-  if (obj != NULL) {
-    ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
-    if (stroke != NULL) {
-      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-      ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
-//      currentStackPos.shiftSliceAxis(getSliceAxis());
-
-      stroke->setLast(currentStackPos.x(), currentStackPos.y());
-    }
+  if (obj) {
+    obj->setVisible(true);
+    updateActiveDecoration();
 
     switch (role) {
     case ROLE_SWC:
@@ -1020,10 +1050,17 @@ void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
     default:
       break;
     }
-    obj->setVisible(true);
+
+    buddyDocument()->bufferObjectModified(
+          obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
+    if (refreshing) {
+      buddyDocument()->processObjectModified();
+    }
+    /*
     if (refreshing) {
       buddyView()->paintActiveDecoration();
     }
+    */
   }
 }
 /*
@@ -1433,6 +1470,8 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   std::cout << "Recorder address: " << &(m_mouseEventProcessor.getRecorder())
             << std::endl;
 #endif
+
+  updateActiveDecoration();
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
         event, ZMouseEvent::EAction::MOVE);
@@ -2014,16 +2053,7 @@ void ZStackPresenter::setObjectVisible(bool v)
 {
   if (m_showObject != v) {
     m_showObject = v;
-    if (v) {
-      ZStackDoc::ActiveViewObjectUpdater updater(getSharedBuddyDocument());
-      updater.exclude(ZStackObject::EType::DVID_TILE_ENSEMBLE);
-      updater.update(buddyView()->getViewParameter());
-    }
-
-    buddyView()->paintObject();
-    if (m_showObject) {
-      emit objectVisibleTurnedOn();
-    }
+    buddyView()->updateObjectCanvasVisbility(v);
   }
 }
 
@@ -2378,6 +2408,7 @@ void ZStackPresenter::setSliceViewTransform(
     setSliceAxis(transform.getSliceAxis());
   }
   m_interactiveContext.setSliceViewTransform(transform);
+  updateActiveDecoration();
 }
 
 void ZStackPresenter::notifyUser(const QString &msg)
@@ -2413,7 +2444,7 @@ bool ZStackPresenter::enterSwcExtendMode()
 
       turnOnActiveObject(ROLE_SWC);
 //      turnOnStroke();
-//      m_stroke.setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+//      m_stroke.setTarget(neutu::data3d::ETarget::TARGET_WIDGET);
       interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
       updateCursor();
       succ = true;
@@ -2464,7 +2495,7 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
   turnOnActiveObject(ROLE_SWC);
 //  m_stroke.setEraser(false);
 //  m_stroke.setFilled(false);
-//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+//  m_stroke.setTarget(neutu::data3d::ETarget::TARGET_WIDGET);
 //  turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
@@ -2563,7 +2594,7 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
   stroke->setEraser(false);
   turnOnActiveObject(ROLE_STROKE);
 //  m_stroke.setFilled(true);
-//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+//  m_stroke.setTarget(neutu::data3d::ETarget::TARGET_OBJECT_CANVAS);
 //  turnOnStroke();
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -2584,7 +2615,7 @@ void ZStackPresenter::enterEraseStrokeMode(double x, double y)
   stroke->set(x, y);
 //  m_stroke.setFilled(true);
   stroke->setEraser(true);
-//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+//  m_stroke.setTarget(neutu::data3d::ETarget::TARGET_OBJECT_CANVAS);
 //  turnOnStroke();
   turnOnActiveObject(ROLE_STROKE);
   //buddyView()->paintActiveDecoration();
@@ -2880,7 +2911,17 @@ void ZStackPresenter::copyLink(const QString &/*option*/) const
 
 void ZStackPresenter::copyNeuroglancerLink()
 {
-  copyLink("neuroglancer");
+  ZJsonObject obj;
+  obj.setEntry("type", "neuroglancer");
+  copyLink(obj.dumpString(0).c_str());
+}
+
+void ZStackPresenter::copyNeuroglancerLinkAtRectRoi()
+{
+  ZJsonObject obj;
+  obj.setEntry("type", "neuroglancer");
+  obj.setEntry("location", "rectroi");
+  copyLink(obj.dumpString(0).c_str());
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()
@@ -3041,7 +3082,7 @@ bool ZStackPresenter::processCustomOperator(
   return false;
 }
 
-bool ZStackPresenter::hasDrawable(ZStackObject::ETarget target) const
+bool ZStackPresenter::hasDrawable(neutu::data3d::ETarget target) const
 {
   for (QList<ZStackObject*>::const_iterator iter = m_decorationList.begin();
        iter != m_decorationList.end(); ++iter) {
@@ -3755,7 +3796,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
             currentRawStackPos.getZ(),
             buddyView()->getSliceAxis()));
             */
-
+#if 0
     if (m_interactiveContext.synapseEditMode() ==
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {
       ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
@@ -3783,9 +3824,11 @@ bool ZStackPresenter::process(ZStackOperator &op)
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
         //turnOnStroke();
       }
+
       op.setOperation(ZStackOperator::OP_NULL);
     }
-//    processed = false;
+#endif
+    //    processed = false;
     break;
 
   case ZStackOperator::OP_STACK_LOCATE_SLICE:

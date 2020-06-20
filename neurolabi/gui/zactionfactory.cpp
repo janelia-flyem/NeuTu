@@ -411,6 +411,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_COPY_NEUROGLANCER_LINK:
+  case ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI:
     action = new QAction("Copy Neuroglancer Link", parent);
     action->setIcon(QFontIcon::icon(10697));
     break;
@@ -531,7 +532,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_CANCEL_RECT_ROI:
     action = new QAction("Cancel", parent);
     action->setToolTip("Cancel the current rectangle ROI");
-    action->setIcon(QIcon(":/images/cancel.png"));
+//    action->setIcon(QIcon(":/images/cancel.png"));
+    action->setIcon(QFontIcon::icon(8998, Qt::red));
     break;
   case ACTION_PUNCTA_CHANGE_COLOR:
     action = new QAction("Change Color of Selected Puncta", parent);
@@ -728,6 +730,21 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_RUN_TIP_DETECTION:
     action = new QAction("Tip detection dialog...", parent);
+    break;
+  case ACTION_VIEW_AXIS_X:
+    action = new QAction("Change View", parent);
+    action->setIcon(QFontIcon::icon(9421, Qt::darkRed));
+    action->setCheckable(true);
+    break;
+  case ACTION_VIEW_AXIS_Y:
+    action = new QAction("Change View", parent);
+    action->setIcon(QFontIcon::icon(9422, Qt::darkGreen));
+    action->setCheckable(true);
+    break;
+  case ACTION_VIEW_AXIS_Z:
+    action = new QAction("Change View", parent);
+    action->setIcon(QFontIcon::icon(9423, Qt::blue));
+    action->setCheckable(true);
     break;
   case ACTION_SAVE_ALL_MESH:
     action = new QAction("Save Meshes As", parent);

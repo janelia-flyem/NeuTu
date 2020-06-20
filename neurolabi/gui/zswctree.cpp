@@ -4345,7 +4345,7 @@ Swc_Tree_Node* ZSwcTree::DownstreamIterator::next()
 
 
 ////////////////////////////////////////////////
-ZStackObject::ETarget ZSwcTree::GetDefaultTarget()
+neutu::data3d::ETarget ZSwcTree::GetDefaultTarget()
 {
-  return ZStackObject::ETarget::WIDGET;
+  return neutu::data3d::ETarget::WIDGET;
 }

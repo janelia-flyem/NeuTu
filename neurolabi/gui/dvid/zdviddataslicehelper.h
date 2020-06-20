@@ -8,6 +8,7 @@
 class QRect;
 class ZIntCuboid;
 class ZRect2d;
+class ZAffineRect;
 
 class ZDvidDataSliceHelper
 {
@@ -94,6 +95,8 @@ public:
   ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
   bool hasNewView(const ZStackViewParam &viewParam) const;
   bool hasNewView(
+      const ZStackViewParam &viewParam, const ZIntCuboid &modelRange) const;
+  bool hasNewView(
       const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const;
   /*
   bool containedIn(
@@ -103,6 +106,10 @@ public:
   bool actualContainedIn(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
+
+  ZSliceViewTransform getCanvasTransform(const ZAffinePlane &ap, int width, int height) const;
+
+  ZAffineRect getIntCutRect() const;
 
   bool needHighResUpdate() const;
 

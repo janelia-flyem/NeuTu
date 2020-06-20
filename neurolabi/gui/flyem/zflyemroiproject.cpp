@@ -1320,13 +1320,17 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
 void ZFlyEmRoiProject::setSynapseVisible(bool isVisible)
 {
   if (m_dataFrame != NULL) {
+    m_dataFrame->document()->setVisible(
+          ZStackObject::EType::PUNCTUM, isVisible);
+    /*
     QList<ZPunctum*> puncta = m_dataFrame->document()->getPunctumList();
     for (QList<ZPunctum*>::iterator iter = puncta.begin();
          iter != puncta.end(); ++iter) {
       ZPunctum *punctum = *iter;
       punctum->setVisible(isVisible);
     }
-    m_dataFrame->document()->notifyPunctumModified();
+    */
+//    m_dataFrame->document()->notifyPunctumModified();
   }
 }
 

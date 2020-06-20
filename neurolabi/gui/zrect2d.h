@@ -24,6 +24,8 @@ public:
   inline int getWidth() const { return m_width; }
   inline int getHeight() const { return m_height; }
 
+  ZIntPoint getCenter() const;
+
   bool hit(double x, double y, neutu::EAxis axis) override;
   bool hit(double x, double y, double z) override;
 
@@ -94,6 +96,7 @@ public:
       const QRectF &targetRectIn);
 
   ZCuboid getBoundBox() const override;
+  ZIntCuboid getIntBoundBox() const;
 
 private:
   void init(int x0, int y0, int width, int height);

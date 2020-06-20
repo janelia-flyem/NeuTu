@@ -54,7 +54,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
   m_endColor.setRgb(0, 0, 255, 255);
 
   m_source = "traced";
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 }
 

@@ -167,10 +167,10 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
                 m_view, SLOT(updateStackRange()), Qt::DirectConnection);
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
                 m_view, SLOT(processStackChange(bool)), Qt::AutoConnection);
-//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
-//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-//                m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)),
+//  connectAction(m_doc.get(), SIGNAL(objectModified(neutu::data3d::ETarget)),
+//          m_view, SLOT(paintObject(neutu::data3d::ETarget)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<neutu::data3d::ETarget>)),
+//                m_view, SLOT(paintObject(QSet<neutu::data3d::ETarget>)),
 //                Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
                 m_view, SLOT(paintObject()), Qt::AutoConnection);
@@ -218,9 +218,9 @@ void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(processViewChange(ZStackViewParam)), Qt::AutoConnection);
-  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
-                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
-                Qt::AutoConnection);
+//  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
+//                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
+//                Qt::AutoConnection);
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //                m_presenter, SLOT(processSliceChangeEvent(int)));
 }
@@ -704,6 +704,11 @@ void ZStackMvc::zoomToL1(int x, int y, int z)
   }
   zoomTo(x, y, z, width);
   */
+}
+
+neutu::EAxis ZStackMvc::getSliceAxis() const
+{
+  return getView()->getSliceAxis();
 }
 
 void ZStackMvc::setDefaultViewPort(const QRect &rect)

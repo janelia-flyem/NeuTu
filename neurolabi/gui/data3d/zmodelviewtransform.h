@@ -71,6 +71,9 @@ public:
    */
   void translateCutCenterOnPlane(double du, double dv);
 
+  bool onSamePlane(const ZModelViewTransform &t) const;
+  bool hasSamePlane(const ZModelViewTransform &t) const;
+
   ZJsonObject toJsonObject() const;
 
   bool operator==(const ZModelViewTransform &t) const;

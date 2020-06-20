@@ -2316,10 +2316,12 @@ void Z3DWindow::removeAllTodo()
 }
 */
 
+/*
 void Z3DWindow::updateTodoVisibility()
 {
   getDocument()->notifyTodoModified();
 }
+*/
 
 void Z3DWindow::addTodoMarker()
 {
@@ -2479,8 +2481,10 @@ void Z3DWindow::changeSelectedPunctaName()
          iter != punctumSet.end(); ++iter) {
       ZPunctum *punctum = *iter;
       punctum->setName(text);
+      m_doc->bufferObjectModified(punctum);
     }
-    m_doc->notifyPunctumModified();
+    m_doc->processObjectModified();
+//    m_doc->notifyPunctumModified();
   }
 }
 
@@ -3477,6 +3481,7 @@ void Z3DWindow::transformSelectedPuncta()
              iter != punctaSet.end(); ++iter) {
           (*iter)->setCenter(
                 (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
 
@@ -3486,6 +3491,7 @@ void Z3DWindow::transformSelectedPuncta()
               (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
               (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
               (*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
+        m_doc->bufferObjectModified(*iter);
       }
 
       if (!dlg.isTranslateFirst()) {
@@ -3493,10 +3499,11 @@ void Z3DWindow::transformSelectedPuncta()
              iter != punctaSet.end(); ++iter) {
           (*iter)->setCenter(
                 (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
     }
-    m_doc->notifyPunctumModified();
+    m_doc->processObjectModified();
   }
 }
 
@@ -3624,6 +3631,7 @@ void Z3DWindow::transformAllPuncta()
              iter != punctaSet.end(); ++iter) {
           ZPunctum *punctum = *iter;
           punctum->translate(dx, dy, dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
 
@@ -3633,6 +3641,7 @@ void Z3DWindow::transformAllPuncta()
               (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
               (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
               (*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
+        m_doc->bufferObjectModified(*iter);
       }
 
       if (!dlg.isTranslateFirst()) {
@@ -3640,9 +3649,10 @@ void Z3DWindow::transformAllPuncta()
              iter != punctaSet.end(); ++iter) {
           ZPunctum *punctum = *iter;
           punctum->translate(dx, dy, dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
-      m_doc->notifyPunctumModified();
+      m_doc->processObjectModified();
     }
   }
 }

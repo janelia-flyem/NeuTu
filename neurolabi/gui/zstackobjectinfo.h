@@ -29,7 +29,7 @@ public:
     m_type = type;
   }
 
-  void setTarget(ZStackObject::ETarget target) {
+  void setTarget(neutu::data3d::ETarget target) {
     m_target = target;
   }
 
@@ -43,7 +43,7 @@ public:
     return m_type;
   }
 
-  ZStackObject::ETarget getTarget() const {
+  neutu::data3d::ETarget getTarget() const {
     return m_target;
   }
 
@@ -58,7 +58,7 @@ public:
 
 private:
   ZStackObject::EType m_type = ZStackObject::EType::UNIDENTIFIED;
-  ZStackObject::ETarget m_target = ZStackObject::ETarget::NONE;
+  neutu::data3d::ETarget m_target = neutu::data3d::ETarget::TARGET_NONE;
   ZStackObjectRole m_role;
 };
 
@@ -70,12 +70,12 @@ public:
   ZStackObjectInfoSet();
 
   bool contains(ZStackObject::EType type) const;
-  bool contains(ZStackObject::ETarget target) const;
+  bool contains(neutu::data3d::ETarget target) const;
   bool contains(ZStackObjectRole::TRole role) const;
   bool contains(const ZStackObjectInfo &info) const;
 
   std::set<ZStackObject::EType> getType() const;
-  std::set<ZStackObject::ETarget> getTarget() const;
+  std::set<neutu::data3d::ETarget> getTarget() const;
 
   /*!
    * \brief Check if a certain type of object has been modified in a certain way.
@@ -88,17 +88,25 @@ public:
   bool hasObjectModified(
       ZStackObject::EType type) const;
 
+  /*!
+   * \brief Check if data is changed for a certain type of object
+   *
+   * \return true iff the changing flag contains STATE_ADDED, STATE_REMOVED, or
+   * STATE_MODIFIED or the flag is STATE_UNKNOWN.
+   */
+  bool hasObjectDataModified(ZStackObject::EType type) const;
+
   bool onlyVisibilityChanged(ZStackObject::EType type) const;
 
 
   void add(const ZStackObject &obj);
 
-  void add(ZStackObject::ETarget target);
+  void add(neutu::data3d::ETarget target);
   void add(ZStackObject::EType type,
            ZStackObjectInfo::TState state = ZStackObjectInfo::STATE_UNKNOWN);
   void add(ZStackObjectRole::TRole role);
   void add(const ZStackObjectInfo &info);
-  void add(const QSet<ZStackObject::ETarget> &targetSet);
+  void add(const QSet<neutu::data3d::ETarget> &targetSet);
   void add(const ZStackObjectInfo &info, ZStackObjectInfo::TState state);
 
   void print() const;

@@ -78,11 +78,10 @@ public:
   virtual void processViewChangeCustom(const ZStackViewParam &/*viewParam*/) {}
 
   ZIntPoint getViewCenter() const;
-//  double getWidthZoomRatio() const;
-//  double getHeightZoomRatio() const;
   QSize getViewScreenSize() const;
   ZAffineRect getViewPort() const;
   void setDefaultViewPort(const QRect &rect);
+  neutu::EAxis getSliceAxis() const;
 
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);

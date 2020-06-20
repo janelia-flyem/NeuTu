@@ -516,6 +516,8 @@ public:
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
   void uploadUserDataConfig();
 
+  void updateSegmentationOpacity(double opacity);
+
   //Obsolete. Use getCurrentGrayscaleReader() instead
   ZDvidReader* getCurrentGrayscaleReader(neutu::EAxis axis) const;
 
@@ -683,7 +685,8 @@ public slots:
 
 protected:
   void autoSave() override;
-  void customNotifyObjectModified(ZStackObject::EType type) override;
+//  void customNotifyObjectModified(ZStackObject::EType type) override;
+  void _processObjectModified(const ZStackObjectInfoSet &infoSet) override;
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData(const ZDvidEnv &env);
@@ -699,6 +702,7 @@ protected:
   void prepareLabelSlice();
 //  void initGrayscaleSlice(neutu::EAxis axis);
   void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
+  void initLabelSlice(neutu::EAxis axis);
 
   void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
   void setGrayscaleReader(

@@ -96,11 +96,12 @@ void ZColorScheme::buildLabelColorTable()
 
 void ZColorScheme::buildConvRandomColorTable(int n, int seed)
 {
-  m_colorTable.append(Qt::transparent);
+//  m_colorTable.append(Qt::transparent);
+  m_colorTable.clear();
 
   ZRandomGenerator generator(seed);
   const int maxInt = 20000;
-  for (int i = 1; i < n; ++i) {
+  for (int i = 1; i <= n; ++i) {
     int r = generator.rndint(maxInt)%255;
     int g = generator.rndint(maxInt)%255;
     int b = generator.rndint(maxInt)%255;

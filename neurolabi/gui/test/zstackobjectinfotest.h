@@ -38,7 +38,7 @@ TEST(ZStackObjectInfoSet, Basic)
   ASSERT_TRUE(infoSet.getTarget().empty());
   ASSERT_FALSE(infoSet.contains(ZStackObject::EType::CUBE));
   ASSERT_FALSE(infoSet.contains(ZStackObject::EType::UNIDENTIFIED));
-  ASSERT_FALSE(infoSet.contains(ZStackObject::ETarget::NONE));
+  ASSERT_FALSE(infoSet.contains(neutu::data3d::ETarget::TARGET_NONE));
   ASSERT_FALSE(infoSet.contains(ZStackObjectRole::ROLE_NONE));
 
   ZStackObjectInfo info;
@@ -48,7 +48,7 @@ TEST(ZStackObjectInfoSet, Basic)
   ASSERT_TRUE(infoSet.getTarget().empty());
   ASSERT_FALSE(infoSet.contains(ZStackObject::EType::SWC));
   ASSERT_TRUE(infoSet.contains(ZStackObject::EType::UNIDENTIFIED));
-  ASSERT_TRUE(infoSet.contains(ZStackObject::ETarget::NONE));
+  ASSERT_TRUE(infoSet.contains(neutu::data3d::ETarget::TARGET_NONE));
   ASSERT_TRUE(infoSet.contains(ZStackObjectRole::ROLE_NONE));
 
   ZSwcTree tree;

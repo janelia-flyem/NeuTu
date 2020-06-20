@@ -4,17 +4,24 @@
 #include <QPen>
 #include <QBitmap>
 
+#include "tz_geo3d_utils.h"
+#include "tz_geometry.h"
+
 #include "common/math.h"
+#include "common/utilities.h"
+
 #include "neutubeconfig.h"
 #include "geometry/zintpoint.h"
+#include "geometry/zgeometry.h"
+#include "geometry/zintcuboid.h"
+
 #include "zstack.hxx"
 #include "zobject3d.h"
 #include "zjsonobject.h"
-#include "tz_geometry.h"
-#include "zpainter.h"
-#include "geometry/zgeometry.h"
-#include "geometry/zintcuboid.h"
-#include "tz_geo3d_utils.h"
+
+#include "vis2d/zslicepainter.h"
+#include "vis2d/utilities.h"
+
 
 const double ZStroke2d::m_minWidth = 1.0;
 #ifdef _FLYEM_
@@ -105,6 +112,25 @@ void ZStroke2d::setLast(double x, double y)
   }
 }
 
+void ZStroke2d::updateWithLast(const ZPoint &pt)
+{
+  updateWithLast(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStroke2d::updateWithLast(double x, double y, double z)
+{
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
+  setLast(x, y);
+  setZ(z);
+}
+
+void ZStroke2d::set(double x, double y, double z)
+{
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
+  set(x, y);
+  setZ(z);
+}
+
 void ZStroke2d::setLabel(uint64_t label)
 {
   m_uLabel = label;
@@ -148,6 +174,29 @@ void ZStroke2d::setEraser(bool enabled)
   }
   m_color.setAlpha(128);
   */
+}
+
+bool ZStroke2d::display(QPainter *painter, const DisplayConfig &config) const
+{
+  if (!m_pointArray.empty() && getSliceAxis() != neutu::EAxis::ARB && isVisible()) {
+    ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
+
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+    QPen pen(getColor());
+    pen.setCosmetic(true);
+    painter->setPen(pen);
+
+    ZPoint center;
+    center.set(m_pointArray.front().x(), m_pointArray.front().y(), m_z);
+    center.shiftSliceAxis(getSliceAxis());
+
+    paintHelper.drawBall(painter, center, m_width * 0.5, 2.0, 0.5);
+
+    return paintHelper.getPaintedHint();
+  }
+
+  return false;
 }
 
 #if 0

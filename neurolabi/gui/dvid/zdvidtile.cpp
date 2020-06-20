@@ -22,7 +22,7 @@
 
 ZDvidTile::ZDvidTile()
 {
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 //  m_pixmap.fill();
 //  m_pixmap = NULL;

@@ -86,6 +86,7 @@ public:
   static ZFlyEmProofMvc* Make(
       const ZDvidEnv &env, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(ERole role = ERole::ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(neutu::EAxis axis);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -107,6 +108,8 @@ public:
   void setDvidFromJsonObject(const std::string &str);
   void setDvidFromUrl(const QString &url);
   virtual void setDvid(const ZDvidEnv &env);
+
+  void setDvidFromName(const std::string &name);
 
   void clear();
 

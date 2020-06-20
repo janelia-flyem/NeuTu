@@ -8,7 +8,7 @@
 
 ZDvidGraySliceEnsemble::ZDvidGraySliceEnsemble()
 {
-  setTarget(ZStackObject::ETarget::TILE_CANVAS);
+  setTarget(neutu::data3d::ETarget::TILE_CANVAS);
   m_type = GetType();
 }
 

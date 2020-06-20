@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "common/math.h"
+#include "common/utilities.h"
 #include "logging/zqslog.h"
 #include "neutubeconfig.h"
 
@@ -33,7 +34,7 @@ ZFlyEmBookmark::~ZFlyEmBookmark()
 void ZFlyEmBookmark::init()
 {
   m_type = GetType();
-  setTarget(ETarget::WIDGET_CANVAS);
+  setTarget(neutu::data3d::ETarget::HD_OBJECT_CANVAS);
 
   m_bodyId = 0;
   m_bookmarkType = EBookmarkType::LOCATION;
@@ -266,11 +267,21 @@ void ZFlyEmBookmark::setCustom(bool state)
 bool ZFlyEmBookmark::display(
     QPainter *painter, const DisplayConfig &config) const
 {
-  ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
+  if (isVisible()) {
+    ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
 
-  paintHelper.drawBall(painter, getCenter(), getRadius(), 2.0, 0.5);
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
-  return paintHelper.getPaintedHint();
+    QPen pen(getColor());
+    pen.setCosmetic(true);
+    painter->setPen(pen);
+
+    paintHelper.drawBall(painter, getCenter(), getRadius(), 2.0, 0.5);
+
+    return paintHelper.getPaintedHint();
+  }
+
+  return false;
 }
 
 #if 0

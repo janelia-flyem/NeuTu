@@ -9,6 +9,8 @@
 
 #include "zjsonvalue.h"
 
+class ZJsonArray;
+
 #define ZJsonObject_foreach(jsonObject, key, value) \
   json_object_foreach(jsonObject.getValue(), key, value)
 
@@ -99,6 +101,9 @@ public:
    * It does nothing if \a value is empty.
    */
   void setNonEmptyEntry(const char *key, const std::string &value);
+
+  void setNonEmptyEntry(const char *key, const ZJsonObject &obj);
+  void setNonEmptyEntry(const char *key, const ZJsonArray &obj);
 
   /*!
    * \brief Set an entry of the object with an array

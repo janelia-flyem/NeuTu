@@ -412,7 +412,7 @@ void MainWindow::initDialog()
   connect(m_bcDlg, SIGNAL(autoAdjustTriggered()), this, SLOT(autoBcAdjust()));
 
   m_helpDlg = new HelpDialog(this);
-  m_DiagnosisDlg = new DiagnosisDialog(this);
+//  m_DiagnosisDlg = new DiagnosisDialog(this);
   m_penWidthDialog = new PenWidthDialog(this);
   m_resDlg = new ResolutionDialog(this);
 
@@ -4390,6 +4390,9 @@ void MainWindow::on_actionAddMask_triggered()
 
 void MainWindow::on_actionMask_triggered()
 {
+  ZDialogFactory::Warn(
+        "Deprecated Function", "This function has been removed.", this);
+#if 0
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     ZString path = frame->document()->stackSourcePath();
@@ -4412,6 +4415,7 @@ void MainWindow::on_actionMask_triggered()
       m_lastOpenedFilePath = fileName;
     }
   }
+#endif
 }
 
 void MainWindow::on_actionShortcut_triggered()
@@ -4924,6 +4928,10 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 
 void MainWindow::on_actionDiagnosis_triggered()
 {
+  if (m_DiagnosisDlg == nullptr) {
+    m_DiagnosisDlg = new DiagnosisDialog(this);
+  }
+
   m_DiagnosisDlg->show();
   QStringList info;
 
@@ -7034,7 +7042,7 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), neutu::EMessageType::INFORMATION);
 }
 
-ZProofreadWindow *MainWindow::startProofread()
+ZProofreadWindow *MainWindow::startProofread(const QString &databaseName)
 {
   ZProofreadWindow *window = ZProofreadWindow::Make();
 
@@ -7054,6 +7062,10 @@ ZProofreadWindow *MainWindow::startProofread()
                          neutube::EMessageType::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
   }
 #endif
+
+  if (!databaseName.isEmpty()) {
+    window->loadDatabaseFromName(databaseName);
+  }
 
   return window;
 }

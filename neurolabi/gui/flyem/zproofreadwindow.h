@@ -96,6 +96,7 @@ public slots:
 
   void showAndRaise();
 
+  void loadDatabaseFromName(const QString &name);
   void loadDatabase();
   void loadDatabaseFromUrl();
 

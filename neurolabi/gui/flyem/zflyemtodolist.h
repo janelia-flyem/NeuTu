@@ -90,7 +90,7 @@ public:
   bool isReady() const;
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
+      QPainter *painter, const DisplayConfig &config) const override {
     return false;
   }
 #if 0

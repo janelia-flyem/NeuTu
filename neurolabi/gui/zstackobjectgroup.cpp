@@ -1083,7 +1083,7 @@ bool ZStackObjectGroup::hasObject(ZStackObject::EType type) const
   return hasObjectUnsync(type);
 }
 
-bool ZStackObjectGroup::hasObjectUnsync(ZStackObject::ETarget target) const
+bool ZStackObjectGroup::hasObjectUnsync(neutu::data3d::ETarget target) const
 {
   for (QList<ZStackObject*>::const_iterator iter = m_objectList.begin();
        iter != m_objectList.end(); ++iter) {
@@ -1096,7 +1096,7 @@ bool ZStackObjectGroup::hasObjectUnsync(ZStackObject::ETarget target) const
   return false;
 }
 
-bool ZStackObjectGroup::hasObject(ZStackObject::ETarget target) const
+bool ZStackObjectGroup::hasObject(neutu::data3d::ETarget target) const
 {
   QMutexLocker locker(&m_mutex);
 

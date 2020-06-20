@@ -1,8 +1,11 @@
+include($$PWD/tests/tests.pri)
+
 HEADERS += \
     $$PWD/logging.h \
     $$PWD/utilities.h \
     $$PWD/zpositionmapper.h \
     $$PWD/zstackdocobjectupdate.h \
+    $$PWD/zstackobjectpaintsorter.h \
     $$PWD/zstackview.h \
     $$PWD/zstackdoc.h \
     $$PWD/zstackpresenter.h \
@@ -21,6 +24,7 @@ SOURCES += \
     $$PWD/utilities.cpp \
     $$PWD/zpositionmapper.cpp \
     $$PWD/zstackdocobjectupdate.cpp \
+    $$PWD/zstackobjectpaintsorter.cpp \
     $$PWD/zstackview.cpp \
     $$PWD/zstackdoc.cpp \
     $$PWD/zstackpresenter.cpp \

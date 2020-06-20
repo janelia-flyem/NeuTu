@@ -2,6 +2,7 @@
 #define ZFLYEMPROOFPRESENTER_H
 
 #include <memory>
+#include <functional>
 
 #include "mvc/zstackpresenter.h"
 #include "dvid/zdvidsynapse.h"
@@ -88,6 +89,11 @@ public:
 //    return m_labelAlpha;
 //  }
 
+public:
+  std::function<double()> getSegmentationOpacity = []() {
+    return 0.3;
+  };
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
@@ -163,6 +169,9 @@ public slots:
   void tryAddDiagnosticItem(const ZIntPoint &pt);
   void tryAddSegmentationDiagnosticItem(const ZIntPoint &pt);
   void runTipDetection();
+  void setCutPlaneAlongX();
+  void setCutPlaneAlongY();
+  void setCutPlaneAlongZ();
 
   void showSupervoxelList();
 

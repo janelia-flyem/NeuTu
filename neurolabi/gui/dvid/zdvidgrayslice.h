@@ -35,74 +35,33 @@ public:
   }
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const;
-  /*
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const override;
-               */
-  void clear();
-
-//  void update(int z);
-  bool update(const ZStackViewParam &viewParam);
-  /*!
-   * \brief Update an arbitrary cutting plane
-   *
-   * It only takes effect only when the axis is neutube::A_AXIS.
-   */
-//  bool update(const ZArbSliceViewParam &viewParam);
-
-//  void loadDvidSlice(const QByteArray &buffer, int z);
-
-//  virtual const std::string& className() const;
-
-  void printInfo() const;
+      QPainter *painter, const DisplayConfig &config) const override;
 
   void setDvidTarget(const ZDvidTarget &target);
 
   const ZDvidReader& getDvidReader() const;
   const ZDvidReader& getWorkDvidReader() const;
-
   const ZDvidTarget& getDvidTarget() const;
-//  int getX() const;
-//  int getY() const;
-  int getZ() const;
-//  void setZ(int z);
+
+  /*!
+   * \brief Update the view parameter
+   *
+   * This function will trigger data update if the current data is out of sync.
+   */
+  bool update(const ZStackViewParam &viewParam);
+
+  void printInfo() const;
+
   int getWidth() const;
   int getHeight() const;
   int getZoom() const;
 
   int getScale() const;
 
-  /*
-  inline const ZDvidTarget& getDvidTarget() const {
-    return m_reader.getDvidTarget();
-  }
-
-  inline int getX() const {
-    return m_currentViewParam.getViewPort().left();
-  }
-  inline int getY() const {
-    return m_currentViewParam.getViewPort().top();
-  }
-  inline int getZ() const {
-    return m_currentViewParam.getZ();
-  }
-  inline void setZ(int z) {
-    m_currentViewParam.setZ(z);
-  }
-  */
-
-//  int getWidth() const { return m_currentViewParam.getViewPort().width(); }
-//  int getHeight() const { return m_currentViewParam.getViewPort().height(); }
-
   ZCuboid getBoundBox() const override;
-//  ZRect2d getBoundBox() const;
-//  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
-//  void setBoundBox(const ZRect2d &rect);
-
-//  QRect getViewPort() const;
   ZStackViewParam getViewParam() const;
+  ZIntCuboid getDataRange() const;
 
 
   void setZoom(int zoom);
@@ -140,20 +99,12 @@ public: //for testing
 //  void test();
 
 private:
-//  void updateImage();
-  void updateImage(const ZStack *stack, const ZAffineRect &rect);
+  void clear();
+
+  void updateImage(const ZStack *stack, const ZAffinePlane &ap);
   void forceUpdate(const ZStackViewParam &viewParam);
-//  void forceUpdate(const QRect &viewPort, int z);
-//  void forceUpdate(const ZArbSliceViewParam &sliceViewParam);
-
-//  void updatePixmap();
   void updateContrast();
-//  void invalidateCanvas();
-//  void validatePixmap(bool v);
-//  void validatePixmap();
-//  bool isCanvasValid() const;
 
-//  bool validateSize(int *width, int *height);
   template<typename T>
   int updateParam(T *param);
 
@@ -171,29 +122,12 @@ private:
 
 private:
   ZSliceCanvas m_imageCanvas;
-  ZImage m_image;
-//  ZImage m_image;
-//  ZPixmap m_pixmap;
-//  bool m_isCanvasValid = false;
+  ZImage m_image; //Todo: need to replace ZImage type with a more concise one
 
   bool m_usingContrastProtocol = false;
   ZContrastProtocol m_contrastProtocol;
 
-//  QMutex m_pixmapMutex;
-//  ZStackViewParam m_currentViewParam;
-
-//  ZArbSliceViewParam m_sliceViewParam; //Only useful for A_AXIS
-
-//  int m_zoom;
-
-//  int m_maxWidth;
-//  int m_maxHeight;
-
   std::unique_ptr<ZDvidDataSliceHelper> m_helper;
-//  ZPoint m_v1;
-//  ZPoint m_v2;
-
-//  ZDvidReader m_reader;
 };
 
 #endif // ZDVIDGRAYSLICE_H

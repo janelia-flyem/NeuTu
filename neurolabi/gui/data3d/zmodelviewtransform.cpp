@@ -281,6 +281,16 @@ void ZModelViewTransform::translateCutCenterOnPlane(double du, double dv)
   m_cutPlane.translateOnPlane(du, dv);
 }
 
+bool ZModelViewTransform::onSamePlane(const ZModelViewTransform &t) const
+{
+  return m_cutPlane.onSamePlane(t.getCutPlane());
+}
+
+bool ZModelViewTransform::hasSamePlane(const ZModelViewTransform &t) const
+{
+  return m_cutPlane.hasSamePlane(t.getCutPlane());
+}
+
 std::ostream& operator<< (
     std::ostream &stream, const ZModelViewTransform &t)
 {

@@ -20,7 +20,6 @@ void ZDvidDataSliceHelper::clear()
 void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
 {
   m_reader.open(target);
-  m_workReader.openRaw(m_reader.getDvidTarget());
   switch (m_dataRole) {
   case ZDvidData::ERole::GRAYSCALE:
   case ZDvidData::ERole::MULTISCALE_2D:
@@ -33,6 +32,7 @@ void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
   default:
     break;
   }
+  m_workReader.openRaw(m_reader.getDvidTarget());
 
   updateCenterCut();
 }
@@ -46,14 +46,20 @@ void ZDvidDataSliceHelper::updateMaxZoom()
 {
   switch (m_dataRole) {
   case ZDvidData::ERole::GRAYSCALE:
-    m_reader.updateMaxGrayscaleZoom(
-          ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(m_reader.getDvidTarget()));
+    m_maxZoom = ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(m_reader.getDvidTarget());
+    m_reader.updateMaxGrayscaleZoom(m_maxZoom);
+    m_workReader.updateMaxGrayscaleZoom(m_maxZoom);
+//    m_reader.updateMaxGrayscaleZoom(
+//          ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(m_reader.getDvidTarget()));
 //    m_reader.updateMaxGrayscaleZoom();
     break;
   case ZDvidData::ERole::SEGMENTATION:
   case ZDvidData::ERole::SPARSEVOL:
-    m_reader.updateMaxLabelZoom(
-          ZDvidGlobal::Memo::ReadMaxLabelZoom(m_reader.getDvidTarget()));
+    m_maxZoom = ZDvidGlobal::Memo::ReadMaxLabelZoom(m_reader.getDvidTarget());
+    m_reader.updateMaxLabelZoom(m_maxZoom);
+    m_workReader.updateMaxLabelZoom(m_maxZoom);
+//    m_reader.updateMaxLabelZoom(
+//          ZDvidGlobal::Memo::ReadMaxLabelZoom(m_reader.getDvidTarget()));
 //    m_reader.updateMaxLabelZoom();
     break;
   default:
@@ -152,50 +158,6 @@ int ZDvidDataSliceHelper::getZ() const
   return neutu::iround(getViewParam().getCutDepth(ZPoint(0, 0, 0)));
 }
 
-/*
-QRect ZDvidDataSliceHelper::getViewPort() const
-{
-  return getViewParam().getViewPort();
-}
-
-int ZDvidDataSliceHelper::getX() const
-{
-  return getViewPort().left();
-}
-
-int ZDvidDataSliceHelper::getY() const
-{
-  return getViewPort().top();
-}
-
-int ZDvidDataSliceHelper::getZ() const
-{
-  return getViewParam().getZ();
-}
-
-void ZDvidDataSliceHelper::setZ(int z)
-{
-  m_currentViewParam.setZ(z);
-}
-
-int ZDvidDataSliceHelper::getWidth() const
-{
-  if (getViewPort().isEmpty()) {
-    return 0;
-  }
-
-  return getViewPort().width();
-}
-
-int ZDvidDataSliceHelper::getHeight() const
-{
-  if (getViewPort().isEmpty()) {
-    return 0;
-  }
-
-  return getViewPort().height();
-}
-*/
 size_t ZDvidDataSliceHelper::getViewPortArea() const
 {
   return size_t(getWidth()) * size_t(getHeight());
@@ -311,11 +273,28 @@ ZStackViewParam ZDvidDataSliceHelper::getValidViewParam(
 
 bool ZDvidDataSliceHelper::hasNewView(const ZStackViewParam &viewParam) const
 {
+  return hasNewView(viewParam, getDataRange());
+  /*
   int maxZoomLevel = getMaxZoom();
 
   return !m_currentViewParam.contains(viewParam) ||
       (viewParam.getZoomLevel(maxZoomLevel) <
       m_currentViewParam.getZoomLevel(maxZoomLevel));
+      */
+}
+
+bool ZDvidDataSliceHelper::hasNewView(
+    const ZStackViewParam &viewParam, const ZIntCuboid &modelRange) const
+{
+  ZAffineRect currentCutRect = m_currentViewParam.getIntCutRect(modelRange);
+  ZAffineRect newCutRect = viewParam.getIntCutRect(modelRange);
+  if (currentCutRect.contains(newCutRect)) {
+    int maxZoomLevel = getMaxZoom();
+    return viewParam.getZoomLevel(maxZoomLevel) <
+        m_currentViewParam.getZoomLevel(maxZoomLevel);
+  }
+
+  return true;
 }
 
 bool ZDvidDataSliceHelper::hasNewView(
@@ -413,7 +392,8 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 {
   bool contained = false;
 
-  if (viewParam.contains(m_currentViewParam)) {
+  if (viewParam.getIntCutRect(getDataRange()).contains(
+        m_currentViewParam.getIntCutRect(getDataRange()))) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
           m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
           m_actualUsingCenterCut,
@@ -422,6 +402,38 @@ bool ZDvidDataSliceHelper::actualContainedIn(
   }
 
   return contained;
+}
+
+ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
+    const ZAffinePlane &ap, int width, int height) const
+{
+  ZSliceViewTransform t;
+
+  if (getSliceAxis() == neutu::EAxis::ARB) {
+    t.setCutPlane(ap);
+  } else {
+    t.setCutPlane(getSliceAxis(), ap.getOffset());
+  }
+
+  t.setScale(1.0 / zgeom::GetZoomScale(getZoom()));
+  //Assuming lowtis uses left integer center
+  t.setAnchor(width / 2, height / 2);
+
+  return t;
+}
+
+ZAffineRect ZDvidDataSliceHelper::getIntCutRect() const
+{
+  ZAffineRect rect = getViewParam().getIntCutRect(getDataRange());
+  if (m_maxZoom < 3) {
+    int width = rect.getWidth();
+    int height = rect.getHeight();
+    if (validateSize(&width, &height)) {
+      rect.setSize(width, height);
+    }
+  }
+
+  return rect;
 }
 
 bool ZDvidDataSliceHelper::needHighResUpdate() const
@@ -433,7 +445,7 @@ bool ZDvidDataSliceHelper::needHighResUpdate() const
   return IsResIncreasing(
         m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
         m_actualUsingCenterCut,
-        m_zoom, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut,
+        m_zoom, m_centerCutWidth, m_centerCutHeight, false,
         getWidth(), getHeight(), getMaxZoom());
 }
 

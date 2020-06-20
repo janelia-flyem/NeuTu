@@ -96,18 +96,18 @@ void ZStackDocLoader::processObjectChanged(
   case ZStackObject::EType::SWC:
     doc->notifySwcModified();
     break;
-  case ZStackObject::EType::LOCSEG_CHAIN:
-    doc->notifyChainModified();
-    break;
-  case ZStackObject::EType::PUNCTUM:
-    doc->notifyPunctumModified();
-    break;
-  case ZStackObject::EType::MESH:
-    doc->notifyMeshModified();
-    break;
-  case ZStackObject::EType::SPARSE_OBJECT:
-    doc->notifySparseObjectModified();
-    break;
+//  case ZStackObject::EType::LOCSEG_CHAIN:
+//    doc->notifyChainModified();
+//    break;
+//  case ZStackObject::EType::PUNCTUM:
+//    doc->notifyPunctumModified();
+//    break;
+//  case ZStackObject::EType::MESH:
+//    doc->notifyMeshModified();
+//    break;
+//  case ZStackObject::EType::SPARSE_OBJECT:
+//    doc->notifySparseObjectModified();
+//    break;
   default:
     break;
   }

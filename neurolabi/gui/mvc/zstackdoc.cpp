@@ -735,7 +735,7 @@ bool ZStackDoc::hasObject(ZStackObject::EType type, const std::string &source) c
     return m_objectGroup.findFirstSameSource(type, source) != NULL;
 }
 
-bool ZStackDoc::hasObject(ZStackObject::ETarget target) const
+bool ZStackDoc::hasObject(neutu::data3d::ETarget target) const
 {
   return m_objectGroup.hasObject(target);
 }
@@ -1720,7 +1720,7 @@ bool ZStackDoc::hasDrawable() const
   return !m_objectGroup.isEmpty();
 }
 
-bool ZStackDoc::hasDrawable(ZStackObject::ETarget target) const
+bool ZStackDoc::hasDrawable(neutu::data3d::ETarget target) const
 {
   return m_objectGroup.hasObject(target);
 }
@@ -2668,7 +2668,7 @@ void ZStackDoc::cutLocsegChain(ZLocsegChain *obj, QList<ZLocsegChain *> *pResult
     }
   }
   endObjectModifiedMode();
-  notifyObj3dModified();
+//  notifyObj3dModified();
 }
 
 void ZStackDoc::breakLocsegChain(ZLocsegChain *obj, QList<ZLocsegChain *> *pResult)
@@ -2949,7 +2949,8 @@ void ZStackDoc::addSparseObject(const QList<ZSparseObject*> &objList)
     addObject(*iter);
   }
   endObjectModifiedMode();
-  notifyObj3dModified();
+  processObjectModified();
+//  notifyObj3dModified();
 }
 
 void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
@@ -3037,7 +3038,7 @@ void ZStackDoc::addStackPatchP(ZStackPatch *patch, bool uniqueSource)
   */
 
   /*
-  if (patch->getTarget() == ZStackObject::ETarget::TARGET_STACK_CANVAS) {
+  if (patch->getTarget() == neutu::data3d::ETarget::TARGET_STACK_CANVAS) {
     emit stackTargetModified();
   }
 
@@ -3119,7 +3120,7 @@ void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
     return;
   }
 
-  obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  obj->setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_objectGroup.add(obj, false);
 
   obj->setRole(ZStackObjectRole::ROLE_SEED);
@@ -3138,7 +3139,7 @@ void ZStackDoc::addStrokeP(ZStroke2d *obj)
     return;
   }
 
-  obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  obj->setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
 
 
   m_objectGroup.add(obj, false);
@@ -3261,7 +3262,7 @@ void ZStackDoc::exportBinary(const char *prefix)
     }
     delete []filePath;
 
-    emit chainModified();  // chain source is modified after saving
+//    emit chainModified();  // chain source is modified after saving
   }
 }
 
@@ -5901,26 +5902,35 @@ void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
           ZWidgetMessage::TARGET_LOG_FILE));
 }
 
+/*
 void ZStackDoc::notifyPunctumModified()
 {
   emit punctaModified();
 }
+*/
 
+/*
 void ZStackDoc::notifyMeshModified()
 {
   emit meshModified();
 }
+*/
 
+/*
 void ZStackDoc::notifyChainModified()
 {
   emit chainModified();
 }
+*/
 
+/*
 void ZStackDoc::notifyObj3dModified()
 {
   emit obj3dModified();
 }
+*/
 
+/*
 void ZStackDoc::notifyObject3dScanModified()
 {
   emit object3dScanModified();
@@ -5935,7 +5945,7 @@ void ZStackDoc::notifySparseObjectModified()
 {
   emit sparseObjectModified();
 }
-
+*/
 
 void ZStackDoc::notifyStackModified(bool rangeChanged)
 {
@@ -5959,6 +5969,7 @@ void ZStackDoc::notifyVolumeModified()
   emit volumeModified();
 }
 
+/*
 void ZStackDoc::notifyStrokeModified()
 {
   emit strokeModified();
@@ -5974,10 +5985,12 @@ void ZStackDoc::notify3DCubeModified()
   emit cube3dModified();
 }
 
+
 void ZStackDoc::notifyTodoModified()
 {
   emit todoModified();
 }
+*/
 
 void ZStackDoc::notifyActiveViewModified()
 {
@@ -6009,7 +6022,7 @@ void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role, bool sync)
   bufferObjectModified(role.getRole(), sync);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject::ETarget target, bool sync)
+void ZStackDoc::bufferObjectModified(neutu::data3d::ETarget target, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
@@ -6066,7 +6079,7 @@ void ZStackDoc::bufferObjectModified(
 }
 
 void ZStackDoc::bufferObjectModified(
-    const QSet<ZStackObject::ETarget> &targetSet, bool sync)
+    const QSet<neutu::data3d::ETarget> &targetSet, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
@@ -6087,6 +6100,10 @@ void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
 
 void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
 {
+  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
+  processObjectModified();
+
+  /*
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
     notifyObjectModified(info);
@@ -6099,9 +6116,10 @@ void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
   default:
     break;
   }
+  */
 }
 /*
-void ZStackDoc::processObjectModified(ZStackObject::ETarget target, bool sync)
+void ZStackDoc::processObjectModified(neutu::data3d::ETarget target, bool sync)
 {
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
@@ -6119,7 +6137,7 @@ void ZStackDoc::processObjectModified(ZStackObject::ETarget target, bool sync)
 */
 #if 0
 void ZStackDoc::processObjectModified(
-    const QSet<ZStackObject::ETarget> &targetSet, bool sync)
+    const QSet<neutu::data3d::ETarget> &targetSet, bool sync)
 {
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
@@ -6138,6 +6156,10 @@ void ZStackDoc::processObjectModified(
 
 void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
 {
+  ZStackObjectInfo info;
+  info.setType(type);
+  processObjectModified(info, sync);
+  /*
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
     notifyObjectModified(type);
@@ -6149,6 +6171,7 @@ void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
   default:
     break;
   }
+  */
 }
 
 void ZStackDoc::processSwcModified()
@@ -6195,43 +6218,14 @@ void ZStackDoc::notifyObjectModified(const ZStackObjectInfo &info)
   emit objectModified(infoSet);
 }
 
+/*
 void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
-  case ZStackObject::EType::LOCSEG_CHAIN:
-    notifyChainModified();
-    break;
-  case ZStackObject::EType::OBJ3D:
-    notifyObj3dModified();
-    break;
   case ZStackObject::EType::SWC:
     notifySwcModified();;
     break;
-  case ZStackObject::EType::PUNCTUM:
-    notifyPunctumModified();
-    break;
-  case ZStackObject::EType::STROKE:
-    notifyStrokeModified();
-    break;
-  case ZStackObject::EType::SPARSE_OBJECT:
-    notifySparseObjectModified();
-    break;
-  case ZStackObject::EType::OBJECT3D_SCAN:
-    notifyObject3dScanModified();
-    break;
-  case ZStackObject::EType::GRAPH_3D:
-    notify3DGraphModified();
-    break;
-  case ZStackObject::EType::CUBE:
-    notify3DCubeModified();
-  case ZStackObject::EType::FLYEM_TODO_ITEM:
-    notifyTodoModified();
-    break;
-  case ZStackObject::EType::MESH:
-    notifyMeshModified();
-    break;
   default:
-//    notifyObjectModified();
     break;
   }
 
@@ -6239,21 +6233,39 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
 
   customNotifyObjectModified(type);
 }
+*/
+
+void ZStackDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  std::set<ZStackObject::EType> typeSet = infoSet.getType();
+  foreach (ZStackObject::EType type, typeSet) {
+    switch (type) {
+    case ZStackObject::EType::SWC:
+      notifySwcModified();;
+      break;
+    default:
+      break;
+    }
+    if (infoSet.hasObjectDataModified(type)) {
+      setSaved(type, false);
+    }
+  }
+
+  if (!infoSet.isEmpty()) {
+    notifyObjectModified(infoSet);
+  }
+}
 
 void ZStackDoc::processObjectModified()
 {
   if (getObjectModifiedMode() == EObjectModifiedMode::PROMPT) {
+#ifdef _DEBUG_
+    std::cout << "ZStackDoc::processObjectModified()" << std::endl;
+#endif
     QMutexLocker locker(&m_objectModifiedBufferMutex);
 
-    std::set<ZStackObject::EType> typeSet = m_objectModifiedBuffer.getType();
-    foreach (ZStackObject::EType type, typeSet) {
-      notifyObjectModified(type);
-    }
-
-    if (!m_objectModifiedBuffer.isEmpty()) {
-      notifyObjectModified(m_objectModifiedBuffer);
-      m_objectModifiedBuffer.clear();
-    }
+    _processObjectModified(m_objectModifiedBuffer);
+    m_objectModifiedBuffer.clear();
   }
 }
 
@@ -6314,7 +6326,7 @@ int ZStackDoc::findLoop(int minLoopSize)
     m_progressReporter->startSubprogress(0.3);
     std::vector<std::vector<int> > cycleArray = graph->getCycle();
     graph->setProgressReporter(m_progressReporter);
-    beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+//    beginObjectModifiedMode(EObjectModifiedMode::CACHE);
     for (size_t i = 0; i < cycleArray.size(); ++i) {
       std::vector<int> path = cycleArray[i];
 #ifdef _DEBUG_
@@ -6333,7 +6345,7 @@ int ZStackDoc::findLoop(int minLoopSize)
         ++loopNumber;
       }
     }
-    endObjectModifiedMode();
+//    endObjectModifiedMode();
 //    processObjectModified();
     m_progressReporter->endSubprogress(0.3);
 
@@ -7642,7 +7654,7 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
 
   if (hasSelectedSwcNode()) {
     beginObjectModifiedMode(EObjectModifiedMode::CACHE);
-//    QSet<ZStackObject::ETarget> targetSet;
+//    QSet<neutu::data3d::ETarget> targetSet;
 
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -7701,7 +7713,7 @@ bool ZStackDoc::executeDeleteUnselectedSwcNodeCommand()
 
   if (hasSelectedSwcNode()) {
     beginObjectModifiedMode(EObjectModifiedMode::CACHE);
-//    QSet<ZStackObject::ETarget> targetSet;
+//    QSet<neutu::data3d::ETarget> targetSet;
 
     ZStackDocCommand::SwcEdit::CompositeCommand *allCommand =
         new ZStackDocCommand::SwcEdit::CompositeCommand(this);
@@ -8385,7 +8397,7 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
 
     notify(ZWidgetMessage(ZWidgetMessage::appendTime("Seed modified.")));
 
-    emit seedModified();
+//    emit seedModified();
   }
 
   if (roleObj.hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
@@ -8396,9 +8408,9 @@ void ZStackDoc::notifyPlayerChanged(ZStackObjectRole::TRole role)
     notifyVolumeModified();
   }
 
-  if (roleObj.hasRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR)) {
-    notify3DGraphModified();
-  }
+//  if (roleObj.hasRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR)) {
+//    notify3DGraphModified();
+//  }
 
   if (roleObj.hasRole(ZStackObjectRole::ROLE_ACTIVE_VIEW)) {
     notifyActiveViewModified();
@@ -9766,21 +9778,23 @@ void ZStackDoc::addData(ZStackDocReader &reader)
     setSparseStack(reader.getSparseStack());
   }
 
+  /*
   if (m_objectGroup.hasObject(ZStackObject::EType::LOCSEG_CHAIN)) {
     notifyChainModified();
   }
+  */
 
-  if (m_objectGroup.hasObject(ZStackObject::EType::PUNCTUM)) {
-    notifyPunctumModified();
-  }
+//  if (m_objectGroup.hasObject(ZStackObject::EType::PUNCTUM)) {
+//    notifyPunctumModified();
+//  }
 
-  if (m_objectGroup.hasObject(ZStackObject::EType::MESH)) {
-    notifyMeshModified();
-  }
+//  if (m_objectGroup.hasObject(ZStackObject::EType::MESH)) {
+//    notifyMeshModified();
+//  }
 
-  if (m_objectGroup.hasObject(ZStackObject::EType::SPARSE_OBJECT)) {
-    notifySparseObjectModified();
-  }
+//  if (m_objectGroup.hasObject(ZStackObject::EType::SPARSE_OBJECT)) {
+//    notifySparseObjectModified();
+//  }
 
   reader.getPlayerList().moveTo(m_playerList);
 }
@@ -10411,7 +10425,7 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
       if ((m_excludeSet.count(obj->getType()) == 0) &&
           (m_excludeTarget.count(obj->getTarget()) == 0) &&
           obj->isVisible()) {
-        LDEBUG() << "Updating " << neutu::data3d::ToString(obj->getTarget())
+        LDEBUG() << "Updating " << neutu::ToString(obj->getTarget())
                  << ZStackObject::GetTypeName(obj->getType()) << obj->getSource();
 
         if (player->updateData(param)) {
@@ -10425,8 +10439,7 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
         }
         ZTask *task = player->getFutureTask(m_doc.get());
         if (task != NULL) {
-          //Temporary disabling to recover some basic functions first
-//          m_doc->addTask(task);
+          m_doc->addTask(task);
         }
       }
     }
@@ -10457,10 +10470,10 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZArbSliceViewParam &param)
 */
 
 /*
-QSet<ZStackObject::ETarget>
+QSet<neutu::data3d::ETarget>
 ZStackDoc::updateActiveViewObject(const ZStackViewParam &param)
 {
-  QSet<ZStackObject::ETarget> targetSet;
+  QSet<neutu::data3d::ETarget> targetSet;
 
   QList<ZDocPlayer *> playerList =
       getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
@@ -10543,7 +10556,7 @@ void ZStackDoc::importSeedMask(const QString &filePath)
       command->setLogMessage("Import seed mask");
       pushUndoCommand(command);
 
-      notifyObj3dModified();
+//      notifyObj3dModified();
     }
   }
 }

@@ -68,6 +68,14 @@ NeuPrintReader* get_neuprint_reader(const ZJsonObject &obj, const QString &uuid)
   return reader;
 }
 
+void report_progress(size_t index, size_t count)
+{
+  if (index % 1000 == 0) {
+    std::cout << "Checking " << index + 1
+              << "/" << count << "..." << std::endl;
+  }
+}
+
 void process_body(uint64_t bodyId, int index, int totalCount,
                   const ZDvidReader &reader,
                   std::function<void(uint64_t)> processBody)
@@ -189,10 +197,16 @@ int ZSyncSkeletonCommand::run(
       NeuPrintReader *neuprintReader;
       if (config.hasKey("neuprint")) {
         ZJsonObject neuprintObj(config.value("neuprint"));
-        neuprintReader = get_neuprint_reader(
-              neuprintObj, reader.getDvidTarget().getUuid().c_str());
+        std::string uuid = reader.getDvidTarget().getUuid();
+        if (neuprintObj.hasKey("uuid")) {
+          uuid = ZJsonParser::stringValue(neuprintObj["uuid"]);
+        }
+        neuprintReader = get_neuprint_reader(neuprintObj, uuid.c_str());
         if (neuprintReader) {
           predefinedBodyList = neuprintReader->queryNeuronByStatus(statusList);
+        } else {
+          qWarning() << "Failed to load dataset from neuprint:"
+                     << neuprintObj.dumpString(0).c_str();
         }
       }
 
@@ -200,6 +214,7 @@ int ZSyncSkeletonCommand::run(
         for (size_t i = 0; i < predefinedBodyList.size(); ++i) {
           ZJsonObject bodyJson(predefinedBodyList.value(i));
           uint64_t bodyId = ZJsonParser::integerValue(bodyJson["body ID"]);
+          report_progress(i, predefinedBodyList.size());
           process_body(
                 bodyId, i + 1, predefinedBodyList.size(), reader, processBody);
         }
@@ -208,6 +223,7 @@ int ZSyncSkeletonCommand::run(
             reader.readKeys(reader.getDvidTarget().getBodyAnnotationName().c_str());
         int index = 1;
         for (const QString &bodyStr : annotList) {
+          report_progress(index - 1, annotList.size());
           uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();
           if (bodyId > 0) {
             ZFlyEmBodyAnnotation annot =

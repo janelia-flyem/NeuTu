@@ -66,12 +66,6 @@ enum class EAxis : int {
   , ARB //arbitrary axis
 };
 
-template <typename T>
-constexpr typename std::underlying_type<T>::type EnumValue(T val)
-{
-    return static_cast<typename std::underlying_type<T>::type>(val);
-}
-
 template <typename...>
 struct voider { using type = void; };
 

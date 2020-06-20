@@ -143,7 +143,7 @@ void ZFlyEmConfig::loadConfig()
         setDefaultTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
       }
 
-      std::string cleaveServer = neutu::GetEnv("AUTHENTICATION_SERVER");
+      std::string cleaveServer = neutu::GetEnv("NEU3_CLEAVE_SERVER");
       if (cleaveServer.empty()) {
         cleaveServer = ZJsonParser::stringValue(obj[CLEAVE_SERVER_KEY]);
       }

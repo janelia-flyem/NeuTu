@@ -25394,13 +25394,13 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZStackObjectInfo objInfo;
-  objInfo.setTarget(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+  objInfo.setTarget(neutu::data3d::ETarget::TARGET_OBJECT_CANVAS);
   objInfo.print();
 
   ZStackObjectInfoSet infoSet;
   infoSet.add(objInfo);
-  infoSet.add(ZStackObject::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
-  infoSet.add(ZStackObject::ETarget::TARGET_OBJECT_CANVAS);
+  infoSet.add(neutu::data3d::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS);
+  infoSet.add(neutu::data3d::ETarget::TARGET_OBJECT_CANVAS);
   infoSet.add(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
   infoSet.add(ZStackObject::TYPE_CUBE);
   infoSet.add(ZStackObject::TYPE_CUBE, ZStackObjectInfo::STATE_ADDED);
@@ -31064,12 +31064,45 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi_8300");
+  std::cout << writer->getDvidTarget().toJsonObject().dumpString(2) << std::endl;
+
+  std::vector<uint64_t> bodyArray;
+  std::ifstream f(GET_TEST_DATA_DIR + "/bodyfix.txt");
+  std::string line;
+  while (std::getline(f, line)) {
+//    std::cout << line << std::endl;
+    std::vector<std::string> tokens = ZString::ToWordArray(line);
+    for (size_t i = 0; i < tokens.size(); ++i) {
+      if (tokens[i] == "as") {
+        std::cout << tokens[i + 1] << std::endl;
+        bodyArray.push_back(ZString(tokens[i + 1]).firstUint64());
+        break;
+      }
+    }
+  }
+
+  std::cout << bodyArray.size() << std::endl;
+
+  writer->mergeBody(79355095, bodyArray);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
   std::vector<uint64_t> bodyArray =
-      reader->readConsistentMergedMeshKeys("5901278576.merge");
+      reader->readConsistentMergedMeshKeys("390564398.merge");
 
   std::cout << neutu::ToString(bodyArray, ", ") << std::endl;
 
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "390564398.merge");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+  for (uint64_t bodyId : bodyArray) {
+    ZMesh *mesh = reader->readMesh(
+          "segmentation_meshes", std::to_string(bodyId) + ".ngmesh");
+    mesh->save(
+          GET_TEST_DATA_DIR + "/tmp/meshes/" + std::to_string(bodyId) + ".obj");
+  }
 #endif
 
 #if 0
@@ -31574,7 +31607,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   ZStack *stack = new ZStack;
   stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
   ZStackFrame *frame = ZStackFrame::Make(NULL);
@@ -31712,6 +31745,33 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidLabelSlice slice;
+  slice.setDvidTarget(reader->getDvidTarget());
+  slice.setSliceAxis(neutu::EAxis::Z);
+  ZStackViewParam viewParam;
+  ZSliceViewTransform t;
+  t.setModelViewTransform(neutu::EAxis::Z, ZPoint(1023, 1023, 1023));
+  t.setViewCanvasTransform(127.5, 127.5, 1.0);
+  viewParam.set(t, 256, 256, neutu::data3d::ESpace::MODEL);
+  slice.update(viewParam);
+  slice.saveCanvas(GET_TEST_DATA_DIR + "/_test.png");
+#endif
+
+#if 0
+  QVector<int> v1(100);
+  tic();
+  int s = 0;
+  for (int i = 0; i < 1000000; ++i) {
+    for (int j = 0; j < 100; ++j) {
+      s += v1[j];
+    }
+  }
+  std::cout << s << std::endl;
+  ptoc();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZStack *stack = reader->readGrayScaleLowtis(
         ZIntPoint(99, 99, 124), ZPoint(1, 0, 0), ZPoint(0, 1, 0),
         199, 199, 0, 0, 0, false);
@@ -31746,12 +31806,45 @@ void ZTest::test(MainWindow *host)
   frame->show();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZStack *stack = reader->readGrayScaleLowtis(
         3, 3, 100, 1, 0, 0, 0, 1, 0, 6, 6, 0, 0, 0, false);
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
   stack->printInfo();
+#endif
+
+#if 0
+  host->startProofread("local_test");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidInfo dvidInfo = reader->readGrayScaleInfo();
+
+  ZNeuroglancerPath ngpath;
+  ngpath.addLayer(ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(
+                    reader->getDvidTarget()));
+  ZNeuroglancerNavigation nav;
+  nav.setVoxelSize(dvidInfo.getVoxelResolution());
+  nav.setZoomScale2D(2.0);
+
+  ngpath.setNavigation(nav);
+
+  std::cout << ngpath.toJsonObject().dumpString(2) << std::endl;
+  std::cout << ngpath.getPath() << std::endl;
+  std::cout << QString(QUrl(ngpath.getPath().c_str()).toEncoded()).toStdString()
+            << std::endl;
+#endif
+
+#if 0
+  ZFlyEmBookmark bookmark;
+  QList<ZStackObject*> objList;
+  tic();
+  for (size_t i = 0; i < 100000; ++i) {
+    objList.append(bookmark.clone());
+  }
+  ptoc();
 #endif
 
   std::cout << "Done." << std::endl;

@@ -525,7 +525,7 @@ void ZFlyEmBody3dDoc::initArbGraySlice()
 {
   ZDvidGraySlice *slice = new ZDvidGraySlice();
   slice->setSliceAxis(neutu::EAxis::ARB);
-  slice->setTarget(ZStackObject::ETarget::CANVAS_3D);
+  slice->setTarget(neutu::data3d::ETarget::CANVAS_3D);
   slice->setSource(
         ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutu::EAxis::ARB));
   addObject(slice);
@@ -3643,7 +3643,8 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
       }
     }
   } else {
-    if (!isCoarseLevel(zoom)) { //Skip coarse Level
+    bool usingNgMesh = false; //Temporary fix: Disable ng mesh to avoid mesh inconsistency
+    if (!isCoarseLevel(zoom) && usingNgMesh) { //Skip coarse Level
       //Checking order: merged mesh -> ngmesh -> normal mesh
       std::string mergeKey =
           ZDvidUrl::GetMeshKey(config.getBodyId(), ZDvidUrl::EMeshType::MERGED);

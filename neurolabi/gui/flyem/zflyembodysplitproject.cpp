@@ -2892,7 +2892,8 @@ void ZFlyEmBodySplitProject::updateBodyMask()
             }
           }
           frame->document()->blockSignals(false);
-          frame->document()->notifyObject3dScanModified();
+          frame->document()->processObjectModified();
+//          frame->document()->notifyObject3dScanModified();
           frame->document()->notifyPlayerChanged(ZStackObjectRole::ROLE_MASK);
         }
 

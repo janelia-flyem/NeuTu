@@ -11,6 +11,12 @@
 #include "data3d/zsliceviewtransform.h"
 #include "zslicepainter.h"
 
+/*!
+ * \brief The class for managing slice painting
+ *
+ * A slice canvas has two main parts, including the painting buffer (canvas) and
+ * the transform from the model space to the canvas space.
+ */
 class ZSliceCanvas
 {
 public:
@@ -87,7 +93,7 @@ private:
   ZSliceViewTransform m_transform;
   QPixmap m_pixmap;
   ECanvasStatus m_status = ECanvasStatus::RAW;
-  bool m_isVisible = false;
+  bool m_isVisible = true;
 };
 
 /*!

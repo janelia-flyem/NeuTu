@@ -50,7 +50,7 @@ public:
 
   void initialize();
   void initOpenglContext();
-  bool loadDvidTarget();
+  bool loadDvidTarget(const QString &name);
 
   ZFlyEmBody3dDoc* getBodyDocument() const;
   ZFlyEmProofDoc* getDataDocument() const;

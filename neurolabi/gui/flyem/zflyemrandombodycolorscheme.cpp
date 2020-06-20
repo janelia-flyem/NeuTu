@@ -5,12 +5,11 @@
 ZFlyEmRandomBodyColorScheme::ZFlyEmRandomBodyColorScheme()
 {
   setColorScheme(CONV_RANDOM_COLOR);
-//  m_colorTable.prepend(QColor(0, 0, 0, 0));
+  m_colorTable.prepend(QColor(0, 0, 0, 0));
 }
 
 ZFlyEmRandomBodyColorScheme::~ZFlyEmRandomBodyColorScheme()
 {
-
 }
 
 QColor ZFlyEmRandomBodyColorScheme::getBodyColorFromIndex(int index) const
@@ -26,4 +25,5 @@ int ZFlyEmRandomBodyColorScheme::getBodyColorIndex(uint64_t bodyId) const
 void ZFlyEmRandomBodyColorScheme::update()
 {
   buildConvRandomColorTable(65535, ZRandomGenerator::UniqueSeed());
+  m_colorTable.prepend(QColor(0, 0, 0, 0));
 }

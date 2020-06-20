@@ -848,7 +848,7 @@ public: //static functions
 
 //  static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
 
-  static ETarget GetDefaultTarget();
+  static neutu::data3d::ETarget GetDefaultTarget();
 
 
 private:

@@ -51,7 +51,7 @@ ZAffineRect ZSliceViewTransform::getCutRect(
   double cy = height / 2.0;
   if (sizeSpace != neutu::data3d::ESpace::CANVAS) {
     cx *= getScale();
-    cx *= getScale();
+    cy *= getScale();
   }
 
   ZPoint newCutCenter = inverseTransform(cx, cy);
@@ -472,6 +472,16 @@ ZPoint ZSliceViewTransform::transformBoxSize(const ZPoint &dim) const
   newDim.setY(newDim.getY() * getScale());
 
   return newDim;
+}
+
+bool ZSliceViewTransform::onSamePlane(const ZSliceViewTransform &t) const
+{
+  return m_modelViewTransform.onSamePlane(t.m_modelViewTransform);
+}
+
+bool ZSliceViewTransform::hasSamePlane(const ZSliceViewTransform &t) const
+{
+  return m_modelViewTransform.hasSamePlane(t.m_modelViewTransform);
 }
 
 ZCuboid ZSliceViewTransform::getViewBox(const ZIntCuboid modelBox) const

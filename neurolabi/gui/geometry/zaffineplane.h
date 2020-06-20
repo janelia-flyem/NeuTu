@@ -37,6 +37,10 @@ public:
 
   bool onSamePlane(const ZAffinePlane &ap) const;
   bool isParallel(const ZAffinePlane &ap) const;
+  /*!
+   * \brief Check if two planes overlap and has the same orientation
+   */
+  bool hasSamePlane(const ZAffinePlane &ap) const;
 
   bool contains(const ZPoint &pt) const;
 

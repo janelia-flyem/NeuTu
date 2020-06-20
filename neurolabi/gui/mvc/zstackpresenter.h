@@ -108,6 +108,11 @@ public:
     return m_activeDecorationList;
   }
 
+  QList<ZStackObject*> getActiveDecorationList(
+      std::function<bool(const ZStackObject*)> pred) const;
+
+  void updateActiveDecoration();
+
   inline const QList<ZStackObject*>& getHighlightDecorationList() const {
     return m_highlightDecorationList;
   }
@@ -127,7 +132,7 @@ public:
   void setSliceMode(neutu::data3d::EDisplaySliceMode mode);
   neutu::data3d::EDisplaySliceMode getSliceMode() const;
 
-  bool hasDrawable(ZStackObject::ETarget target) const;
+  bool hasDrawable(neutu::data3d::ETarget target) const;
 
   void initInteractiveContext();
 
@@ -405,6 +410,7 @@ public slots:
   void copyLabelId();
   void copySupervoxelId();
   void copyNeuroglancerLink();
+  void copyNeuroglancerLinkAtRectRoi();
 
   void notifyUser(const QString &msg);
 

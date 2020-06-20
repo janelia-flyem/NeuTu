@@ -28,12 +28,18 @@ void ZStackViewParam::set(
     neutu::data3d::ESpace sizeSpace)
 {
   m_transform = t;
-  m_viewportSize.set(width, height, sizeSpace);
+  setViewport(width, height, sizeSpace);
 }
 
 void ZStackViewParam::setTransform(const ZSliceViewTransform &t)
 {
   m_transform = t;
+}
+
+void ZStackViewParam::setViewport(
+    int width, int height, neutu::data3d::ESpace sizeSpace)
+{
+  m_viewportSize.set(width, height, sizeSpace);
 }
 
 ZAffineRect ZStackViewParam::getCutRect() const
@@ -140,16 +146,12 @@ ZAffineRect ZStackViewParam::getIntCutRect(const ZIntCuboid &modelRange) const
 
 void ZStackViewParam::closeViewPort()
 {
-  m_backupViewportSize = m_viewportSize;
-  m_viewportSize.m_width = 0;
-  m_viewportSize.m_height = 0;
-//  m_viewportSize.closeViewPort();
+  m_isViewportOpen = false;
 }
 
 void ZStackViewParam::openViewPort()
 {
-  m_viewportSize = m_backupViewportSize;
-//  m_viewProj.openViewPort();
+  m_isViewportOpen = true;
 }
 
 /*
@@ -349,6 +351,10 @@ void ZStackViewParam::setSize(
 
 double ZStackViewParam::getWidth(neutu::data3d::ESpace space) const
 {
+  if (m_isViewportOpen == false || m_transform.getScale() <= 0.0) {
+    return 0.0;
+  }
+
   if (space == neutu::data3d::ESpace::CANVAS) {
     return m_viewportSize.m_width;
   }
@@ -358,6 +364,10 @@ double ZStackViewParam::getWidth(neutu::data3d::ESpace space) const
 
 double ZStackViewParam::getHeight(neutu::data3d::ESpace space) const
 {
+  if (m_isViewportOpen == false || m_transform.getScale() <= 0.0) {
+    return 0.0;
+  }
+
   if (space == neutu::data3d::ESpace::CANVAS) {
     return m_viewportSize.m_height;
   }
@@ -464,7 +474,7 @@ void ZStackViewParam::resize(int width, int height)
 
 bool ZStackViewParam::isViewportEmpty() const
 {
-  return m_transform.getScale() <= 0 ||
+  return !m_isViewportOpen || m_transform.getScale() <= 0 ||
       m_viewportSize.m_width <= 0 || m_viewportSize.m_height <= 0;
 }
 

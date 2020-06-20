@@ -283,6 +283,20 @@ void ZJsonObject::setNonEmptyEntry(const char *key, const string &value)
   }
 }
 
+void ZJsonObject::setNonEmptyEntry(const char *key, const ZJsonObject &obj)
+{
+  if (!obj.isEmpty() && isValidKey(key)) {
+    setEntryWithoutKeyCheck(key, obj.getValue());
+  }
+}
+
+void ZJsonObject::setNonEmptyEntry(const char *key, const ZJsonArray &obj)
+{
+  if (!obj.isEmpty() && isValidKey(key)) {
+    setEntryWithoutKeyCheck(key, obj.getValue());
+  }
+}
+
 void ZJsonObject::setEntry(const char *key, const string &value)
 {
   if (!isValidKey(key)) {

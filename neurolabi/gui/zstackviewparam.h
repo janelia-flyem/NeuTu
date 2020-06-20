@@ -27,6 +27,7 @@ public:
   void set(const ZSliceViewTransform &t, int width, int height,
            neutu::data3d::ESpace sizeSpace);
   void setTransform(const ZSliceViewTransform &t);
+  void setViewport(int width, int height, neutu::data3d::ESpace sizeSpace);
 
   ZAffineRect getCutRect() const;
   /*!
@@ -55,21 +56,6 @@ public:
 //  ZStackViewParam getDiscretized() const;
   ZArbSliceViewParam toArbSliceViewParam() const;
 
-  /*
-  inline neutu::ECoordinateSystem getCoordinateSystem() const {
-    return m_coordSys;
-  }
-
-  inline int getZ() const {
-    return m_z;
-  }
-  */
-
-  /*!
-   * \brief Test if the viewport is empty
-   */
-  bool isViewportEmpty() const;
-
   /*!
    * \brief Test if the viewport is valid (non-empty)
    */
@@ -78,40 +64,15 @@ public:
 
   double getArea(neutu::data3d::ESpace space) const;
 
-//  QRect getViewPort() const;
-//  QRectF getProjRect() const;
-
-  /*
-  inline neutu::View::EExploreAction getExploreAction() const {
-    return m_action;
-  }
-  */
-
-  /*
-  void setZOffset(int z0) {
-    m_z0 = z0;
-  }
-
-  int getSliceIndex() const;
-  void setSliceIndex(int index);
-
-
-  void setZ(int z);
-  void setViewProj(const ZViewProj &vp);
-*/
-
-//  void setProjRect(const QRectF &rect);
-
   double getZoomRatio() const;
   int getZoomLevel(int maxLevel) const;
   int getZoomLevel() const;
 
-//  void setWidgetRect(const QRect &rect);
-//  void setCanvasRect(const QRect &rect);
+  /*!
+   * \brief Test if the viewport is empty
+   */
+  bool isViewportEmpty() const;
 
-//  void setViewPort(double x0, double y0, double x1, double y1);
-//  void setViewPort(const QRect &rect);
-//  void setViewPort(const QRect &rect, int z);
   void closeViewPort();
   void openViewPort();
 
@@ -138,31 +99,6 @@ public:
   void moveCutDepth(double d);
 
   double getCutDepth(const ZPoint &startPlane) const;
-
-  /*
-  void fixZ(bool state) {
-    m_fixingZ = state;
-  }
-
-  bool fixingZ() const {
-    return m_fixingZ;
-  }
-  */
-
-  /*
-  const ZViewProj& getViewProj() const {
-    return m_viewProj;
-  }
-
-  ZArbSliceViewParam getSliceViewParam() const;
-  void setArbSliceCenter(const ZIntPoint &pt);
-  void setArbSlicePlane(const ZPoint &v1, const ZPoint &v2);
-  void setArbSliceView(const ZArbSliceViewParam &param);
-  void moveSlice(int step);
-  */
-
-//  ZAffinePlane getArbSlicePlane() const;
-//  ZAffineRect getSliceRect() const;
 
   bool onSamePlane(const ZStackViewParam &param) const;
 
@@ -196,7 +132,8 @@ private:
 //      neutu::View::EExploreAction::EXPLORE_UNKNOWN;
 
   ViewportSize m_viewportSize;
-  ViewportSize m_backupViewportSize;
+//  ViewportSize m_backupViewportSize;
+  bool m_isViewportOpen = true;
 };
 
 #endif // ZSTACKVIEWPARAM_H

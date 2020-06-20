@@ -192,6 +192,9 @@ public:
 
   ZCuboid getViewBox(const ZIntCuboid modelBox) const;
 
+  bool onSamePlane(const ZSliceViewTransform &t) const;
+  bool hasSamePlane(const ZSliceViewTransform &t) const;
+
   /*!
    * \brief Get view space viewport
    */

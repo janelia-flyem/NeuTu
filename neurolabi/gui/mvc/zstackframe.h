@@ -123,8 +123,8 @@ public:
   void exportChainFileList(const QString &filePath);
   //void exportChainConnection(const QString &filePath);
   //void exportChainConnectionFeat(const QString &filePath);
-  void exportObjectMask(const QString &filePath);
-  void exportObjectMask(neutu::EColor color, const QString &filePath);
+//  void exportObjectMask(const QString &filePath);
+//  void exportObjectMask(neutu::EColor color, const QString &filePath);
 //  ZStack* getObjectMask();
 //  ZStack* getObjectMask(neutube::EColor color);
   ZStack* getStrokeMask();

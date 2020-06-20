@@ -20,7 +20,8 @@ void ZMovieStage::updateWindow()
   bool changed = false;
 
   if (isSwcChanged()) {
-    getWindow()->getDocument()->notifySwcModified();
+    getWindow()->getDocument()->processObjectModified(ZStackObject::EType::SWC);
+//    getWindow()->getDocument()->notifySwcModified();
     setSwcChanged(false);
     changed = true;
   }
@@ -32,19 +33,16 @@ void ZMovieStage::updateWindow()
   }
 
   if (isPunctaChanged()) {
-    getWindow()->getDocument()->notifyPunctumModified();
+    getWindow()->getDocument()->processObjectModified(
+          ZStackObject::EType::PUNCTUM);
+//    getWindow()->getDocument()->notifyPunctumModified();
     setPunctaChanged(false);
     changed = true;
   }
 
-  if (isVolumeChanged()) {
-    getWindow()->getDocument()->notifyStackModified(true);
-    setVolumeChanged(false);
-    changed = true;
-  }
-
   if (isCubeArrayChanged()) {
-    getWindow()->getDocument()->notify3DCubeModified();
+    getWindow()->getDocument()->processObjectModified(ZStackObject::EType::CUBE);
+//    getWindow()->getDocument()->notify3DCubeModified();
     setCubeArrayChanged(false);
     changed = true;
   }

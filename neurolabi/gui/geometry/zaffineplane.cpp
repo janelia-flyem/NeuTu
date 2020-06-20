@@ -133,6 +133,15 @@ bool ZAffinePlane::onSamePlane(const ZAffinePlane &ap) const
   return false;
 }
 
+bool ZAffinePlane::hasSamePlane(const ZAffinePlane &ap) const
+{
+  if (m_plane == ap.m_plane){
+    return contains(ap.getOffset());
+  }
+
+  return false;
+}
+
 bool ZAffinePlane::isParallel(const ZAffinePlane &ap) const
 {
   return ap.m_plane.onSamePlane(m_plane);

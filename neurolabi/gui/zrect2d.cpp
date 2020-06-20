@@ -49,9 +49,13 @@ void ZRect2d::set(int x0, int y0, int width, int height)
 
 ZCuboid ZRect2d::getBoundBox() const
 {
-  return ZCuboid::FromIntCuboid(
-        ZIntCuboid(getMinX(), getMinY(), getZ(),
-                   getMaxX(), getMaxY(), getZ()));
+  return ZCuboid::FromIntCuboid(getIntBoundBox());
+}
+
+ZIntCuboid ZRect2d::getIntBoundBox() const
+{
+  return ZIntCuboid(getMinX(), getMinY(), getZ() - m_zSpan,
+                    getMaxX(), getMaxY(), getZ() + m_zSpan);
 }
 
 bool ZRect2d::isValid() const
@@ -224,6 +228,11 @@ bool ZRect2d::contains(double x, double y) const
 {
   return ((x >= m_x0 && y >= m_y0 &&
        x < m_x0 + m_width && y < m_y0 + m_height));
+}
+
+ZIntPoint ZRect2d::getCenter() const
+{
+  return ZIntPoint(m_x0 + m_width / 2, m_y0 + m_height / 2, m_z);
 }
 
 bool ZRect2d::hit(double x, double y, neutu::EAxis axis)

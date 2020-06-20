@@ -6,7 +6,7 @@
 
 FlyEmTodoEnsemble::FlyEmTodoEnsemble()
 {
-  setTarget(ETarget::WIDGET_CANVAS);
+  setTarget(neutu::data3d::ETarget::HD_OBJECT_CANVAS);
   m_blockGrid = std::shared_ptr<FlyEmTodoBlockGrid>(new FlyEmTodoBlockGrid);
 }
 

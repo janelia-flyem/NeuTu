@@ -352,6 +352,9 @@ void ZSlice3dPainter::drawBall(
         brush.setColor(brushColor);
         painter->setBrush(brush);
       }
+#ifdef _DEBUG_
+      std::cout << "drawBall newCenter: " << newCenter.toString() << std::endl;
+#endif
       m_painterHelper.drawCircle(
             painter, newCenter.getX(), newCenter.getY(), adjustedRadius);
       if (dz == 0.0) {

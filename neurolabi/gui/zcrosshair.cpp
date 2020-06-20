@@ -8,7 +8,7 @@ ZCrossHair::ZCrossHair()
 
 void ZCrossHair::init()
 {
-  setTarget(ZStackObject::ETarget::WIDGET);
+  setTarget(neutu::data3d::ETarget::WIDGET);
   m_type = GetType();
   setZOrder(5);
   useCosmeticPen(true);

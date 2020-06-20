@@ -345,8 +345,8 @@ void Z3DGraphEdge::print()
 Z3DGraph::Z3DGraph()
 {
   m_type = GetType();
-  m_target = ZStackObject::ETarget::ONLY_3D;
-  setTarget(ZStackObject::ETarget::WIDGET);
+  m_target = neutu::data3d::ETarget::ONLY_3D;
+  setTarget(neutu::data3d::ETarget::WIDGET);
 }
 
 Z3DGraphPtr Z3DGraph::MakePointer()

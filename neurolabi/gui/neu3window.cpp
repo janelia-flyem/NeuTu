@@ -329,7 +329,7 @@ void Neu3Window::initOpenglContext()
   m_sharedContext->hide();
 }
 
-bool Neu3Window::loadDvidTarget()
+bool Neu3Window::loadDvidTarget(const QString &name)
 {
   bool succ = false;
 
@@ -337,21 +337,32 @@ bool Neu3Window::loadDvidTarget()
 
   ZDvidTargetProviderDialog *dlg = ZDialogFactory::makeDvidDialog(NULL);
 
-  if (dlg->exec()) {
+  ZDvidTarget target;
+  if (!name.isEmpty()) {
+    target = dlg->getDvidTarget(name.toStdString());
+  }
+
+  if (!target.isValid()) {
+    if (dlg->exec()) {
+      target = dlg->getDvidTarget();
+    }
+  }
+
+  if (target.isValid()) {
     m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
     ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
     QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvid,
-                      ZDvidEnv(dlg->getDvidTarget()));
+                      ZDvidEnv(target));
 //    m_dataContainer->setDvid(ZDvidEnv(dlg->getDvidTarget()));
 
     m_dataContainer->hide();
     succ = true;
     QString windowTitle = QString("%1 [%2]").
-        arg(dlg->getDvidTarget().getSourceString(false).c_str()).
-        arg(dlg->getDvidTarget().getSegmentationName().c_str());
+        arg(target.getSourceString(false).c_str()).
+        arg(target.getSegmentationName().c_str());
     setWindowTitle(windowTitle);
   }
 

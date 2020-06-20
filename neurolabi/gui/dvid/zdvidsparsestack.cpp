@@ -33,7 +33,7 @@ ZDvidSparseStack::~ZDvidSparseStack()
 
 void ZDvidSparseStack::init()
 {
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
   m_label = 0;
   setCancelFillValue(false);

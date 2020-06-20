@@ -154,7 +154,7 @@ void ZSegmentationProject::setDocData(ZStackDocReader &reader)
 {
   if (m_dataFrame != NULL) {
     m_dataFrame->document()->reloadData(reader);
-    m_dataFrame->document()->notify3DGraphModified();
+//    m_dataFrame->document()->notify3DGraphModified();
     m_dataFrame->view()->setSliceIndex(
           m_dataFrame->document()->getStackSize().getZ() / 2);
   }

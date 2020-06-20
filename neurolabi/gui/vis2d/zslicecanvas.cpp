@@ -31,6 +31,9 @@ void ZSliceCanvas::resetCanvas()
   if (m_status != ECanvasStatus::CLEAN) {
     m_pixmap.fill(Qt::transparent);
     setCanvasStatus(ECanvasStatus::CLEAN);
+#ifdef _DEBUG_2
+    std::cout << "Canvas cleared" << std::endl;
+#endif
   }
 }
 
@@ -38,6 +41,7 @@ void ZSliceCanvas::resetCanvas(int width, int height)
 {
   if (m_pixmap.width() != width || m_pixmap.height() != height) {
     m_pixmap = QPixmap(width, height);
+    setCanvasStatus(ECanvasStatus::RAW);
   }
   resetCanvas();
 }
@@ -55,6 +59,7 @@ void ZSliceCanvas::set(
   bool changed = false;
   if (m_pixmap.width() != width || m_pixmap.height() != height) {
     m_pixmap = QPixmap(width, height);
+    setCanvasStatus(ECanvasStatus::RAW);
     changed = true;
   }
 
@@ -76,6 +81,7 @@ void ZSliceCanvas::set(
   bool changed = false;
   if (m_pixmap.width() != width || m_pixmap.height() != height) {
     m_pixmap = QPixmap(width, height);
+    setCanvasStatus(ECanvasStatus::RAW);
     changed = true;
   }
 
@@ -124,6 +130,7 @@ void ZSliceCanvas::beginPainter(QPainter *painter)
 bool ZSliceCanvas::paintTo(
     QPaintDevice *device, const ZSliceViewTransform &painterTransform) const
 {
+  /*
   bool paintable = true;
   if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
     paintable = false;
@@ -135,6 +142,8 @@ bool ZSliceCanvas::paintTo(
       }
     }
   }
+  */
+  bool paintable = painterTransform.hasSamePlane(m_transform);
 
   if (paintable) {
     QTransform transform;
@@ -155,7 +164,7 @@ bool ZSliceCanvas::paintTo(
 
     QPainter painter(device);
     painter.setTransform(transform);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     qDebug() << "painter transform:" << transform;
 #endif
     painter.drawPixmap(0, 0, m_pixmap);
@@ -199,7 +208,7 @@ bool ZSliceCanvas::paintTo(
 
     painter->save();
     painter->setTransform(transform, true);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     qDebug() << "painter transform:" << painter->transform();
 #endif
     painter->drawPixmap(0, 0, m_pixmap);

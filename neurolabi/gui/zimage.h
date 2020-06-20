@@ -1,8 +1,10 @@
 #ifndef _ZIMAGE_H_
 #define _ZIMAGE_H_
 
-#include <QImage>
 #include <set>
+#include <vector>
+
+#include <QImage>
 
 #include "tz_image_lib_defs.h"
 #include "zglmutils.h"
@@ -153,14 +155,14 @@ public:
 
   void drawRaster(const void *data, int kind, double scale = 1.0,
                   double offset = 0.0, int threshold = -1);
-  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
-                      uint8_t alpha);
-  void drawLabelField(uint64_t *data, const QVector<int> &colorTable,
+//  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+//                      uint8_t alpha);
+  void drawLabelField(uint64_t *data, const std::vector<int> &colorTable,
                       int bgColor, int selColor);
-  void drawLabelFieldTranspose(uint64_t *data, const QVector<int> &colorTable,
+  void drawLabelFieldTranspose(uint64_t *data, const std::vector<int> &colorTable,
                                int bgColor, int selColor);
-  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
-                      uint8_t alpha, const std::set<uint64_t> &selected);
+//  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+//                      uint8_t alpha, const std::set<uint64_t> &selected);
 
   void setBackground();
 

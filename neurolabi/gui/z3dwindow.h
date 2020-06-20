@@ -409,7 +409,7 @@ public slots:
   void copyPosition();
   void setNormalTodoVisible(bool visible);
   void setDoneItemVisible(bool visible);
-  void updateTodoVisibility();
+//  void updateTodoVisibility();
   void toggleSetting();
   void toggleObjects();
 //  void removeAllTodo();

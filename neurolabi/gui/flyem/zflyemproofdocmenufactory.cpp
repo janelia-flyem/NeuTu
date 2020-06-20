@@ -282,16 +282,16 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 //  addAction(actionList, presenter, menu);
 
   if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
-    /* Bookmark actions */
-    const TStackObjectSet& bookmarkSet =
-        doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
-    if (!bookmarkSet.isEmpty()) {
-      QString groupName("Bookmarks");
-      config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
-      config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
-    }
-
     if (!presenter->interactiveContext().acceptingRect()) {
+      /* Bookmark actions */
+      const TStackObjectSet& bookmarkSet =
+          doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
+      if (!bookmarkSet.isEmpty()) {
+        QString groupName("Bookmarks");
+        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
+        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+      }
+
       //    QList<ZActionFactory::EAction> swcActionList;
       //SWC actions (submenu has to be added separately)
       QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();
@@ -301,8 +301,16 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
                << ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH
                << ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH;
       }
+    } else {
+      config.appendSeparator();
+      config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI);
     }
   }
+
+//  config.appendSeparator();
+//  config.append(ZActionFactory::ACTION_VIEW_SET_AXIS_X);
+//  config.append(ZActionFactory::ACTION_VIEW_SET_AXIS_Y);
+//  config.append(ZActionFactory::ACTION_VIEW_SET_AXIS_Z);
 
   return config;
 }

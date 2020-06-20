@@ -23,7 +23,7 @@
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::ETarget::TILE_CANVAS);
+  setTarget(neutu::data3d::ETarget::TILE_CANVAS);
   m_type = GetType();
   m_highContrast = false;
 //  m_view = NULL;

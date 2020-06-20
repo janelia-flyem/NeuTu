@@ -1621,6 +1621,16 @@ void ZFlyEmProofDoc::readInfo()
   KINFO << startLog;
 }
 
+void ZFlyEmProofDoc::updateSegmentationOpacity(double opacity)
+{
+  auto sliceList = getDvidLabelSliceList();
+  for (auto &slice : sliceList) {
+    slice->setOpacity(opacity);
+    bufferObjectModified(slice, ZStackObjectInfo::STATE_COLOR_CHANGED, true);
+  }
+  processObjectModified();
+}
+
 void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
 {
   if (obj != NULL) {
@@ -1630,7 +1640,7 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
 #endif
       obj->setColor(0, 255, 0);
       obj->setZOrder(2);
-      obj->setTarget(ZStackObject::ETarget::WIDGET);
+      obj->setTarget(neutu::data3d::ETarget::WIDGET);
       obj->useCosmeticPen(true);
       obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
       obj->useCosmeticPen(true);
@@ -1642,22 +1652,21 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
       m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
       m_dataBuffer->deliver();
 
-
       ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
       mesh->setSource(obj->getSource());
       m_dataBuffer->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
       m_dataBuffer->deliver();
 
-      //          obj->setTarget(ZStackObject::ETarget::TARGET_TILE_CANVAS);
+      //          obj->setTarget(neutu::data3d::ETarget::TARGET_TILE_CANVAS);
     } else {
       delete obj;
     }
   }
 }
 
-/*
 void ZFlyEmProofDoc::loadRoiFunc()
 {
+  //For loading ROI in 2D view
   if (!getDvidTarget().getRoiName().empty()) {
     if (!m_roiReader.isReady()) {
       m_roiReader.open(getDvidTarget());
@@ -1668,7 +1677,6 @@ void ZFlyEmProofDoc::loadRoiFunc()
     addRoiMask(obj);
   }
 }
-*/
 
 /*
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
@@ -1737,23 +1745,22 @@ void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
     loadStack(stack);
 
     //Download ROI
-//    m_futureMap["loadRoiFunc"] =
-//        QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
+    m_futureMap["loadRoiFunc"] =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
   }
 
 
   if (getDvidTarget().hasTileData()) {
     initTileData();
   } else {
+    initGrayscaleSlice(env, neutu::EAxis::X);
+    initGrayscaleSlice(env, neutu::EAxis::Y);
     initGrayscaleSlice(env, neutu::EAxis::Z);
   }
 
-  addDvidLabelSlice(neutu::EAxis::Z, false);
-  if (getDvidTarget().hasSupervoxel()) {
-    ZDvidLabelSlice* slice = addDvidLabelSlice(neutu::EAxis::Z, true);
-    slice->setVisible(false);
-    slice->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
-  }
+  initLabelSlice(neutu::EAxis::X);
+  initLabelSlice(neutu::EAxis::Y);
+  initLabelSlice(neutu::EAxis::Z);
 
   if (getDvidInfo().isValid()) {
     setResolution(getDvidInfo().getVoxelResolution());
@@ -1770,6 +1777,16 @@ void ZFlyEmProofDoc::initTileData()
 //  ZJsonObject obj = m_dvidReader.readContrastProtocal();
 //  ensemble->setContrastProtocal(obj);
   addObject(ensemble, true);
+}
+
+void ZFlyEmProofDoc::initLabelSlice(neutu::EAxis axis)
+{
+  addDvidLabelSlice(axis, false);
+  if (getDvidTarget().hasSupervoxel()) {
+    ZDvidLabelSlice* slice = addDvidLabelSlice(axis, true);
+    slice->setVisible(false);
+    slice->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
+  }
 }
 
 void ZFlyEmProofDoc::initGrayscaleSlice(
@@ -3135,8 +3152,14 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool usingCenterCut, bool sv)
 {
-  QMutexLocker locker(&m_workWriterMutex);
+//  QMutexLocker locker(&m_workWriterMutex);
 
+  ZDvidLabelSlice *slice = getDvidLabelSlice(viewParam.getSliceAxis(), sv);
+  if (!slice) {
+    return;
+  }
+
+  /*
   const ZDvidReader *reader = nullptr;
   if (sv) {
     if (!m_supervoxelWorkReader.good()) {
@@ -3148,10 +3171,22 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
   } else {
     reader = &getWorkReader();
   }
+  */
 
   ZArray *array = NULL;
+  const ZDvidReader &workReader = slice->getWorkDvidReader();
+  if (workReader.good()) {
+    ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
+    array = workReader.readLabels64Lowtis(
+          rect, zoom, centerCutX, centerCutY, usingCenterCut);
+  }
 
+  #if 0
   if (reader->good()) {
+    ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
+    array = reader->readLabels64Lowtis(
+          rect, zoom, centerCutX, centerCutY, usingCenterCut);
+
     if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
 //      ZStackViewParam newParam = viewParam;
 //      newParam.discretizeModel();
@@ -3177,7 +3212,9 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
               zoom, centerCutX, centerCutY, usingCenterCut);
       }
     }
+
   }
+#endif
 
   if (array != NULL) {
     emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY,
@@ -3193,27 +3230,35 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
   ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
   if (slice) {
     const ZDvidReader &workReader = slice->getWorkDvidReader();
-
     ZStack *array = NULL;
     if (workReader.good()) {
+      ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
+      array = workReader.readGrayScaleLowtis(
+            rect, zoom, centerCutX, centerCutY, usingCenterCut);
+
+    }
+#if 0
+    ZStack *array = NULL;
+    if (workReader.good()) {
+      ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
+
       if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
 //        ZArbSliceViewParam svp = viewParam.getSliceViewParam();
         array = workReader.readGrayScaleLowtis(viewParam.getCutRect(),
               zoom, centerCutX, centerCutY, usingCenterCut);
       } else {
-        ZIntCuboid box = zgeom::GetIntBoundBox(viewParam.getCutRect());
+        ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
 
 //        ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
 //              viewParam.getViewPort(), viewParam.getZ());
 
         array = workReader.readGrayScaleLowtis(
-              box.getMinCorner().getX(), box.getMinCorner().getY(),
-              box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
-              zoom, centerCutX, centerCutY, usingCenterCut);
+              rect, zoom, centerCutX, centerCutY, usingCenterCut);
       }
     }
+#endif
 
-    if (array != NULL) {
+    if (array) {
       emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY,
                              usingCenterCut, source);
     }
@@ -3495,7 +3540,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
   ZDvidSparsevolSlice *obj = NULL;
   if (bodyId > 0) {
     obj = new ZDvidSparsevolSlice;
-    obj->setTarget(ZStackObject::ETarget::DYNAMIC_OBJECT_CANVAS);
+    obj->setTarget(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
     obj->setSliceAxis(labelSlice->getSliceAxis());
     obj->setReader(getSparseVolReader());
     //          obj->setDvidTarget(getDvidTarget());
@@ -4435,6 +4480,7 @@ void ZFlyEmProofDoc::saveCustomBookmark()
 }
 #endif
 
+/*
 void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
@@ -4446,6 +4492,16 @@ void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
     break;
   default:
     break;
+  }
+}
+*/
+
+void ZFlyEmProofDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  ZStackDoc::_processObjectModified(infoSet);
+  if (!m_loadingAssignedBookmark &&
+      infoSet.hasObjectDataModified(ZStackObject::EType::FLYEM_BOOKMARK)) {
+    emit userBookmarkModified();
   }
 }
 

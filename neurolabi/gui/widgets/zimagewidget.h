@@ -43,7 +43,7 @@ public:
   ZImageWidget(QWidget *parent);
   virtual ~ZImageWidget() override;
 
-  inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
+//  inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
 
   enum ECanvasRole {
     CANVAS_ROLE_IMAGE = 0, /**< For the main stack data */
@@ -52,7 +52,7 @@ public:
     CANVAS_ROLE_OBJECT, /**< For normal objects */
     CANVAS_ROLE_DYNAMIC_OBJECT, /**< For objects that need dynamic loading */
     CANVAS_ROLE_ACTIVE_DECORATION, /**< For objects moving with mouse */
-    CANVAS_ROLE_WIDGET, /**< For object painted into widget directly */
+    CANVAS_ROLE_WIDGET, /**< For object painted into widget (for high definition) */
     CANVAS_ROLE_COUNT, /**< The total number of roles */
   };
 
@@ -61,6 +61,8 @@ public:
   void validateCanvas(ECanvasRole role);
   std::shared_ptr<ZSliceCanvas> getValidCanvas(ECanvasRole role);
   std::shared_ptr<ZSliceCanvas> getClearCanvas(ECanvasRole role);
+
+  void setCanvasVisible(ECanvasRole role, bool visible);
 
   void setImage(ZImage *image);
 //  void setObjectCanvas(ZPixmap *canvas);
@@ -80,6 +82,8 @@ public:
   ZPoint transform(
       const ZPoint &pt, neutu::data3d::ESpace src, neutu::data3d::ESpace dst) const;
   void setSliceViewTransform(const ZSliceViewTransform &t);
+  void setCutPlane(neutu::EAxis axis);
+
   void setCutCenter(double x, double y, double z);
   void setCutCenter(const ZPoint &center);
   void setCutCenter(const ZIntPoint &center);
@@ -122,24 +126,8 @@ public:
    * system. The position will be adjusted if (\a x, \a y) is outside the canvas.
    */
 //  void setViewPortOffset(int x, int y);
-  void setViewPortCenterQuitely(int cx, int cy);
+//  void setViewPortCenterQuitely(int cx, int cy);
 
-  /*
-  const ZViewProj& getViewProj() const {
-    return m_viewProj;
-  }
-
-  void setViewProj(const ZViewProj &viewProj) {
-    m_viewProj = viewProj;
-  }
-  */
-
-  /*
-  void setViewProj(int x0, int y0, double zoom);
-  void setViewProj(const QPoint &pt, double zoom);
-  void resetViewProj(int x0, int y0, int w, int h);
-  void resetViewProj(int x0, int y0, int w, int h, const QRect &viewPort);
-  */
 
   /*!
    * \brief Move viewport.
@@ -199,22 +187,8 @@ public:
 
 //  QSize canvasSize() const;
   QSize screenSize() const;
-//  inline QSizeF projectSize() const { return m_projRegion.size(); }
-//  inline const QRectF& projectRegion() const { return m_projRegion; }
-//  inline const QRect& viewPort() const { return m_viewPort; }
-//  QSizeF projectSize() const;
-//  QRectF projectRegion() const;
-//  QRect viewPort() const;
-//  QRect canvasRegion() const;
 
-
-  /*!
-   * \brief Map the widget coordinates to world coordinates
-   */
-//  QPointF worldCoordinate(QPoint widgetCoord) const;
-
-//  QPointF canvasCoordinate(QPoint widgetCoord) const;
-
+  ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
 
   void paintEvent(QPaintEvent *event) override;
 
@@ -281,7 +255,7 @@ public:
   void maximizeViewPort(const ZIntCuboid &worldRange);
 
   void enableOffsetAdjustment(bool on);
-  bool paintWidgetCanvas(ZImage *canvas);
+//  bool paintWidgetCanvas(ZImage *canvas);
   ZImage* makeWidgetCanvas() const;
   void updateWidgetCanvas(ZPixmap *canvas);
 
@@ -295,6 +269,8 @@ public:
 
   void resetView();
   void setReady(bool ready);
+
+//  void paintWidgetObject();
 
 //  void resetTransform();
 
@@ -356,9 +332,8 @@ private:
    */
   void adjustProjRegion();
   void adjustProjRegion(const QRect &viewPort);
-  QSize getMaskSize() const;
-  void paintObject();
-  void paintDynamicObject();
+//  QSize getMaskSize() const;
+//  void paintObject();
   bool paintObject(QPainter *painter,
       const QList<std::shared_ptr<ZStackObject>> &objList);
   bool paintObject(QPainter *painter,
@@ -379,21 +354,10 @@ private:
   QVector<ZImage*> m_mask;
 
   QVector<std::shared_ptr<ZSliceCanvas>> m_canvasList;
-  /*
-  std::shared_ptr<ZSliceCanvas> m_objectCanvas;
-  std::shared_ptr<ZSliceCanvas> m_tileCanvas;
-  std::shared_ptr<ZSliceCanvas> m_dynamicObjectCanvas;
-  std::shared_ptr<ZSliceCanvas> m_activeDecorationCanvas;
-  std::shared_ptr<ZSliceCanvas> m_widgetCanvas;
-  */
 
-//  QRect m_viewPort; /* viewport, in world coordinates */
-//  QRectF m_projRegion; /* projection region */
-  //int m_zoomRatio;
-//  bool m_isowner;
   QMenu *m_leftButtonMenu = nullptr;
   QMenu *m_rightButtonMenu = nullptr;
-  ZPaintBundle *m_paintBundle = nullptr;
+//  ZPaintBundle *m_paintBundle = nullptr;
   bool m_isViewHintVisible = true;
   bool m_paintBlocked = false;
 //  QRect m_canvasRegion; //Whole canvas region

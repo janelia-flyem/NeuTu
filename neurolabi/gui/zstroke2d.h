@@ -50,9 +50,7 @@ public:
   virtual bool load(const char *filePath);
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const override {
-    return false;
-  }
+      QPainter *painter, const DisplayConfig &config) const override;
 
   /*
   void display(ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
@@ -85,6 +83,10 @@ public:
   void set(const QPoint &pt);
   void set(double x, double y);
   void setLast(double x, double y);
+  void set(double x, double y, double z);
+  void updateWithLast(double x, double y, double z);
+  void updateWithLast(const ZPoint &pt);
+
   void setLabel(uint64_t label) override;
 
   /*!
@@ -105,8 +107,8 @@ public:
   inline void setFilled(bool isFilled) {
     m_isFilled = isFilled;
   }
-  inline void setZ(int z) { m_z = z; }
-  inline int getZ() const { return m_z; }
+  inline void setZ(double z) { m_z = z; }
+  inline double getZ() const { return m_z; }
 
   double inline getWidth() const { return m_width; }
 
@@ -192,7 +194,7 @@ private:
 
 //  int m_label; //Label = 0 is reserved for eraser
   uint64_t m_originalLabel; //for label toggling
-  int m_z;
+  double m_z;
 
   //bool m_isEraser;
   //Customized styles

@@ -57,6 +57,9 @@ template<typename T>
 std::set<T> intersect(const std::set<T> &s1, const std::set<T> &s2);
 
 template<typename T>
+std::set<T> setunion(const std::set<T> &s1, const std::set<T> &s2);
+
+template<typename T>
 std::set<T> setdiff(const std::set<T> &s1, const std::set<T> &s2);
 
 template <typename T, typename UninaryPred>
@@ -69,6 +72,12 @@ void setremoveif(std::set<T> &s, UninaryPred pred)
       ++iter;
     }
   }
+}
+
+template <typename T>
+constexpr typename std::underlying_type<T>::type EnumValue(T val)
+{
+    return static_cast<typename std::underlying_type<T>::type>(val);
 }
 
 // generic solution
@@ -229,6 +238,21 @@ private:
   std::function<void()> m_endFunc;
 };
 
+template<typename TEnum>
+constexpr typename std::underlying_type<TEnum>::type
+EnumToUnderlyingType(TEnum e) noexcept
+{
+  return static_cast<typename std::underlying_type<TEnum>::type>(e);
+}
+
+struct Boolean {
+  Boolean(bool v) { value = v; }
+  operator bool() const {
+    return value;
+  }
+  bool value = false;
+};
+
 } //namespace neutu
 
 //template<>
@@ -240,6 +264,15 @@ std::set<T> neutu::intersect(const std::set<T> &s1, const std::set<T> &s2)
   std::set<T> result;
   std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
                         std::inserter(result, result.begin()));
+  return result;
+}
+
+template<typename T>
+std::set<T> neutu::setunion(const std::set<T> &s1, const std::set<T> &s2)
+{
+  std::set<T> result;
+  std::set_union(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                 std::inserter(result, result.begin()));
   return result;
 }
 

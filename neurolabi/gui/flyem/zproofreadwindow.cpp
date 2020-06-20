@@ -87,7 +87,7 @@ void ZProofreadWindow::init()
 //  ZDvidTarget target;
 //  target.set("http://emdata1.int.janelia.org", "9db", 8500);
 
-  m_mainMvc = ZFlyEmProofMvc::Make(/*target*/);
+  m_mainMvc = ZFlyEmProofMvc::Make(neutu::EAxis::Z);
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);
@@ -189,7 +189,9 @@ void ZProofreadWindow::init()
   connect(m_segSlider, SIGNAL(valueChanged(int)),
           m_mainMvc, SLOT(setLabelAlpha(int)));
   m_mainMvc->setLabelAlpha(m_segSlider->value());
-
+  m_mainMvc->getCompletePresenter()->getSegmentationOpacity = [&]() {
+    return m_segSlider->value();
+  };
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
   m_mainMvc->configure();
@@ -654,12 +656,43 @@ void ZProofreadWindow::createToolbar()
   m_segSlider = new QSlider(Qt::Horizontal, this);
   m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
   m_segSlider->setRange(0, 255);
-  m_segSlider->setValue(128);
+  m_segSlider->setValue(77);
   m_toolBar->addWidget(m_segSlider);
 
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_contrastAction);
   m_toolBar->addAction(m_smoothAction);
+  m_toolBar->addSeparator();
+
+  QActionGroup *viewAxisGroup = new QActionGroup(this);
+  auto addViewAction = [&](neutu::EAxis axis) {
+    QAction *action = nullptr;
+    switch (axis) {
+    case neutu::EAxis::X:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_X);
+      break;
+    case neutu::EAxis::Y:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_Y);
+      break;
+    case neutu::EAxis::Z:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_Z);
+      break;
+    default:
+      break;
+    }
+    if (action) {
+      action->setChecked(m_mainMvc->getSliceAxis() == axis);
+      viewAxisGroup->addAction(action);
+      m_toolBar->addAction(action);
+    }
+  };
+  addViewAction(neutu::EAxis::X);
+  addViewAction(neutu::EAxis::Y);
+  addViewAction(neutu::EAxis::Z);
+
   m_toolBar->addSeparator();
 
   if (m_openSequencerAction != NULL) {
@@ -1063,6 +1096,13 @@ void ZProofreadWindow::showAndRaise()
   }
   activateWindow();
   raise();
+}
+
+void ZProofreadWindow::loadDatabaseFromName(const QString &name)
+{
+  if (!name.isEmpty()) {
+    getMainMvc()->setDvidFromName(name.toStdString());
+  }
 }
 
 void ZProofreadWindow::loadDatabase()

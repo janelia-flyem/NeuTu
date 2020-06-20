@@ -351,11 +351,11 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
 //  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
 //          m_view, SLOT(redraw()));
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(neutu::data3d::ETarget)),
+//          m_view, SLOT(paintObject(neutu::data3d::ETarget)), Qt::AutoConnection);
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-//          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<neutu::data3d::ETarget>)),
+//          m_view, SLOT(paintObject(QSet<neutu::data3d::ETarget>)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
           this, SLOT(changeWindowTitle(bool)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
@@ -413,9 +413,9 @@ void ZStackFrame::updateSignalSlot(T connectAction)
   updateDocSignalSlot(connectAction);
   connectAction(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()),
                 Qt::AutoConnection);
-  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
-                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
-                Qt::AutoConnection);
+//  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
+//                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
+//                Qt::AutoConnection);
 //  connectAction(this, SIGNAL(closed(ZStackFrame*)), this, SLOT(closeAllChildFrame()));
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //          m_presenter, SLOT(processSliceChangeEvent(int)));
@@ -1308,6 +1308,7 @@ ZStack* ZStackFrame::getStrokeMask(neutu::EColor color)
   return view()->getStrokeMask(color);
 }
 
+/*
 void ZStackFrame::exportObjectMask(const QString &filePath)
 {
   view()->exportObjectMask(filePath.toStdString());
@@ -1318,6 +1319,7 @@ void ZStackFrame::exportObjectMask(
 {
   view()->exportObjectMask(color, filePath.toStdString());
 }
+*/
 
 
 void ZStackFrame::saveStack(const QString &filePath)
@@ -1797,7 +1799,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+    obj->setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }

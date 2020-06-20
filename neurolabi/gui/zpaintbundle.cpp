@@ -22,11 +22,11 @@ neutu::EAxis ZPaintBundle::getSliceAxis() const
 //  return m_viewParam.getSliceAxis();
 }
 
-void ZPaintBundle::addDynamicObject(ZStackObject *obj)
+void ZPaintBundle::addWidgetObject(ZStackObject *obj)
 {
   if (obj) {
-    QMutexLocker locker(&m_dynamicObjectListMutex);
-    m_dynamicObjectList.append(std::shared_ptr<ZStackObject>(obj));
+    QMutexLocker locker(&m_widgetObjectListMutex);
+    m_widgetObjectList.append(std::shared_ptr<ZStackObject>(obj));
   }
 }
 
@@ -50,15 +50,15 @@ void ZPaintBundle::clearDynamicObjectList()
     delete obj;
   }
   */
-  QMutexLocker locker(&m_dynamicObjectListMutex);
-  m_dynamicObjectList.clear();
+  QMutexLocker locker(&m_widgetObjectListMutex);
+  m_widgetObjectList.clear();
 }
 
 void ZPaintBundle::addDrawableList(const QList<ZStackObject*>& lst)
 {
   for (ZStackObject *obj : lst) {
-    if (obj->getTarget() == ZStackObject::ETarget::WIDGET_CANVAS) {
-      addDynamicObject(obj->clone());
+    if (obj->getTarget() == neutu::data3d::ETarget::HD_OBJECT_CANVAS) {
+      addWidgetObject(obj->clone());
     } else {
       m_objList.append(obj);
     }
@@ -77,10 +77,10 @@ void ZPaintBundle::setSliceViewTransform(const ZSliceViewTransform &t)
   m_displayConfig.setTransform(t);
 }
 
-bool ZPaintBundle::hasDynamicObject() const
+bool ZPaintBundle::hasWidgetObject() const
 {
-  QMutexLocker locker(&m_dynamicObjectListMutex);
-  return !m_dynamicObjectList.empty();
+  QMutexLocker locker(&m_widgetObjectListMutex);
+  return !m_widgetObjectList.empty();
 }
 
 void ZPaintBundle::setDisplayStyle(ZStackObject::EDisplayStyle style)
@@ -114,12 +114,12 @@ void ZPaintBundle::alignToCutPlane(
 */
 
 QList<std::shared_ptr<ZStackObject>>
-ZPaintBundle::getVisibleDynamicObjectList() const
+ZPaintBundle::getVisibleWidgetObjectList() const
 {
   QList<std::shared_ptr<ZStackObject>> objList;
   {
-    QMutexLocker locker(&m_dynamicObjectListMutex);
-    for (auto obj : m_dynamicObjectList) {
+    QMutexLocker locker(&m_widgetObjectListMutex);
+    for (auto obj : m_widgetObjectList) {
       if (obj->isSliceVisible(m_displayConfig)) {
         objList.append(obj);
       }
@@ -130,7 +130,7 @@ ZPaintBundle::getVisibleDynamicObjectList() const
   return objList;
 }
 
-QList<ZStackObject*> ZPaintBundle::getVisibleObjectList(ZStackObject::ETarget target) const
+QList<ZStackObject*> ZPaintBundle::getVisibleObjectList(neutu::data3d::ETarget target) const
 {
   QList<ZStackObject*> objList;
   for (ZStackObject *obj : m_objList) {

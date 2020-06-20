@@ -7,6 +7,7 @@
 #include "qt/gui/loghelper.h"
 #include "zglobal.h"
 
+#include "zjsonobjectparser.h"
 #include "zkeyoperationconfig.h"
 #include "zinteractivecontext.h"
 #include "mvc/zstackdoc.h"
@@ -25,6 +26,8 @@
 #include "zflyemtododelegate.h"
 #include "zflyemproofdocutil.h"
 #include "neuroglancer/zneuroglancerpathfactory.h"
+#include "neuroglancer/zneuroglancerlayerspecfactory.h"
+#include "neuroglancer/zneuroglancerannotationlayerspec.h"
 
 
 #ifdef _WIN32
@@ -194,6 +197,15 @@ bool ZFlyEmProofPresenter::connectAction(
       break;
     case ZActionFactory::ACTION_RUN_TIP_DETECTION:
       connect(action, SIGNAL(triggered()), this, SLOT(runTipDetection()));
+      break;
+    case ZActionFactory::ACTION_VIEW_AXIS_X:
+      connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneAlongX()));
+      break;
+    case ZActionFactory::ACTION_VIEW_AXIS_Y:
+      connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneAlongY()));
+      break;
+    case ZActionFactory::ACTION_VIEW_AXIS_Z:
+      connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneAlongZ()));
       break;
     default:
       connected = false;
@@ -979,7 +991,7 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
   stroke->set(x, y);
 //  m_stroke.setEraser(false);
 //  m_stroke.setFilled(false);
-//  m_stroke.setTarget(ZStackObject::ETarget::TARGET_WIDGET);
+//  m_stroke.setTarget(neutu::data3d::ETarget::TARGET_WIDGET);
 //  turnOnStroke();
   turnOnActiveObject(ROLE_BOOKMARK);
   //buddyView()->paintActiveDecoration();
@@ -993,6 +1005,21 @@ void ZFlyEmProofPresenter::runTipDetection() {
     uint64_t bodyId = getCompleteDocument()->getLabelId(pt.getX(), pt.getY(), pt.getZ());
 
     emit tipDetectRequested(pt.roundToIntPoint(), bodyId);
+}
+
+void ZFlyEmProofPresenter::setCutPlaneAlongX()
+{
+  buddyView()->setCutPlane(neutu::EAxis::X);
+}
+
+void ZFlyEmProofPresenter::setCutPlaneAlongY()
+{
+  buddyView()->setCutPlane(neutu::EAxis::Y);
+}
+
+void ZFlyEmProofPresenter::setCutPlaneAlongZ()
+{
+  buddyView()->setCutPlane(neutu::EAxis::Z);
 }
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
@@ -1328,10 +1355,19 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 
 void ZFlyEmProofPresenter::copyLink(const QString &option) const
 {
-  if (option == "neuroglancer") {
+  ZJsonObject obj;
+  obj.decode(option.toStdString(), true);
+
+  ZJsonObjectParser parser;
+  if (parser.getValue(obj, "type", "") == "neuroglancer") {
     const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
+
+    if (parser.getValue(obj, "location", "") == "rectroi") {
+      ZRect2d rect = buddyDocument()->getRect2dRoi();
+      pt.set(rect.getCenter().toPoint());
+    }
 
 //    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
 
@@ -1342,10 +1378,19 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
 //    QList<ZFlyEmBookmark*> bookmarkList =
 //        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
 
+    QList<std::shared_ptr<ZNeuroglancerLayerSpec>> additionalLayers;
+    ZRect2d rect = buddyDocument()->getRect2dRoi();
+    if (rect.isValid()) {
+      auto layer = ZNeuroglancerLayerSpecFactory::MakeLocalAnnotationLayer(
+            "local_annotation");
+      layer->addAnnotation(rect.getBoundBox());
+      additionalLayers.append(layer);
+    }
+
     QString path = ZNeuroglancerPathFactory::MakePath(
-          getCompleteDocument()->getDvidEnv(),
-          ZIntPoint(res.voxelSizeX(), res.voxelSizeY(), res.voxelSizeZ()),
-          pt/*, bookmarkList*/);
+          getCompleteDocument()->getDvidEnv(), res,
+          pt, buddyView()->getViewParameter().getZoomRatio(),
+          additionalLayers);
     ZGlobal::CopyToClipboard(
           GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());
   }

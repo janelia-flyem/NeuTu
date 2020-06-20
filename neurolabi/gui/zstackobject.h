@@ -2,11 +2,11 @@
 #define ZSTACKOBJECT_H
 
 #include "common/neutudefs.h"
-#include "zqtheader.h"
-#include "zstackobjectrole.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zaffinerect.h"
-//#include "data3d/displayconfig.h"
+#include "data3d/defs.h"
+#include "zqtheader.h"
+#include "zstackobjectrole.h"
 
 class ZPainter;
 class ZIntCuboid;
@@ -115,11 +115,14 @@ public:
   };
   */
 
+  /*
   enum class ETarget {
     NONE,
     STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS,
-    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D, WIDGET_CANVAS
+    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D, WIDGET_CANVAS,
+    ACTIVE_DECORATION_CANVAS
   };
+  */
 
   /*
   enum class EDisplaySliceMode {
@@ -252,8 +255,8 @@ public:
 //  inline void setDisplayStyle(zstackobject::EDisplayStyle style) { m_style = style; }
 //  inline zstackobject::EDisplayStyle displayStyle() const { return m_style; }
 
-  inline ETarget getTarget() const { return m_target; }
-  inline void setTarget(ETarget target) { m_target = target; }
+  inline neutu::data3d::ETarget getTarget() const { return m_target; }
+  inline void setTarget(neutu::data3d::ETarget target) { m_target = target; }
 
   virtual bool isSliceVisible(int z, neutu::EAxis axis) const;
   virtual bool isSliceVisible(
@@ -486,7 +489,7 @@ protected:
   EHitProtocol m_hitProtocal = EHitProtocol::HIT_DATA_POS;
 //  zstackobject::EDisplayStyle m_style = zstackobject::EDisplayStyle::SOLID;
   QColor m_color;
-  ETarget m_target = ETarget::WIDGET;
+  neutu::data3d::ETarget m_target = neutu::data3d::ETarget::HD_OBJECT_CANVAS;
   EType m_type = EType::UNIDENTIFIED;
   double m_basePenWidth;
 

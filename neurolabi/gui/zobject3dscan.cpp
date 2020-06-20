@@ -77,7 +77,7 @@ ZObject3dScan::~ZObject3dScan()
 
 void ZObject3dScan::init()
 {
-  setTarget(ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 
   m_isCanonized = true;
