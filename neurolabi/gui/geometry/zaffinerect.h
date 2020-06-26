@@ -63,6 +63,8 @@ public:
 
   bool contains(const ZPoint &pt, double d) const;
 
+  bool isEmpty() const;
+
   friend std::ostream& operator<<(std::ostream& stream, const ZAffineRect &r);
   bool operator== (const ZAffineRect &p) const;
   bool operator!= (const ZAffineRect &p) const;

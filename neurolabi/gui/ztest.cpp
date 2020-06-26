@@ -201,6 +201,8 @@
 #include "misc/miscutility.h"
 #include "imgproc/zstackprinter.h"
 #include "zneurontracer.h"
+#include "flyem/flyemtodoensemble.h"
+#include "flyem/flyemtodomocksource.h"
 
 #include "swc/zswcterminalsurfacemetric.h"
 
@@ -356,6 +358,7 @@
 #include "data3d/displayconfig.h"
 #include "widgets/zimagewidget.h"
 #include "vis2d/zimageslicefactory.h"
+#include "zobject3dfactory.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -31609,13 +31612,58 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZStack *stack = new ZStack;
-  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  stack->load("/Users/zhaot/Work/neutu/neurolabi/data/_system/emstack2.tif");
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->view()->setSliceAxis(neutu::EAxis::Z);
   frame->loadStack(stack);
-  ZStackBall *ball = new ZStackBall(125, 125, 125, 10);
-  ball->setColor(255, 0, 0);
-  frame->document()->addObject(ball);
+//  ZStackBall *ball = new ZStackBall(125, 125, 125, 10);
+//  ball->setColor(255, 0, 0);
+//  frame->document()->addObject(ball);
+
+  FlyEmTodoEnsemble *obj = new FlyEmTodoEnsemble();
+  auto source = std::shared_ptr<FlyEmTodoMockSource>(
+        new FlyEmTodoMockSource);
+  obj->setSource(source);
+
+  /*
+  ZFlyEmToDoItem *obj = new ZFlyEmToDoItem;
+  obj->setPosition(125, 125, 125);
+  obj->setRadius(10.0);
+  obj->setColor(255, 0, 0);
+  */
+//  ZObject3dScan *obj = new ZObject3dScan;
+//  obj->addSegment(125, 125, 125, 126);
+//  obj->addSegment(125, 126, 125, 125);
+
+//  ZObject3dFactory::MakeObject3dScan(
+//        ZIntCuboid(100, 100, 100, 150, 150, 150), obj);
+
+  /*
+  ZObject3d *obj = new ZObject3d();
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(100, 100, 100, 150, 150, 150), obj);
+          */
+
+  /*
+  ZStroke2d *obj = new ZStroke2d;
+  obj->updateWithLast(125, 125, 125);
+  obj->append(135, 135, 125);
+  obj->setFilled(true);
+  obj->setBasePenWidth(1.0);
+  obj->useCosmeticPen(false);
+  obj->setColor(255, 0, 0, 128);
+  */
+
+  /*
+  obj->append(125, 125, 125);
+  obj->append(126, 125, 125);
+  obj->append(127, 125, 125);
+  obj->append(125, 125, 126);
+  obj->append(128, 125, 126);
+
+  */
+
+  frame->document()->addObject(obj);
 
   host->addStackFrame(frame);
   host->presentStackFrame(frame);

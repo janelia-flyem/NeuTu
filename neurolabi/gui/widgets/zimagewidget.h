@@ -45,6 +45,7 @@ public:
 
 //  inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
 
+#if 0
   enum ECanvasRole {
     CANVAS_ROLE_IMAGE = 0, /**< For the main stack data */
     CANVAS_ROLE_TILE, /**< For tiles*/
@@ -55,14 +56,16 @@ public:
     CANVAS_ROLE_WIDGET, /**< For object painted into widget (for high definition) */
     CANVAS_ROLE_COUNT, /**< The total number of roles */
   };
+#endif
 
-  std::shared_ptr<ZSliceCanvas> getCanvas(ECanvasRole role) const;
+  std::shared_ptr<ZSliceCanvas> getCanvas(
+      neutu::data3d::ETarget target, bool initing);
 
-  void validateCanvas(ECanvasRole role);
-  std::shared_ptr<ZSliceCanvas> getValidCanvas(ECanvasRole role);
-  std::shared_ptr<ZSliceCanvas> getClearCanvas(ECanvasRole role);
+  std::shared_ptr<ZSliceCanvas> validateCanvas(neutu::data3d::ETarget target);
+  std::shared_ptr<ZSliceCanvas> getValidCanvas(neutu::data3d::ETarget target);
+  std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
 
-  void setCanvasVisible(ECanvasRole role, bool visible);
+  void setCanvasVisible(neutu::data3d::ETarget target, bool visible);
 
   void setImage(ZImage *image);
 //  void setObjectCanvas(ZPixmap *canvas);

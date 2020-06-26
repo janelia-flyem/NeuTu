@@ -25,6 +25,11 @@ double ZAffineRect::getHeight() const
   return m_height;
 }
 
+bool ZAffineRect::isEmpty() const
+{
+  return m_width <= 0.0 || m_height <= 0.0;
+}
+
 ZPoint ZAffineRect::getV1() const
 {
   return m_ap.getV1();

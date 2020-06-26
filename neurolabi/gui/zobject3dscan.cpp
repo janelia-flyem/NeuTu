@@ -15,13 +15,19 @@
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
 #include "tz_stack_bwmorph.h"
+#include "tz_stack_bwmorph.h"
+
+#include "common/utilities.h"
+#include "common/memorystream.h"
+#include "geometry/zgeometry.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zcuboid.h"
 
 #include "neurolabi/zdoublevector.h"
 #include "zobject3d.h"
 #include "zgraph.h"
-#include "zerror.h"
 #include "neutubeconfig.h"
-#include "tz_stack_bwmorph.h"
+
 #include "c_stack.h"
 #include "zfiletype.h"
 #include "zeigensolver.h"
@@ -32,13 +38,15 @@
 #include "zstringarray.h"
 #include "zstackfactory.h"
 #include "zpainter.h"
-#include "geometry/zgeometry.h"
-#include "geometry/zintcuboid.h"
-#include "geometry/zcuboid.h"
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
-#include "common/memorystream.h"
 #include "zstackfactory.h"
+#include "data3d/displayconfig.h"
+
+#if _QT_GUI_USED_
+#include "vis2d/utilities.h"
+#include "vis2d/zslicepainter.h"
+#endif
 
 ///////////////////////////////////////////////////
 
@@ -520,12 +528,10 @@ void ZObject3dScan::loadStack(const Stack *stack)
   clear();
 
   if (stack == NULL) {
-    RECORD_ERROR(true, "null stack");
     return;
   }
 
   if (C_Stack::kind(stack) != GREY) {
-    RECORD_ERROR(true, "unsupported kind");
     return;
   }
 
@@ -686,11 +692,19 @@ bool ZObject3dScan::load(const std::string &filePath)
   } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::OBJECT_SCAN) {
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp != NULL) {
+      neutu::ApplyOnce closeFile(neutu::NullFunction, [&]() {
+        fclose(fp);
+      });
       int stripeNumber = 0;
       fread(&stripeNumber, sizeof(int), 1, fp);
 
-      PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number",
-                    fclose(fp); return false);
+      if (stripeNumber < 0) {
+        neutu::ReportError("Invalid stripe number");
+//        fclose(fp);
+        return false;
+      }
+//      PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number",
+//                    fclose(fp); return false);
       /*
     if (stripeNumber < 0) {
       RECORD_ERROR(true, "Invalid stripe number");
@@ -703,7 +717,7 @@ bool ZObject3dScan::load(const std::string &filePath)
            iter != m_stripeArray.end(); ++iter) {
         iter->read(fp);
       }
-      fclose(fp);
+//      fclose(fp);
 
       if (isCanonizedActually()) {
         m_isCanonized = true;
@@ -727,7 +741,10 @@ bool ZObject3dScan::load(const std::string &filePath)
     setSource(filePath);
   }
 
-  RECORD_WARNING(!succ, "Cannont open file " + filePath);
+  if (!succ) {
+    neutu::ReportWarning("Cannont open file " + filePath);
+  }
+//  RECORD_WARNING(!succ, "Cannont open file " + filePath);
 
   return succ;
 }
@@ -858,7 +875,8 @@ bool ZObject3dScan::save(const std::string &filePath) const
     fclose(fp);
     succ = true;
   } else {
-    RECORD_WARNING(true, "Cannont open file " + filePath);
+    neutu::ReportWarning("Cannont open file " + filePath);
+//    RECORD_WARNING(true, "Cannont open file " + filePath);
   }
 
   return succ;
@@ -2252,7 +2270,7 @@ void ZObject3dScan::displaySolid(
 //  return painted;
 }
 
-#ifdef _QT_GUI_USED_
+#ifdef _QT_GUI_USED_0
 static QList<std::vector<QPoint> > extract_contour(
     Stack *stack, int dx, int dy, int sx, int sy)
 {
@@ -2317,6 +2335,48 @@ static QList<std::vector<QPoint> > extract_contour(
 
 bool ZObject3dScan::display(QPainter *painter, const DisplayConfig &config) const
 {
+  if (getSliceAxis() == config.getSliceAxis()) {
+    ZSlice2dPainter s2Painter;
+//    s3Painter.setModelViewTransform(config.getWorldViewTransform());
+    ZModelViewTransform t = config.getWorldViewTransform();
+    s2Painter.setViewPlaneTransform(config.getViewCanvasTransform());
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+    QPen pen(getColor());
+    pen.setCosmetic(false);
+    painter->setPen(pen);
+    painter->setRenderHint(QPainter::Antialiasing, false);
+
+    int z = neutu::iround(config.getCutDepth(ZPoint::ORIGIN));
+    ZObject3dScan slice = getSlice(z);
+    size_t stripeNumber = slice.getStripeNumber();
+//    ZIntCuboid box;
+    std::vector<QLineF> lineArray;
+    std::vector<QPointF> pointArray;
+    size_t stride = 1;
+
+    ZPoint offset = t.getCutCenter();
+    offset.shiftSliceAxis(getSliceAxis());
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      int nseg = stripe.getSegmentNumber();
+      for (int j = 0; j < nseg; ++j) {
+        double x0 = stripe.getSegmentStart(j) - offset.getX();
+        double x1 = stripe.getSegmentEnd(j) - offset.getX();
+        double y = stripe.getY() - offset.getY();
+        if (x0 == x1) {
+          pointArray.push_back(QPointF(x0, y));
+        } else {
+          lineArray.push_back(QLineF(x0, y, x1, y));
+        }
+      }
+    }
+    s2Painter.drawLines(painter, lineArray);
+    s2Painter.drawPoints(painter, pointArray);
+
+    return s2Painter.getPaintedHint();
+  }
+
   return false;
 }
 
@@ -3407,13 +3467,14 @@ void ZObject3dScan::fillHole()
   unify(holeObj);
 }
 
+/*
 #define READ_TEST(real, expected, action) \
   if (real != expected) { \
     action; \
     fclose(fp); \
     return false; \
   }
-
+*/
 void ZObject3dScan::exportDvidObject(const std::string &filePath) const
 {
   FILE *fp = fopen(filePath.c_str(), "w");
@@ -3503,20 +3564,30 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
   FILE *fp = fopen(filePath.c_str(), "r");
   if (fp != NULL) {
+    neutu::ApplyOnce closeFile(neutu::NullFunction, [&]() {
+      fclose(fp);
+    });
+
     tz_uint8 flag = 0;
     size_t n = fread(&flag, 1, 1, fp);
-    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Reading error"));
+    if (n != 1) {
+      neutu::ReportError("Flag reading error");
+      return false;
+    }
+//    READ_TEST(n, 1, neutu::ReportError("Reading error"));
 
     tz_uint8 numberOfDimensions = 0;
     n = fread(&numberOfDimensions, 1, 1, fp);
     if (n != 1) {
-      fclose(fp);
+      neutu::ReportError("Dimension reading error");
+//      fclose(fp);
       return false;
     }
 
     if (numberOfDimensions != 3) {
-      RECORD_ERROR_UNCOND("Current version only supports 3D");
-      fclose(fp);
+      neutu::ReportError("Current version only supports 3D");
+//      RECORD_ERROR_UNCOND("Current version only supports 3D");
+//      fclose(fp);
       return false;
     }
 
@@ -3528,8 +3599,9 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
     }
 
     if (dimOfRun != 0) {
-      RECORD_ERROR_UNCOND("Unspported run dimension");
-      fclose(fp);
+      neutu::ReportError("Unspported run dimension");
+//      RECORD_ERROR_UNCOND("Unspported run dimension");
+//      fclose(fp);
       return false;
     }
 
@@ -3554,7 +3626,11 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
     tz_uint32 numberOfSpans = 0;
     n = fread(&numberOfSpans, 4, 1, fp);
-    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read number of spans"));
+    if (n != 1) {
+      neutu::ReportError("Failed to read number of spans");
+      return false;
+    }
+//    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read number of spans"));
 
     Appender appender(this);
 
@@ -3562,10 +3638,16 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
     while (!feof(fp)) {
       tz_int32 coord[3];
       n = fread(coord, 4, 3, fp);
-      READ_TEST(n, 3, RECORD_ERROR_UNCOND("Failed to read span"));
+      if (n != 3) {
+        neutu::ReportError("Failed to read span");
+        return false;
+      }
+//      READ_TEST(n, 3, RECORD_ERROR_UNCOND("Failed to read span"));
 
       if (feof(fp)) {
-        RECORD_ERROR_UNCOND("Reading error. File ends prematurely")
+        neutu::ReportError("Reading error. File ends prematurely");
+        return false;
+//        RECORD_ERROR_UNCOND("Reading error. File ends prematurely")
       }
 
 #ifdef _DEBUG_
@@ -3576,10 +3658,14 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
       tz_int32 runLength;
       n = fread(&runLength, 4, 1, fp);
-      READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read run length"));
+      if (n != 1) {
+        neutu::ReportError("Failed to read run length");
+        return false;
+      }
+//      READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read run length"));
       if (runLength <= 0) {
-        fclose(fp);
-        RECORD_ERROR_UNCOND("Invalid run length");
+//        fclose(fp);
+        neutu::ReportError("Invalid run length");
         return false;
       }
 
@@ -3592,12 +3678,14 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
     }
 
     if (readSegmentNumber != numberOfSpans) {
-      RECORD_ERROR_UNCOND("Unmatched numbers of spans");
-      fclose(fp);
+      neutu::ReportError("Unmatched numbers of spans");
+//      RECORD_ERROR_UNCOND("Unmatched numbers of spans");
+//      fclose(fp);
       return false;
     }
   } else {
-    RECORD_ERROR_UNCOND("Unable to open file");
+    neutu::ReportError("Unable to open file");
+//    RECORD_ERROR_UNCOND("Unable to open file");
     return false;
   }
 
@@ -3607,7 +3695,7 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
 #define READ_BYTE_BUFFER(target, type) \
   if (byteNumber < sizeof(type)) { \
-    RECORD_ERROR_UNCOND("Buffer ended prematurely."); \
+    neutu::ReportError("Buffer ended prematurely."); \
     return false; \
   } \
   target = *(const type*)(byteArray + currentIndex); \
@@ -3620,7 +3708,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
   clear();
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    neutu::ReportError("Invalid byte buffer");
     return false;
   }
 
@@ -3634,14 +3722,14 @@ bool ZObject3dScan::importDvidObjectBuffer(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return false;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return false;
   }
 
@@ -3664,7 +3752,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return false;
     }
 
@@ -3741,7 +3829,7 @@ size_t ZObject3dScan::CountVoxelNumber(
   size_t count = 0;
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    neutu::ReportError("Invalid byte buffer");
     return 0;
   }
 
@@ -3755,14 +3843,14 @@ size_t ZObject3dScan::CountVoxelNumber(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return 0;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return 0;
   }
 
@@ -3783,7 +3871,7 @@ size_t ZObject3dScan::CountVoxelNumber(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return 0;
     }
 
@@ -3805,7 +3893,6 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   clear();
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
     return false;
   }
 
@@ -3819,14 +3906,14 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return false;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return false;
   }
 
@@ -3872,7 +3959,7 @@ bool ZObject3dScan::importDvidObjectBufferDs(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return false;
     }
 
@@ -3941,7 +4028,8 @@ bool ZObject3dScan::importDvidObjectBuffer(
   m_dsIntv.set(xIntv, yIntv, zIntv);
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    neutu::ReportError("Invalid byte buffer");
+//    RECORD_ERROR_UNCOND("Invalid byte buffer");
     return false;
   }
 
@@ -3955,14 +4043,14 @@ bool ZObject3dScan::importDvidObjectBuffer(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return false;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return false;
   }
 
@@ -3991,7 +4079,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return false;
     }
 

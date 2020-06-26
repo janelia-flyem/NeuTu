@@ -1316,6 +1316,7 @@ void ZStackView::redraw(EUpdateOption option)
 
   updateObjectSorter();
   m_paintSorter.forEachVisibleTarget(
+        neutu::data3d::GetTarget2dObjectCanvasList(),
         [this](neutu::data3d::ETarget target, const QList<ZStackObject*> &objList) {
           updateObjectBuffer(target, objList); },
         ZStackObjectPaintSorter::SortingZ(true));
@@ -2399,7 +2400,7 @@ void ZStackView::paintMask()
 void ZStackView::paintObjectBuffer(
     ZSliceCanvas &canvas, neutu::data3d::ETarget target)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   if (target == neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS) {
     std::cout << "ZStackView::paintObjectBuffer for ACTIVE_DECORATION_CANVAS" << std::endl;
   }
@@ -4042,31 +4043,7 @@ ZPainter* ZStackView::getPainter(neutu::data3d::ETarget target)
 std::shared_ptr<ZSliceCanvas> ZStackView::getClearCanvas(
     neutu::data3d::ETarget target)
 {
-  std::shared_ptr<ZSliceCanvas> canvas;
-  switch (target) {
-  case neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS:
-    canvas = imageWidget()->getClearCanvas(
-          ZImageWidget::ECanvasRole::CANVAS_ROLE_OBJECT);
-    break;
-  case neutu::data3d::ETarget::TILE_CANVAS:
-    canvas = imageWidget()->getClearCanvas(
-          ZImageWidget::ECanvasRole::CANVAS_ROLE_TILE);
-    break;
-  case neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS:
-    canvas = imageWidget()->getClearCanvas(
-          ZImageWidget::ECanvasRole::CANVAS_ROLE_DYNAMIC_OBJECT);
-    break;
-  case neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS:
-    canvas = imageWidget()->getClearCanvas(
-          ZImageWidget::ECanvasRole::CANVAS_ROLE_ACTIVE_DECORATION);
-    break;
-  case neutu::data3d::ETarget::HD_OBJECT_CANVAS:
-    canvas = imageWidget()->getClearCanvas(
-          ZImageWidget::ECanvasRole::CANVAS_ROLE_WIDGET);
-    break;
-  default:
-    break;
-  }
+  std::shared_ptr<ZSliceCanvas> canvas = imageWidget()->getClearCanvas(target);
 
   if (canvas && neutu::data3d::IsSettled2dObjectCanvas(target)) {
     canvas->setVisible(buddyPresenter()->isObjectVisible());

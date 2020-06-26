@@ -743,6 +743,8 @@ ZObject3dScan* ZObject3dFactory::MakeFilledMask(
 ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZIntCuboid &box)
 {
   ZObject3dScan obj;
+  MakeObject3dScan(box, &obj);
+  /*
   int z0 = box.getMinCorner().getZ();
   int z1 = box.getMaxCorner().getZ();
   int y0 = box.getMinCorner().getY();
@@ -755,8 +757,35 @@ ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZIntCuboid &box)
     }
   }
   obj.setCanonized(true);
+  */
 
   return obj;
+}
+
+ZObject3dScan* ZObject3dFactory::MakeObject3dScan(
+      const ZIntCuboid &box, ZObject3dScan *result)
+{
+  if (result == nullptr) {
+    result = new ZObject3dScan;
+  } else {
+    result->clear();
+  }
+
+  int z0 = box.getMinCorner().getZ();
+  int z1 = box.getMaxCorner().getZ();
+  int y0 = box.getMinCorner().getY();
+  int y1 = box.getMaxCorner().getY();
+  int x0 = box.getMinCorner().getX();
+  int x1 = box.getMaxCorner().getX();
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      result->addSegment(z, y, x0, x1, false);
+    }
+  }
+  result->setCanonized(true);
+
+  return result;
+
 }
 
 ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)

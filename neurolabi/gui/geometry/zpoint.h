@@ -132,6 +132,7 @@ public:
   bool hasIntCoord() const;
   ZIntPoint roundToIntPoint() const;
   std::vector<double> toArray() const;
+  ZPoint rounded() const;
 
   friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);
 

@@ -92,29 +92,6 @@ bool ZDvidGraySlice::display(
   return m_imageCanvas.paintTo(painter, config.getTransform());
 }
 
-#if 0
-void ZDvidGraySlice::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutu::EAxis sliceAxis) const
-{
-  if (sliceAxis != getSliceAxis()) {
-    return;
-  }
-
-  int z = painter.getZOffset() + slice;
-#if 0
-  if (getSliceAxis() == neutube::Z_AXIS) {
-    const_cast<ZDvidGraySlice&>(*this).update(z);
-  }
-#endif
-
-  if (z == getZ() && !m_image.isNull()) {
-    const_cast<ZDvidGraySlice&>(*this).updatePixmap();
-    painter.drawPixmap(getX(), getY(), m_pixmap);
-  }
-}
-#endif
-
 void ZDvidGraySlice::updateContrast(bool highContrast)
 {
   m_usingContrastProtocol = highContrast;
@@ -132,14 +109,6 @@ void ZDvidGraySlice::updateContrast()
   m_image.setContrastProtocol(m_contrastProtocol);
   m_image.updateContrast(m_usingContrastProtocol);
   m_imageCanvas.fromImage(m_image);
-//  invalidateCanvas();
-#if 0
-  if (!m_contrastProtocal.isEmpty()) {
-    m_image.enhanceContrast(false);
-  } else {
-    m_image.enhanceContrast(true);
-  }
-#endif
 }
 
 bool ZDvidGraySlice::hasLowresRegion() const
@@ -284,40 +253,6 @@ bool ZDvidGraySlice::isRegionConsistent() const
       (getWidth() == m_image.width()) && (getHeight() == m_image.height());
 }
 #endif
-
-/*
-void ZDvidGraySlice::update(int z)
-{
-  if (getZ() != z) {
-//    ZStackViewParam viewParam = m_currentViewParam;
-    ZStackViewParam viewParam = getViewParam();
-    viewParam.moveCutDepth(z - viewParam.getCutDepth(ZPoint(0, 0, 0)));
-    forceUpdate(viewParam);
-//    m_currentViewParam.setZ(z);
-//    updateImage();
-  }
-}
-*/
-
-/*
-bool ZDvidGraySlice::validateSize(int *width, int *height)
-{
-  bool changed = false;
-
-  int area = (*width) * (*height);
-  if (area > m_maxWidth * m_maxHeight) {
-    if (*width > m_maxWidth) {
-      *width = m_maxWidth;
-    }
-    if (*height > m_maxHeight) {
-      *height = m_maxHeight;
-    }
-    changed = true;
-  }
-
-  return changed;
-}
-*/
 
 template<typename T>
 int ZDvidGraySlice::updateParam(T *param)

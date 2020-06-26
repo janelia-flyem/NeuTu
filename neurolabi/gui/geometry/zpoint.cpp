@@ -387,6 +387,11 @@ ZIntPoint ZPoint::roundToIntPoint() const
   return ZIntPoint(neutu::nround(x()), neutu::nround(y()), neutu::nround(z()));
 }
 
+ZPoint ZPoint::rounded() const
+{
+  return ZPoint(neutu::nround(x()), neutu::nround(y()), neutu::nround(z()));
+}
+
 bool ZPoint::hasIntCoord() const
 {
   return (std::ceil(getX()) == getX()) && (std::ceil(getY()) == getY()) &&

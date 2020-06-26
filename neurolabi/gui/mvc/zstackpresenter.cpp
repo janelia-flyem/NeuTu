@@ -79,6 +79,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setVisible(false);
   stroke->setFilled(true);
   stroke->setPenetrating(true);
+  stroke->useCosmeticPen(false);
   stroke->hideStart(false);
   stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_STROKE, stroke);
@@ -103,6 +104,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setVisible(false);
   stroke->setFilled(false);
   stroke->setPenetrating(true);
+  stroke->useCosmeticPen(true);
   stroke->hideStart(true);
   stroke->setWidth(10.0);
   stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
@@ -112,6 +114,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setVisible(false);
   stroke->setFilled(false);
   stroke->setPenetrating(true);
+  stroke->useCosmeticPen(true);
   stroke->hideStart(true);
   stroke->setWidth(10.0);
   stroke->setColor(QColor(200, 128, 200));
@@ -483,10 +486,17 @@ QAction* ZStackPresenter::makeAction(ZActionFactory::EAction item)
   return action;
 }
 
+bool ZStackPresenter::paintingStroke() const
+{
+  ZStackOperator op = m_mouseEventProcessor.getOperator();
+
+  return op.getOperation() == ZStackOperator::OP_PAINT_STROKE;
+}
+
 void ZStackPresenter::updateActiveDecoration()
 {
   foreach(ZStackObject *obj, m_activeDecorationList) {
-    if (obj->isVisible()) {
+    if (obj->isVisible() && !paintingStroke()) {
       ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
       if (stroke) {
         stroke->updateWithLast(
@@ -3132,6 +3142,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   ZIntPoint widgetPos = event.getWidgetPosition();
   QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
   ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
+  ZPoint currentModelPos = event.getPosition(neutu::data3d::ESpace::MODEL);
 //  ZPoint currentRawStackPos = event.getPosition(neutu::ECoordinateSystem::RAW_STACK);
 
   buddyDocument()->getObjectGroup().resetSelector();
@@ -3621,7 +3632,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
   {
     LINFO() << "Start painting mask";
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-    stroke->set(currentStackPos.x(), currentStackPos.y());
+    stroke->set(currentModelPos);
+//    stroke->set(currentStackPos.x(), currentStackPos.y());
           //m_mouseEventProcessor.getLatestStackPosition().x(),
             //    m_mouseEventProcessor.getLatestStackPosition().y());
   }
@@ -3702,8 +3714,12 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_PAINT_STROKE:
   {
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-    stroke->append(currentStackPos.x(), currentStackPos.y());
-    buddyView()->paintActiveDecoration();
+#ifdef _DEBUG_
+    std::cout << "Appending stroke: " << currentModelPos << std::endl;
+#endif
+    stroke->append(currentModelPos);
+    buddyDocument()->processObjectModified(stroke);
+//    buddyView()->paintActiveDecoration();
   }
     break;
   case ZStackOperator::OP_RECT_ROI_INIT:
@@ -4059,8 +4075,8 @@ void ZStackPresenter::acceptActiveStroke()
     newStroke->setColor(QColor(0, 0, 0, 0));
   }
 
-  newStroke->setZ(buddyView()->sliceIndex() +
-                  buddyDocument()->getStackOffset().getZ());
+//  newStroke->setZ(buddyView()->sliceIndex() +
+//                  buddyDocument()->getStackOffset().getZ());
   newStroke->setPenetrating(false);
 
   ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
@@ -4079,7 +4095,7 @@ void ZStackPresenter::acceptActiveStroke()
   //buddyDocument()->executeAddStrokeCommand(newStroke);
 
   stroke->clear();
-  buddyView()->paintActiveDecoration();
+//  buddyView()->paintActiveDecoration();
 }
 
 ZStackFrame* ZStackPresenter::getParentFrame() const

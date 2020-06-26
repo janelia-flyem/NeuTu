@@ -1170,15 +1170,6 @@ SOURCES += main.cpp \
     ztakescreenshotwidget.cpp \
     zioutils.cpp \
     zmeshobjsmodel.cpp \
-    protocols/taskprotocoltask.cpp \
-    protocols/taskbodyreview.cpp \
-    dialogs/dvidbranchdialog.cpp \
-    protocols/tasktesttask.cpp \
-    protocols/tasksplitseeds.cpp \
-    protocols/bodyprefetchqueue.cpp \
-    protocols/taskbodyhistory.cpp \
-    protocols/taskbodycleave.cpp \
-    protocols/taskbodymerge.cpp \
     zopenglwidget.cpp \
     zstackreader.cpp \
     dvid/zdvidpath.cpp \
@@ -1215,6 +1206,14 @@ SOURCES += main.cpp \
     protocols/taskprotocoltaskfactory.cpp \
     protocols/taskmergereview.cpp \
     protocols/taskutils.cpp \
+    protocols/taskprotocoltask.cpp \
+    protocols/taskbodyreview.cpp \
+    protocols/tasktesttask.cpp \
+    protocols/tasksplitseeds.cpp \
+    protocols/bodyprefetchqueue.cpp \
+    protocols/taskbodyhistory.cpp \
+    protocols/taskbodycleave.cpp \
+    protocols/taskbodymerge.cpp \
     dvid/zdvidbodyhelper.cpp \
     dvid/zdviddataslicetaskfactory.cpp \
     dvid/zdviddataslicetask.cpp \
@@ -1224,6 +1223,7 @@ SOURCES += main.cpp \
     dvid/zdvidenv.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
     dialogs/zflyemproofsettingdialog.cpp \
+    dialogs/dvidbranchdialog.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \
     dialogs/neuprintquerydialog.cpp \
     dialogs/zflyemtodofilterdialog.cpp \

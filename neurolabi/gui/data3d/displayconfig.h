@@ -55,11 +55,15 @@ public:
   EDisplaySliceMode getSliceMode() const;
   ZAffinePlane getCutPlane() const;
   ZAffineRect getCutRect(double width, double height) const;
+  ZAffineRect getCutRect(
+      double width, double height, neutu::data3d::ESpace sizeSpace) const;
 //  double getCutDepth() const;
 
 //  void setZ(int z);
   void setStyle(EDisplayStyle style);
   void setSliceMode(EDisplaySliceMode mode);
+
+  double getCutDepth(const ZPoint &origin) const;
 
   void setCutPlane(const ZAffinePlane &plane);
   void setCutPlane(neutu::EAxis sliceAxis, double cutDepth);

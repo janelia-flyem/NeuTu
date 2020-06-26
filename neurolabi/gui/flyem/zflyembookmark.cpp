@@ -273,7 +273,7 @@ bool ZFlyEmBookmark::display(
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
     QPen pen(getColor());
-    pen.setCosmetic(true);
+    pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 
     paintHelper.drawBall(painter, getCenter(), getRadius(), 2.0, 0.5);

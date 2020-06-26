@@ -4,11 +4,15 @@
 #include <iostream>
 
 #include "QsLog/QsLog.h"
+#include "common/math.h"
+#include "common/utilities.h"
+#include "vis2d/zslicepainter.h"
+#include "vis2d/utilities.h"
+
 #include "zpainter.h"
 #include "zjsonparser.h"
 #include "flyem/zflyemmisc.h"
 #include "zstring.h"
-#include "common/math.h"
 
 const char* ZFlyEmToDoItem::KEY_ACTION = "action";
 const char* ZFlyEmToDoItem::ACTION_GENERAL = "normal";
@@ -620,6 +624,25 @@ bool ZFlyEmToDoItem::isChecked() const
 {
   if (m_propertyJson.hasKey("checked")) {
     return std::string(ZJsonParser::stringValue(m_propertyJson["checked"])) == "1";
+  }
+
+  return false;
+}
+
+bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) const
+{
+  if (isVisible()) {
+    ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
+
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+    QPen pen(getColor());
+    pen.setCosmetic(m_usingCosmeticPen);
+    painter->setPen(pen);
+
+    paintHelper.drawStar(painter, getPosition().toPoint(), getRadius(), 2.0, 0.5);
+
+    return paintHelper.getPaintedHint();
   }
 
   return false;

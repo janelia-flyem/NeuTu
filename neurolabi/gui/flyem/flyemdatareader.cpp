@@ -126,6 +126,13 @@ ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
   return ZFlyEmToDoItem();
 }
 
+ZIntCuboid FlyEmDataReader::ReadTodoDataRange(const ZDvidReader &reader)
+{
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+  return dvidInfo.getDataRange();
+}
+
 ZMesh* FlyEmDataReader::LoadRoi(
     const ZDvidReader &reader, const std::string &roiName,
     const std::string &key, const std::string &source)

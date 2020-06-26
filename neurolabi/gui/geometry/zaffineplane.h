@@ -27,9 +27,17 @@ public:
    */
   void addOffset(double v, neutu::EAxis axis);
 
-  ZPoint getV1() const;
-  ZPoint getV2() const;
-  ZPoint getOffset() const;
+  inline ZPoint getV1() const {
+    return m_plane.getV1();
+  }
+
+  inline ZPoint getV2() const {
+    return m_plane.getV2();
+  }
+
+  inline ZPoint getOffset() const {
+    return m_offset;
+  }
 
   ZPoint getNormal() const;
 

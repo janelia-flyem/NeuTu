@@ -82,7 +82,6 @@
 #include "test/zdvidsparsestacktest.h"
 #include "test/flyembodyannotationdialogtest.h"
 #include "test/qtcoretest.h"
-#include "test/zflyemmisctest.h"
 #include "test/zdvidsynapseannotationdialogtest.h"
 #include "test/znetworkutilstest.h"
 #include "test/commontest.h"
@@ -109,6 +108,9 @@
 #include "data3d/tests/zsliceviewtransformtest.h"
 
 #include "mvc/tests/zstackobjectpaintsortertest.h"
+
+#include "flyem/tests/zflyemmisctest.h"
+#include "flyem/tests/flyemtodoblockgridtest.h"
 
 
 #endif // ZTESTALL_H

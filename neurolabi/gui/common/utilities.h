@@ -131,6 +131,9 @@ std::string ToString(const Container<T> &container, const std::string &delimiter
 
 bool UsingLocalHost(const std::string &url);
 
+void ReportError(const std::string &msg);
+void ReportWarning(const std::string &msg);
+
 template<size_t N>
 size_t Length(const char (&)[N])
 {
@@ -223,15 +226,21 @@ void RangePartitionProcess(
 //void RangePartitionProcess(
 //    int x0, int x1, int block, int n, std::function<void(int, int)> f);
 
+const static auto NullFunction = std::function<void()>();
+
 class ApplyOnce {
 public:
   ApplyOnce(std::function<void()> startFunc, std::function<void()> endFunc) {
-    startFunc();
+    if (startFunc) {
+      startFunc();
+    }
     m_endFunc = endFunc;
   }
 
   ~ApplyOnce() {
-    m_endFunc();
+    if (m_endFunc) {
+      m_endFunc();
+    }
   }
 
 private:

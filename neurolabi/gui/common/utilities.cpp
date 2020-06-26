@@ -99,6 +99,16 @@ void neutu::RangePartitionProcess(
   }
 }
 
+void neutu::ReportError(const std::string &msg)
+{
+  std::cerr << "ERROR: " << msg << std::endl;
+}
+
+void neutu::ReportWarning(const std::string &msg)
+{
+  std::cout << "WARNING: " << msg << std::endl;
+}
+
 /*
 void neutu::RangePartitionProcess(
     int x0, int x1, int block, int n, std::function<void(int, int)> f)

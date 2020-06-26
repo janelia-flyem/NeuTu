@@ -19,3 +19,8 @@ FlyEmTodoDvidSource::getData(const ZIntCuboid &box) const
 {
   return FlyEmDataReader::ReadToDoItem(m_writer.getDvidReader(), box);
 }
+
+ZIntCuboid FlyEmTodoDvidSource::getRange() const
+{
+  return FlyEmDataReader::ReadTodoDataRange(m_writer.getDvidReader());
+}

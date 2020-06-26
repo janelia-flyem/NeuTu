@@ -138,13 +138,31 @@ bool ZBlockGrid::containsBlock(const ZIntPoint &index) const
   return containsBlock(index.getX(), index.getY(), index.getZ());
 }
 
+void ZBlockGrid::setGridByRange(const ZIntCuboid &box)
+{
+  setMinPoint(box.getMinCorner());
+  ZIntPoint boxSize = box.getSize();
+  m_size = boxSize / m_blockSize + ZIntPoint(
+        (boxSize.getX() % m_blockSize.getX()) > 0,
+        (boxSize.getY() % m_blockSize.getY()) > 0,
+        (boxSize.getZ() % m_blockSize.getZ()) > 0);
+}
+
 void ZBlockGrid::forEachIntersectedBlock(
     const ZAffineRect &plane, std::function<void(int i, int j, int k)> f)
 {
+  auto _getKey = [](int x, int y, int z) {
+    return std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+  };
+
   std::queue<ZIntPoint> blockQueue;
   ZIntPoint seedBlock = getBlockIndex(plane.getCenter().roundToIntPoint());
   blockQueue.push(seedBlock);
+
   std::unordered_map<std::string, bool> checked;
+  std::string key = _getKey(seedBlock.getX(), seedBlock.getY(), seedBlock.getZ());
+  checked[key] = true;
+
   while (!blockQueue.empty()) {
     ZIntPoint block = blockQueue.front();
     if (zgeom::Intersects(plane, getBlockBox(block))) {
@@ -153,16 +171,20 @@ void ZBlockGrid::forEachIntersectedBlock(
       }
       zgeom::raster::ForEachNeighbor<3>(
             block.getX(), block.getY(), block.getZ(), [&](int x, int y, int z) {
-        std::string key =
-            std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+        std::string key = _getKey(x, y, z);
         if (!checked[key]) {
-          if (zgeom::Intersects(plane, getBlockBox(ZIntPoint(x, y, z)))) {
-            blockQueue.push(ZIntPoint(x, y, z));
-            checked[key] = true;
+          if (containsBlock(x, y, z)) {
+            if (zgeom::Intersects(plane, getBlockBox(ZIntPoint(x, y, z)))) {
+              blockQueue.push(ZIntPoint(x, y, z));
+            }
           }
+          checked[key] = true;
         }
       });
     }
+#ifdef _DEBUG_
+          std::cout << "block queue " << blockQueue.size() << std::endl;
+#endif
     blockQueue.pop();
   }
 }

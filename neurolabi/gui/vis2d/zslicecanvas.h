@@ -61,6 +61,13 @@ public:
   bool paintTo(
       QPainter *painter, const ZSliceViewTransform &painterTransform) const;
 
+  /*
+  bool paintTo(
+      QPaintDevice *device, const ZSliceViewTransform &&painterTransform) const;
+  bool paintTo(
+      QPainter *painter, const ZSliceViewTransform &&painterTransform) const;
+      */
+
   void setPainted(bool painted);
   void setVisible(bool visible);
 
@@ -113,6 +120,7 @@ public:
 
   QPainter* getPainter();
   ZSlice3dPainter* getSlicePainter();
+  const ZSlice3dPainter* getSlicePainter() const;
 
   void drawBall(double cx, double cy, double cz, double r,
       double depthScale, double fadingFactor);
@@ -124,8 +132,14 @@ public:
   void drawLine(const ZLineSegment &line);
   void drawPoint(double x, double y, double z);
 
+  void drawPlanePolyline(
+      QPainter *painter, const std::vector<QPointF> &points,
+      double z, neutu::EAxis sliceAxis) const;
+
   void setPen(const QPen &pen);
   void setBrush(const QBrush &brush);
+
+  bool getPaintedHint() const;
 
 private:
   QPainter m_painter;

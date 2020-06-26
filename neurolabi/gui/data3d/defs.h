@@ -13,6 +13,7 @@ enum class ESpace  {
 enum class ETarget {
   STACK_CANVAS,
   TILE_CANVAS,
+  MASK_CANVAS,
   DYNAMIC_OBJECT_CANVAS,
   PIXEL_OBJECT_CANVAS,
   HD_OBJECT_CANVAS,
@@ -23,7 +24,7 @@ enum class ETarget {
   TARGET_NONE
 };
 
-const static int TARGET_COUNT = 10;
+const static int TARGET_COUNT = 11;
 
 }
 

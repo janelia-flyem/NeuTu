@@ -22,9 +22,7 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
-  bool display(QPainter *painter, const DisplayConfig &config) const override {
-    return false;
-  }
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;

@@ -11,15 +11,22 @@
 #include "tz_voxel_graphics.h"
 #include "tz_tvoxel.h"
 
+#include "common/utilities.h"
 #include "common/math.h"
 #include "c_stack.h"
 #include "zobject3darray.h"
 #include "zstack.hxx"
-#include "zpainter.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zintcuboid.h"
 #include "geometry/zpoint.h"
 #include "geometry/zintpoint.h"
+
+#include "data3d/displayconfig.h"
+
+#if _QT_GUI_USED_
+#include "vis2d/utilities.h"
+#include "vis2d/zslicepainter.h"
+#endif
 
 using namespace std;
 
@@ -172,7 +179,39 @@ bool ZObject3d::load(const char *filePath)
 
 bool ZObject3d::display(QPainter *painter, const DisplayConfig &config) const
 {
-  return false;
+  ZSlice3dPainter s3Painter;
+  s3Painter.setModelViewTransform(config.getWorldViewTransform());
+  s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
+  neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+  QPen pen(getColor());
+  pen.setCosmetic(false);
+  painter->setPen(pen);
+
+  painter->setRenderHint(QPainter::Antialiasing, false);
+
+  int z = neutu::iround(config.getCutPlane().getOffset().getZ());
+
+  std::vector<ZPoint> points;
+  if (config.getSliceAxis() == neutu::EAxis::Z) {
+    //Screening first can make painting much faster
+    //Todo: apply this to other view orientations
+    for (size_t i = 0; i < m_voxelArray.size() / 3; i++) {
+      const int *v = m_voxelArray.data() + i * 3;
+      if (z == v[2]) {
+        points.emplace_back(v[0], v[1], v[2]);
+      }
+    }
+  } else {
+    for (size_t i = 0; i < m_voxelArray.size() / 3; i++) {
+      const int *v = m_voxelArray.data() + i * 3;
+      points.emplace_back(v[0], v[1], v[2]);
+      //    s3Painter.drawPoint(painter, v[0], v[1], v[2]);
+    }
+  }
+  s3Painter.drawPoints(painter, points);
+
+  return s3Painter.getPaintedHint();
 }
 
 #if 0

@@ -40,6 +40,8 @@ FlyEmTodoChunk FlyEmTodoBlockGrid::getTodoChunk(int i, int j, int k) const
 void FlyEmTodoBlockGrid::setSource(std::shared_ptr<FlyEmTodoSource> source)
 {
   m_source = source;
+  setBlockSize(source->getBlockSize());
+  setGridByRange(source->getRange());
 }
 
 /*

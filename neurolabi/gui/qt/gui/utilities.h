@@ -1,11 +1,14 @@
 #ifndef QT_GUI_UTILITIES_H
 #define QT_GUI_UTILITIES_H
 
+#include <vector>
+
 #include <QKeySequence>
 #include <QString>
 #include <QStringList>
 #include <QPainter>
 #include <QPoint>
+#include <QPointF>
 #include <QPushButton>
 
 namespace neutu {
@@ -36,6 +39,9 @@ void ScalePenAlpha(QPainter *painter, double s);
 
 void DrawPoint(
     QPainter &painter, double x, double y, const PixelCentered p = true);
+void DrawPoints(
+    QPainter &painter, const std::vector<QPointF> &pts,
+    const PixelCentered p = true);
 void DrawCircle(
     QPainter &painter, double cx, double cy, double r,
     const PixelCentered &p = true);
@@ -45,7 +51,23 @@ void DrawRect(
 void DrawLine(
     QPainter &painter, double x0, double y0, double x1, double y1,
     const PixelCentered &p = true);
+void DrawLines(
+    QPainter &painter, const std::vector<QLineF> &lines,
+    const PixelCentered &p = true);
+void DrawLines(
+    QPainter &painter, const std::vector<QLine> &lines,
+    const PixelCentered &p = true);
+void DrawPolyline(
+    QPainter &painter, const std::vector<QPointF> &pts,
+    const PixelCentered p = true);
+void DrawStar(
+    QPainter &painter, double cx, double cy, double r,
+    const PixelCentered &p = true);
 
+void MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray, double shapeFactor);
+std::vector<QPointF> MakeStar(
+    const QPointF &center, double radius, double shapeFactor = 0.25);
 
 }
 

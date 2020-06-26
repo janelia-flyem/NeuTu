@@ -41,6 +41,7 @@ public:
       const ZDvidReader &reader, const ZIntCuboid &box);
   static ZFlyEmToDoItem ReadToDoItem(
       const ZDvidReader &reader, int x, int y, int z);
+  static ZIntCuboid ReadTodoDataRange(const ZDvidReader &reader);
 
   static ZMesh* ReadRoiMesh(
       const ZDvidReader &reader, const std::string &roiName,

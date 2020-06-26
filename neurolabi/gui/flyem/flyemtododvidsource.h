@@ -11,7 +11,8 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  std::vector<ZFlyEmToDoItem> getData(const ZIntCuboid &box) const  override;
+  std::vector<ZFlyEmToDoItem> getData(const ZIntCuboid &box) const override;
+  ZIntCuboid getRange() const override;
 
 private:
   ZDvidWriter m_writer;

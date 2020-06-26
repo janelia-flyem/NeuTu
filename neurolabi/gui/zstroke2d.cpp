@@ -19,8 +19,11 @@
 #include "zobject3d.h"
 #include "zjsonobject.h"
 
+#include "data3d/zviewplanetransform.h"
+#include "data3d/displayconfig.h"
 #include "vis2d/zslicepainter.h"
 #include "vis2d/utilities.h"
+#include "vis2d/zslicecanvas.h"
 
 
 const double ZStroke2d::m_minWidth = 1.0;
@@ -131,6 +134,23 @@ void ZStroke2d::set(double x, double y, double z)
   setZ(z);
 }
 
+void ZStroke2d::set(const ZPoint &pt)
+{
+  set(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStroke2d::append(double x, double y, double z)
+{
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
+  append(x, y);
+  setZ(z);
+}
+
+void ZStroke2d::append(const ZPoint &pt)
+{
+  append(pt.getX(), pt.getY(), pt.getZ());
+}
+
 void ZStroke2d::setLabel(uint64_t label)
 {
   m_uLabel = label;
@@ -158,45 +178,102 @@ void ZStroke2d::setEraser(bool enabled)
   } else if (getLabel() == 0) {
     setLabel(1);
   }
-  /*
-  if (enabled) {
-    m_label = 0;
-  } else {
-    if (m_label == 0) {
-      m_label = 1;
-    }
-  }
- // m_isEraser = isEraser;
-  if (isEraser()) {
-    m_color.setRgb(255, 255, 255);
-  } else {
-    m_color.setRgb(255, 0, 0);
-  }
-  m_color.setAlpha(128);
-  */
 }
 
 bool ZStroke2d::display(QPainter *painter, const DisplayConfig &config) const
 {
+  ZSliceCanvas canvas; //Must be outside of the scope to live long enough
+  bool painted = false;
+
   if (!m_pointArray.empty() && getSliceAxis() != neutu::EAxis::ARB && isVisible()) {
-    ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
-
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+    QPainter *canvasPainter = painter;
+    std::unique_ptr<ZSliceCanvasPaintHelper> paintHelper;
 
+    /*
+    neutu::ApplyOnce releasePainter(neutu::NullFunction, [&]() {
+      if (paintHelper) {
+        canvasPainter->end();
+        delete paintHelper;
+      }
+    });
+    */
+
+    double s = config.getViewCanvasTransform().getScale();
+    if (s > 2.0) {
+      int width = neutu::iceil(painter->device()->width() / s);
+      int height = neutu::iceil(painter->device()->height() / s);
+      ZSliceViewTransform t;
+      //It's important to set to an int center to match image pixel positions,
+      //and keep its shape during panning by keeping the residuals constant.
+      t.setModelViewTransform(
+            config.getWorldViewTransform().getSliceAxis(),
+            config.getWorldViewTransform().getCutCenter().rounded());
+
+      t.setViewCanvasTransform(width / 2, height / 2, 1.0);
+
+      canvas.set(
+            painter->device()->width(), painter->device()->height(), t,
+            ZSliceCanvas::ESetOption::DIFF_CLEAR);
+
+      paintHelper = std::unique_ptr<ZSliceCanvasPaintHelper>(
+            new ZSliceCanvasPaintHelper(canvas));
+      canvasPainter = paintHelper->getPainter();
+    }
+
+    QBrush brush(getColor());
     QPen pen(getColor());
-    pen.setCosmetic(true);
-    painter->setPen(pen);
+    pen.setCosmetic(m_usingCosmeticPen);
+    pen.setWidthF(getPenWidth());
 
-    ZPoint center;
-    center.set(m_pointArray.front().x(), m_pointArray.front().y(), m_z);
-    center.shiftSliceAxis(getSliceAxis());
+    if (m_isFilled && m_pointArray.size() == 1) {
+      pen.setColor(Qt::transparent);
+    } else {
+      brush.setColor(Qt::transparent);
+    }
+    canvasPainter->setPen(pen);
+    canvasPainter->setBrush(brush);
 
-    paintHelper.drawBall(painter, center, m_width * 0.5, 2.0, 0.5);
+    double radius = m_width * 0.5;
+    if (m_pointArray.size() == 1) {
+      const QPointF &pos = m_pointArray.front();
+      ZPoint center;
+      center.set(pos.x(), pos.y(), m_z);
+      center.shiftSliceAxis(getSliceAxis());
 
-    return paintHelper.getPaintedHint();
+      if (paintHelper) {
+        paintHelper->drawBall(center, radius, 0.0, 0.0);
+        canvas.setPainted(paintHelper->getPaintedHint());
+        canvas.paintTo(painter, config.getTransform());
+//        canvasPainter->end();
+        painted = canvas.isPainted();
+      } else {
+        auto s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+        s3Painter.drawBall(
+              canvasPainter, center, radius, 0.0, 0.0);
+        painted = s3Painter.getPaintedHint();
+      }
+    } else {
+      if (m_isFilled) {
+        pen.setWidthF(m_width);
+        canvasPainter->setPen(pen);
+        if (paintHelper) {
+          paintHelper->drawPlanePolyline(
+                canvasPainter, m_pointArray, m_z, getSliceAxis());
+          canvas.setPainted(paintHelper->getPaintedHint());
+          canvas.paintTo(painter, config.getTransform());
+          painted = canvas.isPainted();
+        } else {
+          auto s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+          s3Painter.drawPlanePolyline(
+                canvasPainter, m_pointArray, m_z, getSliceAxis());
+          painted = s3Painter.getPaintedHint();
+        }
+      }
+    }
   }
 
-  return false;
+  return painted;
 }
 
 #if 0

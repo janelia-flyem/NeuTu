@@ -253,6 +253,23 @@ void neutu::DrawPoint(
   painter.drawPoint(QPointF(x, y));
 }
 
+void neutu::DrawPoints(
+    QPainter &painter, const std::vector<QPointF> &pts, const PixelCentered p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+  painter.drawPoints(pts.data(), pts.size());
+}
+
+void neutu::DrawPolyline(
+    QPainter &painter, const std::vector<QPointF> &pts, const PixelCentered p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+  neutu::RevisePen(&painter, [](QPen &pen) {
+    pen.setCapStyle(Qt::RoundCap);
+  });
+  painter.drawPolyline(pts.data(), pts.size());
+}
+
 void neutu::DrawCircle(
     QPainter &painter, double cx, double cy, double r, const PixelCentered &p)
 {
@@ -270,6 +287,20 @@ void neutu::DrawLine(
   painter.drawLine(QPointF(x0, y0), QPointF(x1, y1));
 }
 
+void neutu::DrawLines(
+    QPainter &painter, const std::vector<QLineF> &lines, const PixelCentered &p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+  painter.drawLines(lines.data(), lines.size());
+}
+
+void neutu::DrawLines(
+    QPainter &painter, const std::vector<QLine> &lines, const PixelCentered &p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+  painter.drawLines(lines.data(), lines.size());
+}
+
 void neutu::DrawRect(
     QPainter &painter, double x0, double y0, double x1, double y1,
     const PixelCentered &p)
@@ -277,6 +308,42 @@ void neutu::DrawRect(
   AdjustPixelCenter adjustOnce(&painter, p);
 
   painter.drawRect(QRectF(QPointF(x0, y0), QPointF(x1, y1)));
+}
+
+void neutu::DrawStar(
+    QPainter &painter, double cx, double cy, double r, const PixelCentered &p)
+{
+  std::vector<QPointF> pts = MakeStar(QPointF(cx, cy), r);
+  DrawPolyline(painter, pts, p);
+}
+
+std::vector<QPointF> neutu::MakeStar(
+    const QPointF &center, double radius, double shapeFactor)
+{
+  std::vector<QPointF> ptArray(9);
+  MakeStar(center, radius, ptArray.data(), shapeFactor);
+
+  return ptArray;
+}
+
+void neutu::MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray, double shapeFactor)
+{
+  double sw = radius * shapeFactor;
+  double left = center.x() - radius;
+  double right = center.x() + radius;
+  double top = center.y() - radius;
+  double bottom = center.y() + radius;
+
+  ptArray[0] = QPointF(center.x(), top);
+  ptArray[1] = QPointF(center.x() + sw, center.y() - sw);
+  ptArray[2] = QPointF(right, center.y());
+  ptArray[3] = QPointF(center.x() + sw, center.y() + sw);
+  ptArray[4] = QPointF(center.x(), bottom);
+  ptArray[5] = QPointF(center.x() - sw, center.y() + sw);
+  ptArray[6] = QPointF(left, center.y());
+  ptArray[7] = QPointF(center.x() - sw, center.y() - sw);
+  ptArray[8] = ptArray[0];
 }
 
 void neutu::HideLayout(QLayout *layout, bool removing)

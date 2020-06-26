@@ -127,22 +127,17 @@ void ZSliceCanvas::beginPainter(QPainter *painter)
   painter->begin(&m_pixmap);
 }
 
+/*
+bool ZSliceCanvas::paintTo(
+    QPaintDevice *device, const ZSliceViewTransform &&painterTransform) const
+{
+  return paintTo(device, painterTransform);
+}
+*/
+
 bool ZSliceCanvas::paintTo(
     QPaintDevice *device, const ZSliceViewTransform &painterTransform) const
 {
-  /*
-  bool paintable = true;
-  if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
-    paintable = false;
-  } else {
-    if (painterTransform.getSliceAxis() == neutu::EAxis::ARB) {
-      if (!painterTransform.getCutPlaneNormal().approxEquals(
-            m_transform.getCutPlaneNormal())) {
-        paintable = false;
-      }
-    }
-  }
-  */
   bool paintable = painterTransform.hasSamePlane(m_transform);
 
   if (paintable) {
@@ -323,6 +318,11 @@ ZSlice3dPainter* ZSliceCanvasPaintHelper::getSlicePainter()
   return &m_slicePainter;
 }
 
+const ZSlice3dPainter* ZSliceCanvasPaintHelper::getSlicePainter() const
+{
+  return &m_slicePainter;
+}
+
 void ZSliceCanvasPaintHelper::drawBall(double cx, double cy, double cz, double r,
     double depthScale, double fadingFactor)
 {
@@ -358,6 +358,13 @@ void ZSliceCanvasPaintHelper::drawPoint(double x, double y, double z)
   getSlicePainter()->drawPoint(getPainter(), x, y, z);
 }
 
+void ZSliceCanvasPaintHelper::drawPlanePolyline(
+    QPainter *painter, const std::vector<QPointF> &points,
+    double z, neutu::EAxis sliceAxis) const
+{
+  getSlicePainter()->drawPlanePolyline(painter, points, z, sliceAxis);
+}
+
 void ZSliceCanvasPaintHelper::setPen(const QPen &pen)
 {
   getPainter()->setPen(pen);
@@ -366,4 +373,9 @@ void ZSliceCanvasPaintHelper::setPen(const QPen &pen)
 void ZSliceCanvasPaintHelper::setBrush(const QBrush &brush)
 {
   getPainter()->setBrush(brush);
+}
+
+bool ZSliceCanvasPaintHelper::getPaintedHint() const
+{
+  return getSlicePainter()->getPaintedHint();
 }

@@ -14,20 +14,12 @@ ZAffinePlane::ZAffinePlane(
   set(offset, v1, v2);
 }
 
-ZPoint ZAffinePlane::getV1() const
-{
-  return m_plane.getV1();
-}
-
-ZPoint ZAffinePlane::getV2() const
-{
-  return m_plane.getV2();
-}
-
+/*
 ZPoint ZAffinePlane::getOffset() const
 {
   return m_offset;
 }
+*/
 
 void ZAffinePlane::set(const ZPoint &offset, const ZPoint &v1, const ZPoint &v2)
 {

@@ -503,6 +503,7 @@ protected:
   bool process(ZStackOperator &op);
   bool process(ZStackOperator::EOperation op);
 
+  bool paintingStroke() const;
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);

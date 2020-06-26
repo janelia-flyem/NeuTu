@@ -10,6 +10,7 @@
 #include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "geometry/zcuboid.h"
+#include "data3d/displayconfig.h"
 
 #include "zdvidinfo.h"
 #include "zdvidreader.h"
@@ -168,6 +169,26 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
 void ZDvidSparseStack::setLabelType(neutu::EBodyLabelType type)
 {
   m_labelType = type;
+}
+
+bool ZDvidSparseStack::display(QPainter *painter, const DisplayConfig &config) const
+{
+  bool painted = false;
+  if (loadingObjectMask()) {
+    ZObject3dScan *obj = m_dvidReader.readBody(
+          getLabel(), getLabelType(),
+          config.getCutDepth(ZPoint::ORIGIN), config.getSliceAxis(), true, NULL);
+    obj->setColor(getColor());
+    painted = obj->display(painter, config);
+    delete obj;
+  } else {
+    ZObject3dScan *obj = const_cast<ZDvidSparseStack&>(*this).getObjectMask();
+    if (obj != NULL) {
+      painted = obj->display(painter, config);
+    }
+  }
+
+  return painted;
 }
 
 #if 0

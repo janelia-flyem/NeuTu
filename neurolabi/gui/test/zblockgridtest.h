@@ -6,6 +6,8 @@
 #include "bigdata/zstackblockgrid.h"
 #include "bigdata/zblockgrid.h"
 #include "zstack.hxx"
+#include "geometry/zaffinerect.h"
+#include "geometry/zgeometry.h"
 
 #ifdef _USE_GTEST_
 
@@ -42,6 +44,67 @@ TEST(ZBlockGrid, basic)
   ASSERT_EQ(25, location.getLocalPosition().getZ());
 
   std::cout << "zblockgridtest: v8" << std::endl;
+}
+
+TEST(ZBlockGrid, Set)
+{
+  ZBlockGrid grid;
+  grid.setBlockSize(32, 64, 128);
+  grid.setGridByRange(ZIntCuboid(1, 2, 3, 320, 64 * 20, 128 * 30));
+  ASSERT_EQ(ZIntPoint(1, 2, 3), grid.getMinPoint());
+  ASSERT_EQ(ZIntPoint(32, 64, 128), grid.getBlockSize());
+  ASSERT_EQ(ZIntPoint(10, 20, 30), grid.getGridSize());
+
+  grid.setGridByRange(ZIntCuboid(0, 0, 0, 320, 64 * 20, 128 * 30));
+  ASSERT_EQ(ZIntPoint(0, 0, 0), grid.getMinPoint());
+  ASSERT_EQ(ZIntPoint(32, 64, 128), grid.getBlockSize());
+  ASSERT_EQ(ZIntPoint(11, 21, 31), grid.getGridSize());
+
+  grid.setGridByRange(ZIntCuboid(1, 1, 1, 320, 64 * 20, 128 * 30));
+  ASSERT_EQ(ZIntPoint(1, 1, 1), grid.getMinPoint());
+  ASSERT_EQ(ZIntPoint(32, 64, 128), grid.getBlockSize());
+  ASSERT_EQ(ZIntPoint(10, 20, 30), grid.getGridSize());
+}
+
+TEST(ZBlockGrid, Intersect)
+{
+  ZBlockGrid grid;
+  grid.setBlockSize(32, 32, 32);
+  grid.setGridByRange(ZIntCuboid(0, 0, 0, 511, 511, 511));
+
+  ZAffineRect rect;
+  rect.setPlane(ZAffinePlane(ZPoint(0, 0, 16), ZPoint(1, 0, 0), ZPoint(0, 1, 0)));
+  rect.setSize(100, 200);
+  std::vector<ZIntPoint> blocks;
+  grid.forEachIntersectedBlock(rect, [&](int i, int j, int k) {
+    blocks.emplace_back(i, j, k);
+//    ZIntCuboid box = grid.getBlockBox(ZIntPoint(i, j, k));
+//    std::cout << box << std::endl;
+  });
+  ASSERT_EQ(8, blocks.size());
+  ASSERT_EQ(ZIntPoint(0, 0, 0), blocks[0]);
+  ASSERT_EQ(ZIntPoint(1, 0, 0), blocks[1]);
+  ASSERT_EQ(ZIntPoint(0, 1, 0), blocks[2]);
+  ASSERT_EQ(ZIntPoint(1, 1, 0), blocks[3]);
+
+
+  rect.setPlane(ZAffinePlane(ZPoint(16, 0, 0), ZPoint(0, 1, 0), ZPoint(0, 0, 1)));
+  rect.setSize(100, 200);
+  ASSERT_FALSE(zgeom::Intersects(rect, ZIntCuboid(0, 64, 64, 31, 95, 95)));
+
+
+  blocks.clear();
+  grid.forEachIntersectedBlock(rect, [&](int i, int j, int k) {
+    blocks.emplace_back(i, j, k);
+//    ZIntCuboid box = grid.getBlockBox(ZIntPoint(i, j, k));
+//    std::cout << box << std::endl;
+  });
+
+  ASSERT_EQ(8, blocks.size());
+  ASSERT_EQ(ZIntPoint(0, 0, 0), blocks[0]);
+  ASSERT_EQ(ZIntPoint(0, 1, 0), blocks[1]);
+  ASSERT_EQ(ZIntPoint(0, 0, 1), blocks[2]);
+  ASSERT_EQ(ZIntPoint(0, 1, 1), blocks[3]);
 }
 
 TEST(ZStackBlockGrid, basic)

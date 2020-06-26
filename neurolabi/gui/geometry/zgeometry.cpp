@@ -528,12 +528,12 @@ ZAffineRect get_face(const ZCuboid &box, int index)
     break;
   case 4:
     rect.setCenter(((box.getCorner(0) + box.getCorner(5)) * 0.5));
-    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
     rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
     break;
   case 5:
     rect.setCenter(((box.getCorner(2) + box.getCorner(7)) * 0.5));
-    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
     rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
     break;
   default:
@@ -547,6 +547,10 @@ ZAffineRect get_face(const ZCuboid &box, int index)
 
 bool zgeom::Intersects(const ZAffineRect &rect, const ZCuboid &box)
 {
+  if (rect.isEmpty()) {
+    return false;
+  }
+
   if (box.isValid()) {
     for (int i = 0; i < 4; ++i) {
       if(box.contains(rect.getCorner(i))) {

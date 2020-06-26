@@ -84,8 +84,18 @@ public:
   void set(double x, double y);
   void setLast(double x, double y);
   void set(double x, double y, double z);
+  void set(const ZPoint &pt);
   void updateWithLast(double x, double y, double z);
   void updateWithLast(const ZPoint &pt);
+
+  /*!
+   * \brief Append a point and update the depth too
+   *
+   * Add a point (\a x, \a y, \a z) from the model space and update the depth
+   * to contain this point.
+   */
+  void append(double x, double y, double z);
+  void append(const ZPoint &pt);
 
   void setLabel(uint64_t label) override;
 

@@ -38,7 +38,7 @@ public:
   double getScale() const;
   ZAffineRect getCutRect(int canvasWidth, int canvasHeight) const;
   ZAffineRect getCutRect(
-      int width, int height, neutu::data3d::ESpace sizeSpace) const;
+      double width, double height, neutu::data3d::ESpace sizeSpace) const;
   /*!
    * \brief Get cut rectangle with all integer paramters
    */

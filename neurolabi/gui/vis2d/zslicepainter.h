@@ -13,6 +13,7 @@
 class QPainter;
 class QImage;
 class QLineF;
+class QPointF;
 class ZLineSegment;
 class ZPoint;
 //class ZCuboid;
@@ -34,12 +35,16 @@ public:
       std::function<bool(QPainter *painter)> pred) const;
 
   void drawCircle(QPainter *painter, double cx, double cy, double r) const;
+  void drawStar(QPainter *painter, double cx, double cy, double r) const;
   void drawLine(
       QPainter *painter, double x0, double y0, double x1, double y1) const;
   void drawLines(
       QPainter *painter, const std::vector<double> &lines) const;
-  void drawLines(QPainter *painter, QVector<QLineF> &lines) const;
+//  void drawLines(QPainter *painter, const QVector<QLineF> &lines) const;
+  void drawLines(QPainter *painter, const std::vector<QLineF> &lines) const;
+  void drawPolyline(QPainter *painter, const std::vector<QPointF> &points) const;
   void drawPoint(QPainter *painter, double x, double y) const;
+  void drawPoints(QPainter *painter, const std::vector<QPointF> &points) const;
   void drawRect(
       QPainter *painter, double x0, double y0, double x1, double y1) const;
   void drawRect(
@@ -80,13 +85,25 @@ public:
   void drawBall(
       QPainter *painter, const ZPoint &center, double r,
       double depthScale, double fadingFactor) const;
+  void drawStar(
+      QPainter *painter, double cx, double cy, double cz, double r,
+      double depthScale, double fadingFactor) const;
+  void drawStar(
+      QPainter *painter, const ZPoint &center, double r,
+      double depthScale, double fadingFactor) const;
   void drawBoundBox(
       QPainter *painter, double cx, double cy, double cz, double r,
       double depthScale);
   void drawBoundBox(
       QPainter *painter, const ZPoint &center, double r, double depthScale);
   void drawLine(QPainter *painter, const ZLineSegment &line);
+  void drawLines(QPainter *painter, const std::vector<ZLineSegment> &lines);
   void drawPoint(QPainter *painter, double x, double y, double z);
+  void drawPoints(QPainter *painter, const std::vector<ZPoint> &points) const;
+
+  void drawPlanePolyline(
+      QPainter *painter, const std::vector<QPointF> &points,
+      double z, neutu::EAxis sliceAxis) const;
 
   /*!
    * \brief Set cut plane

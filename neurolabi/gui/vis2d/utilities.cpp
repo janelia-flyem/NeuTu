@@ -32,6 +32,11 @@ ZSlice3dPainter neutu::vis2d::Get3dSlicePainter(
   return painter;
 }
 
+ZSliceViewTransform GetTransform(const neutu::data3d::DisplayConfig &config)
+{
+  return config.getTransform();
+}
+
 QImage neutu::vis2d::GetSlice(const ZStack &stack, int z)
 {
   int x0 = stack.getOffset().getX();

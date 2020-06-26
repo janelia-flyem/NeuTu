@@ -103,7 +103,6 @@ HEADERS += \
     $$PWD/zdvidsparsestacktest.h \
     $$PWD/flyembodyannotationdialogtest.h \
     $$PWD/qtcoretest.h \
-    $$PWD/zflyemmisctest.h \
     $$PWD/zdvidsynapseannotationdialogtest.h
 
 SOURCES += \

@@ -118,6 +118,17 @@ ZAffineRect neutu::data3d::DisplayConfig::getCutRect(double width, double height
   return rect;
 }
 
+ZAffineRect neutu::data3d::DisplayConfig::getCutRect(
+    double width, double height, neutu::data3d::ESpace sizeSpace) const
+{
+  return getTransform().getCutRect(width, height, sizeSpace);
+}
+
+double neutu::data3d::DisplayConfig::getCutDepth(const ZPoint &origin) const
+{
+  return m_transform.getCutDepth(origin);
+}
+
 /*
 double zstackobject::DisplayConfig::getCutDepth() const
 {

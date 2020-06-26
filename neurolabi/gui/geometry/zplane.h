@@ -17,8 +17,13 @@ public:
 
   bool isValid() const;
 
-  ZPoint getV1() const;
-  ZPoint getV2() const;
+  inline ZPoint getV1() const {
+    return m_v1;
+  }
+
+  inline ZPoint getV2() const {
+    return m_v2;
+  }
 
   /*!
    * \brief Set a plane by giving two vectors of the plane.

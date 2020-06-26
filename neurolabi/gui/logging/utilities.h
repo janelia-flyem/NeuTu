@@ -18,6 +18,7 @@ void LogUrlIO(
 void LogMessage(const ZWidgetMessage &msg);
 void LogProfileInfo(int64_t duration, const std::string &info);
 void LogMessageF(const std::string &str, EMessageType type);
+void LogError(const std::string &msg);
 //void LogBodyOperation(
 //    const QString &action, uint64_t bodyId, neutu::EBodyLabelType labelType);
 }

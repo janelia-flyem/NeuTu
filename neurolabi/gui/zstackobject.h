@@ -233,7 +233,7 @@ public:
   virtual bool display(
       QPainter *painter, const DisplayConfig &config) const = 0;
 
-  bool isVisible(const DisplayConfig &config) const {
+  bool isVisible(const DisplayConfig &/*config*/) const {
     return true;
   }
 

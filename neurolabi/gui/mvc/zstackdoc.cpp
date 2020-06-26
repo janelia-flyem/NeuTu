@@ -6259,7 +6259,7 @@ void ZStackDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
 void ZStackDoc::processObjectModified()
 {
   if (getObjectModifiedMode() == EObjectModifiedMode::PROMPT) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << "ZStackDoc::processObjectModified()" << std::endl;
 #endif
     QMutexLocker locker(&m_objectModifiedBufferMutex);

@@ -2,6 +2,7 @@ include(dialogs/dialogs.pri)
 include(widgets/widgets.pri)
 include(neuroglancer/neuroglancer.pri)
 include(roi/roi.pri)
+include(tests/tests.pri)
 
 FORMS += \
     $$PWD/auth/flyemauthtokendialog.ui \
@@ -28,6 +29,7 @@ HEADERS += \
     $$PWD/flyemtodochunk.h \
     $$PWD/flyemtododvidsource.h \
     $$PWD/flyemtodoensemble.h \
+    $$PWD/flyemtodomocksource.h \
     $$PWD/flyemtodosource.h \
     $$PWD/zarbslicescrollstrategy.h \
     $$PWD/zbcfset.h \
@@ -159,6 +161,7 @@ SOURCES += \
     $$PWD/flyemtodochunk.cpp \
     $$PWD/flyemtododvidsource.cpp \
     $$PWD/flyemtodoensemble.cpp \
+    $$PWD/flyemtodomocksource.cpp \
     $$PWD/flyemtodosource.cpp \
     $$PWD/zarbslicescrollstrategy.cpp \
     $$PWD/zbcfset.cpp \

@@ -6,6 +6,7 @@
 #include "zstackobject.h"
 
 class FlyEmTodoBlockGrid;
+class FlyEmTodoSource;
 
 class FlyEmTodoEnsemble : public ZStackObject
 {
@@ -18,9 +19,9 @@ public:
   }
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
-    return false;
-  }
+      QPainter *painter, const DisplayConfig &config) const;
+
+  void setSource(std::shared_ptr<FlyEmTodoSource> source);
 
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,

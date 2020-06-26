@@ -7,6 +7,7 @@
 #include <QMouseEvent>
 #include <QElapsedTimer>
 
+#include "common/utilities.h"
 #include "common/math.h"
 #include "tz_rastergeom.h"
 #include "misc/miscutility.h"
@@ -38,23 +39,6 @@ ZImageWidget::~ZImageWidget()
 
 void ZImageWidget::init()
 {
-//  qDebug() << "ZImageWidget initialization:" << this;
-
-//  m_isViewHintVisible = true;
-//  m_freeMoving = true;
-//  m_hoverFocus = false;
-//  m_smoothDisplay = false;
-//  m_isReady = false;
-
-#if 0
-  if (image != NULL) {
-    m_viewPort.setRect(0, 0, image->width(), image->height());
-  }
-
-  m_projRegion.setRect(0, 0, 0, 0);
-#endif
-  //m_zoomRatio = 1;
-
   setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
   setAttribute(Qt::WA_OpaquePaintEvent);
   //setAttribute(Qt::WA_NoSystemBackground);
@@ -64,71 +48,64 @@ void ZImageWidget::init()
   m_leftButtonMenu = new QMenu(this);
   m_rightButtonMenu = new QMenu(this);
 
-  m_canvasList.resize(CANVAS_ROLE_COUNT);
+  m_canvasList.resize(neutu::EnumValue(neutu::data3d::ETarget::WIDGET));
 
   m_sliceViewTransform.setMinScale(0.4);
-//  m_paintBundle = NULL;
-//  m_tileCanvas = NULL;
-//  m_objectCanvas = NULL;
-//  m_dynamicObjectCanvas = NULL;
-//  m_activeDecorationCanvas = NULL;
-//  m_widgetCanvas = NULL;
-
-//  m_sliceAxis = neutube::EAxis::Z;
 }
 
-std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(ECanvasRole role) const
+std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(
+    neutu::data3d::ETarget target, bool initing)
 {
-  return m_canvasList[role];
-}
-
-void ZImageWidget::validateCanvas(ECanvasRole role)
-{
-  std::shared_ptr<ZSliceCanvas> &canvas = m_canvasList[role];
-  if (!canvas) {
-    canvas = std::shared_ptr<ZSliceCanvas>(new ZSliceCanvas);
+  auto canvas = std::shared_ptr<ZSliceCanvas>();
+  int index = neutu::EnumValue(target);
+  if (index >= 0 && index < m_canvasList.size()) {
+    canvas = m_canvasList[index];
+    if (initing && !canvas) {
+       canvas = std::shared_ptr<ZSliceCanvas>(new ZSliceCanvas);
+       m_canvasList[index] = canvas;
+    }
   }
 
+  return canvas;
+}
 
-  canvas->set(
-        width(), height(), m_sliceViewTransform,
-        ZSliceCanvas::ESetOption::DIFF_CLEAR);
+std::shared_ptr<ZSliceCanvas> ZImageWidget::validateCanvas(
+    neutu::data3d::ETarget target)
+{
+  std::shared_ptr<ZSliceCanvas> canvas = getCanvas(target, true);
 
-  /*
-  double scale = getSliceViewTransform().getScale();
-  if (scale <= 1.0 ||
-      (role != CANVAS_ROLE_OBJECT && role != CANVAS_ROLE_DYNAMIC_OBJECT)) {
+  if (canvas) {
     canvas->set(
           width(), height(), m_sliceViewTransform,
           ZSliceCanvas::ESetOption::DIFF_CLEAR);
-  } else { //This may exceed painting resolution
-    int w = neutu::iceil(width() / scale);
-    int h = neutu::iceil(height() / scale);
-    ZSliceViewTransform t = m_sliceViewTransform;
-    t.setScale(1.0);
-    t.setAnchor(m_viewAnchorX * w, m_viewAnchorY * h);
-    canvas->set(width(), height(), t, ZSliceCanvas::ESetOption::DIFF_CLEAR);
   }
-  */
+
+  return canvas;
 }
 
-std::shared_ptr<ZSliceCanvas> ZImageWidget::getValidCanvas(ECanvasRole role)
+std::shared_ptr<ZSliceCanvas> ZImageWidget::getValidCanvas(
+    neutu::data3d::ETarget target)
 {
-  validateCanvas(role);
-  return getCanvas(role);
+  return validateCanvas(target);
 }
 
-std::shared_ptr<ZSliceCanvas> ZImageWidget::getClearCanvas(ECanvasRole role)
+std::shared_ptr<ZSliceCanvas> ZImageWidget::getClearCanvas(
+    neutu::data3d::ETarget target)
 {
-  validateCanvas(role);
-  getCanvas(role)->resetCanvas();
+  std::shared_ptr<ZSliceCanvas> canvas = validateCanvas(target);
+  if (canvas) {
+    canvas->resetCanvas();
+  }
 
-  return getCanvas(role);
+  return canvas;
 }
 
-void ZImageWidget::setCanvasVisible(ECanvasRole role, bool visible)
+void ZImageWidget::setCanvasVisible(neutu::data3d::ETarget target, bool visible)
 {
-  getCanvas(role)->setVisible(visible);
+  auto canvas = getCanvas(target, true);
+  if (canvas) {
+    canvas->setVisible(visible);
+  }
 }
 
 void ZImageWidget::maximizeViewPort(const ZIntCuboid &worldRange)
@@ -163,7 +140,7 @@ ZAffineRect ZImageWidget::getViewPort() const
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "ZImageWidget::paintEvent" << std::endl;
 #endif
 

@@ -43,7 +43,7 @@ double ZSliceViewTransform::getScale() const
 }
 
 ZAffineRect ZSliceViewTransform::getCutRect(
-    int width, int height, neutu::data3d::ESpace sizeSpace) const
+    double width, double height, neutu::data3d::ESpace sizeSpace) const
 {
 //  double canvasWidth = width;
 //  double canvasHeight = height;
