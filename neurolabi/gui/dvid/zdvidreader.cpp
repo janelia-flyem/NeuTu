@@ -5725,7 +5725,7 @@ ZJsonArray ZDvidReader::readJsonArray(const std::string &url) const
   bufferReader.read(url.c_str(), isVerbose());
   const QByteArray &buffer = bufferReader.getBuffer();
   if (!buffer.isEmpty()) {
-    obj.decodeString(buffer.constData());
+    obj.decode(buffer.constData());
   }
 
   return obj;
@@ -5740,7 +5740,7 @@ ZJsonArray ZDvidReader::readJsonArray(
   bufferReader.read(url.c_str(), payload, "GET", isVerbose());
   const QByteArray &buffer = bufferReader.getBuffer();
   if (!buffer.isEmpty()) {
-    obj.decodeString(buffer.constData());
+    obj.decode(buffer.constData());
   }
 
   return obj;

@@ -3,6 +3,7 @@
 
 #include "ztestheader.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidtargetfactory.h"
 
 #ifdef _USE_GTEST_
 
@@ -180,6 +181,14 @@ TEST(ZDvidTarget, Basic)
     target.setGrayScaleName("grayscale");
     ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234::grayscale",
               target.getGrayscaleSourceString());
+  }
+}
+
+TEST(ZDvidTarget, Factory)
+{
+  {
+    ZDvidTarget target = ZDvidTargetFactory::MakeFromSourceString(
+          "mock:emdata2.int.janelia.org:9000:3456");
   }
 }
 

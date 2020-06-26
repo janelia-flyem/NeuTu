@@ -31,8 +31,9 @@ ZDvidAnnotation::ZDvidAnnotation(const ZDvidAnnotation &annotation)
   m_bodyId = annotation.m_bodyId;
   m_status = annotation.m_status;
   m_partnerHint = annotation.m_partnerHint;
-  m_propertyJson = ZJsonObject(m_propertyJson.clone());
-  m_relJson = ZJsonArray(m_relJson.clone());
+  m_tagSet = annotation.m_tagSet;
+  m_propertyJson = ZJsonObject(annotation.m_propertyJson.clone());
+  m_relJson = ZJsonArray(annotation.m_relJson.clone());
 }
 
 void ZDvidAnnotation::init()

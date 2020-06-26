@@ -31199,7 +31199,7 @@ void ZTest::test(MainWindow *host)
   host->startProofread("local_test");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZDvidInfo dvidInfo = reader->readGrayScaleInfo();
 
@@ -31216,6 +31216,17 @@ void ZTest::test(MainWindow *host)
   std::cout << ngpath.getPath() << std::endl;
   std::cout << QString(QUrl(ngpath.getPath().c_str()).toEncoded()).toStdString()
             << std::endl;
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidSynapse s = reader->readSynapse(
+        ZIntPoint(1159, 1137, 1023), dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+  s.addTag("test");
+  s.updatePartner();
+  s.updatePartnerProperty(*reader);
+  ZDvidSynapse s2 = s;
+  std::cout << s2.toJsonObject().dumpString(2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
