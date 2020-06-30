@@ -87,6 +87,30 @@ TEST(ZStackViewParam, Size)
   ASSERT_EQ(128, param.getIntHeight(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(64, param.getIntWidth(neutu::data3d::ESpace::MODEL));
   ASSERT_EQ(64, param.getIntHeight(neutu::data3d::ESpace::MODEL));
+
+  param.setSize(100, 300, neutu::data3d::ESpace::MODEL);
+  ASSERT_EQ(200, param.getWidth(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(100, param.getWidth(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(100, param.getWidth(neutu::data3d::ESpace::VIEW));
+
+  ASSERT_EQ(600, param.getHeight(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(300, param.getHeight(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(300, param.getHeight(neutu::data3d::ESpace::VIEW));
+
+  ASSERT_EQ(100*300, param.getArea(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(200*600, param.getArea(neutu::data3d::ESpace::CANVAS));
+
+  param.setSize(100, 300, neutu::data3d::ESpace::VIEW);
+  ASSERT_EQ(200, param.getWidth(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(100, param.getWidth(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(100, param.getWidth(neutu::data3d::ESpace::VIEW));
+
+  ASSERT_EQ(600, param.getHeight(neutu::data3d::ESpace::CANVAS));
+  ASSERT_EQ(300, param.getHeight(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(300, param.getHeight(neutu::data3d::ESpace::VIEW));
+
+  ASSERT_EQ(100*300, param.getArea(neutu::data3d::ESpace::MODEL));
+  ASSERT_EQ(200*600, param.getArea(neutu::data3d::ESpace::CANVAS));
 }
 
 TEST(ZStackViewParam, Discrete)
@@ -188,9 +212,12 @@ TEST(ZStackViewParam, Viewport)
 {
   ZStackViewParam param;
   param.setViewport(128, 128, neutu::data3d::ESpace::CANVAS);
+  param.setCutCenter(ZIntPoint(1, 2, 3));
   param.openViewPort();
   ASSERT_FALSE(param.isViewportEmpty());
   ASSERT_TRUE(param.isValid());
+  ASSERT_FALSE(param.getCutRect().isEmpty());
+  ASSERT_EQ(ZPoint(65, 66, 3), param.getCutRect().getCenter());
 
   param.closeViewPort();
   ASSERT_TRUE(param.isViewportEmpty());
@@ -200,6 +227,10 @@ TEST(ZStackViewParam, Viewport)
   ASSERT_EQ(0, param.getIntWidth(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(0, param.getIntHeight(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(0, param.getArea(neutu::data3d::ESpace::CANVAS));
+  ASSERT_TRUE(param.getCutRect().isEmpty());
+  ASSERT_EQ(ZPoint(1, 2, 3), param.getCutRect().getCenter());
+  ASSERT_TRUE(param.getIntCutRect().isEmpty());
+  ASSERT_EQ(ZPoint(1, 2, 3), param.getIntCutRect().getCenter());
 
   param.openViewPort();
   ASSERT_FALSE(param.isViewportEmpty());
@@ -209,6 +240,8 @@ TEST(ZStackViewParam, Viewport)
   ASSERT_EQ(128, param.getIntWidth(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(128, param.getIntHeight(neutu::data3d::ESpace::CANVAS));
   ASSERT_EQ(128*128, param.getArea(neutu::data3d::ESpace::CANVAS));
+  ASSERT_FALSE(param.getCutRect().isEmpty());
+  ASSERT_EQ(ZPoint(65, 66, 3), param.getCutRect().getCenter());
 }
 
 #endif

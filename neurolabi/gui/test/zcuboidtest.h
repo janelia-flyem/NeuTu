@@ -31,8 +31,8 @@ TEST(ZIntCuboid, compare)
   box2.setMaxZ(2);
   ASSERT_NE(box1, box2);
 
-  ASSERT_EQ(ZIntPoint(50, 101, 151), box1.getCenter());
-  ASSERT_EQ(ZPoint(50.5, 101, 151.5), box2.getExactCenter());
+  ASSERT_EQ(ZIntPoint(51, 101, 152), box1.getCenter());
+  ASSERT_EQ(ZPoint(51, 101.5, 152), box1.getExactCenter());
 }
 
 TEST(ZIntCuboid, size)
@@ -67,8 +67,8 @@ TEST(ZIntCuboid, ToCuboid)
   box.setMaxCorner(1, 2, 3);
 
   ZCuboid fbox = ZCuboid::FromIntCuboid(box);
-  ASSERT_EQ(ZPoint(-1.5, -2.5, -3.5), fbox.getMinCorner());
-  ASSERT_EQ(ZPoint(1.5, 2.5, 3.5), fbox.getMaxCorner());
+  ASSERT_EQ(ZPoint(-1, -2, -3), fbox.getMinCorner());
+  ASSERT_EQ(ZPoint(2, 3, 4), fbox.getMaxCorner());
 
   ASSERT_EQ(box, fbox.toIntCuboid());
 

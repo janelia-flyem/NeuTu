@@ -5,10 +5,12 @@
 
 #include "flyemtodoblockgrid.h"
 #include "flyemtodochunk.h"
+#include "flyemtododvidsource.h"
 
 FlyEmTodoEnsemble::FlyEmTodoEnsemble()
 {
-  setTarget(neutu::data3d::ETarget::HD_OBJECT_CANVAS);
+  m_type = GetType();
+  setTarget(neutu::data3d::ETarget::NONBLOCKING_OBJECT_CANVAS);
   m_blockGrid = std::shared_ptr<FlyEmTodoBlockGrid>(new FlyEmTodoBlockGrid);
 }
 
@@ -25,17 +27,19 @@ void FlyEmTodoEnsemble::display(
 }
 #endif
 
+/*
 void FlyEmTodoEnsemble::setSource(std::shared_ptr<FlyEmTodoSource> source)
 {
   m_blockGrid->setSource(source);
 }
+*/
 
 bool FlyEmTodoEnsemble::display(
     QPainter *painter, const DisplayConfig &config) const
 {
   bool painted = false;
   ZAffineRect rect;
-  m_blockGrid->forEachIntersectedBlock(
+  m_blockGrid->forEachIntersectedBlockApprox(
         config.getCutRect(
           painter->device()->width(), painter->device()->height(),
           neutu::data3d::ESpace::CANVAS), [&](int i, int j, int k) {
@@ -48,4 +52,11 @@ bool FlyEmTodoEnsemble::display(
   });
 
   return painted;
+}
+
+void FlyEmTodoEnsemble::setDvidTarget(const ZDvidTarget &target)
+{
+  FlyEmTodoDvidSource *source = new FlyEmTodoDvidSource;
+  source->setDvidTarget(target);
+  m_blockGrid->setSource(std::shared_ptr<FlyEmTodoSource>(source));
 }

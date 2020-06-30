@@ -392,13 +392,20 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 {
   bool contained = false;
 
-  if (viewParam.getIntCutRect(getDataRange()).contains(
-        m_currentViewParam.getIntCutRect(getDataRange()))) {
+  ZAffineRect rect1 = m_currentViewParam.getIntCutRect(getDataRange());
+  ZAffineRect rect2 = viewParam.getIntCutRect(getDataRange());
+
+  if (rect2 == rect1) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
           m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
           m_actualUsingCenterCut,
           zoom, centerCutX, centerCutY, centerCut,
           getWidth(), getHeight(), getMaxZoom());
+  } else if (rect2.contains(rect1)) {
+    contained = !ZDvidDataSliceHelper::IsResIncreasing(
+          zoom, centerCutX, centerCutY, centerCut, getWidth(), getHeight(),
+          m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
+          m_actualUsingCenterCut, getMaxZoom());
   }
 
   return contained;
@@ -434,6 +441,19 @@ ZAffineRect ZDvidDataSliceHelper::getIntCutRect() const
   }
 
   return rect;
+}
+
+bool ZDvidDataSliceHelper::isResolutionReached() const
+{
+  if (getViewDataSize() == 0) {
+    return false;
+  }
+
+  return !IsResIncreasing(
+        m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
+        m_actualUsingCenterCut,
+        m_zoom, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut,
+        getWidth(), getHeight(), getMaxZoom());
 }
 
 bool ZDvidDataSliceHelper::needHighResUpdate() const

@@ -28,6 +28,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<ZJsonValue>("ZJsonValue");
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
   qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
+  qRegisterMetaType<neutu::data3d::ETarget>("neutu::data3d::ETarget");
   qRegisterMetaType<QSet<neutu::data3d::ETarget> >("QSet<neutu::data3d::ETarget>");
   qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");

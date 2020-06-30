@@ -201,11 +201,13 @@ TEST(ZGeometry, Intersect)
     rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     rect.setSize(16, 32);
     ASSERT_TRUE(zgeom::Intersects(rect, 0, 0, 0, 1));
-    ASSERT_FALSE(zgeom::Intersects(rect, 0, 0, 1, 1));
+    ASSERT_TRUE(zgeom::Intersects(rect, 0, 0, 1, 1));
     ASSERT_TRUE(zgeom::Intersects(rect, 0, 0, 0, 1));
     ASSERT_TRUE(zgeom::Intersects(rect, 5, 10, 0, 1));
-    ASSERT_FALSE(zgeom::Intersects(rect, 9, 10, 0, 1));
-    ASSERT_FALSE(zgeom::Intersects(rect, 5, 17, 0, 1));
+    ASSERT_TRUE(zgeom::Intersects(rect, 9, 10, 0, 1));
+    ASSERT_FALSE(zgeom::Intersects(rect, 9, 10, 0, 0.9));
+    ASSERT_TRUE(zgeom::Intersects(rect, 5, 17, 0, 1));
+    ASSERT_FALSE(zgeom::Intersects(rect, 5, 17, 0, 0.9));
     ASSERT_TRUE(zgeom::Intersects(rect, 0, 0, 0.5, 1));
     ASSERT_TRUE(zgeom::Intersects(rect, 5, 10, -0.5, 1));
     ASSERT_TRUE(zgeom::Intersects(
@@ -223,11 +225,13 @@ TEST(ZGeometry, Intersect)
     rect.setPlane(ZPoint(0, 1, 0), ZPoint(0, 0, 1));
     rect.setSize(16, 32);
     ASSERT_TRUE(zgeom::Intersects(rect, 0, 0, 0, 1));
-    ASSERT_FALSE(zgeom::Intersects(rect, 1, 0, 0, 1));
+    ASSERT_TRUE(zgeom::Intersects(rect, 1, 0, 0, 1));
     ASSERT_TRUE(zgeom::Intersects(rect, 0, 0, 0, 1));
     ASSERT_TRUE(zgeom::Intersects(rect, 0, 5, 10, 1));
-    ASSERT_FALSE(zgeom::Intersects(rect, 0, 9, 10, 1));
-    ASSERT_FALSE(zgeom::Intersects(rect, 0, 5, 17, 1));
+    ASSERT_TRUE(zgeom::Intersects(rect, 0, 9, 10, 1));
+    ASSERT_TRUE(zgeom::Intersects(rect, 0, 5, 17, 1));
+    ASSERT_FALSE(zgeom::Intersects(rect, 0, 9, 10, 0.9));
+    ASSERT_FALSE(zgeom::Intersects(rect, 0, 5, 17, 0.9));
     ASSERT_TRUE(zgeom::Intersects(rect, 0.5, 0, 0, 1));
     ASSERT_TRUE(zgeom::Intersects(rect, -0.5, 5, 10, 1));
 
@@ -256,7 +260,7 @@ TEST(ZGeometry, Intersect)
 
     pt = zgeom::ComputeIntersectionPoint(
           plane, ZLineSegment(ZPoint(0, 0, 0), ZPoint(1, 0, 0)));
-    ASSERT_FALSE(pt.isValid());
+    ASSERT_TRUE(pt.isValid());
 
     pt = zgeom::ComputeIntersectionPoint(
           plane, ZLineSegment(ZPoint(0, 0, 1), ZPoint(1, 0, 2)));
@@ -279,7 +283,7 @@ TEST(ZGeometry, Intersect)
 
     pt = zgeom::ComputeIntersectionPoint(
           plane, ZLineSegment(ZPoint(0, 0, 0), ZPoint(1, 0, 0)));
-    ASSERT_FALSE(pt.isValid());
+    ASSERT_TRUE(pt.isValid());
 
     pt = zgeom::ComputeIntersectionPoint(
           plane, ZLineSegment(ZPoint(1, 0, 0), ZPoint(2, 1, 0)));
@@ -363,7 +367,53 @@ TEST(ZGeometry, Intersect)
     ASSERT_TRUE(zgeom::Intersects(rect, box));
     rect.setCenter(0, -20, -30);
     ASSERT_TRUE(zgeom::Intersects(rect, box));
+  }
 
+  {
+    ZAffineRect rect;
+    rect.set(ZPoint(1, 2, 4), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+    {
+      ZCuboid box(1, 2, 3, 11, 22, 33);
+      ASSERT_FALSE(zgeom::IntersectsApprox(rect, box, 13, 5, 10));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 14, 5, 10));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 15, 5, 10));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box));
+    }
+
+    {
+      ZCuboid box(6, -14, 4, 10, -6, 10);
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 3, 2, 4));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 3.1, 2.1, 4.1));
+      ASSERT_FALSE(zgeom::IntersectsApprox(rect, box, 2.9, 1.9, 3.9));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box));
+    }
+
+    {
+      ZCuboid box(7, -14, 4, 10, -6, 10);
+      ASSERT_FALSE(zgeom::IntersectsApprox(rect, box));
+    }
+
+    rect.set(ZPoint(4, 1, 2), ZPoint(0, 1, 0), ZPoint(0, 0, 1), 10, 20);
+    {
+      ZCuboid box(3, 1, 2, 33, 11, 22);
+      ASSERT_FALSE(zgeom::IntersectsApprox(rect, box, 13, 5, 10));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 14, 5, 10));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 15, 5, 10));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box));
+    }
+
+    {
+      ZCuboid box(4, 6, -14, 10, 10, -6);
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 3, 2, 4));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box, 3.1, 2.1, 4.1));
+      ASSERT_FALSE(zgeom::IntersectsApprox(rect, box, 2.9, 1.9, 3.9));
+      ASSERT_TRUE(zgeom::IntersectsApprox(rect, box));
+    }
+
+    {
+      ZCuboid box(-14, 4, 7, -6, 10, 10);
+      ASSERT_FALSE(zgeom::IntersectsApprox(rect, box));
+    }
   }
 }
 

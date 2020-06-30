@@ -78,17 +78,17 @@ std::vector<neutu::data3d::ETarget> neutu::data3d::GetTargetList(
 
 std::vector<neutu::data3d::ETarget> neutu::data3d::GetTarget2dList()
 {
-  return
-    {
-          ETarget::STACK_CANVAS,
-          ETarget::TILE_CANVAS,
-          ETarget::MASK_CANVAS,
-          ETarget::PIXEL_OBJECT_CANVAS,
-          ETarget::HD_OBJECT_CANVAS,
-          ETarget::DYNAMIC_OBJECT_CANVAS,
-          ETarget::ROAMING_OBJECT_CANVAS,
-          ETarget::WIDGET,
-    };
+  return {
+    ETarget::STACK_CANVAS,
+    ETarget::TILE_CANVAS,
+    ETarget::MASK_CANVAS,
+    ETarget::DYNAMIC_OBJECT_CANVAS,
+    ETarget::PIXEL_OBJECT_CANVAS,
+    ETarget::HD_OBJECT_CANVAS,
+    ETarget::ROAMING_OBJECT_CANVAS,
+    ETarget::NONBLOCKING_OBJECT_CANVAS,
+    ETarget::WIDGET,
+  };
 }
 
 std::vector<neutu::data3d::ETarget> neutu::data3d::GetTarget2dList(
@@ -104,7 +104,8 @@ std::vector<neutu::data3d::ETarget> neutu::data3d::GetTarget2dObjectCanvasList()
     ETarget::PIXEL_OBJECT_CANVAS,
     ETarget::HD_OBJECT_CANVAS,
     ETarget::DYNAMIC_OBJECT_CANVAS,
-    ETarget::ROAMING_OBJECT_CANVAS
+    ETarget::ROAMING_OBJECT_CANVAS,
+    ETarget::NONBLOCKING_OBJECT_CANVAS
   };
 }
 
@@ -122,7 +123,8 @@ neutu::data3d::GetTargetSettled2dObjectCanvasList()
           ETarget::TILE_CANVAS,
           ETarget::PIXEL_OBJECT_CANVAS,
           ETarget::HD_OBJECT_CANVAS,
-          ETarget::DYNAMIC_OBJECT_CANVAS
+          ETarget::DYNAMIC_OBJECT_CANVAS,
+          ETarget::NONBLOCKING_OBJECT_CANVAS
     };
 }
 
@@ -131,7 +133,8 @@ bool neutu::data3d::IsSettled2dObjectCanvas(ETarget target)
   return target == ETarget::TILE_CANVAS ||
       target == ETarget::PIXEL_OBJECT_CANVAS ||
       target == ETarget::HD_OBJECT_CANVAS ||
-      target == ETarget::DYNAMIC_OBJECT_CANVAS;
+      target == ETarget::DYNAMIC_OBJECT_CANVAS ||
+      target == ETarget::NONBLOCKING_OBJECT_CANVAS;
 }
 
 

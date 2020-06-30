@@ -408,9 +408,12 @@ void ZDvidLabelSlice::forceUpdate(
   getHelper()->setZoom(viewParam.getZoomLevel());
   ZAffineRect rect = getHelper()->getIntCutRect();
 
+  if (rect.isEmpty()) {
+    return;
+  }
+
   if ((!ignoringHidden) || isVisible()) {
     clearLabelData();
-
 
     if (getHelper()->getUpdatePolicy() != neutu::EDataSliceUpdatePolicy::HIDDEN) {
       m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(

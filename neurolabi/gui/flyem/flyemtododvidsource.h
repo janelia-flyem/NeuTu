@@ -8,6 +8,7 @@ class FlyEmTodoDvidSource : public FlyEmTodoSource
 {
 public:
   FlyEmTodoDvidSource();
+  virtual ~FlyEmTodoDvidSource();
 
   void setDvidTarget(const ZDvidTarget &target);
 

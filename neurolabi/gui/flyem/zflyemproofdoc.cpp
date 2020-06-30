@@ -46,19 +46,6 @@
 #include "dvid/zdvidenv.h"
 #include "dvid/zdvidglobal.h"
 
-#include "zflyembookmark.h"
-#include "zsynapseannotationarray.h"
-#include "zflyemproofdockeyprocessor.h"
-#include "zflyemnamebodycolorscheme.h"
-#include "zflyemsequencercolorscheme.h"
-#include "zflyemrandombodycolorscheme.h"
-#include "zflyemproofdoccommand.h"
-#include "zflyembodymanager.h"
-#include "zflyembodystatus.h"
-#include "zflyemroimanager.h"
-#include "zflyemsupervisor.h"
-#include "zflyemmisc.h"
-
 #include "zslicedpuncta.h"
 #include "zdialogfactory.h"
 
@@ -71,7 +58,6 @@
 #include "zstackwatershedcontainer.h"
 #include "zmeshfactory.h"
 #include "zswctree.h"
-#include "zflyemroutinechecktask.h"
 #include "zarray.h"
 
 #include "zmesh.h"
@@ -79,13 +65,29 @@
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "logging/zlog.h"
 #include "zfiletype.h"
-#include "flyemdatareader.h"
-#include "flyemdatawriter.h"
 #include "misc/miscutility.h"
 #include "zdvidlabelslicehighrestask.h"
 #include "zdvidlabelslicehighrestaskfactory.h"
 #include "roi/zroiprovider.h"
 #include "roi/zdvidroifactory.h"
+
+#include "zflyembookmark.h"
+#include "zsynapseannotationarray.h"
+#include "zflyemproofdockeyprocessor.h"
+#include "zflyemnamebodycolorscheme.h"
+#include "zflyemsequencercolorscheme.h"
+#include "zflyemrandombodycolorscheme.h"
+#include "zflyemproofdoccommand.h"
+#include "zflyembodymanager.h"
+#include "zflyembodystatus.h"
+#include "zflyemroimanager.h"
+#include "zflyemsupervisor.h"
+#include "zflyemmisc.h"
+#include "zflyemroutinechecktask.h"
+#include "flyemtodoensemble.h"
+#include "flyemdatareader.h"
+#include "flyemdatawriter.h"
+
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -1308,6 +1310,8 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
       }
     }
 
+    initTodoEnsemble();
+
     updateDataConfig();
 
     flowInfo << "->Read DVID Info";
@@ -1815,6 +1819,13 @@ void ZFlyEmProofDoc::initGrayscaleSlice(
     */
 }
 
+void ZFlyEmProofDoc::initTodoEnsemble()
+{
+  FlyEmTodoEnsemble *te = new FlyEmTodoEnsemble;
+  te->setSource(ZStackObjectSourceFactory::MakeTodoEnsembleSource());
+  addObject(te);
+}
+
 void ZFlyEmProofDoc::setGraySliceCenterCut(int width, int height)
 {
   m_graySliceCenterCutWidth = width;
@@ -1964,8 +1975,9 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
   UpdateDvidTargetForObject<ZDvidSparseStack>(this);
   UpdateDvidTargetForObject<ZDvidSparsevolSlice>(this);
   UpdateDvidTargetForObject<ZDvidSynapseEnsemble>(this);
+  UpdateDvidTargetForObject<FlyEmTodoEnsemble>(this);
 //  UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
-  UpdateDvidTargetForObject<ZFlyEmToDoList>(this);
+//  UpdateDvidTargetForObject<ZFlyEmToDoList>(this);
 //  endObjectModifiedMode();
 //  processObjectModified();
 }

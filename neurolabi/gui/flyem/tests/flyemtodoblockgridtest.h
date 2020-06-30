@@ -14,14 +14,14 @@ TEST(FlyEmTodoBlockGrid, Source)
   auto source = std::shared_ptr<FlyEmTodoMockSource>(
         new FlyEmTodoMockSource);
   grid.setSource(source);
-  ASSERT_EQ(ZIntPoint(8, 8, 8), grid.getGridSize());
+  ASSERT_EQ(ZIntPoint(16, 16, 16), grid.getGridSize());
 
   FlyEmTodoChunk chunk = grid.getTodoChunk(0, 0, 0);
-  ZFlyEmToDoItem item = chunk.getItem(32, 32, 32);
+  ZFlyEmToDoItem item = chunk.getItem(16, 16, 16);
   ASSERT_TRUE(item.isValid());
-  ASSERT_EQ(ZIntPoint(32, 32, 32), item.getPosition());
+  ASSERT_EQ(ZIntPoint(16, 16, 16), item.getPosition());
 
-  item = chunk.getItem(31, 32, 32);
+  item = chunk.getItem(15, 16, 16);
   ASSERT_FALSE(item.isValid());
   /*
   chunk.forEachItem([](const ZFlyEmToDoItem &item) {

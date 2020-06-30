@@ -49,6 +49,28 @@ TEST(ZAffineRect, Basic)
     ASSERT_EQ(ZPoint(1, 0, 0), rect.getV1());
     ASSERT_EQ(ZPoint(0, 1, 0), rect.getV2());
     ASSERT_EQ(ZPoint(5, 7, 9), rect.getCenter());
+
+    rect.setCenter(0, 0, 0);
+    rect.setSize(10, -10);
+    ASSERT_TRUE(rect.isEmpty());
+    ASSERT_EQ(10, rect.getWidth());
+    ASSERT_EQ(0, rect.getHeight());
+    ASSERT_TRUE(rect.contains(ZPoint(0, 0, 0)));
+    ASSERT_TRUE(rect.contains(ZPoint(1, 0, 0)));
+    ASSERT_FALSE(rect.contains(ZPoint(0, 1, 0)));
+
+    rect.setSize(-10, 10);
+    ASSERT_TRUE(rect.isEmpty());
+    ASSERT_EQ(0, rect.getWidth());
+    ASSERT_EQ(10, rect.getHeight());
+    ASSERT_TRUE(rect.contains(ZPoint(0, 0, 0)));
+    ASSERT_TRUE(rect.contains(ZPoint(0, 1, 0)));
+    ASSERT_FALSE(rect.contains(ZPoint(1, 0, 0)));
+
+    ASSERT_EQ(ZPoint(0, 5, 0), rect.getCorner(0));
+    ASSERT_EQ(ZPoint(0, 5, 0), rect.getCorner(1));
+    ASSERT_EQ(ZPoint(0, -5, 0), rect.getCorner(2));
+    ASSERT_EQ(ZPoint(0, -5, 0), rect.getCorner(3));
   }
 }
 

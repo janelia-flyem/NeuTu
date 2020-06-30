@@ -352,6 +352,7 @@
 #include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemarbdoc.h"
+#include "flyem/flyemtodoblockgrid.h"
 #include "vis2d/zslicepainter.h"
 #include "vis2d/zslicecanvas.h"
 #include "vis2d/utilities.h"
@@ -31610,7 +31611,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStack *stack = new ZStack;
   stack->load("/Users/zhaot/Work/neutu/neurolabi/data/_system/emstack2.tif");
   ZStackFrame *frame = ZStackFrame::Make(NULL);
@@ -31891,6 +31892,64 @@ void ZTest::test(MainWindow *host)
   tic();
   for (size_t i = 0; i < 100000; ++i) {
     objList.append(bookmark.clone());
+  }
+  ptoc();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidSynapse s = reader->readSynapse(
+        ZIntPoint(1159, 1137, 1023), dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+  s.addTag("test");
+  s.updatePartner();
+  s.updatePartnerProperty(*reader);
+  ZDvidSynapse s2 = s;
+  std::cout << s2.toJsonObject().dumpString(2) << std::endl;
+#endif
+
+#if 1
+  ZBlockGrid grid;
+  grid.setGridSize(1000, 1000, 1000);
+  grid.setBlockSize(32, 32, 32);
+
+  ZAffineRect rect;
+  rect.set(ZPoint(1000, 1000, 1000), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 12800, 12800);
+
+  tic();
+  int count = 0;
+  grid.forEachIntersectedBlockApprox(rect, [&](int,int,int){ ++count; });
+  std::cout << count << " blocks intersected" << std::endl;
+  ptoc();
+
+  tic();
+  count = 0;
+  grid.forEachIntersectedBlock(rect, [&](int,int,int){ ++count; });
+  std::cout << count << " blocks intersected" << std::endl;
+  ptoc();
+
+#endif
+
+#if 0
+  ZAffineRect rect;
+  rect.set(ZPoint(1000, 1000, 1000), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 32, 32);
+  ZCuboid box(992, 992, 960, 1024, 1024, 992);
+  bool v = zgeom::Intersects(rect, box);
+  std::cout << v << std::endl;
+#endif
+
+#if 0
+  ZAffineRect rect;
+  rect.set(ZPoint(1, 2, 4), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+  ZCuboid box(6, -14, 4, 10, -6, 10);
+  tic();
+  for (int i = 0; i < 1000000; ++i) {
+    zgeom::IntersectsApprox(rect, box, 3, 2, 4);
+  }
+  ptoc();
+
+  tic();
+  for (int i = 0; i < 1000000; ++i) {
+    zgeom::Intersects(rect, box);
   }
   ptoc();
 #endif

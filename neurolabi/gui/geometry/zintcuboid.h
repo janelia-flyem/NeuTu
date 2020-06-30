@@ -113,6 +113,7 @@ public:
   ZIntPoint getSize() const;
 
   double getDiagonalLength() const;
+  double getMinSideLength() const;
 
   /*!
    * \brief Set the depth

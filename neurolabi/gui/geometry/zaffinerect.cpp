@@ -11,8 +11,7 @@ void ZAffineRect::set(
 {
   m_ap.setOffset(offset);
   m_ap.setPlane(v1, v2);
-  m_width = width;
-  m_height = height;
+  setSize(width, height);
 }
 
 double ZAffineRect::getWidth() const
@@ -67,8 +66,8 @@ void ZAffineRect::setPlane(const ZAffinePlane &plane)
 
 void ZAffineRect::setSize(double width, double height)
 {
-  m_width = width;
-  m_height = height;
+  m_width = std::max(0.0, width);
+  m_height = std::max(0.0, height);
 }
 
 void ZAffineRect::translate(double dx, double dy, double dz)
@@ -87,23 +86,18 @@ void ZAffineRect::scale(double su, double sv)
   m_height *= sv;
 }
 
-ZAffinePlane ZAffineRect::getAffinePlane() const
-{
-  return m_ap;
-}
-
 bool ZAffineRect::containsProjection(const ZPoint &pt) const
 {
   ZPoint dp = pt - getCenter();
 
   double u = dp.dot(getV1());
-  double halfWidth = m_width / 2.0;
+  double halfWidth = getWidth() / 2.0;
   if (u < -halfWidth || u > halfWidth) {
     return false;
   }
 
   double v = dp.dot(getV2());
-  double halfHeight = m_height / 2.0;
+  double halfHeight = getHeight() / 2.0;
   if (v < -halfHeight || v > halfHeight) {
     return false;
   }
@@ -144,7 +138,7 @@ bool ZAffineRect::contains(const ZPoint &pt, double d) const
 bool ZAffineRect::contains(const ZAffineRect &rect, double d) const
 {
   if (m_ap == rect.m_ap) {
-    return (m_width <= rect.m_width) && (m_height <= rect.m_height);
+    return (getWidth() <= rect.getWidth()) && (getHeight() <= rect.getHeight());
   }
 
   bool contained = false;
@@ -166,8 +160,8 @@ ZPoint ZAffineRect::getCorner(int index) const
   ZPoint pt;
   pt.invalidate();
 
-  ZPoint xSpan = m_ap.getV1() * m_width / 2.0;
-  ZPoint ySpan = m_ap.getV2() * m_height / 2.0;
+  ZPoint xSpan = m_ap.getV1() * getWidth() / 2.0;
+  ZPoint ySpan = m_ap.getV2() * getHeight() / 2.0;
 
   switch (index) {
   case 0:

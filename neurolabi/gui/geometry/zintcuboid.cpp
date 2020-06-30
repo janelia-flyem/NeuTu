@@ -62,6 +62,11 @@ double ZIntCuboid::getDiagonalLength() const
   return ZPoint(getWidth(), getHeight(), getDepth()).length();
 }
 
+double ZIntCuboid::getMinSideLength() const
+{
+  return std::min(std::min(getWidth(), getHeight()), getDepth());
+}
+
 void ZIntCuboid::setSize(int width, int height, int depth)
 {
   m_maxCorner.set(m_minCorner.getX() + width - 1,
@@ -523,7 +528,7 @@ int ZIntCuboid::getDim(neutu::EAxis axis) const
 
 ZPoint ZIntCuboid::getExactCenter() const
 {
-  return getMinCorner().toPoint() + getSize() / 2.0;
+  return getMinCorner().toPoint() + getSize().toPoint() * 0.5;
 }
 
 ZIntPoint ZIntCuboid::getCenter() const

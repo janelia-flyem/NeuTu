@@ -9,6 +9,10 @@ FlyEmTodoDvidSource::FlyEmTodoDvidSource()
 {
 }
 
+FlyEmTodoDvidSource::~FlyEmTodoDvidSource()
+{
+}
+
 void FlyEmTodoDvidSource::setDvidTarget(const ZDvidTarget &target)
 {
   m_writer.open(target);

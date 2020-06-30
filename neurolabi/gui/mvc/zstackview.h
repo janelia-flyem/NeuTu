@@ -597,6 +597,8 @@ public slots:
       int index, const QString &text, QObject *receiver, const char *slot);
   void processWidgetCanvasUpdate(ZPixmap *canvas);
 
+  void processCanvasUpdate(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
+
   void notifyViewChanged();
   void syncTransformControl();
   void updateDataInfo();
@@ -613,6 +615,7 @@ signals:
   void closingChildFrame();
   void autoTracing();
   void widgetCanvasUpdated(ZPixmap *canvas);
+  void canvasUpdated(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
 //  void widgetCanvasUpdated(ZImage *canvas);
 
 private:
@@ -628,6 +631,11 @@ private:
 
   void paintObjectBuffer(ZSliceCanvas &canvas, neutu::data3d::ETarget target);
 
+  void updateObjectBuffer(
+      ZSliceCanvas *canvas, const QList<ZStackObject*> &objList);
+  void updateObjectBuffer(
+      ZSliceCanvas *canvas, neutu::data3d::ETarget target,
+      const QList<ZStackObject*> &objList);
   void updateObjectBuffer(
       neutu::data3d::ETarget target, const QList<ZStackObject*> &objList);
   void updateObjectBuffer(neutu::data3d::ETarget target);
@@ -655,6 +663,10 @@ private:
 //  void requestWidgetCanvasUpdate();
 //  void addWidgetCanvasTask();
   void notifyWidgetCanvasUpdate(ZPixmap *canvas);
+
+  void addNonblockCanvasTask(
+      neutu::data3d::ETarget target, const QList<ZStackObject *> &objList);
+  void notifyCanvasUpdate(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
 //  void notifyWidgetCanvasUpdate(ZImage *canvas);
 
   class ViewParamRecordOnce {

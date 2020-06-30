@@ -398,19 +398,21 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
   if (isVisible()) {
     ZAffineRect rect = getHelper()->getIntCutRect();
 
-    ZStack *stack = getDvidReader().readGrayScaleLowtis(
-          rect,
-          getZoom(), getHelper()->getCenterCutWidth(),
-          getHelper()->getCenterCutHeight(), true);
-    getHelper()->setActualQuality(
-          getZoom(), getHelper()->getCenterCutWidth(),
-          getHelper()->getCenterCutHeight(), true);
-    updateImage(stack, rect.getAffinePlane());
+    if (!rect.isEmpty()) {
+      ZStack *stack = getDvidReader().readGrayScaleLowtis(
+            rect,
+            getZoom(), getHelper()->getCenterCutWidth(),
+            getHelper()->getCenterCutHeight(), true);
+      getHelper()->setActualQuality(
+            getZoom(), getHelper()->getCenterCutWidth(),
+            getHelper()->getCenterCutHeight(), true);
+      updateImage(stack, rect.getAffinePlane());
 #ifdef _DEBUG_2
-    std::cout << "Saving stack" << std::endl;
-    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+      std::cout << "Saving stack" << std::endl;
+      stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
-    delete stack;
+      delete stack;
+    }
   }
 }
 

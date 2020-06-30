@@ -103,14 +103,32 @@ public:
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
       */
+  /*!
+   * \brief Check if the current viewing slice is within a given slice
+   *
+   * It returns true iff:
+   * 1. the current viewport is the same as the given one, and the
+   *    given viewport has a higher resolution.
+   * 2. the current viewport is within and smaller than the given one, and the
+   *    given viewport does not have a lower resolution
+   */
   bool actualContainedIn(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
 
-  ZSliceViewTransform getCanvasTransform(const ZAffinePlane &ap, int width, int height) const;
+  ZSliceViewTransform getCanvasTransform(
+      const ZAffinePlane &ap, int width, int height) const;
 
   ZAffineRect getIntCutRect() const;
 
+  /*!
+   * \brief Check if the actual resolution is not lower than the specified one
+   */
+  bool isResolutionReached() const;
+
+  /*!
+   * \brief Check if a high resolution update is needed
+   */
   bool needHighResUpdate() const;
 
   void setMaxSize(int maxW, int maxH);

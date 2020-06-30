@@ -5,6 +5,7 @@
 
 #include "geometry/zgeometry.h"
 #include "geometry/zaffinerect.h"
+#include "geometry/zcuboid.h"
 
 ZBlockGrid::ZBlockGrid()
 {
@@ -151,6 +152,10 @@ void ZBlockGrid::setGridByRange(const ZIntCuboid &box)
 void ZBlockGrid::forEachIntersectedBlock(
     const ZAffineRect &plane, std::function<void(int i, int j, int k)> f)
 {
+  if (!isValid()) {
+    return;
+  }
+
   auto _getKey = [](int x, int y, int z) {
     return std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
   };
@@ -176,13 +181,74 @@ void ZBlockGrid::forEachIntersectedBlock(
           if (containsBlock(x, y, z)) {
             if (zgeom::Intersects(plane, getBlockBox(ZIntPoint(x, y, z)))) {
               blockQueue.push(ZIntPoint(x, y, z));
+#ifdef _DEBUG_0
+              std::cout << "block: " << getBlockBox(ZIntPoint(x, y, z)) << std::endl;
+#endif
             }
           }
           checked[key] = true;
         }
       });
     }
-#ifdef _DEBUG_
+
+    blockQueue.pop();
+  }
+}
+
+void ZBlockGrid::forEachIntersectedBlockApprox(
+    const ZAffineRect &plane, std::function<void(int i, int j, int k)> f)
+{
+  if (!isValid()) {
+    return;
+  }
+
+  auto _getKey = [](int x, int y, int z) {
+    return std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+  };
+
+  std::queue<ZIntPoint> blockQueue;
+  ZIntPoint seedBlock = getBlockIndex(plane.getCenter().roundToIntPoint());
+  blockQueue.push(seedBlock);
+
+  std::unordered_map<std::string, bool> checked;
+  std::string key = _getKey(seedBlock.getX(), seedBlock.getY(), seedBlock.getZ());
+  checked[key] = true;
+
+  double normalRange = 0.0;
+  double v1Range = 0.0;
+  double v2Range = 0.0;
+  zgeom::EstimateBoxRange(
+        ZCuboid(ZPoint(0, 0, 0), getBlockSize().toPoint()),
+        plane.getV1(), plane.getV2(), plane.getAffinePlane().getNormal(),
+        v1Range, v2Range, normalRange);
+
+
+  while (!blockQueue.empty()) {
+    ZIntPoint block = blockQueue.front();
+    if (zgeom::Intersects(plane, getBlockBox(block))) {
+      if (containsBlock(block)) {
+        f(block.getX(), block.getY(), block.getZ());
+      }
+      zgeom::raster::ForEachNeighbor<3>(
+            block.getX(), block.getY(), block.getZ(), [&](int x, int y, int z) {
+        std::string key = _getKey(x, y, z);
+        if (!checked[key]) {
+          if (containsBlock(x, y, z)) {
+            ZPoint minCorner = getBlockPosition(ZIntPoint(x, y, z)).toPoint();
+            ZCuboid box(minCorner, minCorner + m_blockSize.toPoint());
+            if (zgeom::IntersectsApprox(
+                  plane, box, normalRange, v1Range, v2Range)) {
+              blockQueue.push(ZIntPoint(x, y, z));
+#ifdef _DEBUG_0
+              std::cout << "block: " << getBlockBox(ZIntPoint(x, y, z)) << std::endl;
+#endif
+            }
+          }
+          checked[key] = true;
+        }
+      });
+    }
+#ifdef _DEBUG_0
           std::cout << "block queue " << blockQueue.size() << std::endl;
 #endif
     blockQueue.pop();
@@ -224,4 +290,9 @@ ZBlockGrid::Location ZBlockGrid::getLocation(int x, int y, int z) const
                             z - blockIndex.getZ() * m_blockSize.getZ());
 
   return location;
+}
+
+bool ZBlockGrid::isValid() const
+{
+  return m_size.definitePositive() && m_blockSize.definitePositive();
 }

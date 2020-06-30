@@ -3,6 +3,7 @@
 
 #include "ztestheader.h"
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidtargetfactory.h"
 
 #ifdef _USE_GTEST_
 
@@ -180,6 +181,29 @@ TEST(ZDvidTarget, Basic)
     target.setGrayScaleName("grayscale");
     ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234::grayscale",
               target.getGrayscaleSourceString());
+  }
+}
+
+TEST(ZDvidTarget, Factory)
+{
+  {
+    ZDvidTarget target = ZDvidTargetFactory::MakeFromSourceString(
+          "mock:emdata2.int.janelia.org:9000:3456");
+    ASSERT_EQ("mock", target.getScheme());
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
+    ASSERT_EQ("3456", target.getUuid());
+
+    target = ZDvidTargetFactory::MakeFromSpec(
+              "https://emdata2.int.janelia.org:9000"
+              "?uuid=3456&segmentation=seg&grayscale=gs");
+    ASSERT_EQ("https", target.getScheme());
+    ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+    ASSERT_EQ(9000, target.getPort());
+    ASSERT_EQ("3456", target.getUuid());
+    ASSERT_EQ("seg", target.getSegmentationName());
+    ASSERT_EQ("gs", target.getGrayScaleName());
+
   }
 }
 

@@ -2045,11 +2045,13 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
       getCompleteDocument()->downloadBookmark();
       getCompleteDocument()->downloadTodoList();
 
+      /*
       ZFlyEmToDoList *todoList =
           getCompleteDocument()->getTodoList(neutu::EAxis::Z);
       if (todoList) {
         todoList->attachView(getView());
       }
+      */
     }
   }
 

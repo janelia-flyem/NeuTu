@@ -7,6 +7,7 @@
 
 class FlyEmTodoBlockGrid;
 class FlyEmTodoSource;
+class ZDvidTarget;
 
 class FlyEmTodoEnsemble : public ZStackObject
 {
@@ -21,13 +22,17 @@ public:
   bool display(
       QPainter *painter, const DisplayConfig &config) const;
 
-  void setSource(std::shared_ptr<FlyEmTodoSource> source);
+
+  void setDvidTarget(const ZDvidTarget &target);
 
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
   void display(ZPainter &painter, const DisplayConfig &config) const override;
   */
+
+//private:
+//  void setSource(std::shared_ptr<FlyEmTodoSource> source);
 
 private:
   std::shared_ptr<FlyEmTodoBlockGrid> m_blockGrid;

@@ -65,6 +65,8 @@ public:
   std::shared_ptr<ZSliceCanvas> getValidCanvas(neutu::data3d::ETarget target);
   std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
 
+  ZSliceCanvas* makeClearCanvas();
+
   void setCanvasVisible(neutu::data3d::ETarget target, bool visible);
 
   void setImage(ZImage *image);
@@ -261,6 +263,8 @@ public:
 //  bool paintWidgetCanvas(ZImage *canvas);
   ZImage* makeWidgetCanvas() const;
   void updateWidgetCanvas(ZPixmap *canvas);
+
+  void updateSliceCanvas(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
 
   //To be called by parent widget
   void adjustTransformWithResize();

@@ -4,6 +4,19 @@
 #include "zaffineplane.h"
 #include "zlinesegment.h"
 
+/*!
+ * \brief The class for defining a rectangle on an affine plane
+ *
+ * An affine rectangle is a rectangle on an affine plane, which is a plane with
+ * an offset. Therefore, it has parameters of defining the plane as well as its
+ * size, including its width and height. Either width or height can be 0,
+ * indicating the rectangle is empty. But for some operations, a non-zero
+ * dimension with zero for the other might make the rectangle like a line
+ * segment.
+ *
+ * Note: The name affine is from the affine space, which is the normal vector space
+ * plus an offset. Don't confuse it with affine transformation.
+ */
 class ZAffineRect
 {
 public:
@@ -35,6 +48,13 @@ public:
   void setCenter(double x, double y, double z);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
   void setPlane(const ZAffinePlane &plane);
+
+  /*!
+   * \brief Set the width and height of the rectangle
+   *
+   * Since negative size is not allowed, the width or height is set to 0 if
+   * \a width or \a height is negative.
+   */
   void setSize(double width, double height);
 
   void translate(double dx, double dy, double dz);
@@ -46,7 +66,9 @@ public:
   void scale(double su, double sv);
 
 
-  ZAffinePlane getAffinePlane() const;
+  inline const ZAffinePlane& getAffinePlane() const {
+    return m_ap;
+  }
 
   bool containsProjection(const ZPoint &pt) const;
   bool contains(const ZPoint &pt) const;

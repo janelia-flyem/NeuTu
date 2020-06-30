@@ -125,6 +125,7 @@ public:
   ZIntCuboid toIntCuboid() const;
   static ZCuboid FromIntCuboid(const ZIntCuboid &cuboid);
   double getDiagonalLength() const;
+  int getMinSideLength() const;
 
   std::vector<double> toCornerVector() const;
 

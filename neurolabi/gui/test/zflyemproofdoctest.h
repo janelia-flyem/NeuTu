@@ -34,12 +34,14 @@ TEST(ZFlyEmProofDoc, DVID)
     ASSERT_TRUE(doc.getDvidReader().good());
     ASSERT_TRUE(doc.getDvidWriter().good());
 
-    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::X, false));
-    ASSERT_EQ(NULL, doc.getDvidLabelSlice(neutu::EAxis::Y, false));
+    ASSERT_TRUE(doc.getDvidLabelSlice(neutu::EAxis::X, false));
+    ASSERT_TRUE(doc.getDvidLabelSlice(neutu::EAxis::Y, false));
     ASSERT_TRUE(doc.getDvidLabelSlice(neutu::EAxis::Z, false) != NULL);
 
     ZDvidLabelSlice *slice = doc.getDvidLabelSlice(neutu::EAxis::Z, false);
     ZStackViewParam param;
+    param.setCutCenter(ZIntPoint(1000, 700, 1023));
+    param.setSize(1000, 600, neutu::data3d::ESpace::MODEL);
 //    param.setWidgetRect(QRect(0, 0, 800, 600));
 //    param.setCanvasRect(QRect(479, 448, 1510, 1023));
 //    param.setViewPort(479, 448, 1510, 1023);

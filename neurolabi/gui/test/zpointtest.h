@@ -28,13 +28,13 @@ TEST(ZIntPoint, ToPoint)
 {
   ZIntPoint pt(1, 2, 3);
   ASSERT_EQ(ZPoint(1, 2, 3), pt.toPoint());
-  ASSERT_EQ(ZPoint(0.5, 1.5, 2.5), pt.toMinCorner());
-  ASSERT_EQ(ZPoint(1.5, 2.5, 3.5), pt.toMaxCorner());
+  ASSERT_EQ(ZPoint(1, 2, 3), pt.toMinCorner());
+  ASSERT_EQ(ZPoint(2, 3, 4), pt.toMaxCorner());
 
   pt.set(-1, -2, -3);
   ASSERT_EQ(ZPoint(-1, -2, -3), pt.toPoint());
-  ASSERT_EQ(ZPoint(-0.5, -1.5, -2.5), pt.toMaxCorner());
-  ASSERT_EQ(ZPoint(-1.5, -2.5, -3.5), pt.toMinCorner());
+  ASSERT_EQ(ZPoint(-1, -2, -3), pt.toMinCorner());
+  ASSERT_EQ(ZPoint(0, -1, -2), pt.toMaxCorner());
 }
 
 TEST(ZPoint, Basic)

@@ -719,6 +719,11 @@ double ZCuboid::getDiagonalLength() const
   return sqrt(width() * width() + height() * height() + depth() * depth());
 }
 
+int ZCuboid::getMinSideLength() const
+{
+  return std::min(std::min(width(), height()), depth());
+}
+
 std::vector<double> ZCuboid::toCornerVector() const
 {
   std::vector<double> corner(6);

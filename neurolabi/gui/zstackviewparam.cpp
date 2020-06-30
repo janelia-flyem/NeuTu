@@ -45,7 +45,8 @@ void ZStackViewParam::setViewport(
 ZAffineRect ZStackViewParam::getCutRect() const
 {
   return m_transform.getCutRect(
-        m_viewportSize.m_width, m_viewportSize.m_height, m_viewportSize.m_space);
+        getWidth(m_viewportSize.m_space), getHeight(m_viewportSize.m_space),
+        m_viewportSize.m_space);
 }
 
 ZAffineRect ZStackViewParam::getIntCutRect() const
@@ -56,8 +57,12 @@ ZAffineRect ZStackViewParam::getIntCutRect() const
   int width = neutu::iround(rect.getWidth());
   int height = neutu::iround(rect.getHeight());
   if (!center.hasIntCoord()) {
-    width += 2;
-    height += 2;
+    if (width > 0) {
+      width += 2;
+    }
+    if (height > 0) {
+      height += 2;
+    }
   }
   rect.setSize(width, height);
 
@@ -65,9 +70,29 @@ ZAffineRect ZStackViewParam::getIntCutRect() const
 //  return getDiscretized().getCutRect();
 }
 
+namespace {
+
+ZAffineRect& empty_int_rect(ZAffineRect &rect)
+{
+  rect.setCenter(rect.getCenter().rounded());
+  rect.setSize(0, 0);
+  return rect;
+}
+
+}
+
 ZAffineRect ZStackViewParam::getIntCutRect(const ZIntCuboid &modelRange) const
 {
+  if (modelRange.isEmpty()) {
+    return getIntCutRect();
+  }
+
   ZAffineRect rect = getCutRect();
+
+  if (!m_isViewportOpen) {
+    return empty_int_rect(rect);
+  }
+
   ZCuboid viewBox = m_transform.getViewBox(modelRange);
 //  ZIntPoint newCenter = rect.getCenter().roundToIntPoint();
 
@@ -79,6 +104,9 @@ ZAffineRect ZStackViewParam::getIntCutRect(const ZIntCuboid &modelRange) const
   double v0 = std::max(-halfHeight, viewBox.getMinCorner().getY());
   double v1 = std::min(halfHeight, viewBox.getMaxCorner().getY());
 
+  if (u0 >= u1 || v0 >= v1) {
+    return empty_int_rect(rect);
+  }
 
   if (getSliceAxis() == neutu::EAxis::ARB) {
     std::pair<int, int> ur = zgeom::ToIntRange(u0, u1);
@@ -349,30 +377,45 @@ void ZStackViewParam::setSize(
   m_viewportSize.set(width, height, sizeSpace);
 }
 
-double ZStackViewParam::getWidth(neutu::data3d::ESpace space) const
+namespace {
+double get_dim(double d, double scale, neutu::data3d::ESpace sourceSpace,
+               neutu::data3d::ESpace targetSpace, bool viewOpen)
 {
-  if (m_isViewportOpen == false || m_transform.getScale() <= 0.0) {
+  if (viewOpen == false  || scale <= 0.0) {
     return 0.0;
   }
 
-  if (space == neutu::data3d::ESpace::CANVAS) {
-    return m_viewportSize.m_width;
+  if (sourceSpace != targetSpace) {
+    switch(targetSpace) {
+    case neutu::data3d::ESpace::CANVAS:
+      d *= scale;
+      break;
+    case neutu::data3d::ESpace::VIEW:
+    case neutu::data3d::ESpace::MODEL:
+      if (sourceSpace == neutu::data3d::ESpace::CANVAS) {
+        d /= scale;
+      }
+      break;
+    }
   }
 
-  return m_viewportSize.m_width / m_transform.getScale();
+  return d;
+}
+
+}
+
+double ZStackViewParam::getWidth(neutu::data3d::ESpace space) const
+{
+  return get_dim(
+        m_viewportSize.m_width, m_transform.getScale(),
+        m_viewportSize.m_space, space, m_isViewportOpen);
 }
 
 double ZStackViewParam::getHeight(neutu::data3d::ESpace space) const
 {
-  if (m_isViewportOpen == false || m_transform.getScale() <= 0.0) {
-    return 0.0;
-  }
-
-  if (space == neutu::data3d::ESpace::CANVAS) {
-    return m_viewportSize.m_height;
-  }
-
-  return m_viewportSize.m_height / m_transform.getScale();
+  return get_dim(
+        m_viewportSize.m_height, m_transform.getScale(),
+        m_viewportSize.m_space, space, m_isViewportOpen);
 }
 
 int ZStackViewParam::getIntWidth(neutu::data3d::ESpace space) const

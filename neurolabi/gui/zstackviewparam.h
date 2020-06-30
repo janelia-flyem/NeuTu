@@ -30,6 +30,7 @@ public:
   void setViewport(int width, int height, neutu::data3d::ESpace sizeSpace);
 
   ZAffineRect getCutRect() const;
+
   /*!
    * \brief Get a rectangle adjusted for the integer space
    *
@@ -37,6 +38,12 @@ public:
    */
   ZAffineRect getIntCutRect() const;
 
+  /*!
+   * \brief Get a rectangle adjusted for the integer space
+   *
+   * The result will be cropped by \a modelRange. But if \a modeRange is not
+   * valid, it is the same is \a getIntCutRect().
+   */
   ZAffineRect getIntCutRect(const ZIntCuboid &modelRange) const;
 
   double getWidth(neutu::data3d::ESpace space) const;

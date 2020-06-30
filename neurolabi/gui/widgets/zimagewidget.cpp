@@ -69,6 +69,16 @@ std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(
   return canvas;
 }
 
+ZSliceCanvas* ZImageWidget::makeClearCanvas()
+{
+  ZSliceCanvas *canvas = new ZSliceCanvas;
+  canvas->set(
+        width(), height(), m_sliceViewTransform,
+        ZSliceCanvas::ESetOption::FORCE_CLEAR);
+
+  return canvas;
+}
+
 std::shared_ptr<ZSliceCanvas> ZImageWidget::validateCanvas(
     neutu::data3d::ETarget target)
 {
@@ -673,6 +683,19 @@ void ZImageWidget::updateWidgetCanvas(ZPixmap *canvas)
     update();
   }
 #endif
+}
+
+void ZImageWidget::updateSliceCanvas(
+    neutu::data3d::ETarget target, ZSliceCanvas *canvas)
+{
+  if (canvas) {
+    int index = neutu::EnumValue(target);
+    if (index >= 0 && index < m_canvasList.size()) {
+      auto oldCanvas = m_canvasList[index];
+      m_canvasList[index] = std::shared_ptr<ZSliceCanvas>(canvas);
+      update();
+    }
+  }
 }
 
 int ZImageWidget::getCutDepth() const
@@ -1368,20 +1391,9 @@ double ZImageWidget::getAcutalZoomRatioY() const
 
 void ZImageWidget::updateView()
 {
-  //View port adjustment
-  /*
-  if (m_offsetAdjustment) {
-    int zoom = neutu::iround(std::log2(getViewProj().getZoom())) + 1;
-    if (zoom > 0) {
-      m_viewProj.alignOffset(zgeom::GetZoomScale(zoom));
-    }
-  }
-  */
-
   if (!isPaintBlocked()) {
     update();
   }
-//  update(QRect(QPoint(0, 0), screenSize()));
 }
 
 #if 0

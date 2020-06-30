@@ -105,6 +105,13 @@ public:
 
   void forEachIntersectedBlock(
       const ZAffineRect &plane, std::function<void(int i, int j, int k)> f);
+  /*!
+   * \brief A faster but approximate way of iterating through intersected blocks.
+   */
+  void forEachIntersectedBlockApprox(
+      const ZAffineRect &plane, std::function<void(int i, int j, int k)> f);
+
+  bool isValid() const;
 
 protected:
   ZIntPoint m_size; //Grid size

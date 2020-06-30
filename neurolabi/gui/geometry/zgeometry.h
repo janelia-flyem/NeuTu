@@ -52,7 +52,12 @@ int GetZoomLevel(int scale);
 void CopyToArray(const ZIntPoint &pt, int v[]);
 
 /*!
- * \brief Compute intersectin ratio for a line segment intersecting with a plane
+ * \brief Compute intersectin ratio for a line segment intersecting with a plane.
+ *
+ * Note that the intersection ratio between the line segment
+ * (\a lineStart, \a lineEnd) and \a plane can indicate a point outside of the
+ * line segment which the ratio is less than 0 or greate than 1. The ratio is 0
+ * when both \a lineStart and \a lineEnd is on the plane (approximately).
  */
 double ComputeIntersection(
     const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd);
@@ -63,7 +68,9 @@ double ComputeIntersection(const ZAffinePlane &plane, const ZLineSegment &seg);
 /*!
  * \brief Compute intersection point between a plane and a line segment
  *
- * It returns an invalid point if there is no intersection
+ * It returns an invalid point if there is no intersection. It returns
+ * \a lineStart if both \a lineStart and \a lineEnd are on the plane
+ * (approximately).
  */
 ZPoint ComputeIntersectionPoint(
     const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd);
@@ -77,10 +84,29 @@ ZPoint ComputeIntersectionPoint(
 
 bool Intersects(
     const ZAffineRect &rect, double x, double y, double z, double r);
+
 bool Intersects(const ZAffineRect &rect, const ZCuboid &box);
 bool Intersects(const ZAffineRect &rect, const ZIntCuboid &box);
 bool Intersects(const ZAffineRect &rect, const ZLineSegment &seg);
 bool Intersects(const ZAffineRect &r1, const ZAffineRect &r2);
+
+/*!
+ * \brief A fast way of estimating intersection
+ *
+ * \a box intersects with \a rect approximately iff the components of the vector
+ * from the rectangle center to the box center is less than
+ * (v1: width/2 + v1Range, v2: height/2 + v2Range, n: normalRange).
+ */
+bool IntersectsApprox(
+    const ZAffineRect &rect, const ZCuboid &box,
+    double normalRange, double v1Range, double v2Range);
+
+void EstimateBoxRange(
+    const ZCuboid &box, const ZPoint &a1, const ZPoint &a2, const ZPoint &a3,
+    double &r1, double &r2, double &r3);
+
+bool IntersectsApprox(
+    const ZAffineRect &rect, const ZCuboid &box);
 
 ZIntCuboid GetIntBoundBox(const ZAffineRect &rect);
 

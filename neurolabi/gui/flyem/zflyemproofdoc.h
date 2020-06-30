@@ -703,6 +703,7 @@ protected:
 //  void initGrayscaleSlice(neutu::EAxis axis);
   void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
   void initLabelSlice(neutu::EAxis axis);
+  void initTodoEnsemble();
 
   void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
   void setGrayscaleReader(

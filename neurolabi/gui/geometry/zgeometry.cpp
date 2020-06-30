@@ -382,7 +382,7 @@ ZPoint zgeom::ComputeIntersectionPoint(
 
   ZPoint intersection;
   intersection.invalidate();
-  if (lambda > 0.0 && lambda < 1.0) {
+  if (lambda >= 0.0 && lambda <= 1.0) {
     intersection = seg.getIntercept(lambda);
   }
 
@@ -432,23 +432,44 @@ bool zgeom::Intersects(
   double halfWidth = rect.getWidth() * 0.5;
   double halfHeight = rect.getHeight() * 0.5;
 
-  return neutu::WithinOpenRange(pt.x(), -halfWidth - r, halfWidth + r) &&
-      neutu::WithinOpenRange(pt.y(), -halfHeight - r, halfHeight + r) &&
-      neutu::WithinOpenRange(pt.z(), -r, r);
+  return neutu::WithinCloseRange(pt.x(), -halfWidth - r, halfWidth + r) &&
+      neutu::WithinCloseRange(pt.y(), -halfHeight - r, halfHeight + r) &&
+      neutu::WithinCloseRange(pt.z(), -r, r);
 }
 
 bool zgeom::Intersects(const ZAffineRect &rect, const ZLineSegment &seg)
 {
-  ZPoint v0 = rect.getAffinePlane().align(seg.getStartPoint());
-  ZPoint v1 = rect.getAffinePlane().align(seg.getEndPoint());
+  ZPoint offset = rect.getAffinePlane().getOffset();
+  ZPoint v0 = seg.getStartPoint() - offset;
+  ZPoint v1 = seg.getEndPoint() - offset;
+  ZPoint normal = rect.getAffinePlane().getNormal();
+  double z0 = v0.dot(normal);
+  double z1 = v1.dot(normal);
 
-  ZPoint intersection = zgeom::ComputeIntersectionPoint(
-        ZPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0)), ZLineSegment(v0, v1));
-  if (intersection.isValid()) {
-    double halfWidth = rect.getWidth() * 0.5;
-    double halfHeight = rect.getHeight() * 0.5;
-    return neutu::WithinCloseRange(intersection.x(), -halfWidth, halfWidth) &&
-        neutu::WithinCloseRange(intersection.y(), -halfHeight, halfHeight);
+//  ZPoint v0 = rect.getAffinePlane().align(seg.getStartPoint());
+//  ZPoint v1 = rect.getAffinePlane().align(seg.getEndPoint());
+
+  double lambda = 0.0;
+  double sz = z0 - z1;
+  if (std::fabs(sz) > ZPoint::MIN_DIST) {
+    lambda = z0 / sz;
+  }
+
+  if (lambda > 0.0 && lambda < 1.0) {
+    v0.set(v0.dot(rect.getAffinePlane().getV1()),
+           v0.dot(rect.getAffinePlane().getV2()), z0);
+    v1.set(v1.dot(rect.getAffinePlane().getV1()),
+           v1.dot(rect.getAffinePlane().getV2()), z1);
+
+    ZPoint intersection = ZLineSegment(v0, v1).getIntercept(lambda);
+//    ZPoint intersection = zgeom::ComputeIntersectionPoint(
+//          ZPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0)), ZLineSegment(v0, v1));
+    if (intersection.isValid()) {
+      double halfWidth = rect.getWidth() * 0.5;
+      double halfHeight = rect.getHeight() * 0.5;
+      return neutu::WithinCloseRange(intersection.x(), -halfWidth, halfWidth) &&
+          neutu::WithinCloseRange(intersection.y(), -halfHeight, halfHeight);
+    }
   }
 
   return false;
@@ -466,6 +487,99 @@ bool zgeom::Intersects(const ZAffineRect &r1, const ZAffineRect &r2)
   }
 
   return false;
+}
+
+bool zgeom::IntersectsApprox(
+    const ZAffineRect &rect, const ZCuboid &box,
+    double normalRange, double v1Range, double v2Range)
+{
+  if (rect.isEmpty()) {
+    return false;
+  }
+
+  ZPoint dc = box.getCenter() - rect.getCenter();
+  double d = std::fabs(dc.dot(rect.getAffinePlane().getNormal()));
+  if (d > normalRange) {
+    return false;
+  } else {
+    double u = std::fabs(dc.dot(rect.getAffinePlane().getV1()));
+    if (u > rect.getWidth() * 0.5 + v1Range) {
+      return false;
+    }
+    double v = std::fabs(dc.dot(rect.getAffinePlane().getV2()));
+    if (v > rect.getHeight() * 0.5 + v2Range) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void zgeom::EstimateBoxRange(
+    const ZCuboid &box, const ZPoint &a1, const ZPoint &a2, const ZPoint &a3,
+    double &r1, double &r2, double &r3)
+{
+  r1 = 0.0;
+  r2 = 0.0;
+  r3 = 0.0;
+
+  ZPoint boxCenter = box.getCenter();
+
+  for (int i = 0; i < 4; ++i) {
+    ZPoint v = box.getCorner(i) - boxCenter; //diagonal vector
+    double d = std::fabs(v.dot(a1));
+    if (d > r1) {
+      r1 = d;
+    }
+
+    d = std::fabs(v.dot(a2));
+    if (d > r2) {
+      r2 = d;
+    }
+
+    d = std::fabs(v.dot(a3));
+    if (d > r3) {
+      r3 = d;
+    }
+  }
+}
+
+bool zgeom::IntersectsApprox(const ZAffineRect &rect, const ZCuboid &box)
+{
+  double normalRange = 0.0;
+  double v1Range = 0.0;
+  double v2Range = 0.0;
+  EstimateBoxRange(
+        box, rect.getAffinePlane().getV1(), rect.getAffinePlane().getV2(),
+        rect.getAffinePlane().getNormal(), v1Range, v2Range, normalRange);
+  /*
+  double normalRange = 0.0;
+  double v1Range = 0.0;
+  double v2Range = 0.0;
+
+  ZPoint boxCenter = box.getCenter();
+
+  for (int i = 0; i < 4; ++i) {
+    ZPoint v = box.getCorner(i) - boxCenter; //diagonal vector
+    double d = std::fabs(v.dot(rect.getAffinePlane().getNormal()));
+    if (d > normalRange) {
+      normalRange = d;
+    }
+
+    d = std::fabs(v.dot(rect.getAffinePlane().getV1()));
+    if (d > v1Range) {
+      v1Range = d;
+    }
+
+    d = std::fabs(v.dot(rect.getAffinePlane().getV2()));
+    if (d > v2Range) {
+      v2Range = d;
+    }
+  }
+  */
+
+  return IntersectsApprox(
+        rect, box, normalRange, v1Range, v2Range);
 }
 
 ZIntCuboid zgeom::GetIntBoundBox(const ZAffineRect &rect)
@@ -552,6 +666,29 @@ bool zgeom::Intersects(const ZAffineRect &rect, const ZCuboid &box)
   }
 
   if (box.isValid()) {
+    ZPoint center = box.getCenter();
+    double dist = std::fabs(rect.getAffinePlane().computeSignedDistance(center));
+    double t2 = box.getMinSideLength() * 0.5;
+    if (dist <= t2) {
+      if (rect.containsProjection(center)) {
+        return true;
+      }
+    }
+
+    double t1 = box.getDiagonalLength() * 0.5;
+    if (dist > t1) {
+      return false;
+    }
+
+
+    /*
+    if (std::fabs(
+          rect.getAffinePlane().computeSignedDistance(center)) >
+        box.getDiagonalLength() * 0.5) {
+      return false;
+    }
+        */
+
     for (int i = 0; i < 4; ++i) {
       if(box.contains(rect.getCorner(i))) {
         return true;

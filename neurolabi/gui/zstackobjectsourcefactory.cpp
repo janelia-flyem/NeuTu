@@ -411,6 +411,12 @@ ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(neutu::EAxis axis)
 }
 
 std::string
+ZStackObjectSourceFactory::MakeTodoEnsembleSource()
+{
+  return "#.DVIDFlyEMTodoEnsemble";
+}
+
+std::string
 ZStackObjectSourceFactory::MakeTodoListEnsembleSource()
 {
   return "#.DVIDFlyEMTodoList";

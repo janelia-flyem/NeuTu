@@ -6,7 +6,6 @@
 
 FlyEmTodoBlockGrid::FlyEmTodoBlockGrid()
 {
-
 }
 
 std::string FlyEmTodoBlockGrid::GetChunkKey(int i, int j, int k)
