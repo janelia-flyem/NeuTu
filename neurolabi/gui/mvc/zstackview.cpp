@@ -1321,15 +1321,6 @@ void ZStackView::redraw(EUpdateOption option)
           updateObjectBuffer(target, objList); },
         ZStackObjectPaintSorter::SortingZ(true));
 
-//  qint64 tilePaintTime = timer.elapsed();
-//  paintTileCanvasBuffer();
-//  paintActiveDecorationBuffer();
-//  paintDynamicObjectBuffer();
-//  paintObjectBuffer();
-//  paintObjectBuffer(neutu::data3d::ETarget::WIDGET_CANVAS);
-//  qint64 objectPaintTime = timer.elapsed();
-//  ZOUT(LTRACE(), 5) << "paint object per frame: " << objectPaintTime;
-
   updateImageScreen(option);
 
 //  timer.stop();
@@ -2221,24 +2212,17 @@ void ZStackView::paintMultiresImageTest(int resLevel)
 
 void ZStackView::paintStackBuffer()
 {
-#if 0
-  updateCanvas();
-
-  paintMultiresImageTest(1);
-#endif
-
   ZStack *stack = stackData();
   if (stack) {
     if (stack->hasData()) {
       QSizeF viewportSize = imageWidget()->getViewportSize();
       if (viewportSize.width() > 0 && viewportSize.height() > 0) {
-        std::shared_ptr<ZSliceCanvas> canvas =
-            getClearCanvas(neutu::data3d::ETarget::STACK_CANVAS);
+        auto canvas = getClearCanvas(neutu::data3d::ETarget::STACK_CANVAS);
 //            imageWidget()->getValidCanvas(ZImageWidget::CANVAS_ROLE_IMAGE);
         ZImageSliceFactory::Make(
               *stack,
               imageWidget()->getSliceViewTransform().getModelViewTransform(),
-              viewportSize.width(), viewportSize.height(), canvas.get());
+              viewportSize.width(), viewportSize.height(), canvas);
 #ifdef _DEBUG_2
         std::cout << "Saving image canvas ..." << std::endl;
         canvas->save(GET_TEST_DATA_DIR + "/_test.png");
@@ -2246,80 +2230,6 @@ void ZStackView::paintStackBuffer()
       }
     }
   }
-
-
-#if 0
-  ZStack *stack = stackData();
-
-  if (stack == NULL) {
-    return;
-  }
-
-  bool showImage = false;
-  for (size_t i=0; i<m_chVisibleState.size(); ++i) {
-    if (m_chVisibleState[i]->get()) {
-      showImage = true;
-      break;
-    }
-  }
-
-  if (!showImage) {
-    if (!buddyDocument()->hasVisibleSparseStack()) {
-      return;
-    }
-  }
-
-//  updateImageCanvas();
-
-  if (buddyPresenter() != nullptr && m_image != nullptr) {
-    if (!buddyPresenter()->interactiveContext().isProjectView()) {
-      if (!stack->isVirtual() && showImage) {
-        if (stack->channelNumber() == 1) {   //grey
-          paintSingleChannelStackSlice(stack, m_depthControl->value());
-        } else { // multi channel image
-          paintMultipleChannelStackSlice(stack, m_depthControl->value());
-        }
-      } else {
-        m_image->setBackground();
-//        paintObjectBuffer(m_imagePainter, neutu::data3d::ETarget::TARGET_STACK_CANVAS);
-
-        if (buddyDocument()->hasVisibleSparseStack()) {
-          ZStack *slice =
-              buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
-          //paintSingleChannelStackSlice(slice, 0);
-          slice->translate(-getStackOffset());
-          slice->getOffset().setZ(0);
-
-          m_image->setData(slice, 0, true);
-          delete slice;
-        }
-      }
-      //m_scrollEnabled = true;
-    } else if (buddyPresenter()->interactiveContext().isProjectView()) {
-      //m_scrollEnabled = false;
-      if (!stack->isVirtual() && showImage) {
-        if (stack->channelNumber() == 1) {
-          paintSingleChannelStackMip(stack);
-        } else {    // for color image
-          paintMultipleChannelStackMip(stack);
-        }
-      } else {
-        m_image->setBackground();
-        if (buddyDocument()->hasVisibleSparseStack()) {
-          ZStack *slice =
-              buddyDocument()->getConstSparseStack()->getMip();
-          if (slice != NULL) {
-            slice->translate(-getStackOffset());
-            slice->getOffset().setZ(0);
-
-            m_image->setData(slice, 0, false, true);
-            delete slice;
-          }
-        }
-      }
-    }
-  }
-#endif
 
 }
 
@@ -2370,35 +2280,64 @@ void ZStackView::paintMask()
   updateImageScreen(EUpdateOption::QUEUED);
 }
 
+#if 0
 void ZStackView::paintObjectBuffer(
     ZSliceCanvas &canvas, neutu::data3d::ETarget target)
 {
   if (canvas.isVisible()) {
-    ZSliceCanvasPaintHelper p(canvas);
-    QPainter *painter = p.getPainter();
-    if (painter->isActive()) {
+//    ZSliceCanvasPaintHelper p(canvas);
+//    QPainter *painter = p.getPainter();
+//    if (painter->isActive()) {
       updateObjectSorter();
+      auto objList = m_paintSorter.getVisibleObjectList(
+            target, ZStackObjectPaintSorter::SortingZ(true));
+
+      updateObjectBuffer(&canvas, target, objList);
+
+      /*
       neutu::data3d::DisplayConfig config;
       config.setStyle(buddyPresenter()->objectStyle());
       config.setTransform(canvas.getTransform());
-
-      auto objList = m_paintSorter.getVisibleObjectList(
-            target, ZStackObjectPaintSorter::SortingZ(true));
       for (ZStackObject *obj : objList) {
         if (obj->display(painter, config)) {
           canvas.setPainted(true);
         }
       }
-    }
+      */
+//    }
   }
 }
+#endif
+
+void ZStackView::updateObjectBuffer(neutu::data3d::ETarget target)
+{
+  ZSliceCanvas *canvas = getClearCanvas(target);
+
+  if (canvas) {
+    updateObjectBuffer(canvas, target);
+  }
+}
+
+void ZStackView::updateObjectBuffer(
+    ZSliceCanvas *canvas, neutu::data3d::ETarget target)
+{
+  if (canvas  && canvas->updateNeeded()) {
+    updateObjectSorter();
+    auto objList = m_paintSorter.getVisibleObjectList(
+          target, ZStackObjectPaintSorter::SortingZ(true));
+
+    updateObjectBuffer(canvas, target, objList);
+  }
+}
+
+
 
 void ZStackView::updateObjectBuffer(
     ZSliceCanvas *canvas, neutu::data3d::ETarget target,
     const QList<ZStackObject*> &objList)
 {
-  if (target == neutu::data3d::ETarget::NONBLOCKING_OBJECT_CANVAS) {
-    addNonblockCanvasTask(target, objList);
+  if (neutu::data3d::IsNonblocking(target)) {
+    addNonblockCanvasTask(canvas, target, objList);
   } else {
     updateObjectBuffer(canvas, objList);
   }
@@ -2407,18 +2346,24 @@ void ZStackView::updateObjectBuffer(
 void ZStackView::updateObjectBuffer(
     ZSliceCanvas *canvas, const QList<ZStackObject*> &objList)
 {
-  if (canvas) {
+  if (canvas && canvas->updateNeeded()) {
     ZSliceCanvasPaintHelper p(*canvas);
     QPainter *painter = p.getPainter();
-    if (painter->isActive()) {
-      neutu::data3d::DisplayConfig config;
-      config.setStyle(buddyPresenter()->objectStyle());
-      config.setTransform(canvas->getTransform());
+    updateObjectBuffer(canvas, painter, objList);
+  }
+}
 
-      for (ZStackObject *obj : objList) {
-        if (obj->display(painter, config)) {
-          canvas->setPainted(true);
-        }
+void ZStackView::updateObjectBuffer(
+    ZSliceCanvas *canvas, QPainter *painter, const QList<ZStackObject*> &objList)
+{
+  if (canvas  && canvas->updateNeeded() && painter->isActive()) {
+    neutu::data3d::DisplayConfig config;
+    config.setStyle(buddyPresenter()->objectStyle());
+    config.setTransform(canvas->getTransform());
+
+    for (ZStackObject *obj : objList) {
+      if (obj->display(painter, config)) {
+        canvas->setPainted(true);
       }
     }
   }
@@ -2427,20 +2372,13 @@ void ZStackView::updateObjectBuffer(
 void ZStackView::updateObjectBuffer(
     neutu::data3d::ETarget target, const QList<ZStackObject *> &objList)
 {
-  if (target == neutu::data3d::ETarget::NONBLOCKING_OBJECT_CANVAS) {
-    addNonblockCanvasTask(target, objList);
-  } else {
-    auto canvas = getClearCanvas(target);
-    updateObjectBuffer(canvas.get(), objList);
-  }
-}
-
-void ZStackView::updateObjectBuffer(neutu::data3d::ETarget target)
-{
-  std::shared_ptr<ZSliceCanvas> canvas = getClearCanvas(target);
-
-  if (canvas && canvas->isVisible()) {
-    paintObjectBuffer(*canvas, target);
+  ZSliceCanvas *canvas = getClearCanvas(target);
+  if (canvas && canvas->updateNeeded()) {
+    if (neutu::data3d::IsNonblocking(target)) {
+      addNonblockCanvasTask(canvas, target, objList);
+    } else {
+      updateObjectBuffer(canvas, objList);
+    }
   }
 }
 
@@ -2461,7 +2399,7 @@ void ZStackView::paintObject(neutu::data3d::ETarget target)
 
 void ZStackView::paintObject(const std::set<neutu::data3d::ETarget> &targetSet)
 {
-  m_paintSorter.clear();
+//  m_paintSorter.clear();
   for (neutu::data3d::ETarget target : targetSet) {
     updateObjectBuffer(target);
   }
@@ -2470,18 +2408,37 @@ void ZStackView::paintObject(const std::set<neutu::data3d::ETarget> &targetSet)
 }
 
 
+/*
 void ZStackView::addNonblockCanvasTask(
     neutu::data3d::ETarget target, const QList<ZStackObject *> &objList)
 {
-  ZTask *task = new ZFunctionTask([=]() {
-    ZSliceCanvas *canvas = imageWidget()->makeClearCanvas();
-    updateObjectBuffer(canvas, objList);
-    notifyCanvasUpdate(target, canvas);
-  });
+  addNonblockCanvasTask(nullptr, target, objList);
+}
+*/
 
-  task->setName("ZStackView::addNonblockCanvasTask");
+void ZStackView::addNonblockCanvasTask(
+    ZSliceCanvas *canvas, neutu::data3d::ETarget target,
+    const QList<ZStackObject *> &objList)
+{
+  if (imageWidget()->hasCanvas(canvas, target)) {
+    //Ignore the managed canvas, but stil try to update the screen
+    updateImageScreen(EUpdateOption::QUEUED);
+  } else {
+    ZTask *task = new ZFunctionTask([=]() {
+      ZSliceCanvas *bufferCanvas = canvas;
+      if (bufferCanvas == nullptr) {
+        bufferCanvas = imageWidget()->makeClearCanvas();
+      }
+      if (bufferCanvas->updateNeeded()) {
+        updateObjectBuffer(bufferCanvas, objList);
+      }
+      notifyCanvasUpdate(target, bufferCanvas);
+    });
 
-  addTask(task);
+    task->setName("ZStackView::addNonblockCanvasTask");
+
+    addTask(task);
+  }
 }
 
 void ZStackView::configureRecorder()
@@ -2495,6 +2452,7 @@ void ZStackView::configureRecorder()
   }
 }
 
+#if 0
 bool ZStackView::paintTileCanvasBuffer()
 {
 #ifdef _DEBUG_2
@@ -2530,7 +2488,9 @@ bool ZStackView::paintTileCanvasBuffer()
 
   return painted;
 }
+#endif
 
+#if 0
 void ZStackView::paintObject()
 {
 #ifdef _DEBUG_
@@ -2551,13 +2511,16 @@ void ZStackView::paintObject()
   &*/
   updateImageScreen(EUpdateOption::QUEUED);
 }
+#endif
 
+/*
 void ZStackView::paintActiveTile()
 {
   if (paintTileCanvasBuffer()) {
     updateImageScreen(EUpdateOption::QUEUED);
   }
 }
+*/
 
 void ZStackView::paintObject(const ZStackObjectInfoSet &selected,
                              const ZStackObjectInfoSet &deselected)
@@ -2615,80 +2578,31 @@ void ZStackView::paintObject(
 }
 */
 
+/*
 void ZStackView::paintDynamicObjectBuffer()
 {
   updateObjectBuffer(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
-#if 0
-  updateDynamicObjectCanvas();
-
-  if (m_dynamicObjectCanvas != NULL) {
-    ZPainter painter(m_dynamicObjectCanvas);
-    painter.setOpacity(m_dynamicObjectOpacity);
-    painter.setZOffset(buddyDocument()->getStackOffset().getZ());
-    paintObjectBuffer(painter, neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
-
-    if (painter.isPainted()) {
-      m_dynamicObjectCanvas->setVisible(true);
-    }
-  }
-#endif
 }
 
 void ZStackView::paintActiveDecorationBuffer()
 {
   updateObjectBuffer(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
-#if 0
-//  bool painted = false;
-  const QList<ZStackObject*>& drawableList =
-      buddyPresenter()->getActiveDecorationList();
-
-  if (!drawableList.isEmpty()) {
-    updateActiveDecorationCanvas();
-
-    if (m_activeDecorationCanvas != NULL) {
-
-      auto pred = [](const ZStackObject *obj) {
-        return obj->getTarget() == neutu::data3d::ETarget::OBJECT_CANVAS;
-      };
-      ZStackObjectPainter::Paint(
-            m_activeDecorationCanvas, drawableList, pred,
-            zstackobject::EDisplaySliceMode::SINGLE,
-            ZStackObject::EDisplayStyle::NORMAL);
-
-
-      /*
-      foreach (ZStackObject *obj, drawableList) {
-        if (obj->getTarget() == neutu::data3d::ETarget::OBJECT_CANVAS) {
-          paintHelper.paint(
-                obj, painter, sliceIndex(),
-                ZStackObject::EDisplayStyle::NORMAL, getSliceAxis());
-//          obj->display(painter, sliceIndex(), ZStackObject::NORMAL, m_sliceAxis);
-//          painted = true;
-        }
-      }
-      */
-
-      if (m_activeDecorationCanvas->isPainted()) {
-        m_activeDecorationCanvas->setVisible(true);
-#ifdef _DEBUG_2
-        m_activeDecorationCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-      }
-    }
-  }
-
-//  return painted;
-#endif
 }
+*/
+
 
 void ZStackView::paintActiveDecoration()
 {
+  paintObject(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
+  /*
   paintActiveDecorationBuffer();
   RefreshConfig config;
   config.widgetCanvasUpdateRequired = false;
   refreshScreen(config);
+  */
 //  updateImageScreen(EUpdateOption::QUEUED);
 }
+
 
 ZStack* ZStackView::getStrokeMask(neutu::EColor color)
 {
@@ -2878,10 +2792,12 @@ void ZStackView::requestWidgetCanvasUpdate()
   }
 }
 */
+/*
 void ZStackView::processWidgetCanvasUpdate(ZPixmap *canvas)
 {
   m_imageWidget->updateWidgetCanvas(canvas);
 }
+*/
 
 void ZStackView::processCanvasUpdate(
     neutu::data3d::ETarget target, ZSliceCanvas *canvas)
@@ -4068,19 +3984,59 @@ ZPainter* ZStackView::getPainter(neutu::data3d::ETarget target)
 }
 #endif
 
-std::shared_ptr<ZSliceCanvas> ZStackView::getClearCanvas(
+ZSliceCanvas *ZStackView::getClearCanvas(
     neutu::data3d::ETarget target)
 {
-  std::shared_ptr<ZSliceCanvas> canvas = imageWidget()->getClearCanvas(target);
-
-  if (canvas && neutu::data3d::IsSettled2dObjectCanvas(target)
+  bool visible = true;
+  if (neutu::data3d::IsSettled2dObjectCanvas(target)
       && target != neutu::data3d::ETarget::TILE_CANVAS) {
-    canvas->setVisible(buddyPresenter()->isObjectVisible());
+    visible = buddyPresenter()->isObjectVisible();
+  }
+
+  ZSliceCanvas *canvas = nullptr;
+
+  if (neutu::data3d::IsNonblocking(target)) {
+    if (visible) {
+      canvas = imageWidget()->makeClearCanvas();
+    }
+  }
+
+  if (canvas == nullptr) {
+    canvas = imageWidget()->getClearCanvas(target).get();
+  }
+
+  if (canvas) {
+    canvas->setVisible(visible);
   }
 
   return canvas;
 }
+/*
+ZSliceCanvas* ZStackView::getClearVisibleCanvas(neutu::data3d::ETarget target)
+{
+  bool visible = true;
+  if (neutu::data3d::IsSettled2dObjectCanvas(target)
+      && target != neutu::data3d::ETarget::TILE_CANVAS) {
+    visible = buddyPresenter()->isObjectVisible();
+  }
 
+  ZSliceCanvas *canvas = nullptr;
+
+  if (visible) {
+    if (neutu::data3d::IsNonblocking(target)) {
+      canvas = imageWidget()->makeClearCanvas();
+    } else {
+      canvas = getClearCanvas(target).get();
+    }
+
+    if (canvas && !canvas->isVisible()) {
+      canvas = nullptr;
+    }
+  }
+
+  return canvas;
+}
+*/
 void ZStackView::dump(const QString &msg)
 {
   m_stackLabel->setText(msg);

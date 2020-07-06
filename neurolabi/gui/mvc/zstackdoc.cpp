@@ -6045,11 +6045,21 @@ void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
   ZStackObjectInfo info;
   info.set(*obj);
   bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
-  /*
-  bufferObjectModified(obj->getType(), sync);
-  bufferObjectModified(obj->getTarget(), sync);
-  bufferObjectModified(obj->getRole(), sync);
-  */
+}
+
+void ZStackDoc::bufferObjectDataModified(ZStackObject *obj, bool sync)
+{
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_MODIFIED, sync);
+}
+
+void ZStackDoc::bufferObjectDataAdded(ZStackObject *obj, bool sync)
+{
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_ADDED, sync);
+}
+
+void ZStackDoc::bufferObjectDataRemoved(ZStackObject *obj, bool sync)
+{
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_REMOVED, sync);
 }
 
 void ZStackDoc::bufferObjectVisibilityChanged(ZStackObject *obj, bool sync)
@@ -6089,6 +6099,21 @@ void ZStackDoc::bufferObjectModified(
   }
 }
 
+void ZStackDoc::processObjectDataModified(ZStackObject *obj, bool sync)
+{
+  processObjectModified(obj, ZStackObjectInfo::STATE_MODIFIED, sync);
+}
+
+void ZStackDoc::processObjectDataAdded(ZStackObject *obj, bool sync)
+{
+  processObjectModified(obj, ZStackObjectInfo::STATE_ADDED, sync);
+}
+
+void ZStackDoc::processObjectDataRemoved(ZStackObject *obj, bool sync)
+{
+  processObjectModified(obj, ZStackObjectInfo::STATE_REMOVED, sync);
+}
+
 void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
 {
   if (obj) {
@@ -6098,25 +6123,26 @@ void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
   }
 }
 
+void ZStackDoc::processObjectModified(
+    ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
+{
+  if (obj) {
+    ZStackObjectInfo info;
+    info.set(*obj);
+    processObjectModified(info, state, sync);
+  }
+}
+
+void ZStackDoc::processObjectModified(
+    const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
+{
+  bufferObjectModified(info, state, sync);
+  processObjectModified();
+}
+
 void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
 {
-  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
-  processObjectModified();
-
-  /*
-  switch (getObjectModifiedMode()) {
-  case EObjectModifiedMode::PROMPT:
-    notifyObjectModified(info);
-    break;
-  case EObjectModifiedMode::CACHE:
-  {
-    bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
-  }
-    break;
-  default:
-    break;
-  }
-  */
+  processObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
 }
 /*
 void ZStackDoc::processObjectModified(neutu::data3d::ETarget target, bool sync)

@@ -62,6 +62,8 @@ public:
 
   double distanceTo(const ZPoint &pt) const;
   double distanceTo(double x, double y, double z) const;
+  double distanceSquareTo(const ZPoint &pt) const;
+  double distanceSquareTo(double x, double y, double z) const;
   double length() const;
   double lengthSqure() const;
 
@@ -130,6 +132,7 @@ public:
   void rotate(double theta, double psi, const ZPoint &center);
 
   bool hasIntCoord() const;
+  ZIntPoint toIntPoint() const;
   ZIntPoint roundToIntPoint() const;
   std::vector<double> toArray() const;
   ZPoint rounded() const;

@@ -893,7 +893,7 @@ void ZFlyEmProofPresenter::tryAddTodoItem()
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::EAction::RELEASE);
   ZPoint pt = event.getDataPosition();
-  tryAddTodoItem(pt.roundToIntPoint());
+  tryAddTodoItem(pt.toIntPoint());
 }
 
 void ZFlyEmProofPresenter::tryAddToMergeItem()

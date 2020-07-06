@@ -123,6 +123,7 @@ public:
   void clear();
 
   bool isValid() const;
+  void invalidate();
 
   static QColor GetDefaultColor(EKind kind);
   static double GetDefaultRadius(EKind kind);

@@ -245,12 +245,12 @@ public:
   void paintMaskBuffer();
 
 
-  bool paintTileCanvasBuffer();
+//  bool paintTileCanvasBuffer();
 
   //void paintObjectBuffer(ZImage *canvas, neutu::data3d::ETarget target);
 
-  void paintActiveDecorationBuffer();
-  void paintDynamicObjectBuffer();
+//  void paintActiveDecorationBuffer();
+//  void paintDynamicObjectBuffer();
 
 
   ZStack* getStrokeMask(uint8_t maskValue);
@@ -538,13 +538,13 @@ public slots:
 
   void paintStack();
   void paintMask();
-  void paintObject();
+//  void paintObject();
 //  void paintObject(QList<ZStackObject *> selected,
 //                   QList<ZStackObject *> deselected);
   void paintObject(const ZStackObjectInfoSet &selected,
                    const ZStackObjectInfoSet &deselected);
   void paintActiveDecoration();
-  void paintActiveTile();
+//  void paintActiveTile();
 
   void mouseReleasedInImageWidget(QMouseEvent *event);
   void mousePressedInImageWidget(QMouseEvent *event);
@@ -595,7 +595,7 @@ public slots:
 
   void enableCustomCheckBox(
       int index, const QString &text, QObject *receiver, const char *slot);
-  void processWidgetCanvasUpdate(ZPixmap *canvas);
+//  void processWidgetCanvasUpdate(ZPixmap *canvas);
 
   void processCanvasUpdate(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
 
@@ -626,13 +626,17 @@ private:
 //  void updateSliceViewParam();
   void prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter);
 
-  std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
+  ZSliceCanvas* getClearCanvas(neutu::data3d::ETarget target);
+//  ZSliceCanvas* getClearVisibleCanvas(neutu::data3d::ETarget target);
 
+//  void paintObjectBuffer(ZSliceCanvas &canvas, neutu::data3d::ETarget target);
 
-  void paintObjectBuffer(ZSliceCanvas &canvas, neutu::data3d::ETarget target);
+  void updateObjectBuffer(ZSliceCanvas *canvas, neutu::data3d::ETarget target);
 
   void updateObjectBuffer(
       ZSliceCanvas *canvas, const QList<ZStackObject*> &objList);
+  void updateObjectBuffer(
+      ZSliceCanvas *canvas, QPainter *painter, const QList<ZStackObject*> &objList);
   void updateObjectBuffer(
       ZSliceCanvas *canvas, neutu::data3d::ETarget target,
       const QList<ZStackObject*> &objList);
@@ -664,8 +668,11 @@ private:
 //  void addWidgetCanvasTask();
   void notifyWidgetCanvasUpdate(ZPixmap *canvas);
 
+//  void addNonblockCanvasTask(
+//      neutu::data3d::ETarget target, const QList<ZStackObject *> &objList);
   void addNonblockCanvasTask(
-      neutu::data3d::ETarget target, const QList<ZStackObject *> &objList);
+      ZSliceCanvas *canvas, neutu::data3d::ETarget target,
+      const QList<ZStackObject *> &objList);
   void notifyCanvasUpdate(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
 //  void notifyWidgetCanvasUpdate(ZImage *canvas);
 

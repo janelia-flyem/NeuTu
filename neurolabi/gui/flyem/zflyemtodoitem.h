@@ -19,8 +19,8 @@ public:
    *
    * With a position given, the object is set to a valid type.
    */
-  ZFlyEmToDoItem(const ZIntPoint &pos);
-  ZFlyEmToDoItem(int x, int y, int z);
+  explicit ZFlyEmToDoItem(const ZIntPoint &pos);
+  explicit ZFlyEmToDoItem(int x, int y, int z);
 
   bool display(QPainter *painter, const DisplayConfig &config) const override;
   /*

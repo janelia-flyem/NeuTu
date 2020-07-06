@@ -238,6 +238,16 @@ bool ZSliceCanvas::isVisible() const
   return m_isVisible;
 }
 
+bool ZSliceCanvas::updateNeeded() const
+{
+  return !isVisible() || !isEmpty();
+}
+
+bool ZSliceCanvas::isEmpty() const
+{
+  return getWidth() == 0 || getHeight() == 0;
+}
+
 QSize ZSliceCanvas::getSize() const
 {
   return m_pixmap.size();

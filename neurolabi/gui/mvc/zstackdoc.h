@@ -964,10 +964,6 @@ public:
 
   void bufferObjectModified(ZStackObject::EType type, bool sync = true);
   void bufferObjectModified(neutu::data3d::ETarget target, bool sync = true);
-//  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet,
-//                            bool sync = true);
-//  void bufferObjectModified(const QSet<neutu::data3d::ETarget> &targetSet,
-//                            bool sync = true);
   void bufferObjectModified(
       ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
   void bufferObjectModified(ZStackObject *obj, bool sync = true);
@@ -979,6 +975,11 @@ public:
       bool sync);
   void bufferObjectModified(
       const QSet<neutu::data3d::ETarget> &targetSet, bool sync = true);
+
+  void bufferObjectDataModified(ZStackObject *obj, bool sync = true);
+  void bufferObjectDataAdded(ZStackObject *obj, bool sync = true);
+  void bufferObjectDataRemoved(ZStackObject *obj, bool sync = true);
+
 
 
   /*!
@@ -994,6 +995,8 @@ public:
   void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
   void processObjectModified(ZStackObject::EType type, bool sync = true);
 
+  void processObjectModified(
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync);
   /*!
    * \brief Process object modfication
    *
@@ -1001,8 +1004,14 @@ public:
    * PROMPT mode, or buffers the inforation in the BUFFER mode.
    */
   void processObjectModified(ZStackObject *obj, bool sync = true);
+  void processObjectModified(
+      ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
   void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void processObjectModified(const ZStackObjectRole &role, bool sync = true);
+
+  void processObjectDataModified(ZStackObject *obj, bool sync = true);
+  void processObjectDataAdded(ZStackObject *obj, bool sync = true);
+  void processObjectDataRemoved(ZStackObject *obj, bool sync = true);
 
   void processSwcModified();
   void clearObjectModifiedBuffer(bool sync);

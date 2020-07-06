@@ -318,3 +318,9 @@ void FlyEmDataWriter::WriteMeshMerge(
     }
   }
 }
+
+void FlyEmDataWriter::WriteTodoItem(
+    ZDvidWriter &writer, const ZFlyEmToDoItem &item)
+{
+  writer.writeToDoItem(item);
+}

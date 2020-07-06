@@ -15,7 +15,7 @@ namespace neutu {
 
 namespace mvc {
 QString ComposeViewInfo(ZStackView *view, const ZPoint &dataPos);
-QString ComposeStackDataInfo(ZStackDoc *doc, double x, double y, double z,
+QString ComposeStackDataInfo(ZStackDoc *doc, const ZIntPoint &pos,
     neutu::mvc::ViewInfoFlags f);
 //ZPoint MapWidgetPosToData(const ZStackView *view, const ZPoint &widgetPos);
 

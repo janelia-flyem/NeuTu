@@ -2206,11 +2206,16 @@ int ZFlyEmBodySplitProject::selectAllSeed()
 //    getDocument()->deselectAllObject();
     foreach (const ZDocPlayer *player, playerList) {
       getDocument()->setSelected(player->getData(), true);
+      getDocument()->bufferObjectModified(
+            player->getData(), ZStackObjectInfo::STATE_VE_CHANGED);
       ++nSelected;
     }
+    getDocument()->processObjectModified();
+    /*
     if (m_dataFrame != NULL) {
       m_dataFrame->view()->paintObject();
     }
+    */
   }
 
   return nSelected;
@@ -2226,12 +2231,17 @@ int ZFlyEmBodySplitProject::selectSeed(int label)
     foreach (const ZDocPlayer *player, playerList) {
       if (player->getLabel() == label) {
        getDocument()->setSelected(player->getData(), true);
+       getDocument()->bufferObjectModified(
+             player->getData(), ZStackObjectInfo::STATE_VE_CHANGED);
        ++nSelected;
       }
     }
+    getDocument()->processObjectModified();
+    /*
     if (m_dataFrame != NULL) {
       m_dataFrame->view()->paintObject();
     }
+    */
   }
 
   return nSelected;
@@ -2335,18 +2345,24 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
       } else if (player->getLabel() == 1) {
         oldSeedSet.insert(player);
       }
+      getDocument()->bufferObjectModified(
+            player->getData(), ZStackObjectInfo::STATE_VE_CHANGED);
     }
 
     for (QSet<ZDocPlayer*>::iterator iter = newSeedSet.begin();
          iter != newSeedSet.end(); ++iter) {
       ZDocPlayer *seed = *iter;
       seed->setLabel(1);
+      getDocument()->bufferObjectModified(
+            seed->getData(), ZStackObjectInfo::STATE_VE_CHANGED);
     }
 
     for (QSet<ZDocPlayer*>::iterator iter = oldSeedSet.begin();
          iter != oldSeedSet.end(); ++iter) {
       ZDocPlayer *seed = *iter;
       seed->setLabel(label);
+      getDocument()->bufferObjectModified(
+            seed->getData(), ZStackObjectInfo::STATE_VE_CHANGED);
     }
 
     ZOUT(LTRACE(), 5) << "Swap seed label";
@@ -2366,6 +2382,8 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
             splitObj->setColor(ZStroke2d::GetLabelColor(label));
           }
         }
+        getDocument()->bufferObjectModified(
+              splitObj, ZStackObjectInfo::STATE_COLOR_CHANGED);
       }
     }
 
@@ -2374,9 +2392,13 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
       labelField->swapValue(1, label);
     }
 
+    getDocument()->processObjectModified();
+
+    /*
     if (m_dataFrame != NULL) {
       m_dataFrame->view()->paintObject();
     }
+    */
   }
 }
 

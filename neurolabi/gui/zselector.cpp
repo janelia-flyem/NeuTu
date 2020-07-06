@@ -132,11 +132,46 @@ void ZSelector<T>::removeObject(const T &obj)
 }
 
 template <typename T>
+void ZSelector<T>::clearDeselected()
+{
+  m_deselectedSet.clear();
+}
+
+template <typename T>
+void ZSelector<T>::clearSelected()
+{
+  m_selectedSet.clear();
+}
+
+template <typename T>
+bool ZSelector<T>::hasSelected() const
+{
+  return !m_selectedSet.empty();
+}
+
+template <typename T>
 void ZSelector<T>::print() const
 {
   std::cout << m_selectedSet.size() << " selected." << std::endl;
   std::cout << m_deselectedSet.size() << " deselected." << std::endl;
 }
+
+template <typename T>
+void ZSelector<T>::forEachSelected(std::function<void(const T& obj)> f)
+{
+  for (const T &obj : m_selectedSet) {
+    f(obj);
+  }
+}
+
+template <typename T>
+void ZSelector<T>::forEachDeselected(std::function<void(const T& obj)> f)
+{
+  for (const T &obj : m_deselectedSet) {
+    f(obj);
+  }
+}
+
 #if 0
 void ZStackObjectSelector::deselectObject(ZStackObject *obj)
 {

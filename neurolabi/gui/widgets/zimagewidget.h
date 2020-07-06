@@ -65,6 +65,8 @@ public:
   std::shared_ptr<ZSliceCanvas> getValidCanvas(neutu::data3d::ETarget target);
   std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
 
+  bool hasCanvas(ZSliceCanvas *canvas, neutu::data3d::ETarget target) const;
+
   ZSliceCanvas* makeClearCanvas();
 
   void setCanvasVisible(neutu::data3d::ETarget target, bool visible);

@@ -1826,6 +1826,13 @@ void ZFlyEmProofDoc::initTodoEnsemble()
   addObject(te);
 }
 
+FlyEmTodoEnsemble* ZFlyEmProofDoc::getTodoEnsemble() const
+{
+  return getObject<FlyEmTodoEnsemble>(
+        ZStackObjectSourceFactory::MakeTodoEnsembleSource());
+}
+
+
 void ZFlyEmProofDoc::setGraySliceCenterCut(int width, int height)
 {
   m_graySliceCenterCutWidth = width;
@@ -2156,6 +2163,11 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedSynapse() const
 bool ZFlyEmProofDoc::hasTodoItemSelected() const
 {
   ZOUT(LTRACE(), 5) << "Check todo selection";
+  FlyEmTodoEnsemble *te = getTodoEnsemble();
+  if (te) {
+    return te->hasSelected();
+  }
+  /*
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -2164,6 +2176,7 @@ bool ZFlyEmProofDoc::hasTodoItemSelected() const
       return true;
     }
   }
+  */
 
   return false;
 }
@@ -2179,6 +2192,10 @@ void ZFlyEmProofDoc::notifyTodoItemModified(
   if (emitingEdit) {
     emit todoEdited(pt.getX(), pt.getY(), pt.getZ());
   }
+
+  QString msg = QString("Todo item added at (%1, %2, %3)").
+      arg(pt.getX()).arg(pt.getY()).arg(pt.getZ());
+  notify(msg);
 }
 
 void ZFlyEmProofDoc::notifyTodoItemModified(
@@ -2513,9 +2530,18 @@ void ZFlyEmProofDoc::removeSynapse(
 }
 
 void ZFlyEmProofDoc::removeTodoItem(
-    const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope)
+    const ZIntPoint &pos, ZFlyEmToDoList::EDataScope /*scope*/)
 {
   ZOUT(LTRACE(), 5) << "Remove to do items";
+  FlyEmTodoEnsemble *te = getTodoEnsemble();
+  try {
+    te->removeItem(pos);
+    notifyTodoItemModified(pos, true);
+    processObjectDataModified(te);
+  } catch (std::exception &e) {
+    emit errorGenerated(QString::fromStdString(e.what()));
+  }
+  /*
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
@@ -2528,6 +2554,7 @@ void ZFlyEmProofDoc::removeTodoItem(
   notifyTodoItemModified(pos);
 
   processObjectModified();
+  */
 }
 
 void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
@@ -2539,9 +2566,19 @@ void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
 }
 
 void ZFlyEmProofDoc::addTodoItem(
-    const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope)
+    const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope /*scope*/)
 {
   ZOUT(LTRACE(), 5) << "Add to do item";
+  FlyEmTodoEnsemble *te = getTodoEnsemble();
+  try {
+    te->addItem(item);
+    notifyTodoItemModified(item.getPosition(), true);
+    processObjectDataModified(te);
+  } catch (std::exception &e) {
+    emit errorGenerated(QString::fromStdString(e.what()));
+  }
+
+  /*
   QList<ZFlyEmToDoList*> seList = getObjectList<ZFlyEmToDoList>();
   for (QList<ZFlyEmToDoList*>::const_iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
@@ -2554,6 +2591,7 @@ void ZFlyEmProofDoc::addTodoItem(
   notifyTodoItemModified(item.getPosition());
 
   processObjectModified();
+  */
 }
 
 void ZFlyEmProofDoc::addSynapse(
@@ -3193,41 +3231,6 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
           rect, zoom, centerCutX, centerCutY, usingCenterCut);
   }
 
-  #if 0
-  if (reader->good()) {
-    ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
-    array = reader->readLabels64Lowtis(
-          rect, zoom, centerCutX, centerCutY, usingCenterCut);
-
-    if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
-//      ZStackViewParam newParam = viewParam;
-//      newParam.discretizeModel();
-
-//      ZArbSliceViewParam svp = viewParam.getSliceViewParam();
-      array = reader->readLabels64Lowtis(
-            viewParam.getIntCutRect(),
-            zoom, centerCutX, centerCutY, usingCenterCut);
-    } else {
-      ZIntCuboid box = zgeom::GetIntBoundBox(viewParam.getCutRect());
-//      ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
-//            viewParam.getViewPort(), viewParam.getZ());
-
-//      ZIntCuboid dataRange = m_labelInfo.getDataRange();
-//      if (!dataRange.isEmpty()) {
-//        box.intersect(dataRange);
-//      }
-
-      if (!box.isEmpty()) {
-        array = reader->readLabels64Lowtis(
-              box.getMinCorner().getX(), box.getMinCorner().getY(),
-              box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
-              zoom, centerCutX, centerCutY, usingCenterCut);
-      }
-    }
-
-  }
-#endif
-
   if (array != NULL) {
     emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY,
                             usingCenterCut);
@@ -3249,26 +3252,6 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
             rect, zoom, centerCutX, centerCutY, usingCenterCut);
 
     }
-#if 0
-    ZStack *array = NULL;
-    if (workReader.good()) {
-      ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
-
-      if (viewParam.getSliceAxis() == neutu::EAxis::ARB) {
-//        ZArbSliceViewParam svp = viewParam.getSliceViewParam();
-        array = workReader.readGrayScaleLowtis(viewParam.getCutRect(),
-              zoom, centerCutX, centerCutY, usingCenterCut);
-      } else {
-        ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
-
-//        ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
-//              viewParam.getViewPort(), viewParam.getZ());
-
-        array = workReader.readGrayScaleLowtis(
-              rect, zoom, centerCutX, centerCutY, usingCenterCut);
-      }
-    }
-#endif
 
     if (array) {
       emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY,
@@ -5815,6 +5798,13 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(ZFlyEmToDoItem &item)
 
 std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedTodoItemPosition() const
 {
+  FlyEmTodoEnsemble *te = getTodoEnsemble();
+  if (te) {
+    return te->getSelectedPos();
+  }
+
+  return std::set<ZIntPoint>();
+  /*
   std::set<ZIntPoint> selected;
   ZOUT(LTRACE(), 5) << "Get selected todo positions";
   QList<ZFlyEmToDoList*> objList = getObjectList<ZFlyEmToDoList>();
@@ -5826,6 +5816,7 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedTodoItemPosition() const
   }
 
   return selected;
+  */
 }
 
 void ZFlyEmProofDoc::executeRemoveTodoCommand()

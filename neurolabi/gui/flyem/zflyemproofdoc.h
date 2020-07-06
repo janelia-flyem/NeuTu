@@ -43,6 +43,7 @@ class ZFlyEmRoiManager;
 class ZStackBlockGrid;
 class ZDvidEnv;
 class ZRoiProvider;
+class FlyEmTodoEnsemble;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -108,6 +109,8 @@ public:
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
   ZFlyEmToDoList* getTodoList(neutu::EAxis axis) const;
+
+  FlyEmTodoEnsemble* getTodoEnsemble() const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();

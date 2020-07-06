@@ -69,6 +69,19 @@ std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(
   return canvas;
 }
 
+bool ZImageWidget::hasCanvas(
+    ZSliceCanvas *canvas, neutu::data3d::ETarget target) const
+{
+  if (canvas) {
+    int index = neutu::EnumValue(target);
+    if (index >= 0 && index < m_canvasList.size()) {
+      return (canvas == m_canvasList[index].get());
+    }
+  }
+
+  return false;
+}
+
 ZSliceCanvas* ZImageWidget::makeClearCanvas()
 {
   ZSliceCanvas *canvas = new ZSliceCanvas;
@@ -180,13 +193,11 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
                      bgBrush);
 
     for (auto canvas : m_canvasList) {
-      if (canvas) {
-        if (canvas->isVisible() && canvas->isPainted()) {
+      if (canvas && canvas->isVisible() && canvas->isPainted()) {
 #ifdef _DEBUG_2
-          canvas->save(GET_TEST_DATA_DIR + "/_test.png");
+        canvas->save(GET_TEST_DATA_DIR + "/_test.png");
 #endif
-          canvas->paintTo(this, m_sliceViewTransform);
-        }
+        canvas->paintTo(this, m_sliceViewTransform);
       }
     }
 
@@ -490,17 +501,6 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 
     notifyTransformChanged();
   }
-  /*
-  if (usingRef) {
-    QPointF viewPoint = m_viewProj.mapPointBack(QPointF(x, y));
-    m_viewProj.increaseZoom(viewPoint.x(), viewPoint.y());
-  } else {
-    QPoint viewPoint = m_viewProj.getViewPort().center();
-    m_viewProj.increaseZoom(viewPoint.x(), viewPoint.y());
-  }
-  */
-
-//  updateView();
 }
 
 void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
@@ -1495,7 +1495,7 @@ void ZImageWidget::notifyTransformChanged()
 
   emit transformControlSyncNeeded();
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << "Transform: " << m_sliceViewTransform << std::endl;
 #endif
 }

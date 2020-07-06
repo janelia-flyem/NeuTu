@@ -132,6 +132,18 @@ bool ZStackObjectInfoSet::onlyVisibilityChanged(ZStackObject::EType type) const
   return changed;
 }
 
+bool ZStackObjectInfoSet::hasObjectAddedOrRemoved() const
+{
+  for (const auto &entry : *this) {
+    if ((entry == ZStackObjectInfo::STATE_UNKNOWN) ||
+        (entry & (ZStackObjectInfo::STATE_ADDED | ZStackObjectInfo::STATE_REMOVED))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
 {
   foreach (const ZStackObjectInfo &info, keys()) {

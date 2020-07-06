@@ -632,7 +632,7 @@ bool ZFlyEmToDoItem::isChecked() const
 bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) const
 {
   if (isVisible()) {
-    ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
+    ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
 
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
@@ -640,9 +640,17 @@ bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) con
     pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 
-    paintHelper.drawStar(painter, getPosition().toPoint(), getRadius(), 2.0, 0.5);
+    double depthScale = 1.0;
 
-    return paintHelper.getPaintedHint();
+    ZPoint center = getPosition().toPoint();
+    s3Painter.drawStar(
+          painter, center, getRadius(), depthScale, 0.5);
+    if (isSelected()) {
+      neutu::SetPenColor(painter, Qt::yellow);
+      s3Painter.drawBoundBox(painter, center, getRadius(), depthScale);
+    }
+
+    return s3Painter.getPaintedHint();
   }
 
   return false;

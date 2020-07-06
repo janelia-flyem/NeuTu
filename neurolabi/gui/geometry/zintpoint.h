@@ -125,6 +125,7 @@ public:
 
   bool equals(const ZIntPoint &pt) const;
 
+  double distanceSquareTo(double x, double y, double z) const;
   double distanceTo(double x, double y, double z) const;
 
   void shiftSliceAxis(neutu::EAxis axis);

@@ -12,13 +12,13 @@
 #include "geometry/zgeometry.h"
 
 QString neutu::mvc::ComposeStackDataInfo(
-    ZStackDoc *doc, double x, double y, double z, neutu::mvc::ViewInfoFlags f)
+    ZStackDoc *doc, const ZIntPoint &pos, neutu::mvc::ViewInfoFlags f)
 {
   QString info;
 
-  x = std::floor(x);
-  y = std::floor(y);
-  z = std::floor(z);
+  int x = pos.getX();
+  int y = pos.getY();
+  int z = pos.getZ();
 
   ZStack *stack = doc->getStack();
 
@@ -121,7 +121,7 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const ZPoint &dataPos)
 
 //  ZPoint pt = t.inverseTransform(pos);
   info += ComposeStackDataInfo(
-        doc, dataPos.x(), dataPos.y(), dataPos.z(), view->getViewInfoFlag());
+        doc, dataPos.toIntPoint(), view->getViewInfoFlag());
 
 
   return info;

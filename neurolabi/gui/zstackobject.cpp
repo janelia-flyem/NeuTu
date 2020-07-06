@@ -131,6 +131,22 @@ void ZStackObject::setSelected(bool selected)
   }
 }
 
+void ZStackObject::processHit(ESelection s)
+{
+  switch (s) {
+  case ESelection::SELECT_SINGLE:
+  case ESelection::SELECT_MULTIPLE:
+    setSelected(true);
+    break;
+  case ESelection::SELECT_TOGGLE:
+    setSelected(!isSelected());
+    break;
+  case ESelection::DESELECT:
+    setSelected(false);
+    break;
+  }
+}
+
 void ZStackObject::setColor(int red, int green, int blue)
 {
 #if defined(_QT_GUI_USED_)

@@ -137,4 +137,8 @@ bool neutu::data3d::IsSettled2dObjectCanvas(ETarget target)
       target == ETarget::NONBLOCKING_OBJECT_CANVAS;
 }
 
+bool neutu::data3d::IsNonblocking(ETarget target)
+{
+  return target == ETarget::NONBLOCKING_OBJECT_CANVAS;
+}
 

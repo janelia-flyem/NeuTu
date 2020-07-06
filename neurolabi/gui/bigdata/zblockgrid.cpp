@@ -196,7 +196,8 @@ void ZBlockGrid::forEachIntersectedBlock(
 }
 
 void ZBlockGrid::forEachIntersectedBlockApprox(
-    const ZAffineRect &plane, std::function<void(int i, int j, int k)> f)
+    const ZAffineRect &plane, std::function<void(int i, int j, int k)> f,
+    double normalRangeFactor)
 {
   if (!isValid()) {
     return;
@@ -222,10 +223,13 @@ void ZBlockGrid::forEachIntersectedBlockApprox(
         plane.getV1(), plane.getV2(), plane.getAffinePlane().getNormal(),
         v1Range, v2Range, normalRange);
 
+  normalRange *= normalRangeFactor;
+  const int maxNumIntersected = 800;
+  int count = 0;
 
   while (!blockQueue.empty()) {
     ZIntPoint block = blockQueue.front();
-    if (zgeom::Intersects(plane, getBlockBox(block))) {
+//    if (zgeom::Intersects(plane, getBlockBox(block))) {
       if (containsBlock(block)) {
         f(block.getX(), block.getY(), block.getZ());
       }
@@ -237,7 +241,9 @@ void ZBlockGrid::forEachIntersectedBlockApprox(
             ZPoint minCorner = getBlockPosition(ZIntPoint(x, y, z)).toPoint();
             ZCuboid box(minCorner, minCorner + m_blockSize.toPoint());
             if (zgeom::IntersectsApprox(
-                  plane, box, normalRange, v1Range, v2Range)) {
+                  plane, box, normalRange, v1Range, v2Range) &&
+                count < maxNumIntersected) {
+              ++count;
               blockQueue.push(ZIntPoint(x, y, z));
 #ifdef _DEBUG_0
               std::cout << "block: " << getBlockBox(ZIntPoint(x, y, z)) << std::endl;
@@ -247,7 +253,7 @@ void ZBlockGrid::forEachIntersectedBlockApprox(
           checked[key] = true;
         }
       });
-    }
+//    }
 #ifdef _DEBUG_0
           std::cout << "block queue " << blockQueue.size() << std::endl;
 #endif

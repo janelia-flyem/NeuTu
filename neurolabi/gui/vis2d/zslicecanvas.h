@@ -73,10 +73,13 @@ public:
 
   bool isPainted() const;
   bool isVisible() const;
+  bool updateNeeded() const;
 
   QSize getSize() const;
   int getWidth() const;
   int getHeight() const;
+
+  bool isEmpty() const;
 
   QImage toImage() const;
   void fromImage(const QImage &image);

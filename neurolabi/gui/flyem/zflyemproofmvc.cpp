@@ -1801,17 +1801,19 @@ void ZFlyEmProofMvc::updateSynapseDefaultRadius(
 void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
 {
   m_showSegmentation = visible;
-  if (getCompleteDocument() != NULL) {
-    QList<ZDvidLabelSlice*> sliceList =
-        getCompleteDocument()->getFrontDvidLabelSliceList();
+  auto doc = getCompleteDocument();
+  if (doc) {
+    QList<ZDvidLabelSlice*> sliceList = doc->getFrontDvidLabelSliceList();
     foreach (ZDvidLabelSlice *slice, sliceList) {
       slice->setVisible(visible);
       if (visible) {
         slice->update(getView()->getViewParameter());
       }
+      doc->bufferObjectDataModified(slice);
     }
+    doc->processObjectModified();
   }
-  getView()->redrawObject();
+//  getView()->redrawObject();
 }
 
 void ZFlyEmProofMvc::clear()
@@ -4677,7 +4679,7 @@ void ZFlyEmProofMvc::presentBodySplit(
   updateViewButton();
 
 //  emit bookmarkUpdated(&m_splitProject);
-  getView()->redrawObject();
+//  getView()->redrawObject();
 }
 
 void ZFlyEmProofMvc::enableSplit(neutu::EBodySplitMode mode)
@@ -5136,25 +5138,30 @@ void ZFlyEmProofMvc::closeAllBodyWindow()
 
 void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 {
-  if (getCompleteDocument() != NULL) {
+  auto doc = getCompleteDocument();
+  if (doc) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getActiveLabelSlice(getView()->getSliceAxis());
-    if (slice != NULL) {
+        doc->getActiveLabelSlice(getView()->getSliceAxis());
+    if (slice) {
 //      slice->disableFullView();
       slice->setMaxSize(getView()->getViewParameter(), width, height);
-      getView()->paintObject();
+      doc->bufferObjectModified(slice, ZStackObjectInfo::STATE_MODIFIED);
+      doc->processObjectModified();
+//      getView()->paintObject();
     }
   }
 }
 
 void ZFlyEmProofMvc::showFullSegmentation()
 {
-  if (getCompleteDocument() != NULL) {
+  auto doc = getCompleteDocument();
+  if (doc) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getActiveLabelSlice(getView()->getSliceAxis());
+        doc->getActiveLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
       slice->updateFullView(getView()->getViewParameter());
-      getView()->paintObject();
+      doc->processObjectDataModified(slice);
+//      getView()->paintObject();
     }
   }
 }
@@ -5815,7 +5822,7 @@ void ZFlyEmProofMvc::selectSeed()
   if (dlg->exec()) {
     int label = dlg->getValue();
    int nSelected = m_splitProject.selectSeed(label);
-   getView()->paintObject();
+//   getView()->paintObject();
    emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
   }
   delete dlg;
@@ -5830,7 +5837,7 @@ void ZFlyEmProofMvc::setMainSeed()
   if (dlg->exec()) {
     int label = dlg->getValue();
     m_splitProject.swapMainSeedLabel(label);
-    getView()->paintObject();
+//    getView()->paintObject();
     emit messageGenerated(QString("Label %1 is set the main seed.").arg(label));
   }
   delete dlg;
@@ -5839,7 +5846,7 @@ void ZFlyEmProofMvc::setMainSeed()
 void ZFlyEmProofMvc::selectAllSeed()
 {
   int nSelected = m_splitProject.selectAllSeed();
-  getView()->paintObject();
+//  getView()->paintObject();
   emit messageGenerated(QString("%1 seed(s) are selected.").arg(nSelected));
 }
 

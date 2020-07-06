@@ -293,6 +293,15 @@ bool ZIntPoint::equals(const ZIntPoint &pt) const
       (getZ() == pt.getZ());
 }
 
+double ZIntPoint::distanceSquareTo(double x, double y, double z) const
+{
+  double dx = m_x - x;
+  double dy = m_y - y;
+  double dz = m_z - z;
+
+  return dx * dx + dy * dy + dz * dz;
+}
+
 double ZIntPoint::distanceTo(double x, double y, double z) const
 {
   return Geo3d_Dist(m_x, m_y, m_z, x, y, z);

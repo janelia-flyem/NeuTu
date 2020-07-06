@@ -93,10 +93,10 @@ ZStackDocCommand::FlyEmToDoItemEdit::AddItem::~AddItem()
 void ZStackDocCommand::FlyEmToDoItemEdit::AddItem::redo()
 {
   m_doc->addTodoItem(m_item, ZFlyEmToDoList::DATA_GLOBAL);
-  m_doc->notifyTodoEdited(m_item.getPosition());
-  QString msg = QString("Todo item added at (%1, %2, %3)").
-      arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
-  m_doc->notify(msg);
+//  m_doc->notifyTodoEdited(m_item.getPosition());
+//  QString msg = QString("Todo item added at (%1, %2, %3)").
+//      arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
+//  m_doc->notify(msg);
 }
 
 void ZStackDocCommand::FlyEmToDoItemEdit::AddItem::undo()

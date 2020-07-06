@@ -24,6 +24,7 @@ public:
   static const TState STATE_ROLE_CHANGED = BIT_FLAG(6);
   static const TState STATE_SOURCE_CHANGED = BIT_FLAG(7);
   static const TState STATE_VE_CHANGED = BIT_FLAG(8);
+  static const TState STATE_SELECTION_CHANGED = BIT_FLAG(9);
 
   void setType(ZStackObject::EType type) {
     m_type = type;
@@ -96,8 +97,9 @@ public:
    */
   bool hasObjectDataModified(ZStackObject::EType type) const;
 
-  bool onlyVisibilityChanged(ZStackObject::EType type) const;
+  bool hasObjectAddedOrRemoved() const;
 
+  bool onlyVisibilityChanged(ZStackObject::EType type) const;
 
   void add(const ZStackObject &obj);
 

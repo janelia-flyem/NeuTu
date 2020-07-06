@@ -101,7 +101,7 @@ public: //for testing
 private:
   void clear();
 
-  void updateImage(const ZStack *stack, const ZAffinePlane &ap);
+  void updateImage(const ZStack *stack, const ZAffinePlane &ap, int zoom);
   void forceUpdate(const ZStackViewParam &viewParam);
   void updateContrast();
 

@@ -118,6 +118,8 @@ public:
 
   ZSliceViewTransform getCanvasTransform(
       const ZAffinePlane &ap, int width, int height) const;
+  ZSliceViewTransform getCanvasTransform(
+      const ZAffinePlane &ap, int width, int height, int zoom) const;
 
   ZAffineRect getIntCutRect() const;
 

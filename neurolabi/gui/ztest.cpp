@@ -31917,7 +31917,7 @@ void ZTest::test(MainWindow *host)
 
   tic();
   int count = 0;
-  grid.forEachIntersectedBlockApprox(rect, [&](int,int,int){ ++count; });
+  grid.forEachIntersectedBlockApprox(rect, [&](int,int,int){ ++count; }, 1.0);
   std::cout << count << " blocks intersected" << std::endl;
   ptoc();
 

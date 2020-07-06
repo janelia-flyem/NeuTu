@@ -10,6 +10,7 @@ class ZDvidReader;
 class ZIntPoint;
 class FlyEmDataConfig;
 class ZObject3dScan;
+class ZFlyEmToDoItem;
 
 class FlyEmDataWriter
 {
@@ -29,6 +30,8 @@ public:
   static void WriteMeshMerge(
       ZDvidWriter &writer, uint64_t targetId,
       const std::vector<uint64_t> &bodyIdArray);
+
+  static void WriteTodoItem(ZDvidWriter &writer, const ZFlyEmToDoItem &item);
 
   /*!
    * \brief Transfer ROI from one node to another

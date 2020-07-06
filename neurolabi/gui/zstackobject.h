@@ -1,6 +1,8 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
+#include <functional>
+
 #include "common/neutudefs.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zaffinerect.h"
@@ -147,6 +149,12 @@ public:
   static T* Clone(T *obj);
 
 //  virtual const std::string& className() const = 0;
+
+  enum class ESelection {
+    SELECT_SINGLE, SELECT_MULTIPLE, SELECT_TOGGLE, DESELECT,
+  };
+
+  virtual void processHit(ESelection s);
 
   /*!
    * \brief Set the selection state

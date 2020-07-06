@@ -123,13 +123,14 @@ bool ZDvidGraySlice::hasLowresRegion() const
       rect.getHeight() > getHelper()->getCenterCutHeight());
 }
 
-void ZDvidGraySlice::updateImage(const ZStack *stack, const ZAffinePlane &ap)
+void ZDvidGraySlice::updateImage(
+    const ZStack *stack, const ZAffinePlane &ap, int zoom)
 {
   if (stack != NULL) {
     m_image = neutu::vis2d::GetSlice(*stack, stack->getOffset().getZ());
 
     ZSliceViewTransform t = getHelper()->getCanvasTransform(
-          ap, stack->width(), stack->height());
+          ap, stack->width(), stack->height(), zoom);
 
 /*
     if (getHelper()->getSliceAxis() == neutu::EAxis::ARB) {
@@ -351,10 +352,10 @@ bool ZDvidGraySlice::consume(
     if (containedIn(viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
 //      getHelper()->setZoom(zoom);
       getHelper()->setActualQuality(zoom, centerCutX, centerCutY, usingCenterCut);
-      getHelper()->setViewParam(viewParam);
+//      getHelper()->setViewParam(viewParam);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
-      updateImage(stack, rect.getAffinePlane());
+      updateImage(stack, rect.getAffinePlane(), zoom);
 #ifdef _DEBUG_2
       std::cout << "Saving image canvas ..." << std::endl;
       m_imageCanvas.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
@@ -369,7 +370,7 @@ bool ZDvidGraySlice::consume(
 
 ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
 {
-  ZDvidGraySliceHighresTask *task = NULL;
+  ZDvidGraySliceHighresTask *task = nullptr;
   const int maxSize = 1024*1024;
   if (getHelper()->needHighResUpdate()
       && getHelper()->getViewDataSize() < maxSize) {
@@ -406,7 +407,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
       getHelper()->setActualQuality(
             getZoom(), getHelper()->getCenterCutWidth(),
             getHelper()->getCenterCutHeight(), true);
-      updateImage(stack, rect.getAffinePlane());
+      updateImage(stack, rect.getAffinePlane(), getHelper()->getZoom());
 #ifdef _DEBUG_2
       std::cout << "Saving stack" << std::endl;
       stack->save(GET_TEST_DATA_DIR + "/_test.tif");

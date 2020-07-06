@@ -9,7 +9,13 @@ enum class ESpace  {
   MODEL, VIEW, CANVAS
 };
 
-//2D object scene: {Settled {static data {PIXEL, HD}, dynamic data}, Roaming}
+//2D object scene:
+//{
+//  Settled {
+//    image,
+//    object{ {static data {PIXEL, HD}, dynamic data} },
+//  Roaming
+//}
 enum class ETarget {
   STACK_CANVAS = 0,
   TILE_CANVAS,

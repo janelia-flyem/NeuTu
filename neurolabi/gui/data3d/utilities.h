@@ -33,6 +33,7 @@ std::vector<ETarget> GetTarget2dObjectCanvasList(
 std::vector<ETarget> GetTargetSettled2dObjectCanvasList();
 
 bool IsSettled2dObjectCanvas(ETarget target);
+bool IsNonblocking(ETarget target);
 
 }
 }

@@ -111,6 +111,7 @@
 
 #include "flyem/tests/zflyemmisctest.h"
 #include "flyem/tests/flyemtodoblockgridtest.h"
-
+#include "flyem/tests/flyemtodochunktest.h"
+#include "flyem/tests/flyemtodoensembletest.h"
 
 #endif // ZTESTALL_H

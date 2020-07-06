@@ -644,7 +644,7 @@ bool ZDvidLabelSlice::consume(
   if (array != NULL) {
     if (containedIn(viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
 //      getHelper()->setZoom(zoom);
-      getHelper()->setViewParam(viewParam);
+//      getHelper()->setViewParam(viewParam);
       getHelper()->setActualQuality(zoom, centerCutX, centerCutY, usingCenterCut);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       clearLabelData();
@@ -654,7 +654,7 @@ bool ZDvidLabelSlice::consume(
       ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
       ZSliceViewTransform t = getHelper()->getCanvasTransform(
             rect.getAffinePlane(),
-            m_paintBuffer->width(), m_paintBuffer->height());
+            m_paintBuffer->width(), m_paintBuffer->height(), zoom);
       m_imageCanvas.setTransform(t);
       succ = true;
     } else {

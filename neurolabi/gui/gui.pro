@@ -1033,8 +1033,6 @@ SOURCES += main.cpp \
     dialogs/synapseimportdialog.cpp \
     zstackdvidgrayscalefactory.cpp \
     zstackdocreader.cpp \
-    dialogs/flyemprojectdialog.cpp \
-    dialogs/zsegmentationprojectdialog.cpp \
     zsegmentationproject.cpp \
     zsegmentationprojectmodel.cpp \
     dialogs/zsubtractswcsdialog.cpp \
@@ -1108,6 +1106,8 @@ SOURCES += main.cpp \
     zroiwidget.cpp \
     dialogs/flyemtododialog.cpp \
     zstackdocselector.cpp \
+    dialogs/flyemprojectdialog.cpp \
+    dialogs/zsegmentationprojectdialog.cpp \
     dialogs/flyemsettingdialog.cpp \
     protocols/protocolswitcher.cpp \
     protocols/protocolchooser.cpp \
@@ -1145,11 +1145,6 @@ SOURCES += main.cpp \
     zscrollslicestrategy.cpp \
     dvid/zdvidgrayslicescrollstrategy.cpp \
     zviewproj.cpp \
-    dialogs/zflyemgrayscaledialog.cpp \
-    dialogs/zflyembodysplitdialog.cpp \
-    dialogs/zdvidbodypositiondialog.cpp \
-    dialogs/zflyemsplituploadoptiondialog.cpp \
-    dialogs/zflyembodychopdialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
     dvid/zdvidstore.cpp \
@@ -1222,6 +1217,11 @@ SOURCES += main.cpp \
     dvid/zdvidgraysliceensemble.cpp \
     dvid/zdvidenv.cpp \
     imgproc/zstackmultiscalewatershed.cpp \
+    dialogs/zflyemgrayscaledialog.cpp \
+    dialogs/zflyembodysplitdialog.cpp \
+    dialogs/zdvidbodypositiondialog.cpp \
+    dialogs/zflyemsplituploadoptiondialog.cpp \
+    dialogs/zflyembodychopdialog.cpp \
     dialogs/zflyemproofsettingdialog.cpp \
     dialogs/dvidbranchdialog.cpp \
     dialogs/zflyemtodoannotationdialog.cpp \

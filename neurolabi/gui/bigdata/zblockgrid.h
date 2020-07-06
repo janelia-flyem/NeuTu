@@ -109,7 +109,8 @@ public:
    * \brief A faster but approximate way of iterating through intersected blocks.
    */
   void forEachIntersectedBlockApprox(
-      const ZAffineRect &plane, std::function<void(int i, int j, int k)> f);
+      const ZAffineRect &plane, std::function<void(int i, int j, int k)> f,
+      double normalRangeFactor);
 
   bool isValid() const;
 

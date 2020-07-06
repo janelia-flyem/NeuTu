@@ -71,6 +71,20 @@ void ZPoint::load(const char *filePath)
 }
 */
 
+double ZPoint::distanceSquareTo(const ZPoint &pt) const
+{
+  return distanceSquareTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
+double ZPoint::distanceSquareTo(double x, double y, double z) const
+{
+  double dx = m_x - x;
+  double dy  = m_y - y;
+  double dz = m_z - z;
+
+  return dx * dx + dy * dy + dz * dz;
+}
+
 double ZPoint::distanceTo(const ZPoint &pt) const
 {
   return Geo3d_Dist(m_x, m_y, m_z, pt.x(), pt.y(), pt.z());
@@ -380,6 +394,11 @@ void ZPoint::print() const
 ZPoint ZPoint::operator - () const
 {
   return ZPoint(-x(), -y(), -z());
+}
+
+ZIntPoint ZPoint::toIntPoint() const
+{
+  return ZIntPoint(neutu::ifloor(x()), neutu::ifloor(y()), neutu::ifloor(z()));
 }
 
 ZIntPoint ZPoint::roundToIntPoint() const

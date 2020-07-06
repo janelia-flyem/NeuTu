@@ -225,6 +225,11 @@ void ZDvidAnnotation::setDefaultColor()
 
 bool ZDvidAnnotation::hit(double x, double y, double z)
 {
+  double d2 = m_position.distanceSquareTo(x, y, z);
+
+  return (d2 < m_radius * m_radius);
+
+  /*
   if (isSliceVisible(z, neutu::EAxis::Z)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
@@ -237,6 +242,7 @@ bool ZDvidAnnotation::hit(double x, double y, double z)
   }
 
   return false;
+  */
 }
 
 bool ZDvidAnnotation::hit(double x, double y, neutu::EAxis axis)
@@ -436,6 +442,11 @@ void ZDvidAnnotation::loadJsonObject(
 bool ZDvidAnnotation::isValid() const
 {
   return getKind() != EKind::KIND_INVALID;
+}
+
+void ZDvidAnnotation::invalidate()
+{
+  m_kind = EKind::KIND_INVALID;
 }
 
 void ZDvidAnnotation::setKind(const std::string &kind)

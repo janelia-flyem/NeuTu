@@ -2407,6 +2407,9 @@ void ZStackPresenter::updateSwcExtensionHint()
 
 void ZStackPresenter::processObjectModified(const ZStackObjectInfoSet &objSet)
 {
+  if (objSet.hasObjectAddedOrRemoved()) {
+    buddyView()->invalidateObjectSorter();
+  }
   buddyView()->paintObject(objSet.getTarget());
 }
 
@@ -3066,7 +3069,7 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED:
   case ZInteractionEvent::EVENT_OBJECT_SELECTED:
   case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE:
-    buddyView()->redrawObject();
+//    buddyView()->redrawObject();
     buddyDocument()->notifySelectorChanged();
     if (event.getEvent() ==
         ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE) {
@@ -3488,12 +3491,49 @@ bool ZStackPresenter::process(ZStackOperator &op)
     interactionEvent.setEvent(ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED);
     break;
   case ZStackOperator::OP_OBJECT_SELECT_SINGLE:
+  {
     buddyDocument()->deselectAllObject(false);
-    if (op.getHitObject<ZStackObject>() != NULL) {
-      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
+    ZStackObject *obj = op.getHitObject<ZStackObject>();
+    if (obj) {
+      buddyDocument()->setSelected(obj, true);
+      obj->processHit(ZStackObject::ESelection::SELECT_SINGLE);
+      buddyDocument()->processObjectModified(
+            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
+  }
+    break;
+  case ZStackOperator::OP_OBJECT_SELECT_MULTIPLE:
+  {
+    ZStackObject *obj = op.getHitObject<ZStackObject>();
+    if (obj) {
+      buddyDocument()->setSelected(obj, true);
+      obj->processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
+      buddyDocument()->processObjectModified(
+            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+//      buddyDocument()->toggleSelected(obj);
+
+//      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
+      interactionEvent.setEvent(
+            ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+  }
+    break;
+  case ZStackOperator::OP_OBJECT_SELECT_TOGGLE:
+  {
+    {
+      ZStackObject *obj = op.getHitObject<ZStackObject>();
+      if (obj) {
+        buddyDocument()->toggleSelected(obj);
+        obj->processHit(ZStackObject::ESelection::SELECT_TOGGLE);
+        buddyDocument()->processObjectModified(
+              obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+        interactionEvent.setEvent(
+              ZInteractionEvent::EVENT_OBJECT_SELECTED);
+      }
+    }
+  }
     break;
   case ZStackOperator::OP_BOOKMARK_SELECT_SIGNLE:
 //    buddyDocument()->deselectAllObject(false);
@@ -3507,14 +3547,6 @@ bool ZStackPresenter::process(ZStackOperator &op)
       docSelector.deselectAll();
 
       buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
-      interactionEvent.setEvent(
-            ZInteractionEvent::EVENT_OBJECT_SELECTED);
-    }
-    break;
-  case ZStackOperator::OP_OBJECT_SELECT_MULTIPLE:
-    if (op.getHitObject<ZStackObject>() != NULL) {
-      buddyDocument()->toggleSelected(op.getHitObject<ZStackObject>());
-//      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }

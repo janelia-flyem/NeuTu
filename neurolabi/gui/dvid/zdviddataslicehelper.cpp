@@ -414,6 +414,12 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
     const ZAffinePlane &ap, int width, int height) const
 {
+  return getCanvasTransform(ap, width, height, getZoom());
+}
+
+ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
+    const ZAffinePlane &ap, int width, int height, int zoom) const
+{
   ZSliceViewTransform t;
 
   if (getSliceAxis() == neutu::EAxis::ARB) {
@@ -422,7 +428,7 @@ ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
     t.setCutPlane(getSliceAxis(), ap.getOffset());
   }
 
-  t.setScale(1.0 / zgeom::GetZoomScale(getZoom()));
+  t.setScale(1.0 / zgeom::GetZoomScale(zoom));
   //Assuming lowtis uses left integer center
   t.setAnchor(width / 2, height / 2);
 
