@@ -153,8 +153,11 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
     ZStackObject *obj = *iter;
     getSelector()->setSelection(obj, selected);
     //obj->setSelected(selected);
-    //Bug???
-    getSelectedSetUnsync(obj->getType()).insert(obj);
+    if (selected) {
+      getSelectedSetUnsync(obj->getType()).insert(obj);
+    } else {
+      getSelectedSetUnsync(obj->getType()).remove(obj);
+    }
   }
 
   if (selected == false) {
