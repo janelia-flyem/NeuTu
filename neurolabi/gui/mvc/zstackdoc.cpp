@@ -10463,9 +10463,11 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
             }
           }
         }
-        ZTask *task = player->getFutureTask(m_doc.get());
-        if (task != NULL) {
-          m_doc->addTask(task);
+        if (player->getData()->getSliceAxis() == param.getSliceAxis()) {
+          ZTask *task = player->getFutureTask(m_doc.get());
+          if (task != NULL) {
+            m_doc->addTask(task);
+          }
         }
       }
     }

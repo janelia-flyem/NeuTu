@@ -41,13 +41,12 @@ size_t FlyEmTodoChunk::countItem() const
 
 FlyEmTodoChunk::KeyType FlyEmTodoChunk::GetItemKey(int x, int y, int z)
 {
-  return neulib::StringBuilder("").
-      append(x).append("_").append(y).append("_").append(z);
+  return ZIntPoint(x, y, z);
 }
 
 FlyEmTodoChunk::KeyType FlyEmTodoChunk::GetItemKey(const ZIntPoint &pos)
 {
-  return GetItemKey(pos.getX(), pos.getY(), pos.getZ());
+  return pos;
 }
 
 bool FlyEmTodoChunk::hasItem(int x, int y, int z) const

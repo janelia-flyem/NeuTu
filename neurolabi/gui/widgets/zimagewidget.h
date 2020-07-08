@@ -166,6 +166,9 @@ public:
   void zoomTo(const QPoint &center, int w, int h);
   void zoomTo(const ZPoint &pt, double w, double h, neutu::data3d::ESpace space);
 
+  void rotate(double au, double av, double rad);
+  void rotate(double da, double db);
+
   void setViewPort(const QRect &rect);
 
   void restoreFromBadView(const ZIntCuboid &worldRange);

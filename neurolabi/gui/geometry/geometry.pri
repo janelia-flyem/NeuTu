@@ -18,7 +18,8 @@ HEADERS += \
     $$PWD/zellipsoid.h \
     $$PWD/zintcuboidarray.h \
     $$PWD/zintcuboidface.h \
-    $$PWD/zlinesegmentarray.h
+    $$PWD/zlinesegmentarray.h \
+    $$PWD/zrotator.h
 
 SOURCES += \
     $$PWD/2d/dims.cpp \
@@ -40,4 +41,5 @@ SOURCES += \
     $$PWD/zellipsoid.cpp \
     $$PWD/zintcuboidarray.cpp \
     $$PWD/zintcuboidface.cpp \
-    $$PWD/zlinesegmentarray.cpp
+    $$PWD/zlinesegmentarray.cpp \
+    $$PWD/zrotator.cpp

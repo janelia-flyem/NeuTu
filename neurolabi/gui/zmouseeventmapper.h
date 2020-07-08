@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 #include <map>
+#include <utility>
+
 #include "geometry/zintpoint.h"
 #include "zmouseevent.h"
 #include "zmouseeventrecorder.h"
@@ -49,7 +51,7 @@ public:
 
   //void setPosition(int x, int y, int z, Qt::MouseButton button,
   //                 ZMouseEvent::EAction action);
-  ZIntPoint getPosition(Qt::MouseButton button,
+  ZIntPoint getPosition(Qt::MouseButtons button,
                         ZMouseEvent::EAction action) const;
 
   typedef std::map<Qt::MouseButton, std::map<ZMouseEvent::EAction, ZIntPoint> >
@@ -128,6 +130,22 @@ class ZMouseEventMoveMapper : public ZMouseEventMapper
 {
 public:
   ZStackOperator getOperation(const ZMouseEvent &event) const;
+
+private:
+  bool isMouseMovedSignficantly(double dx, double dy) const;
+  bool isMouseMovedSignficantly(const ZMouseEvent &event) const;
+  std::pair<int, int> getMouseMovedFromPress(const ZMouseEvent &event) const;
+  void mapLeftButtonOperation(
+      const ZMouseEvent &event, ZStackOperator &op) const;
+  void mapRightButtonOperation(
+      const ZMouseEvent &event, ZStackOperator &op) const;
+  void mapMidButtonOperation(
+      const ZMouseEvent &event, ZStackOperator &op) const;
+  void mapToImageMove(const ZMouseEvent &event, ZStackOperator &op) const;
+
+
+private:
+  const static double MOUSE_MOVE_IMAGE_THRESHOLD;
 };
 
 #endif // ZMOUSEEVENTMAPPER_H

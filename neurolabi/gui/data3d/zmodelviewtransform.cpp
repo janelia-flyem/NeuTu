@@ -1,6 +1,7 @@
 #include "zmodelviewtransform.h"
 
 #include "geometry/zgeometry.h"
+#include "geometry/zrotator.h"
 #include "zjsonobject.h"
 
 ZModelViewTransform::ZModelViewTransform()
@@ -149,6 +150,8 @@ void ZModelViewTransform::setCutPlane(neutu::EAxis sliceAxis)
     m_cutPlane.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     break;
   case neutu::EAxis::ARB:
+    m_cutPlane.setPlane(
+          ZPoint(1, 1, 0).getNormalized(), ZPoint(1, -1, 0).getNormalized());
     break;
   }
 }
@@ -289,6 +292,18 @@ bool ZModelViewTransform::onSamePlane(const ZModelViewTransform &t) const
 bool ZModelViewTransform::hasSamePlane(const ZModelViewTransform &t) const
 {
   return m_cutPlane.hasSamePlane(t.getCutPlane());
+}
+
+void ZModelViewTransform::rotate(double au, double av, double rad)
+{
+  if (std::fabs(au) <= ZPoint::MIN_DIST && std::fabs(av) <= ZPoint::MIN_DIST) {
+    au = 1.0;
+    av = 0.0;
+  }
+
+  ZPoint axis = m_cutPlane.getV1() * au + m_cutPlane.getV2() * av;
+  ZRotator rotator(axis, rad);
+  m_cutPlane.setPlane(rotator.rotate(m_cutPlane.getPlane()));
 }
 
 std::ostream& operator<< (

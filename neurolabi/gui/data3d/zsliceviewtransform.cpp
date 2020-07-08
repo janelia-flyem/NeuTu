@@ -303,6 +303,11 @@ void ZSliceViewTransform::addScale(double ds)
         0, 0, m_viewCanvasTransform.getScale() + ds);
 }
 
+void ZSliceViewTransform::rotate(double au, double av, double rad)
+{
+  m_modelViewTransform.rotate(au, av, rad);
+}
+
 void ZSliceViewTransform::setScaleFixingCanvasMapped(
     double s, double a, double b)
 {

@@ -300,6 +300,8 @@ public:
 
   void zoomTo(int x, int y, int z, int w);
 
+  void rotateView(double da, double db);
+
   void printViewParam() const;
   void setMaxViewPort(int s) {
     m_maxViewPort = s;

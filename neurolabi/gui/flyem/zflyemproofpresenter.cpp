@@ -207,6 +207,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_VIEW_AXIS_Z:
       connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneAlongZ()));
       break;
+    case ZActionFactory::ACTION_VIEW_AXIS_ARB:
+      connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneArb()));
+      break;
     default:
       connected = false;
       break;
@@ -1020,6 +1023,11 @@ void ZFlyEmProofPresenter::setCutPlaneAlongY()
 void ZFlyEmProofPresenter::setCutPlaneAlongZ()
 {
   buddyView()->setCutPlane(neutu::EAxis::Z);
+}
+
+void ZFlyEmProofPresenter::setCutPlaneArb()
+{
+  buddyView()->setCutPlane(neutu::EAxis::ARB);
 }
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const

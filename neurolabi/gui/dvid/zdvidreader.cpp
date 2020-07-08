@@ -5655,6 +5655,35 @@ ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
   return readJsonObject(url.getBodyAnnotationUrl(bodyId).c_str());
 }
 
+namespace {
+
+bool is_valid_buffer(const QByteArray &buffer)
+{
+  return (!buffer.isEmpty() &&
+       std::strncmp(buffer.constData(), "null", buffer.size()));
+}
+
+ZJsonObject decode_json_object(const QByteArray &buffer) {
+  ZJsonObject obj;
+  if (is_valid_buffer(buffer)) {
+    obj.decode(buffer.constData(), true);
+  }
+
+  return obj;
+}
+
+ZJsonArray decode_json_array(const QByteArray &buffer)
+{
+  ZJsonArray obj;
+  if (is_valid_buffer(buffer)) {
+    obj.decode(buffer.constData());
+  }
+
+  return obj;
+}
+
+}
+
 ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 {
   ZJsonObject obj;
@@ -5670,10 +5699,13 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 //      bufferReader.readFromPath(url.c_str(), isVerbose());
 //    }
     setStatusCode(bufferReader.getStatusCode());
-    const QByteArray &buffer = bufferReader.getBuffer();
+//    const QByteArray &buffer = bufferReader.getBuffer();
+    obj = decode_json_object(bufferReader.getBuffer());
+    /*
     if (!buffer.isEmpty()) {
       obj.decodeString(buffer.constData());
     }
+    */
   }
 
   return obj;
@@ -5685,9 +5717,7 @@ ZJsonObject ZDvidReader::readJsonObjectFromKey(
   ZJsonObject obj;
   const QByteArray &buffer = readKeyValue(dataName, key);
 
-  if (!buffer.isEmpty()) {
-    obj.decodeString(buffer.constData());
-  }
+  obj = decode_json_object(buffer);
 
   return obj;
 }
@@ -5716,10 +5746,13 @@ ZJsonArray ZDvidReader::readJsonArray(const std::string &url) const
 
   ZDvidBufferReader &bufferReader = m_bufferReader;
   bufferReader.read(url.c_str(), isVerbose());
+  obj = decode_json_array(bufferReader.getBuffer());
+  /*
   const QByteArray &buffer = bufferReader.getBuffer();
   if (!buffer.isEmpty()) {
     obj.decode(buffer.constData());
   }
+  */
 
   return obj;
 }
@@ -5731,10 +5764,13 @@ ZJsonArray ZDvidReader::readJsonArray(
 
   ZDvidBufferReader &bufferReader = m_bufferReader;
   bufferReader.read(url.c_str(), payload, "GET", isVerbose());
+  obj = decode_json_array(bufferReader.getBuffer());
+  /*
   const QByteArray &buffer = bufferReader.getBuffer();
   if (!buffer.isEmpty()) {
     obj.decode(buffer.constData());
   }
+  */
 
   return obj;
 }

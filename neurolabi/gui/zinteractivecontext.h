@@ -93,7 +93,8 @@ public:
     EXPLORE_CAPTURE_MOUSE,
     EXPLORE_LOCAL,
     EXPLORE_EXTERNALLY,
-    EXPLORE_DETAIL
+    EXPLORE_DETAIL,
+    EXPLORE_ROTATE_IMAGE
   };
 
   enum EUniqueMode{
@@ -104,7 +105,7 @@ public:
     INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT,
     INTERACT_ADD_BOOKMARK, INTERACT_ADD_SYNAPSE, INTERACT_MOVE_SYNAPSE,
     INTERACT_ADD_TODO_ITEM, INTERACT_MOVE_CROSSHAIR, INTERACT_EXPLORE_LOCAL,
-    INTERACT_EXPLORE_EXTERNALLY, INTERACT_EXPLORE_DETAIL
+    INTERACT_EXPLORE_EXTERNALLY, INTERACT_EXPLORE_DETAIL, INTERACT_IMAGE_ROTATE
   };
 
 public:
@@ -182,6 +183,7 @@ public:
 
   void setSliceViewTransform(const ZSliceViewTransform &transform);
   ZSliceViewTransform getSliceViewTransform() const;
+  neutu::EAxis getSliceAxis() const;
 
   void setSliceMode(neutu::data3d::EDisplaySliceMode mode);
   neutu::data3d::EDisplaySliceMode getSliceMode() const;

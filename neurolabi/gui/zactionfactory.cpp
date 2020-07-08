@@ -732,18 +732,23 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Tip detection dialog...", parent);
     break;
   case ACTION_VIEW_AXIS_X:
-    action = new QAction("Change View", parent);
+    action = new QAction("Change View X", parent);
     action->setIcon(QFontIcon::icon(9421, Qt::darkRed));
     action->setCheckable(true);
     break;
   case ACTION_VIEW_AXIS_Y:
-    action = new QAction("Change View", parent);
+    action = new QAction("Change View Y", parent);
     action->setIcon(QFontIcon::icon(9422, Qt::darkGreen));
     action->setCheckable(true);
     break;
   case ACTION_VIEW_AXIS_Z:
-    action = new QAction("Change View", parent);
+    action = new QAction("Change View Z", parent);
     action->setIcon(QFontIcon::icon(9423, Qt::blue));
+    action->setCheckable(true);
+    break;
+  case ACTION_VIEW_AXIS_ARB:
+    action = new QAction("Change View A", parent);
+    action->setIcon(QFontIcon::icon(9398, Qt::black));
     action->setCheckable(true);
     break;
   case ACTION_SAVE_ALL_MESH:

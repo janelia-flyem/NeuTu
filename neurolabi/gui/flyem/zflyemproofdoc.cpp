@@ -1760,11 +1760,13 @@ void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
     initGrayscaleSlice(env, neutu::EAxis::X);
     initGrayscaleSlice(env, neutu::EAxis::Y);
     initGrayscaleSlice(env, neutu::EAxis::Z);
+    initGrayscaleSlice(env, neutu::EAxis::ARB);
   }
 
   initLabelSlice(neutu::EAxis::X);
   initLabelSlice(neutu::EAxis::Y);
   initLabelSlice(neutu::EAxis::Z);
+  initLabelSlice(neutu::EAxis::ARB);
 
   if (getDvidInfo().isValid()) {
     setResolution(getDvidInfo().getVoxelResolution());

@@ -108,6 +108,9 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
   case EXPLORE_DETAIL:
     mode = INTERACT_EXPLORE_DETAIL;
     break;
+  case EXPLORE_ROTATE_IMAGE:
+    mode = INTERACT_IMAGE_ROTATE;
+    break;
   default:
     break;
   }
@@ -262,5 +265,10 @@ ZSliceViewTransform ZInteractiveContext::getSliceViewTransform() const
 {
   return m_displayConfig.getTransform();
 //  return m_transform;
+}
+
+neutu::EAxis ZInteractiveContext::getSliceAxis() const
+{
+  return getSliceViewTransform().getSliceAxis();
 }
 

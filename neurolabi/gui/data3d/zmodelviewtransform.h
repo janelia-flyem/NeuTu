@@ -74,6 +74,8 @@ public:
   bool onSamePlane(const ZModelViewTransform &t) const;
   bool hasSamePlane(const ZModelViewTransform &t) const;
 
+  void rotate(double au, double av, double rad);
+
   ZJsonObject toJsonObject() const;
 
   bool operator==(const ZModelViewTransform &t) const;

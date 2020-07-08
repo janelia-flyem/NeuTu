@@ -37,6 +37,11 @@ void ZAffinePlane::setPlane(const ZPoint &v1, const ZPoint &v2)
   m_plane.set(v1, v2);
 }
 
+void ZAffinePlane::setPlane(const ZPlane &plane)
+{
+  m_plane = plane;
+}
+
 void ZAffinePlane::setOffset(const ZPoint &offset)
 {
   m_offset = offset;

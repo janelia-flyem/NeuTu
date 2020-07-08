@@ -14,7 +14,7 @@ class FlyEmTodoChunk
 public:
   FlyEmTodoChunk();
 
-  using KeyType = std::string;
+  using KeyType = ZIntPoint;
 
   void setReady(bool ready);
   bool isReady() const;

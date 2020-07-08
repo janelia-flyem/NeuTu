@@ -195,6 +195,8 @@ public:
   bool onSamePlane(const ZSliceViewTransform &t) const;
   bool hasSamePlane(const ZSliceViewTransform &t) const;
 
+  void rotate(double au, double av, double rad);
+
   /*!
    * \brief Get view space viewport
    */

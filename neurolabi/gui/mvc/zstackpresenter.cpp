@@ -3190,6 +3190,17 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_ZOOM_TO:
     buddyView()->zoomTo(currentStackPos.roundToIntPoint());
     break;
+  case ZStackOperator::OP_START_ROTATE_VIEW:
+    this->interactiveContext().backupExploreMode();
+    this->interactiveContext().
+        setExploreMode(ZInteractiveContext::EXPLORE_ROTATE_IMAGE);
+    break;
+  case ZStackOperator::OP_ROTATE_VIEW:
+  {
+    ZPoint mouseOffset = op.getMouseOffset(neutu::ECoordinateSystem::WIDGET);
+    buddyView()->rotateView(mouseOffset.getX(), mouseOffset.getY());
+  }
+    break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
   {
 //    QPointF pos = mapFromGlobalToStack(QCursor::pos());

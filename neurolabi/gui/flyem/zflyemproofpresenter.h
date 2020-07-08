@@ -172,6 +172,8 @@ public slots:
   void setCutPlaneAlongX();
   void setCutPlaneAlongY();
   void setCutPlaneAlongZ();
+  //for testing
+  void setCutPlaneArb();
 
   void showSupervoxelList();
 

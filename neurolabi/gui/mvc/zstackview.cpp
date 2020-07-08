@@ -2866,19 +2866,6 @@ void ZStackView::zoomTo(const ZIntPoint &pt)
 void ZStackView::zoomTo(int x, int y, int z, int w)
 {
   imageWidget()->zoomTo(ZPoint(x, y, z), w, w, neutu::data3d::ESpace::MODEL);
-  /*
-  int width = w;
-  if (width < 10) {
-    width = 200;
-  }
-
-  zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
-
-  recordViewParam();
-
-  imageWidget()->zoomTo(QPoint(x, y), width);
-  updateSliceFromZ(z);
-  */
 }
 
 void ZStackView::zoomTo(int x, int y, int z)
@@ -2901,26 +2888,6 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
 {
   if (!isViewPortFronzen()) {
     imageWidget()->increaseZoomRatio(x, y, usingRef);
-    /*
-    recordViewParam();
-//    setViewPortFrozen(true);
-    imageWidget()->blockPaint(true);
-    imageWidget()->increaseZoomRatio(x, y, usingRef);
-    updateSliceViewParam();
-
-//    reloadCanvas();
-    if (buddyPresenter()->interactiveContext().exploreMode() !=
-        ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE) {
-      processViewChange(true);
-    }
-
-
-    imageWidget()->blockPaint(false);
-
-//    redraw(UPDATE_QUEUED);
-    updateImageScreen(EUpdateOption::QUEUED);
-    */
-//    imageWidget()->update();
   }
 }
 
@@ -2961,6 +2928,11 @@ void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 //    notifyViewPortChanged();
 #endif
   }
+}
+
+void ZStackView::rotateView(double da, double db)
+{
+  imageWidget()->rotate(da, db);
 }
 
 ZPoint ZStackView::getCutCenter() const

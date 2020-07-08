@@ -17,6 +17,7 @@ public:
 
   void set(const ZPoint &offset, const ZPoint &v1, const ZPoint &v2);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
+  void setPlane(const ZPlane &plane);
   void setOffset(const ZPoint &offset);
   void setOffset(double x, double y, double z);
 

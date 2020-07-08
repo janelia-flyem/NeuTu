@@ -58,54 +58,23 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 //  zevent.setRawStackPosition(ZPositionMapper::WidgetToRawStack(pt, viewProj));
 //  zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt, viewProj));
 
-  if (m_doc->hasStackData()) {
-    if (m_doc->getStack()->contains(zevent.getStackPosition())) {
-      zevent.setInStack(true);
-    }
-  }
 
   ZPoint stackPosition = m_context->getSliceViewTransform().transform(
         ZPoint(pt.getX(), pt.getY(), 0), neutu::data3d::ESpace::CANVAS,
         neutu::data3d::ESpace::VIEW);
+  zevent.setStackPosition(stackPosition);
 
-//  int z0 = ZStackDocUtil::GetStackSpaceRange(
-//        *m_doc, getSliceAxis()).getMinCorner().getZ();
-//  ZPoint stackPosition = ZPositionMapper::WidgetToStack(
-//        pt, viewProj, z0);
-  zevent.setStackPosition(stackPosition);
-  /*
-  ZPoint stackPosition = zevent.getRawStackPosition();
-  if (m_doc.get() != NULL) {
-    stackPosition += m_doc->getStackOffset();
-  }
-  zevent.setStackPosition(stackPosition);
-    */
 
   ZPoint dataPosition = m_context->getSliceViewTransform().transform(
         stackPosition, neutu::data3d::ESpace::VIEW,
         neutu::data3d::ESpace::MODEL);
- /*
-  ZPoint dataPos = stackPosition;
 
-  switch (getSliceAxis()) {
-  case neutu::EAxis::X:
-  case neutu::EAxis::Y:
-    dataPos = ZPositionMapper::StackToData(stackPosition, getSliceAxis());
-    break;
-  case neutu::EAxis::ARB:
-  {
-    QPoint viewPortCenter = viewProj.getViewPortCenter();
-    dataPos = ZPositionMapper::StackToData(
-          stackPosition,
-          ZPoint(viewPortCenter.x(), viewPortCenter.y(), stackPosition.getZ()),
-          m_arbSlice);
-  }
-    break;
-  default:
-    break;
-  }
-  */
   zevent.setDataPosition(dataPosition);
+
+  if (m_doc->getStack() &&
+      m_doc->getStack()->contains(dataPosition)) {
+      zevent.setInStack(true);
+  }
 
 #ifdef _DEBUG_
   if (action == ZMouseEvent::EAction::RELEASE) {

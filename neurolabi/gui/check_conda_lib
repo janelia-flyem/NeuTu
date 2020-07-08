@@ -29,7 +29,7 @@ then
   then
     echo "Library check failed @$condaEnvPath: libneucore NOT found;"
   else
-    minVersion="0.1.4"
+    minVersion="0.1.5"
     if [[ ${v[1]} < "$minVersion" ]]
     then
       echo "Library check failed @$1: libneucore version too old: CURRENT ${v[1]}, REQUIRED >=$minVersion; "

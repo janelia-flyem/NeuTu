@@ -9,6 +9,7 @@
 #include "geometry/zlinesegment.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zintpoint.h"
+#include "geometry/zrotator.h"
 
 #ifdef _USE_GTEST_
 TEST(ZGeometry, Util)
@@ -497,7 +498,38 @@ TEST(ZGeometry, Int)
   range = zgeom::ToIntRange(-1.5, 1.5);
   ASSERT_EQ(-2, range.first);
   ASSERT_EQ(1, range.second);
+}
 
+TEST(ZGeometry, Rotate)
+{
+  ZRotator rotator(ZPoint(1, 0, 0), 0);
+  ZPoint pt = rotator.rotate(ZPoint(1, 2, 3));
+  ASSERT_EQ(ZPoint(1, 2, 3), pt);
+
+  pt = rotator.rotate(ZPoint(1, 0, 0), 1);
+  ASSERT_EQ(ZPoint(1, 0, 0), pt);
+
+
+  pt = rotator.rotate(ZPoint(0, 1, 0), M_PI_2);
+  ASSERT_TRUE(pt.approxEquals(ZPoint(0, 0, 1)));
+
+  ZPlane plane = rotator.rotate(
+        ZPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0)), M_PI_2);
+  ASSERT_TRUE(plane.getV1().approxEquals(ZPoint(1, 0, 0)));
+  ASSERT_TRUE(plane.getV2().approxEquals(ZPoint(0, 0, 1)));
+
+  rotator.setAxis(ZPoint(0, 1, 0));
+  pt = rotator.rotate(ZPoint(0, 1, 0), M_PI_2);
+  ASSERT_EQ(ZPoint(0, 1, 0), pt);
+
+  pt = rotator.rotate(ZPoint(1, 2, 3), M_PI_2);
+  ASSERT_TRUE(pt.approxEquals(ZPoint(3, 2, -1)));
+
+  rotator.setAxis(0, 0, 1);
+  pt = rotator.rotate(ZPoint(1, 2, 3), M_PI_2);
+  ASSERT_TRUE(pt.approxEquals(ZPoint(-2, 1, 3)));
+
+  std::cout << plane << std::endl;
 }
 
 #endif

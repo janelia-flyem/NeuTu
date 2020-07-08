@@ -680,6 +680,10 @@ void ZProofreadWindow::createToolbar()
       action = m_mainMvc->getCompletePresenter()->getAction(
                 ZActionFactory::ACTION_VIEW_AXIS_Z);
       break;
+    case neutu::EAxis::ARB:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_ARB);
+      break;
     default:
       break;
     }
@@ -692,6 +696,7 @@ void ZProofreadWindow::createToolbar()
   addViewAction(neutu::EAxis::X);
   addViewAction(neutu::EAxis::Y);
   addViewAction(neutu::EAxis::Z);
+  addViewAction(neutu::EAxis::ARB);
 
   m_toolBar->addSeparator();
 

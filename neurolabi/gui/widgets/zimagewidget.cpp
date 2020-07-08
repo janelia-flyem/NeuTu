@@ -564,6 +564,21 @@ void ZImageWidget::zoom(double zoomRatio)
   notifyTransformChanged();
 }
 
+void ZImageWidget::rotate(double au, double av, double rad)
+{
+  m_sliceViewTransform.rotate(au, av, rad);
+}
+
+void ZImageWidget::rotate(double da, double db)
+{
+  double au = db;
+  double av = -da;
+  double rad = std::sqrt(da * da + db * db) / 180.0;
+
+  rotate(au, av, rad);
+  notifyTransformChanged();
+}
+
 template<typename ZStackObjectPtr>
 bool ZImageWidget::paintObjectTmpl(
     QPainter *painter, const QList<ZStackObjectPtr> &objList)
