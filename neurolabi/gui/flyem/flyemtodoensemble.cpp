@@ -123,7 +123,7 @@ void FlyEmTodoEnsemble::processHit(ESelection s)
   switch (s) {
   case ESelection::SELECT_SINGLE:
     if (m_hitItem.isValid()) {
-      m_selector.deselectAll();
+      deselectSub();
       selectAt(pos);
     }
     break;
@@ -138,15 +138,14 @@ void FlyEmTodoEnsemble::processHit(ESelection s)
     }
     break;
   case ESelection::DESELECT:
-    m_selector.deselectAll();
-    processDeselected();
+    deselectSub();
     break;
   }
 
   m_hitItem.invalidate();
 }
 
-void FlyEmTodoEnsemble::deselect(bool)
+void FlyEmTodoEnsemble::deselectSub()
 {
   m_selector.deselectAll();
   processDeselected();

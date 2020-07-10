@@ -20,7 +20,7 @@ void ZStackDocSelector::deselectAll()
       for (QList<ZStackObject*>::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         ZStackObject *obj = *iter;
-        obj->deselect(true);
+        obj->deselectSub();
       }
     }
   }

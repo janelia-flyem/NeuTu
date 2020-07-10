@@ -10,6 +10,8 @@
 #include <QPainter>
 #endif
 
+#include "neulib/math/utilities.h"
+
 #include "tz_geo3d_utils.h"
 #include "tz_coordinate_3d.h"
 #include "tz_geo3d_utils.h"
@@ -398,7 +400,8 @@ ZPoint ZPoint::operator - () const
 
 ZIntPoint ZPoint::toIntPoint() const
 {
-  return ZIntPoint(neutu::ifloor(x()), neutu::ifloor(y()), neutu::ifloor(z()));
+  return ZIntPoint(
+        neulib::ifloor(x()), neulib::ifloor(y()), neulib::ifloor(z()));
 }
 
 ZIntPoint ZPoint::roundToIntPoint() const

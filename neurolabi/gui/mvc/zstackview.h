@@ -194,7 +194,7 @@ public:
 
   void setSliceAxis(neutu::EAxis axis);
   neutu::EAxis getSliceAxis() const;// { return m_sliceAxis; }
-  ZAffinePlane getAffinePlane() const;
+//  ZAffinePlane getAffinePlane() const;
 
   void setCutPlane(neutu::EAxis axis);
 

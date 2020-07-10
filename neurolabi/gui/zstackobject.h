@@ -168,9 +168,11 @@ public:
    */
   bool isSelected() const { return m_selected; }
 
-  virtual void deselect(bool /*recursive*/) { setSelected(false); }
+  virtual void deselectSub() {};
+  void deselect(bool recursive);
 
-  typedef void(*CallBack)(ZStackObject*);
+  using CallBack = std::function<void(ZStackObject*)>;
+//  typedef void(*CallBack)(ZStackObject*);
 
   void addCallBackOnSelection(CallBack callback){
     m_selectionCallbacks.push_back(callback);}

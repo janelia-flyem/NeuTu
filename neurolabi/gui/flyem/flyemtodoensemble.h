@@ -41,7 +41,7 @@ public:
   bool hit(double x, double y, double z) override;
 
   void processHit(ESelection s) override;
-  void deselect(bool) override;
+  void deselectSub() override;
 
   bool hasSelected() const;
 

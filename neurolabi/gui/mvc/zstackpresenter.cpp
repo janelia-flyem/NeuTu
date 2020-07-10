@@ -100,6 +100,16 @@ void ZStackPresenter::initActiveObject()
   stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_SYNAPSE, stroke);
 
+  {
+    ZStackBall *obj = new ZStackBall;
+    obj->setVisible(false);
+    obj->useCosmeticPen(true);
+    obj->setRadius(5.0);
+    obj->setColor(255, 0, 0);
+    obj->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
+    addActiveObject(ROLE_BOOKMARK, obj);
+  }
+  /*
   stroke = new ZStroke2d;
   stroke->setVisible(false);
   stroke->setFilled(false);
@@ -109,6 +119,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setWidth(10.0);
   stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_BOOKMARK, stroke);
+  */
 
   stroke = new ZStroke2d;
   stroke->setVisible(false);
@@ -495,18 +506,37 @@ bool ZStackPresenter::paintingStroke() const
 
 void ZStackPresenter::updateActiveDecoration()
 {
+  ZPoint dataPos =
+      buddyView()->getCurrentMousePosition(neutu::data3d::ESpace::MODEL);
   foreach(ZStackObject *obj, m_activeDecorationList) {
     if (obj->isVisible() && !paintingStroke()) {
-      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
-      if (stroke) {
-        stroke->updateWithLast(
-              buddyView()->getCurrentMousePosition(neutu::data3d::ESpace::MODEL));
-#ifdef _DEBUG_
-        std::cout << "Current stroke: ";
-        stroke->print();
-#endif
-        buddyDocument()->bufferObjectModified(stroke);
+      switch (obj->getType()) {
+      case ZStackObject::EType::STROKE:
+      {
+        ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+        if (stroke) {
+          stroke->updateWithLast(dataPos);
+  #ifdef _DEBUG_
+          std::cout << "Current stroke: ";
+          stroke->print();
+  #endif
+//          buddyDocument()->bufferObjectModified(stroke);
+        }
       }
+        break;
+      case ZStackObject::EType::STACK_BALL:
+      {
+        ZStackBall *ball = dynamic_cast<ZStackBall*>(obj);
+        if (ball) {
+           ball->setCenter(dataPos.toIntPoint());
+        }
+      }
+        break;
+      default:
+        obj = nullptr;
+        break;
+      }
+      buddyDocument()->bufferObjectModified(obj);
     }
   }
   buddyDocument()->processObjectModified();
@@ -3503,13 +3533,15 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_OBJECT_SELECT_SINGLE:
   {
-    buddyDocument()->deselectAllObject(false);
+//    buddyDocument()->deselectAllObject(false);
+    ZStackDocSelector docSelector(getSharedBuddyDocument());
+    docSelector.deselectAll();
     ZStackObject *obj = op.getHitObject<ZStackObject>();
     if (obj) {
-      buddyDocument()->setSelected(obj, true);
       obj->processHit(ZStackObject::ESelection::SELECT_SINGLE);
-      buddyDocument()->processObjectModified(
-            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+      buddyDocument()->setSelected(obj, true);
+//      buddyDocument()->processObjectModified(
+//            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
       interactionEvent.setEvent(
             ZInteractionEvent::EVENT_OBJECT_SELECTED);
     }
@@ -3553,7 +3585,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
       ZStackDocSelector docSelector(getSharedBuddyDocument());
       docSelector.setSelectOption(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE,
                                   ZStackDocSelector::SELECT_RECURSIVE);
-      docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_LIST,
+//      docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_LIST,
+//                                  ZStackDocSelector::SELECT_RECURSIVE);
+      docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_ENSEMBLE,
                                   ZStackDocSelector::SELECT_RECURSIVE);
       docSelector.deselectAll();
 

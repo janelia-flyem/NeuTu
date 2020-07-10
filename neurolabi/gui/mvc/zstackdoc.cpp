@@ -4663,7 +4663,9 @@ void ZStackDoc::deselectAllObject(bool recursive)
   notifyDeselected(getSelectedObjectList<ZLocsegChain>(
                      ZStackObject::EType::LOCSEG_CHAIN));
 
-  m_objectGroup.setSelected(false);
+  m_objectGroup.setSelected(false, [this](const ZStackObject* obj) {
+    bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+  });
 }
 
 void ZStackDoc::deselectAllObject(ZStackObjectRole::TRole role)
@@ -5047,6 +5049,8 @@ void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
 //      TStackObjectSet &selectedSet = getSelected(type);
 
       m_objectGroup.setSelected(obj, selecting);
+      processObjectModified(
+                  obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
       //obj->setSelected(selecting);
 
       /*
@@ -5075,6 +5079,8 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
   }
   if (obj != NULL) {
     m_objectGroup.setSelected(obj, true);
+    processObjectModified(
+                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
   }
 
 //  m_objectGroup.getSelector()->selectObject(obj);
@@ -6033,36 +6039,40 @@ void ZStackDoc::bufferObjectModified(neutu::data3d::ETarget target, bool sync)
 }
 
 void ZStackDoc::bufferObjectModified(
-    ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
+    const ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
 {
   ZStackObjectInfo info;
   info.set(*obj);
   bufferObjectModified(info, state, sync);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectModified(const ZStackObject *obj, bool sync)
 {
   ZStackObjectInfo info;
   info.set(*obj);
   bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
 }
 
-void ZStackDoc::bufferObjectDataModified(ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectDataModified(
+    const ZStackObject *obj, bool sync)
 {
   bufferObjectModified(obj, ZStackObjectInfo::STATE_MODIFIED, sync);
 }
 
-void ZStackDoc::bufferObjectDataAdded(ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectDataAdded(
+    const ZStackObject *obj, bool sync)
 {
   bufferObjectModified(obj, ZStackObjectInfo::STATE_ADDED, sync);
 }
 
-void ZStackDoc::bufferObjectDataRemoved(ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectDataRemoved(
+    const ZStackObject *obj, bool sync)
 {
   bufferObjectModified(obj, ZStackObjectInfo::STATE_REMOVED, sync);
 }
 
-void ZStackDoc::bufferObjectVisibilityChanged(ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectVisibilityChanged(
+    const ZStackObject *obj, bool sync)
 {
   bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED, sync);
 }

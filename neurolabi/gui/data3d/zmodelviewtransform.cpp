@@ -150,8 +150,8 @@ void ZModelViewTransform::setCutPlane(neutu::EAxis sliceAxis)
     m_cutPlane.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     break;
   case neutu::EAxis::ARB:
-    m_cutPlane.setPlane(
-          ZPoint(1, 1, 0).getNormalized(), ZPoint(1, -1, 0).getNormalized());
+//    m_cutPlane.setPlane(
+//          ZPoint(1, 1, 0).getNormalized(), ZPoint(1, -1, 0).getNormalized());
     break;
   }
 }

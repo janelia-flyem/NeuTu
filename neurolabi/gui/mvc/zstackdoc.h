@@ -965,9 +965,9 @@ public:
   void bufferObjectModified(ZStackObject::EType type, bool sync = true);
   void bufferObjectModified(neutu::data3d::ETarget target, bool sync = true);
   void bufferObjectModified(
-      ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
-  void bufferObjectModified(ZStackObject *obj, bool sync = true);
-  void bufferObjectVisibilityChanged(ZStackObject *obj, bool sync = true);
+      const ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
+  void bufferObjectModified(const ZStackObject *obj, bool sync = true);
+  void bufferObjectVisibilityChanged(const ZStackObject *obj, bool sync = true);
   void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
   void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void bufferObjectModified(
@@ -976,9 +976,9 @@ public:
   void bufferObjectModified(
       const QSet<neutu::data3d::ETarget> &targetSet, bool sync = true);
 
-  void bufferObjectDataModified(ZStackObject *obj, bool sync = true);
-  void bufferObjectDataAdded(ZStackObject *obj, bool sync = true);
-  void bufferObjectDataRemoved(ZStackObject *obj, bool sync = true);
+  void bufferObjectDataModified(const ZStackObject *obj, bool sync = true);
+  void bufferObjectDataAdded(const ZStackObject *obj, bool sync = true);
+  void bufferObjectDataRemoved(const ZStackObject *obj, bool sync = true);
 
 
 

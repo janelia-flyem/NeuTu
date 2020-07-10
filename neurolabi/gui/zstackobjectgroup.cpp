@@ -144,6 +144,14 @@ void ZStackObjectGroup::setSelected(bool selected)
   setSelectedUnsync(selected);
 }
 
+void ZStackObjectGroup::setSelected(
+    bool selected, std::function<void(const ZStackObject*)> selChangeProc)
+{
+  QMutexLocker locker(&m_mutex);
+
+  setSelectedUnsync(selected, selChangeProc);
+}
+
 void ZStackObjectGroup::setSelectedUnsync(bool selected)
 {
   ZOUT(LTRACE(), 6) << "Select object";
@@ -168,6 +176,37 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
     }
   }
 }
+
+void ZStackObjectGroup::setSelectedUnsync(
+    bool selected, std::function<void(const ZStackObject*)> selectionChangeProc)
+{
+  ZOUT(LTRACE(), 6) << "Select object";
+
+  for (QList<ZStackObject*> ::iterator iter = m_objectList.begin();
+       iter != m_objectList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    bool selectionChanged = (obj->isSelected() != selected);
+    getSelector()->setSelection(obj, selected);
+    //obj->setSelected(selected);
+    if (selected) {
+      getSelectedSetUnsync(obj->getType()).insert(obj);
+    } else {
+      getSelectedSetUnsync(obj->getType()).remove(obj);
+    }
+    if (selectionChanged) {
+      selectionChangeProc(obj);
+    }
+  }
+
+  if (selected == false) {
+    for (TObjectSetMap::iterator iter = m_selectedSet.begin();
+         iter != m_selectedSet.end(); ++iter) {
+      TStackObjectSet &subset = *iter;
+      subset.clear();
+    }
+  }
+}
+
 
 void ZStackObjectGroup::setSelected(
     TStackObjectList &objList, TStackObjectSet &selectedSet, bool selected)

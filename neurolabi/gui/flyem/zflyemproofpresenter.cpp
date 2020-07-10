@@ -986,12 +986,12 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
 
   interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
 
-  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_BOOKMARK);
+//  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_BOOKMARK);
 
 //  stroke->setWidth(10.0);
 
-  buddyDocument()->mapToDataCoord(&x, &y, NULL);
-  stroke->set(x, y);
+//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+//  stroke->set(x, y);
 //  m_stroke.setEraser(false);
 //  m_stroke.setFilled(false);
 //  m_stroke.setTarget(neutu::data3d::ETarget::TARGET_WIDGET);
@@ -1035,17 +1035,27 @@ ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
   return qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
 }
 
-void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
+void ZFlyEmProofPresenter::addActiveDecorationAsBookmark()
 {
-  int x = 0;
-  int y = 0;
-
-  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_BOOKMARK);
-  if (stroke != NULL) {
-    stroke->getLastPoint(&x, &y);
-    double radius = stroke->getWidth() / 2.0;
+  ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_BOOKMARK);
+  if (ball) {
+//    stroke->getLastPoint(&x, &y);
+//    double radius = ball->getRadius();
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+    bookmark->setLocation(ball->getCenter().toIntPoint());
+    bookmark->setRadius(ball->getRadius());
+    bookmark->setCustom(true);
+    bookmark->setUser(neutu::GetCurrentUserName());
+    bookmark->addUserTag();
+    ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
+    if (doc != NULL) {
+      bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
+    }
+
+    getCompleteDocument()->executeAddBookmarkCommand(bookmark);
+
+    /*
     ZIntPoint pos(x, y, buddyView()->getZ(neutu::ECoordinateSystem::STACK));
     pos.shiftSliceAxisInverse(getSliceAxis());
     bookmark->setLocation(pos);
@@ -1059,6 +1069,7 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     }
 
     getCompleteDocument()->executeAddBookmarkCommand(bookmark);
+    */
   }
 }
 
@@ -1118,7 +1129,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     tryTodoItemMode();
     break;
   case ZStackOperator::OP_BOOKMARK_ADD_NEW:
-    addActiveStrokeAsBookmark();
+    addActiveDecorationAsBookmark();
     break;
   case ZStackOperator::OP_BOOKMARK_ANNOTATE:
     emit annotatingBookmark(op.getHitObject<ZFlyEmBookmark>());

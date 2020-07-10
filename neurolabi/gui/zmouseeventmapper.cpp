@@ -3,7 +3,6 @@
 
 #include "common/neutudefs.h"
 
-#include "zinteractivecontext.h"
 #include "geometry/zintpoint.h"
 #include "zmouseevent.h"
 #include "zstackoperator.h"
@@ -64,6 +63,15 @@ ZMouseEventMapper::getPosition(Qt::MouseButtons button,
   }
 
   return pt;
+}
+
+bool ZMouseEventMapper::hasMode(ZInteractiveContext::EUniqueMode mode) const
+{
+  if (m_context) {
+    return (m_context->getUniqueMode() == mode);
+  }
+
+  return false;
 }
 ///////////////ZMouseEventLeftButtonReleaseMapper/////////////////////
 ////////             UO             ////////////////////////////
@@ -608,10 +616,8 @@ void ZMouseEventMoveMapper::mapLeftButtonOperation(
     const ZMouseEvent &event, ZStackOperator &op) const
  {
    if (event.getModifiers() == Qt::ShiftModifier) {
-     if (m_context->getUniqueMode() ==
-         ZInteractiveContext::INTERACT_OBJECT_MOVE ||
-         m_context->getUniqueMode() ==
-         ZInteractiveContext::INTERACT_SWC_MOVE_NODE) {
+     if (hasMode(ZInteractiveContext::INTERACT_OBJECT_MOVE) ||
+         hasMode(ZInteractiveContext::INTERACT_SWC_MOVE_NODE)) {
        op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
      } else if (m_context->getSliceAxis() == neutu::EAxis::ARB) {
        if (m_context->isExploreModeOff()) {
@@ -624,14 +630,11 @@ void ZMouseEventMoveMapper::mapLeftButtonOperation(
        }
      }
    } else {
-     if (m_context->getUniqueMode() ==
-         ZInteractiveContext::INTERACT_MOVE_CROSSHAIR) {
+     if (hasMode(ZInteractiveContext::INTERACT_MOVE_CROSSHAIR)) {
        op.setOperation(ZStackOperator::OP_CROSSHAIR_MOVE);
-     } else if (m_context->getUniqueMode() ==
-                ZInteractiveContext::INTERACT_STROKE_DRAW) {
+     } else if (hasMode(ZInteractiveContext::INTERACT_STROKE_DRAW)) {
        op.setOperation(ZStackOperator::OP_PAINT_STROKE);
-     } else if (m_context->getUniqueMode() ==
-                ZInteractiveContext::INTERACT_RECT_DRAW) {
+     } else if (hasMode(ZInteractiveContext::INTERACT_RECT_DRAW)) {
        op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
      } else {
        mapToImageMove(event, op);
@@ -643,17 +646,7 @@ void ZMouseEventMoveMapper::mapRightButtonOperation(const ZMouseEvent &event,
     ZStackOperator &op) const
 {
   if (m_context->getUniqueMode() != ZInteractiveContext::INTERACT_IMAGE_MOVE) {
-    int dx = 0;
-    int dy = 0;
-    std::tie(dx, dy) = getMouseMovedFromPress(event);
-
-    if (isMouseMovedSignficantly(dx, dy)) {
-      if (dy < -5) {
-        op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
-      } else if (dy > 5) {
-        op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
-      }
-    }
+    mapToImageZoom(event, op);
   }
 }
 
@@ -672,6 +665,22 @@ void ZMouseEventMoveMapper::mapToImageMove(
   } else if (m_context->exploreMode() ==
              ZInteractiveContext::EXPLORE_MOVE_IMAGE) {
     op.setOperation(ZStackOperator::OP_MOVE_IMAGE);
+  }
+}
+
+void ZMouseEventMoveMapper::mapToImageZoom(
+    const ZMouseEvent &event, ZStackOperator &op) const
+{
+  int dx = 0;
+  int dy = 0;
+  std::tie(dx, dy) = getMouseMovedFromPress(event);
+
+  if (isMouseMovedSignficantly(dx, dy)) {
+    if (dy < -5) {
+      op.setOperation(ZStackOperator::OP_ZOOM_IN_GRAB_POS);
+    } else if (dy > 5) {
+      op.setOperation(ZStackOperator::OP_ZOOM_OUT_GRAB_POS);
+    }
   }
 }
 
@@ -765,8 +774,7 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
 
 #ifdef _FLYEM_
       if (event.getModifiers() == Qt::ShiftModifier &&
-          m_context->getUniqueMode() ==
-          ZInteractiveContext::INTERACT_STROKE_DRAW) {
+          hasMode(ZInteractiveContext::INTERACT_STROKE_DRAW)) {
         op.setTogglingStrokeLabel(true);
       }
 #endif

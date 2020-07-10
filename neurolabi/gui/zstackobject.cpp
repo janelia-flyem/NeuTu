@@ -119,13 +119,11 @@ void ZStackObject::setSelected(bool selected)
   m_selected = selected;
 
   if(m_selected) {
-    for(auto callback: m_selectionCallbacks)
-    {
+    for(auto callback: m_selectionCallbacks) {
       callback(this);
     }
   } else {
-    for(auto callback: m_deselectionCallbacks)
-    {
+    for(auto callback: m_deselectionCallbacks) {
       callback(this);
     }
   }
@@ -146,6 +144,16 @@ void ZStackObject::processHit(ESelection s)
     break;
   }
 }
+
+void ZStackObject::deselect(bool recursive)
+{
+  setSelected(false);
+
+  if (recursive) {
+    deselectSub();
+  }
+}
+
 
 void ZStackObject::setColor(int red, int green, int blue)
 {

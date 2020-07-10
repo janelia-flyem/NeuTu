@@ -9,8 +9,8 @@
 #include "zmouseevent.h"
 #include "zmouseeventrecorder.h"
 #include "common/zsharedpointer.h"
+#include "zinteractivecontext.h"
 
-class ZInteractiveContext;
 class QMouseEvent;
 class ZMouseEvent;
 class ZStackDoc;
@@ -62,6 +62,8 @@ public:
   inline const ZStackDoc* getDocument() const {
     return m_doc.get();
   }
+
+  bool hasMode(ZInteractiveContext::EUniqueMode mode) const;
 
 protected:
   ZInteractiveContext *m_context;
@@ -142,6 +144,7 @@ private:
   void mapMidButtonOperation(
       const ZMouseEvent &event, ZStackOperator &op) const;
   void mapToImageMove(const ZMouseEvent &event, ZStackOperator &op) const;
+  void mapToImageZoom(const ZMouseEvent &event, ZStackOperator &op) const;
 
 
 private:

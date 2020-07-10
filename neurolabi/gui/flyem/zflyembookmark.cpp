@@ -268,7 +268,7 @@ bool ZFlyEmBookmark::display(
     QPainter *painter, const DisplayConfig &config) const
 {
   if (isVisible()) {
-    ZSlice3dPainter paintHelper = neutu::vis2d::Get3dSlicePainter(config);
+    ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
 
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
@@ -276,9 +276,15 @@ bool ZFlyEmBookmark::display(
     pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 
-    paintHelper.drawBall(painter, getCenter(), getRadius(), 2.0, 0.5);
+    double depthScale = 0.5;
+    s3Painter.drawBall(painter, getCenter(), getRadius(), 2.0, depthScale);
 
-    return paintHelper.getPaintedHint();
+    if (isSelected()) {
+      neutu::SetPenColor(painter, Qt::yellow);
+      s3Painter.drawBoundBox(painter, getCenter(), getRadius(), depthScale);
+    }
+
+    return s3Painter.getPaintedHint();
   }
 
   return false;

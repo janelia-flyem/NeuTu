@@ -151,7 +151,7 @@ bool ZStackBall::display(QPainter *painter, const DisplayConfig &config) const
     s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
 
     if (isSelected()) {
-      painter->setPen(Qt::yellow);
+      neutu::SetPenColor(painter, Qt::yellow);
       s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
     }
     return s3Painter.getPaintedHint();

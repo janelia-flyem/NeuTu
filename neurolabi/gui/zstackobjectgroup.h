@@ -2,11 +2,11 @@
 #define ZSTACKOBJECTGROUP_H
 
 #include <functional>
+#include <set>
 
 #include <QList>
 #include <QSet>
 #include <QMap>
-#include <set>
 #include <QMutex>
 
 #include "zstackobject.h"
@@ -45,6 +45,8 @@ public:
 
   void setSelected(ZStackObject *obj, bool selected);
   void setSelected(bool selected);
+  void setSelected(
+      bool selected, std::function<void(const ZStackObject*)> selChangeProc);
 
   void setSelected(ZStackObject::EType type, bool selected);
   void setSelected(ZStackObjectRole::TRole role, bool selected);
@@ -206,6 +208,9 @@ public:
   int getMaxZOrderUnsync() const;
 
   void setSelectedUnsync(bool selected);
+  void setSelectedUnsync(
+      bool selected,
+      std::function<void(const ZStackObject*)> selectionChangeProc);
   void setSelectedUnsync(ZStackObject::EType type, bool selected);
 
   void setSelectedUnsync(ZStackObjectRole::TRole role, bool selected);

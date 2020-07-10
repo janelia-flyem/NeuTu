@@ -529,15 +529,6 @@ void ZFlyEmToDoList::deselectSub()
   deselectAll();
 }
 
-void ZFlyEmToDoList::deselect(bool recursive)
-{
-  setSelected(false);
-
-  if (recursive) {
-    deselectSub();
-  }
-}
-
 bool ZFlyEmToDoList::hit(double x, double y, double z)
 {
   const int sliceRange = 5;

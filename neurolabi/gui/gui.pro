@@ -288,6 +288,7 @@ include(qt/qt.pri)
 include(widgets/widgets.pri)
 include(flyem/flyem.pri)
 include(tracing/tracing.pri)
+include(dialogs/dialogs.pri)
 
 # Input
 win32 {
@@ -326,29 +327,6 @@ HEADERS += mainwindow.h \
     zinteractivecontext.h \
     ztraceproject.h \
     zpunctum.h \
-    dialogs/userfeedbackdialog.h \
-    dialogs/zsynapsepropertydialog.h \
-    dialogs/settingdialog.h \
-    dialogs/frameinfodialog.h \
-    dialogs/traceoutputdialog.h \
-    dialogs/bcadjustdialog.h \
-    dialogs/zeditswcdialog.h \
-    dialogs/cannyedgedialog.h \
-    dialogs/medianfilterdialog.h \
-    dialogs/distancemapdialog.h \
-    dialogs/regionexpanddialog.h \
-    dialogs/neuroniddialog.h \
-    dialogs/diffusiondialog.h \
-    dialogs/connectedthresholddialog.h \
-    dialogs/flyemskeletonizationdialog.h \
-    dialogs/parameterdialog.h \
-    dialogs/pixelquerydialog.h \
-    dialogs/zrescaleswcdialog.h \
-    dialogs/swcsizedialog.h \
-    dialogs/swcskeletontransformdialog.h \
-    dialogs/swctypedialog.h \
-    dialogs/mexicanhatdialog.h \
-    dialogs/channeldialog.h \
     zsinglechannelstack.h \
     zrandom.h \
     zlocsegchainconn.h \
@@ -462,10 +440,6 @@ HEADERS += mainwindow.h \
     dialogs/flyemhotspotdialog.h \
     zworkspacefactory.h \
     dvid/zdvidreader.h \
-    dialogs/flyembodyiddialog.h \
-    dialogs/zdviddialog.h \
-    dialogs/zdvidtargetproviderdialog.h \
-    dialogs/flyembodyfilterdialog.h \
     zflyemdvidreader.h \
     zstroke2darray.h \
     tilemanager.h \
@@ -711,92 +685,16 @@ HEADERS += mainwindow.h \
     protocols/taskmergereview.h \
     dialogs/zflyemtodoannotationdialog.h \
     main.h \
-    dialogs/zflyemgrayscaledialog.h \
-    dialogs/zcomboeditdialog.h \
-    dialogs/zflyembodycomparisondialog.h \
-    dialogs/zflyemsplituploadoptiondialog.h \
-    dialogs/zflyembodychopdialog.h \
-    dialogs/ztestoptiondialog.h \
-    dialogs/zinfodialog.h \
-    dialogs/zswcisolationdialog.h \
-    dialogs/zstresstestoptiondialog.h \
-    dialogs/zflyembodyscreenshotdialog.h\
-    dialogs/zflyemskeletonupdatedialog.h \
-    dialogs/zdvidadvanceddialog.h \
-    dialogs/zdvidbodypositiondialog.h \
-    dialogs/neuprintquerydialog.h \
-    dialogs/zflyemtodofilterdialog.h \
-    dialogs/zstackframesettingdialog.h \
-    dialogs/neuprintsetupdialog.h \
     dvid/zdvidgraysliceensemble.h \
     dvid/zdvidenv.h \
     protocols/taskutils.h
 
-FORMS += dialogs/settingdialog.ui \
-    dialogs/frameinfodialog.ui \
-    dialogs/neuprintdatasetdialog.ui \
-    dialogs/userfeedbackdialog.ui \
-    dialogs/zsynapsepropertydialog.ui \
-    mainwindow.ui \
-    dialogs/traceoutputdialog.ui \
-    dialogs/bcadjustdialog.ui \
-    dialogs/channeldialog.ui \
-    dialogs/cannyedgedialog.ui \
-    dialogs/medianfilterdialog.ui \
-    dialogs/diffusiondialog.ui \
-    dialogs/connectedthresholddialog.ui \
-    dialogs/zmergeimagedialog.ui \
-    dialogs/zrescaleswcdialog.ui \
-    dialogs/distancemapdialog.ui \
-    dialogs/regionexpanddialog.ui \
-    dialogs/neuroniddialog.ui \
-    dialogs/flyemskeletonizationdialog.ui \
-    dialogs/parameterdialog.ui \
-    dialogs/pixelquerydialog.ui \
-    dialogs/swctypedialog.ui \
-    dialogs/swcsizedialog.ui \
-    dialogs/swcskeletontransformdialog.ui \
-    dialogs/mexicanhatdialog.ui \
-    dialogs/informationdialog.ui \
+FORMS += mainwindow.ui \
     flyemdataform.ui \
-    dialogs/zalphadialog.ui \
-    dialogs/helpdialog.ui \
-    dialogs/projectiondialog.ui \
-    dialogs/startsettingdialog.ui \
-    dialogs/moviedialog.ui \
-    dialogs/flyemdataquerydialog.ui \
-    dialogs/flyemdataprocessdialog.ui \
-    dialogs/autosaveswclistdialog.ui \
-    dialogs/diagnosisdialog.ui \
-    dialogs/flyemdataexportdialog.ui \
-    dialogs/flyemgeosearchdialog.ui \
-    dialogs/flyemgeofilterdialog.ui \
-    dialogs/penwidthdialog.ui \
-    dialogs/dvidobjectdialog.ui \
-    dialogs/resolutiondialog.ui \
-    dialogs/dvidimagedialog.ui \
-    dialogs/flyemneuronthumbnaildialog.ui \
-    dialogs/flyemhotspotdialog.ui \
-    dialogs/flyembodyiddialog.ui \
-    dialogs/zdviddialog.ui \
-    dialogs/flyembodyfilterdialog.ui \
-    dialogs/flyembodysplitprojectdialog.ui \
-    dialogs/dvidskeletonizedialog.ui \
     protocols/protocolassignmentdialog.ui \
     protocols/protocolchooseassignmentdialog.ui \
     tilemanager.ui \
     newprojectmainwindow.ui \
-    dialogs/shapepaperdialog.ui \
-    dialogs/dvidoperatedialog.ui \
-    dialogs/synapseimportdialog.ui \
-    dialogs/zsegmentationprojectdialog.ui \
-    dialogs/zmarkswcsomadialog.ui \
-    dialogs/swcexportdialog.ui \
-    dialogs/ztestdialog.ui \
-    dialogs/ztestdialog2.ui \
-    dialogs/zflyemsplitcommitdialog.ui \
-    dialogs/stringlistdialog.ui \
-    dialogs/flyemtododialog.ui \
     zflyemcontrolform.ui \
     dialogs/flyembodyinfodialog.ui \
     protocols/protocolchooser.ui \
@@ -811,36 +709,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/todoreviewinputdialog.ui \
     protocols/orphanlinkprotocol.ui \
     protocols/protocoldialog.ui \
-    dialogs/tipdetectordialog.ui \
-    dialogs/flyemsettingdialog.ui \
-    dialogs/flyemsynapsefilterdialog.ui \
-    dialogs/zflyemsynapseannotationdialog.ui \
-    dialogs/zcontrastprotocaldialog.ui \
-    dialogs/zflyemroitooldialog.ui \
-    dialogs/zdvidbodypositiondialog.ui \
-    dialogs/zflyemsplituploadoptiondialog.ui \
-    neu3window.ui \
-    dialogs/ztestoptiondialog.ui \
-    dialogs/zinfodialog.ui \
-    dialogs/zswcisolationdialog.ui \
-    dialogs/zstresstestoptiondialog.ui \
-    dialogs/zflyembodyscreenshotdialog.ui \
-    dialogs/zdvidadvanceddialog.ui \
-    dialogs/zflyemskeletonupdatedialog.ui \
-    dialogs/zflyemgrayscaledialog.ui \
-    dialogs/zcomboeditdialog.ui \
-    dialogs/zflyembodycomparisondialog.ui \
-    dialogs/zflyembodysplitdialog.ui \
-    dialogs/dvidbranchdialog.ui \
-    dialogs/zflyemmergeuploaddialog.ui \
-    dialogs/zflyemproofsettingdialog.ui \
-    dialogs/zneu3sliceviewdialog.ui \
-    dialogs/zflyemtodoannotationdialog.ui \
-    dialogs/neuprintquerydialog.ui \
-    dialogs/zflyemtodofilterdialog.ui \
-    dialogs/zautotracedialog.ui \
-    dialogs/zstackframesettingdialog.ui \
-    dialogs/neuprintsetupdialog.ui 
+    neu3window.ui
 
 SOURCES += main.cpp \
     concurrent/zworkerwrapper.cpp \
@@ -859,8 +728,6 @@ SOURCES += main.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
-    dialogs/settingdialog.cpp \
-    dialogs/frameinfodialog.cpp \
     plotsettings.cpp \
     plotter.cpp \
     zinteractivecontext.cpp \
@@ -873,18 +740,6 @@ SOURCES += main.cpp \
     dialogs/cannyedgedialog.cpp \
     zdirectionaltemplatechain.cpp \
     zrandom.cpp \
-    dialogs/distancemapdialog.cpp \
-    dialogs/regionexpanddialog.cpp \
-    dialogs/neuroniddialog.cpp \
-    dialogs/flyemskeletonizationdialog.cpp \
-    dialogs/parameterdialog.cpp \
-    dialogs/pixelquerydialog.cpp \
-    dialogs/medianfilterdialog.cpp \
-    dialogs/diffusiondialog.cpp \
-    dialogs/connectedthresholddialog.cpp \
-    dialogs/zrescaleswcdialog.cpp \
-    dialogs/mexicanhatdialog.cpp \
-    dialogs/informationdialog.cpp \
     z3dwindow.cpp \
     zobjsitem.cpp \
     zobjsmodel.cpp \
@@ -1216,29 +1071,7 @@ SOURCES += main.cpp \
     dvid/zdvidblockstream.cpp \
     dvid/zdvidgraysliceensemble.cpp \
     dvid/zdvidenv.cpp \
-    imgproc/zstackmultiscalewatershed.cpp \
-    dialogs/zflyemgrayscaledialog.cpp \
-    dialogs/zflyembodysplitdialog.cpp \
-    dialogs/zdvidbodypositiondialog.cpp \
-    dialogs/zflyemsplituploadoptiondialog.cpp \
-    dialogs/zflyembodychopdialog.cpp \
-    dialogs/zflyemproofsettingdialog.cpp \
-    dialogs/dvidbranchdialog.cpp \
-    dialogs/zflyemtodoannotationdialog.cpp \
-    dialogs/neuprintquerydialog.cpp \
-    dialogs/zflyemtodofilterdialog.cpp \
-    dialogs/zstackframesettingdialog.cpp \
-    dialogs/zneu3sliceviewdialog.cpp \
-    dialogs/zcomboeditdialog.cpp \
-    dialogs/zflyembodycomparisondialog.cpp \
-    dialogs/ztestoptiondialog.cpp \
-    dialogs/zinfodialog.cpp \
-    dialogs/zswcisolationdialog.cpp \
-    dialogs/zstresstestoptiondialog.cpp \
-    dialogs/zflyembodyscreenshotdialog.cpp \
-    dialogs/zflyemskeletonupdatedialog.cpp \
-    dialogs/zdvidadvanceddialog.cpp \
-    dialogs/neuprintsetupdialog.cpp
+    imgproc/zstackmultiscalewatershed.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

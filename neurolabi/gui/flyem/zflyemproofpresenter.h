@@ -198,7 +198,7 @@ private:
   void tryAddBookmarkMode();
   void tryAddBookmarkMode(double x, double y);
   void tryAddTodoItemMode(double x, double y);
-  void addActiveStrokeAsBookmark();
+  void addActiveDecorationAsBookmark();
   void init();
   void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
                      bool tryingLink);

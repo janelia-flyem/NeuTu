@@ -90,12 +90,15 @@ TEST(ZPoint, toIntPoint)
 {
   ZPoint pt(1.0, 2.6, 4.1);
   ASSERT_EQ(ZIntPoint(1, 3, 4), pt.roundToIntPoint());
+  ASSERT_EQ(ZIntPoint(1, 2, 4), pt.toIntPoint());
 
   pt.set(1.5, 2.5, 3.5);
   ASSERT_EQ(ZIntPoint(2, 3, 4), pt.roundToIntPoint());
+  ASSERT_EQ(ZIntPoint(1, 2, 3), pt.toIntPoint());
 
   pt.set(-1.5, -2.5, -3.5);
   ASSERT_EQ(ZIntPoint(-1, -2, -3), pt.roundToIntPoint());
+  ASSERT_EQ(ZIntPoint(-2, -3, -4), pt.toIntPoint());
 
   ASSERT_FALSE(pt.hasIntCoord());
   ASSERT_TRUE(pt.roundToIntPoint().toPoint().hasIntCoord());

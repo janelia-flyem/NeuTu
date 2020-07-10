@@ -124,7 +124,8 @@ public:
   void selectHit(bool appending);
   void deselectAll();
 
-  void deselect(bool recursive);
+  void deselectSub() override;
+//  void deselect(bool recursive);
 
 //  const std::string& className() const;
 
@@ -175,7 +176,7 @@ public:
 private:
   void init();
   void updateFromCache(int z);
-  void deselectSub();
+//  void deselectSub();
 
 private:
   QVector<ItemSlice> m_itemList;

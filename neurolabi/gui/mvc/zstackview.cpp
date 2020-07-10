@@ -592,10 +592,12 @@ void ZStackView::setCutPlane(neutu::EAxis axis)
   imageWidget()->setCutPlane(axis);
 }
 
+/*
 ZAffinePlane ZStackView::getAffinePlane() const
 {
   return m_sliceViewParam.getAffinePlane();
 }
+*/
 
 void ZStackView::setSliceRange(int minSlice, int maxSlice)
 {
