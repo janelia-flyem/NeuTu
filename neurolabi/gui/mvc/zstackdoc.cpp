@@ -5045,21 +5045,9 @@ void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
 {
   if (obj != NULL) {
     if (obj->isSelectable()) {
-//      ZStackObject::EType type = obj->getType();
-//      TStackObjectSet &selectedSet = getSelected(type);
-
       m_objectGroup.setSelected(obj, selecting);
       processObjectModified(
                   obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
-      //obj->setSelected(selecting);
-
-      /*
-      if (selecting) {
-        selectedSet.insert(obj);
-      } else {
-        selectedSet.remove(obj);
-      }
-      */
     }
   }
 }

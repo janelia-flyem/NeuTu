@@ -1,26 +1,26 @@
 #ifndef FLYEMTODOSOURCE_H
 #define FLYEMTODOSOURCE_H
 
-#include <vector>
-#include <functional>
-#include <string>
+//#include <vector>
+//#include <functional>
+//#include <string>
 
-class ZIntCuboid;
-class ZFlyEmToDoItem;
-class ZIntPoint;
+#include "bigdata/zintpointannotationsource.hpp"
 
-class FlyEmTodoSource
+#include "zflyemtodoitem.h"
+
+class FlyEmTodoSource : public ZIntPointAnnotationSource<ZFlyEmToDoItem>
 {
-public:
-  FlyEmTodoSource();
+//public:
+//  FlyEmTodoSource();
 
-  virtual std::vector<ZFlyEmToDoItem> getData(const ZIntCuboid &box) const = 0;
-  virtual ZIntCuboid getRange() const = 0;
-  virtual ZIntPoint getBlockSize() const;
+//  virtual std::vector<ZFlyEmToDoItem> getData(const ZIntCuboid &box) const = 0;
+//  virtual ZIntCuboid getRange() const = 0;
+//  virtual ZIntPoint getBlockSize() const;
 
-  virtual void saveItem(const ZFlyEmToDoItem &item) = 0;
-  virtual void removeItem(const ZIntPoint &pos) = 0;
-  void removeItem(int x, int y, int z);
+//  virtual void saveItem(const ZFlyEmToDoItem &item) = 0;
+//  virtual void removeItem(const ZIntPoint &pos) = 0;
+//  void removeItem(int x, int y, int z);
 
 };
 

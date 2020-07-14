@@ -15,7 +15,7 @@ TEST(FlyEmTodoChunk, Basic)
   chunk.setReady(true);
   ASSERT_TRUE(chunk.isReady());
 
-  ASSERT_FALSE(chunk.hasItem(1, 2, 3));
+  ASSERT_FALSE(chunk.hasItem(ZIntPoint(1, 2, 3)));
   std::vector<ZFlyEmToDoItem> itemList = chunk.getItemList();
   ASSERT_TRUE(itemList.empty());
 
@@ -28,7 +28,7 @@ TEST(FlyEmTodoChunk, Edit)
   FlyEmTodoChunk chunk;
   ZFlyEmToDoItem item(1, 2, 3);
   chunk.addItem(item);
-  ASSERT_TRUE(chunk.hasItem(1, 2, 3));
+  ASSERT_TRUE(chunk.hasItem(ZIntPoint(1, 2, 3)));
 
   chunk.addItem(ZFlyEmToDoItem(7, 8, 9));
   std::vector<ZFlyEmToDoItem> itemList = chunk.getItemList();
@@ -44,10 +44,10 @@ TEST(FlyEmTodoChunk, Edit)
     ASSERT_TRUE(itemSet.count(ZIntPoint(7, 8, 9)) > 0);
   }
 
-  ASSERT_TRUE(chunk.removeItem(1, 2, 3));
+  ASSERT_TRUE(chunk.removeItem({1, 2, 3}));
   ASSERT_EQ(1, chunk.countItem());
 
-  ASSERT_FALSE(chunk.removeItem(1, 2, 3));
+  ASSERT_FALSE(chunk.removeItem({1, 2, 3}));
   ASSERT_EQ(1, chunk.countItem());
 
   ASSERT_TRUE(chunk.removeItem(ZIntPoint(7, 8, 9)));

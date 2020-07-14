@@ -44,6 +44,7 @@ class ZStackBlockGrid;
 class ZDvidEnv;
 class ZRoiProvider;
 class FlyEmTodoEnsemble;
+class FlyEmSynapseEnsemble;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -90,6 +91,8 @@ public:
 
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);
+  void setSegmentationVisibility(bool visible);
+  QColor getBodyColor(uint64_t bodyId) const;
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis, bool sv) const;
@@ -111,6 +114,7 @@ public:
   ZFlyEmToDoList* getTodoList(neutu::EAxis axis) const;
 
   FlyEmTodoEnsemble* getTodoEnsemble() const;
+  FlyEmSynapseEnsemble* getSynapseEnsemble() const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
@@ -325,7 +329,7 @@ public: //Synapse functions
   std::set<ZIntPoint> getSelectedSynapse() const;
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
-  void tryMoveSelectedSynapse(const ZIntPoint &dest, neutu::EAxis axis);
+//  void tryMoveSelectedSynapse(const ZIntPoint &dest);
   void annotateSelectedSynapse(ZJsonObject propJson, neutu::EAxis axis);
   void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
                                neutu::EAxis axis);
@@ -357,7 +361,11 @@ public: //Synapse functions
       ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::EDataScope::GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
+  void updateSynapse(const ZIntPoint &pos);
+  void updateSynapse(const std::set<ZIntPoint> &posArray);
   void highlightPsd(bool on);
+
+  ZDvidSynapse getSingleSelectedSynapse() const;
 
 public: //Todo list functions
   void removeTodoItem(
@@ -707,6 +715,7 @@ protected:
   void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
   void initLabelSlice(neutu::EAxis axis);
   void initTodoEnsemble();
+  void initSynapseEnsemble();
 
   void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
   void setGrayscaleReader(

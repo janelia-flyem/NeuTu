@@ -97,6 +97,7 @@ public:
     FLYEM_TODO_ITEM,
     FLYEM_TODO_LIST,
     FLYEM_TODO_ENSEMBLE,
+    FLYEM_SYNAPSE_ENSEMBLE,
     CROSS_HAIR,
     SEGMENTATION_ENCODER
   };
@@ -283,6 +284,8 @@ public:
   virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis);
 
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
+
+  void setHitFunc(std::function<bool(double,double,double)> f);
 
   /*!
    * \brief Get bound box of the object.
@@ -490,10 +493,13 @@ protected:
   };
   void setPrevZ(int z) const;
 
+  mutable std::function<bool(double,double,double)>
+  _hit = [](double,double,double) {
+    return false;
+  };
+
 protected:
   static double m_defaultPenWidth;
-
-
 
 //protected:
   EHitProtocol m_hitProtocal = EHitProtocol::HIT_DATA_POS;

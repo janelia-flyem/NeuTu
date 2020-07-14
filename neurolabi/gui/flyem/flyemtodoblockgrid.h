@@ -1,18 +1,25 @@
 #ifndef FLYEMTODOBLOCKGRID_H
 #define FLYEMTODOBLOCKGRID_H
 
-#include <unordered_map>
-#include <memory>
-#include <mutex>
-#include <functional>
+//#include <unordered_map>
+//#include <memory>
+//#include <mutex>
+//#include <functional>
 
-#include "bigdata/zblockgrid.h"
+//#include "bigdata/zblockgrid.h"
+#include "bigdata/zintpointannotationblockgrid.hpp"
 
 #include "zflyemtodoitem.h"
 #include "flyemtodochunk.h"
 
+class FlyEmTodoBlockGrid :
+    public ZIntPointAnnotationBlockGrid<ZFlyEmToDoItem, FlyEmTodoChunk>
+{
+
+};
+
+#if 0
 class FlyEmTodoSource;
-class ZAffineRect;
 
 class FlyEmTodoBlockGrid : public ZBlockGrid
 {
@@ -24,10 +31,6 @@ public:
   void addItem(const ZFlyEmToDoItem &item);
   void removeItem(const ZIntPoint &pos);
   void removeItem(int x, int y, int z);
-  /*
-  std::vector<ZFlyEmToDoItem> getIntersectTodoList(
-      const ZAffineRect &plane) const;
-      */
 
   ZFlyEmToDoItem getExistingItem(int x, int y, int z) const;
   ZFlyEmToDoItem getExistingItem(const ZIntPoint &pos) const;
@@ -60,5 +63,6 @@ private:
   mutable FlyEmTodoChunk m_emptyChunk;
   std::shared_ptr<FlyEmTodoSource> m_source;
 };
+#endif
 
 #endif // FLYEMTODOBLOCKGRID_H

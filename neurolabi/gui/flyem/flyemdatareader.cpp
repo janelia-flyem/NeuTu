@@ -126,6 +126,12 @@ ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
   return ZFlyEmToDoItem();
 }
 
+ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
+      const ZDvidReader &reader, const ZIntPoint &pos)
+{
+  return ReadToDoItem(reader, pos.getX(), pos.getY(), pos.getZ());
+}
+
 ZIntCuboid FlyEmDataReader::ReadTodoDataRange(const ZDvidReader &reader)
 {
   ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
@@ -352,8 +358,6 @@ bool FlyEmDataReader::IsSkeletonSynced(
   return true;
 }
 
-
-#if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
     const ZDvidReader &reader,
     const ZIntCuboid &box, dvid::EAnnotationLoadMode mode)
@@ -371,6 +375,52 @@ std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
   return synapseArray;
 }
 
+namespace {
+
+void update_synapse(const ZDvidReader &reader, ZDvidSynapse *synapse)
+{
+  ZDvidUrl dvidUrl(reader.getDvidTarget());
+  ZJsonArray objArray = reader.readJsonArray(
+        dvidUrl.getSynapseUrl(synapse->getPosition(), 1, 1, 1));
+
+  if (!objArray.isEmpty()) {
+    ZJsonObject obj(objArray.value(0));
+    synapse->loadJsonObject(obj, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+    synapse->updatePartner();
+    synapse->updatePartnerProperty(reader);
+  }
+}
+
+}
+
+ZDvidSynapse FlyEmDataReader::ReadSynapse(
+      const ZDvidReader &reader, const ZIntPoint &pos)
+{
+  ZDvidSynapse synapse;
+  synapse.setPosition(pos);
+  update_synapse(reader, &synapse);
+  return synapse;
+}
+
+void FlyEmDataReader::UpdateSynapsePartner(
+    const ZDvidReader &reader, ZDvidSynapse *synapse)
+{
+  if (synapse && synapse->isValid()) {
+    synapse->clearPartner();
+
+    update_synapse(reader, synapse);
+  }
+}
+
+void FlyEmDataReader::UpdateSynapse(
+    const ZDvidReader &reader, ZDvidSynapse *synapse)
+{
+  if (synapse && synapse->isValid()) {
+    update_synapse(reader, synapse);
+  }
+}
+
+#if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
     const ZDvidReader &reader, uint64_t label, dvid::EAnnotationLoadMode mode)
 {

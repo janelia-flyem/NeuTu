@@ -49,3 +49,8 @@ void FlyEmTodoDvidSource::removeItem(const ZIntPoint &pos)
           m_writer.getStatusErrorMessage().toStdString());
   }
 }
+
+ZFlyEmToDoItem FlyEmTodoDvidSource::getItem(const ZIntPoint &pos) const
+{
+  return FlyEmDataReader::ReadToDoItem(m_writer.getDvidReader(), pos);
+}

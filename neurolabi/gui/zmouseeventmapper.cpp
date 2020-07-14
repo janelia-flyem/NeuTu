@@ -376,8 +376,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
     hitManager.hitTest(const_cast<ZStackDoc*>(
                          getDocument()), stackPosition.x(), stackPosition.y());
   } else {
-    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), dataPosition,
-                       event.getWidgetPosition());
+    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), dataPosition);
   }
   //op.setHitSwcNode(hitManager.getHitObject<Swc_Tree_Node>());
   op.setHitObject(hitManager.getHitObject<ZStackObject>());
@@ -460,8 +459,8 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     ZStackDocHitTest hitManager;
     hitManager.setSliceAxis(event.getSliceAxis());
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                       event.getPosition(neutu::ECoordinateSystem::ORGDATA),
-                       event.getWidgetPosition());
+                       event.getDataPosition());
+//                       event.getPosition(neutu::ECoordinateSystem::ORGDATA));
     op.setHitObject(hitManager.getHitObject<ZStackObject>());
   }
 

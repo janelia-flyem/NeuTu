@@ -208,7 +208,7 @@ private:
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();
-  void updateActiveObjectForSynapseAdd(const ZPoint &currentPos);
+  void updateActiveObjectForSynapseAdd(const ZPoint &currentDataPos);
 
   ZPoint getLastMouseReleasePosition(Qt::MouseButtons buttons) const;
 

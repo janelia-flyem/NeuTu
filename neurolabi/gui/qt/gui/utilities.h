@@ -42,6 +42,9 @@ void DrawPoint(
 void DrawPoints(
     QPainter &painter, const std::vector<QPointF> &pts,
     const PixelCentered p = true);
+void DrawPoints(
+    QPainter &painter, const std::vector<QPoint> &pts,
+    const PixelCentered p = true);
 void DrawCircle(
     QPainter &painter, double cx, double cy, double r,
     const PixelCentered &p = true);
@@ -60,7 +63,13 @@ void DrawLines(
 void DrawPolyline(
     QPainter &painter, const std::vector<QPointF> &pts,
     const PixelCentered p = true);
+void DrawPolyline(
+    QPainter &painter, const std::vector<QPoint> &pts,
+    const PixelCentered p = true);
 void DrawStar(
+    QPainter &painter, double cx, double cy, double r,
+    const PixelCentered &p = true);
+void DrawCross(
     QPainter &painter, double cx, double cy, double r,
     const PixelCentered &p = true);
 

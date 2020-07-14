@@ -1,74 +1,71 @@
 #ifndef FLYEMTODOCHUNK_H
 #define FLYEMTODOCHUNK_H
 
-#include <unordered_map>
-#include <vector>
-#include <functional>
+//#include <unordered_map>
+//#include <vector>
+//#include <functional>
 
+#include "bigdata/zintpointannotationchunk.h"
 #include "zflyemtodoitem.h"
 
-class ZIntPoint;
-
-class FlyEmTodoChunk
+class FlyEmTodoChunk : public ZIntPointAnnotationChunk<ZFlyEmToDoItem>
 {
 public:
   FlyEmTodoChunk();
 
-  using KeyType = ZIntPoint;
+//  /*!
+//   * \brief Pick an item within a range.
+//   *
+//   * When there are multiple items within the given range, whichever checked
+//   * first will be returned.
+//   */
+//  ZFlyEmToDoItem pickItem(double x, double y, double z, double r);
 
-  void setReady(bool ready);
-  bool isReady() const;
+//  /*!
+//   * \brief Pick the closest item within a range.
+//   */
+//  ZFlyEmToDoItem pickClosestItem(
+//      double x, double y, double z, double r);
 
-  bool hasItem(int x, int y, int z) const;
-  ZFlyEmToDoItem getItem(int x, int y, int z) const;
-  ZFlyEmToDoItem getItem(const ZIntPoint pos) const;
-  std::vector<ZFlyEmToDoItem> getItemList() const;
+  //  void setReady(bool ready);
+  //  bool isReady() const;
 
-  /*!
-   * \brief Get item reference.
-   *
-   * These functions should be used cautiously.
-   */
-  ZFlyEmToDoItem& getItemRef(int x, int y, int z);
-  ZFlyEmToDoItem& getItemRef(const ZIntPoint pos);
+  //  bool hasItem(int x, int y, int z) const;
+  //  ZFlyEmToDoItem getItem(int x, int y, int z) const;
+  //  ZFlyEmToDoItem getItem(const ZIntPoint pos) const;
+  //  std::vector<ZFlyEmToDoItem> getItemList() const;
 
-  void forEachItem(std::function<void(const ZFlyEmToDoItem &item)> f) const;
+  //  /*!
+  //   * \brief Get item reference.
+  //   *
+  //   * These functions should be used cautiously.
+  //   */
+  //  ZFlyEmToDoItem& getItemRef(int x, int y, int z);
+  //  ZFlyEmToDoItem& getItemRef(const ZIntPoint pos);
 
-  void addItem(const ZFlyEmToDoItem &item);
-  void addItem(const std::vector<ZFlyEmToDoItem> &itemList);
+  //  void forEachItem(std::function<void(const ZFlyEmToDoItem &item)> f) const;
 
-  bool removeItem(int x, int y, int z);
-  bool removeItem(const ZIntPoint &pos);
+  //  void addItem(const ZFlyEmToDoItem &item);
+  //  void addItem(const std::vector<ZFlyEmToDoItem> &itemList);
 
-  bool isValid() const;
-  void invalidate();
+  //  bool removeItem(int x, int y, int z);
+  //  bool removeItem(const ZIntPoint &pos);
 
-  bool isEmpty() const;
-  size_t countItem() const;
+  //  bool isValid() const;
+  //  void invalidate();
 
-  /*!
-   * \brief Pick an item within a range.
-   *
-   * When there are multiple items within the given range, whichever checked
-   * first will be returned.
-   */
-  ZFlyEmToDoItem pickItem(double x, double y, double z, double r);
+  //  bool isEmpty() const;
+  //  size_t countItem() const;
 
-  /*!
-   * \brief Pick the closest item within a range.
-   */
-  ZFlyEmToDoItem pickClosestItem(
-      double x, double y, double z, double r);
+//private:
+//  static KeyType GetItemKey(int x, int y, int z);
+//  static KeyType GetItemKey(const ZIntPoint &pos);
 
-private:
-  static KeyType GetItemKey(int x, int y, int z);
-  static KeyType GetItemKey(const ZIntPoint &pos);
-
-private:
-  bool m_isReady = false;
-  bool m_isValid = true;
-  std::unordered_map<KeyType, ZFlyEmToDoItem> m_itemMap;
-  ZFlyEmToDoItem m_invalidItem;
+//private:
+//  bool m_isReady = false;
+//  bool m_isValid = true;
+//  std::unordered_map<KeyType, ZFlyEmToDoItem> m_itemMap;
+//  ZFlyEmToDoItem m_invalidItem;
 };
 
 #endif // FLYEMTODOCHUNK_H

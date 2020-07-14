@@ -2154,6 +2154,7 @@ void ZObject3dScan::duplicateSlice(int depth)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
+#if 0
 void ZObject3dScan::displaySolid(
     ZPainter &painter, int z, bool isProj, int stride) const
 {
@@ -2269,8 +2270,9 @@ void ZObject3dScan::displaySolid(
 
 //  return painted;
 }
+#endif
 
-#ifdef _QT_GUI_USED_0
+#ifdef _QT_GUI_USED_
 static QList<std::vector<QPoint> > extract_contour(
     Stack *stack, int dx, int dy, int sx, int sy)
 {
@@ -2333,6 +2335,17 @@ static QList<std::vector<QPoint> > extract_contour(
 }
 #endif
 
+bool ZObject3dScan::getDefaultCosmetic(EDisplayStyle style) const
+{
+  if (style == ZStackObject::EDisplayStyle::BOUNDARY) {
+    if (m_dsIntv.getX() > 0 || m_dsIntv.getY() > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZObject3dScan::display(QPainter *painter, const DisplayConfig &config) const
 {
   if (getSliceAxis() == config.getSliceAxis()) {
@@ -2342,37 +2355,118 @@ bool ZObject3dScan::display(QPainter *painter, const DisplayConfig &config) cons
     s2Painter.setViewPlaneTransform(config.getViewCanvasTransform());
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
-    QPen pen(getColor());
-    pen.setCosmetic(false);
-    painter->setPen(pen);
-    painter->setRenderHint(QPainter::Antialiasing, false);
-
     int z = neutu::iround(config.getCutDepth(ZPoint::ORIGIN));
     ZObject3dScan slice = getSlice(z);
     size_t stripeNumber = slice.getStripeNumber();
 //    ZIntCuboid box;
-    std::vector<QLineF> lineArray;
-    std::vector<QPointF> pointArray;
-    size_t stride = 1;
 
-    ZPoint offset = t.getCutCenter();
-    offset.shiftSliceAxis(getSliceAxis());
-    for (size_t i = 0; i < stripeNumber; i += stride) {
-      const ZObject3dStripe &stripe = slice.getStripe(i);
-      int nseg = stripe.getSegmentNumber();
-      for (int j = 0; j < nseg; ++j) {
-        double x0 = stripe.getSegmentStart(j) - offset.getX();
-        double x1 = stripe.getSegmentEnd(j) - offset.getX();
-        double y = stripe.getY() - offset.getY();
-        if (x0 == x1) {
-          pointArray.push_back(QPointF(x0, y));
-        } else {
-          lineArray.push_back(QLineF(x0, y, x1, y));
+    ZStackObject::EDisplayStyle style = config.getStyle();
+    if (hasVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY)) {
+      style = ZStackObject::EDisplayStyle::BOUNDARY;
+    }
+
+    QPen pen(getColor());
+    pen.setCosmetic(getDefaultCosmetic(style));
+    painter->setPen(pen);
+    painter->setRenderHint(QPainter::Antialiasing, false);
+
+    ZPoint center = t.getCutCenter();
+    center.shiftSliceAxis(getSliceAxis());
+
+    switch (style) {
+    case ZStackObject::EDisplayStyle::SOLID:
+    {
+      std::vector<QLineF> lineArray;
+      std::vector<QPointF> pointArray;
+      size_t stride = 1;
+      for (size_t i = 0; i < stripeNumber; i += stride) {
+        const ZObject3dStripe &stripe = slice.getStripe(i);
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          double x0 = stripe.getSegmentStart(j) - center.getX();
+          double x1 = stripe.getSegmentEnd(j) - center.getX();
+          double y = stripe.getY() - center.getY();
+          if (x0 == x1) {
+            pointArray.push_back(QPointF(x0, y));
+          } else {
+            lineArray.push_back(QLineF(x0, y, x1, y));
+          }
+        }
+      }
+      s2Painter.drawLines(painter, lineArray);
+      s2Painter.drawPoints(painter, pointArray);
+    }
+      break;
+    case ZStackObject::EDisplayStyle::BOUNDARY:
+    {
+      if (m_dsIntv.getX() > 0 || m_dsIntv.getY() > 0) {
+        ZObject3dScan slice = getSlice(z);
+
+        if (!slice.isEmpty()) {
+          ZStack *stack = slice.toStackObject();
+          int conn = 8;
+          Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+          QList<std::vector<QPoint> > contourList =
+              extract_contour(pre, stack->getOffset().getX(),
+                              stack->getOffset().getY(),
+                              m_dsIntv.getX() + 1, m_dsIntv.getY() + 1);
+          delete stack;
+          C_Stack::kill(pre);
+          for (QList<std::vector<QPoint> >::const_iterator
+               iter = contourList.begin();
+               iter != contourList.end(); ++iter) {
+            const std::vector<QPoint> &ptArray = *iter;
+            std::vector<QPointF> transformed(ptArray.size());
+            for (size_t i = 0; i < ptArray.size(); ++i) {
+              transformed[i] = QPointF(
+                    ptArray[i].x() - center.getX(),
+                    ptArray[i].y() - center.getY());
+            }
+            s2Painter.drawPolyline(painter, transformed);
+//            painter.drawPolyline(&ptArray[0], ptArray.size());
+          }
+        }
+      } else {
+        std::vector<QPointF> ptArray;
+        ZObject3dScan slice = getSlice(z);
+
+        ZStack *stack = slice.toStackObject();
+        if (stack != NULL) {
+          int width = stack->width();
+          int height = stack->height();
+          int conn = 4;
+
+          Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+
+          size_t offset = 0;
+          for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+              if (pre->array[offset++] > 0) {
+                int cx = x + stack->getOffset().getX();
+                int cy = y + stack->getOffset().getY();
+                if (!m_dsIntv.isZero()) {
+                  cx *= m_dsIntv.getX() + 1;
+                  cy *= m_dsIntv.getY() + 1;
+                }
+
+                ptArray.push_back(
+                      QPointF(cx - center.getX(), cy - center.getY()));
+              }
+            }
+          }
+          delete stack;
+          C_Stack::kill(pre);
+        }
+        if (!ptArray.empty()) {
+          s2Painter.drawPoints(painter, ptArray);
+//          painter.drawPoints(&(ptArray[0]), ptArray.size());
+          //        painted = true;
         }
       }
     }
-    s2Painter.drawLines(painter, lineArray);
-    s2Painter.drawPoints(painter, pointArray);
+    default:
+      break;
+    }
 
     return s2Painter.getPaintedHint();
   }

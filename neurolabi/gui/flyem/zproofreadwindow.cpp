@@ -960,6 +960,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
       ZActionFactory::ACTION_SYNAPSE_LINK)->setVisible(false);
     m_mainMvc->getCompletePresenter()->getAction(
       ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
+    setWindowIcon(QFontIcon::icon(0xf023, QColor(205, 127, 50, 128)));
   }
 
 //  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());

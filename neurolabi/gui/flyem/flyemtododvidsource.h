@@ -8,7 +8,7 @@ class FlyEmTodoDvidSource : public FlyEmTodoSource
 {
 public:
   FlyEmTodoDvidSource();
-  virtual ~FlyEmTodoDvidSource();
+  ~FlyEmTodoDvidSource() override;
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -17,6 +17,10 @@ public:
 
   void saveItem(const ZFlyEmToDoItem &item) override;
   void removeItem(const ZIntPoint &pos) override;
+//  void updateItem(ZFlyEmToDoItem *item) const override;
+  ZFlyEmToDoItem getItem(const ZIntPoint &pos) const override;
+  void moveItem(const ZIntPoint &/*from*/, const ZIntPoint &/*to*/) override
+  {/*todo*/}
 
 private:
   ZDvidWriter m_writer;

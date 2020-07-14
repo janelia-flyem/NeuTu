@@ -640,14 +640,22 @@ bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) con
     pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 
-    double depthScale = 1.0;
+    const double depthScale = 2.0;
+    const double fadingFactor = 1.0;
 
     ZPoint center = getPosition().toPoint();
     s3Painter.drawStar(
-          painter, center, getRadius(), depthScale, 0.5);
+          painter, center, getRadius(), depthScale, fadingFactor);
     if (isSelected()) {
       neutu::SetPenColor(painter, Qt::yellow);
       s3Painter.drawBoundBox(painter, center, getRadius(), depthScale);
+    }
+
+    if (s3Painter.getPaintedHint()) {
+      this->_hit = s3Painter.getBallHitFunc(
+            getX(), getY(), getZ(), getRadius(), depthScale);
+    } else {
+      this->_hit = [](double,double,double) { return false; };
     }
 
     return s3Painter.getPaintedHint();

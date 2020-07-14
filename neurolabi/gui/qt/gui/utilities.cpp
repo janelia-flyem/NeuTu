@@ -260,6 +260,13 @@ void neutu::DrawPoints(
   painter.drawPoints(pts.data(), pts.size());
 }
 
+void neutu::DrawPoints(
+    QPainter &painter, const std::vector<QPoint> &pts, const PixelCentered p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+  painter.drawPoints(pts.data(), pts.size());
+}
+
 void neutu::DrawPolyline(
     QPainter &painter, const std::vector<QPointF> &pts, const PixelCentered p)
 {
@@ -269,6 +276,17 @@ void neutu::DrawPolyline(
   });
   painter.drawPolyline(pts.data(), pts.size());
 }
+
+void neutu::DrawPolyline(
+    QPainter &painter, const std::vector<QPoint> &pts, const PixelCentered p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+  neutu::RevisePen(&painter, [](QPen &pen) {
+    pen.setCapStyle(Qt::RoundCap);
+  });
+  painter.drawPolyline(pts.data(), pts.size());
+}
+
 
 void neutu::DrawCircle(
     QPainter &painter, double cx, double cy, double r, const PixelCentered &p)
@@ -315,6 +333,17 @@ void neutu::DrawStar(
 {
   std::vector<QPointF> pts = MakeStar(QPointF(cx, cy), r);
   DrawPolyline(painter, pts, p);
+}
+
+void neutu::DrawCross(
+    QPainter &painter, double cx, double cy, double r, const PixelCentered &p)
+{
+  std::vector<QLineF> lines(2);
+
+  lines[0] = QLineF({cx - r, cy}, {cx + r, cy});
+  lines[1] = QLineF({cx, cy - r}, {cx, cy + r});
+
+  DrawLines(painter, lines, p);
 }
 
 std::vector<QPointF> neutu::MakeStar(

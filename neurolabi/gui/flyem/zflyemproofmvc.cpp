@@ -2650,10 +2650,10 @@ void ZFlyEmProofMvc::customInit()
 
 //  connect(getDocument().get(), SIGNAL(activeViewModified()),
 //          this, SLOT(updateActiveViewData()));
-  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-          getView(), SLOT(paintObject()));
-  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-          getView(), SLOT(paintObject()));
+//  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+//          getView(), SLOT(paintObject()));
+//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+//          getView(), SLOT(paintObject()));
 //  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
 //          &m_mergeProject, SLOT(update3DBodyViewDeep()));
 //  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
@@ -2684,8 +2684,8 @@ void ZFlyEmProofMvc::customInit()
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
 
 
-  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-          getView(), SLOT(paintObject()));
+//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+//          getView(), SLOT(paintObject()));
   connect(getDocument().get(),
           SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
           this, SLOT(processSelectionChange(ZStackObjectSelector)));
@@ -3824,15 +3824,19 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode
 
       m_splitProject.setBodyId(bodyId);
 
+      getCompleteDocument()->setSegmentationVisibility(false);
+      /*
       ZDvidLabelSlice *labelSlice =
           getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z, false);
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
 //      labelSlice->setHittable(false);
       labelSlice->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
+      */
 
-      body->setColor(labelSlice->getLabelColor(
-                       bodyId, neutu::ELabelSource::ORIGINAL));
+//      body->setColor(labelSlice->getLabelColor(
+//                       bodyId, neutu::ELabelSource::ORIGINAL));
+      body->setColor(getCompleteDocument()->getBodyColor(bodyId));
       body->setVisible(true);
       body->setProjectionVisible(false);
 
@@ -5350,7 +5354,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     if (ZDialogFactory::Ask(
           "Save Results",
           "Do you want to save the current preview splits?\n"
-          "Please run split again if you do need the curren preview.",
+          "Please run split again if you do not need the curren preview.",
           this)) {
       m_splitProject.uploadSplitList();
     }

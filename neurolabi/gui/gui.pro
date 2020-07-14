@@ -316,7 +316,6 @@ HEADERS += mainwindow.h \
     protocols/protocolassignmentclient.h \
     protocols/protocolassignmenttask.h \
     protocols/protocolassignmenturl.h \
-    dialogs/neuprintdatasetdialog.h \
     protocols/protocolchooseassignmentdialog.h \
     dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
@@ -370,7 +369,6 @@ HEADERS += mainwindow.h \
     zobjsmanagerwidget.h \
     zmoviescriptgenerator.h \
     zmoviestage.h \
-    dialogs/zalphadialog.h \
     zqtbarprogressreporter.h \
     zstackdoccommand.h \
     zcursorstore.h \
@@ -379,65 +377,47 @@ HEADERS += mainwindow.h \
     zstroke2d.h \
     neutube.h \
     zreportable.h \
-    dialogs/helpdialog.h \
     zswcnodeobjsmodel.h \
     zstackstatistics.h \
     biocytin/biocytin.h \
     biocytin/zstackprojector.h \
-    dialogs/projectiondialog.h \
     zstackviewlocator.h \
-    dialogs/startsettingdialog.h \
     zstackreadthread.h \
     zswccolorscheme.h \
-    dialogs/moviedialog.h \
     zpunctumio.h \
     zstatisticsutils.h \
     zswcrangeanalyzer.h \
-    dialogs/informationdialog.h \
     zswcnodezrangeselector.h \
     zswcnodecompositeselector.h \
     zswcnodeellipsoidrangeselector.h \
-    dialogs/flyemdataquerydialog.h \
-    dialogs/flyemdataprocessdialog.h \
-    dialogs/autosaveswclistdialog.h \
     zswcfilelistmodel.h \
     zswcglobalfeatureanalyzer.h \
     zcommandline.h \
     zswclocationanalyzer.h \
     biocytin/zbiocytinfilenameparser.h \
-    dialogs/diagnosisdialog.h \
     zerror.h \
     zhistogram.h \
     zswcgenerator.h \
     zpaintbundle.h \
-    dialogs/flyemdataexportdialog.h \
     zflyemqueryview.h \
-    dialogs/flyemgeosearchdialog.h \
     zqslogmessagereporter.h \
-    dialogs/flyemgeofilterdialog.h \
     zactionactivator.h \
     zswccurvaturefeatureanalyzer.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
-    dialogs/penwidthdialog.h \
-    dialogs/dvidobjectdialog.h \
     zpainter.h \
-    dialogs/resolutiondialog.h \
     dvid/zdvidrequest.h \
     dvid/zdviddataslicetaskfactory.h \
     dvid/zdviddataslicetask.h \
     zmatlabprocess.h \
     zneuronseed.h \
-    dialogs/dvidimagedialog.h \
     ztiledstackframe.h \
     ztilemanager.h \
     ztilemanagerview.h \
     ztilegraphicsitem.h \
     ztileinfo.h \
-    dialogs/flyemneuronthumbnaildialog.h \
     zmultitaskmanager.h \
     zinteractionevent.h \
-    dialogs/flyemhotspotdialog.h \
     zworkspacefactory.h \
     dvid/zdvidreader.h \
     zflyemdvidreader.h \
@@ -458,17 +438,14 @@ HEADERS += mainwindow.h \
     zstackobjectarray.h \
     zwindowfactory.h \
     dvid/zdvidwriter.h \
-    dialogs/dvidskeletonizedialog.h \
     zdialogfactory.h \
     zwidgetfactory.h \
     zlabelededitwidget.h \
     zlabeledcombowidget.h \
-    dialogs/zspinboxdialog.h \
     zbuttonbox.h \
     zkeyeventswcmapper.h \
     newprojectmainwindow.h \
     zmouseeventmapper.h \
-    dialogs/shapepaperdialog.h \
     zframefactory.h \
     zactionbutton.h \
     dvid/zdvidbufferreader.h \
@@ -478,7 +455,6 @@ HEADERS += mainwindow.h \
     zstackoperator.h \
     zsleeper.h \
     dvid/libdvidheader.h \
-    dialogs/dvidoperatedialog.h \
     zthreadfuturemap.h \
     zstackball.h \
     zstackdochittest.h \
@@ -491,22 +467,14 @@ HEADERS += mainwindow.h \
     zstackpatch.h \
     zrect2d.h \
     zobjectcolorscheme.h \
-    dialogs/synapseimportdialog.h \
     zstackdvidgrayscalefactory.h \
     zstackdocreader.h \
-    dialogs/flyemprojectdialog.h \
-    dialogs/zsegmentationprojectdialog.h \
     zsegmentationproject.h \
     zsegmentationprojectmodel.h \
-    dialogs/zsubtractswcsdialog.h \
-    dialogs/zmarkswcsomadialog.h \
     zlabeledspinboxwidget.h \
-    dialogs/zspinboxgroupdialog.h \
-    dialogs/zautotracedialog.h \
     zstackviewmanager.h \
     zstackviewparam.h \
     zflyemdataloader.h \
-    dialogs/swcexportdialog.h \
     zprogressmanager.h \
     dvid/zdvidtile.h \
     dvid/zdvidresolution.h \
@@ -516,8 +484,6 @@ HEADERS += mainwindow.h \
     zmessageprocessor.h \
     zmessage.h \
     zmainwindowmessageprocessor.h \
-    dialogs/ztestdialog.h \
-    dialogs/ztestdialog2.h \
     zstackdocloader.h \
     zstackwidget.h \
     zbodysplitbutton.h \
@@ -545,9 +511,7 @@ HEADERS += mainwindow.h \
     zkeyeventmapperfactory.h \
     zkeyoperationmapsequence.h \
     zpuncta.h \
-    dialogs/flyembodyinfodialog.h \
     biocytin/zbiocytinprojectiondoc.h \
-    dialogs/zflyemsplitcommitdialog.h \
     zstackdocfactory.h \
     zintcuboidobj.h \
     ztask.h \
@@ -564,11 +528,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
     dvid/zdvidannotation.h \
-    dialogs/stringlistdialog.h \
     zroiwidget.h \
-    dialogs/flyemtododialog.h \
     zstackdocselector.h \
-    dialogs/flyemsettingdialog.h \
     protocols/protocolswitcher.h \
     protocols/protocolchooser.h \
     protocols/protocolmetadata.h \
@@ -584,18 +545,13 @@ HEADERS += mainwindow.h \
     protocols/todoreviewinputdialog.h \
     protocols/orphanlinkprotocol.h \
     protocols/todosearcher.h \
-    dialogs/tipdetectordialog.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
     zapplication.h \
-    dialogs/flyemsynapsefilterdialog.h \
-    dialogs/zflyemsynapseannotationdialog.h \
     zdvidutil.h \
     zstackreader.h \
     dvid/zdvidpath.h \
-    dialogs/zcontrastprotocaldialog.h \
-    dialogs/zflyemroitooldialog.h \
     dvid/zdvidpatchdatafetcher.h \
     dvid/zdvidpatchdataupdater.h \
     dvid/zdviddatafetcher.h \
@@ -616,7 +572,6 @@ HEADERS += mainwindow.h \
     zglobal.h \
     dvid/zdvidresultservice.h \
     zstackgarbagecollector.h \
-    dialogs/zflyembodysplitdialog.h \
     neu3window.h \
     zstackdockeyprocessor.h \
     zutils.h \
@@ -644,10 +599,7 @@ HEADERS += mainwindow.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
     zcontrastprotocol.h \
-    dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
-    dialogs/zflyemproofsettingdialog.h \
-    dialogs/dvidbranchdialog.h \
     zstackdocptr.h \
     zstackdoc3dhelper.h \
     zstackobjectinfo.h \
@@ -660,7 +612,6 @@ HEADERS += mainwindow.h \
     ilastik/marching_cubes.h \
     ilastik/laplacian_smoothing.h \
     zarbsliceviewparam.h \
-    dialogs/zneu3sliceviewdialog.h \
     zstackviewhelper.h \
     dvid/zdviddataslicehelper.h \
     zstackdocnullmenufactory.h \
@@ -683,7 +634,6 @@ HEADERS += mainwindow.h \
     dvid/zdvidblockstream.h \
     imgproc/zstackmultiscalewatershed.h \
     protocols/taskmergereview.h \
-    dialogs/zflyemtodoannotationdialog.h \
     main.h \
     dvid/zdvidgraysliceensemble.h \
     dvid/zdvidenv.h \
@@ -696,7 +646,6 @@ FORMS += mainwindow.ui \
     tilemanager.ui \
     newprojectmainwindow.ui \
     zflyemcontrolform.ui \
-    dialogs/flyembodyinfodialog.ui \
     protocols/protocolchooser.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
@@ -713,9 +662,6 @@ FORMS += mainwindow.ui \
 
 SOURCES += main.cpp \
     concurrent/zworkerwrapper.cpp \
-    dialogs/neuprintdatasetdialog.cpp \
-    dialogs/userfeedbackdialog.cpp \
-    dialogs/zsynapsepropertydialog.cpp \
     dvid/zdvidglobal.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
@@ -731,13 +677,8 @@ SOURCES += main.cpp \
     plotsettings.cpp \
     plotter.cpp \
     zinteractivecontext.cpp \
-    dialogs/traceoutputdialog.cpp \
-    dialogs/bcadjustdialog.cpp \
     ztraceproject.cpp \
-    dialogs/channeldialog.cpp \
     zpunctum.cpp \
-    dialogs/zeditswcdialog.cpp \
-    dialogs/cannyedgedialog.cpp \
     zdirectionaltemplatechain.cpp \
     zrandom.cpp \
     z3dwindow.cpp \
@@ -758,10 +699,7 @@ SOURCES += main.cpp \
     zspanslider.cpp \
     ztest.cpp \
     znormcolormap.cpp \
-    dialogs/swctypedialog.cpp \
     z3dgraph.cpp \
-    dialogs/swcsizedialog.cpp \
-    dialogs/swcskeletontransformdialog.cpp \
     zprocessprogressbase.cpp \
     zmoviescene.cpp \
     zmovieactor.cpp \
@@ -779,62 +717,40 @@ SOURCES += main.cpp \
     zobjsmanagerwidget.cpp \
     zmoviescriptgenerator.cpp \
     zmoviestage.cpp \
-    dialogs/zalphadialog.cpp \
     zqtbarprogressreporter.cpp \
     zstackdoccommand.cpp \
     zcursorstore.cpp \
     zqtmessagereporter.cpp \
     zstroke2d.cpp \
-    dialogs/helpdialog.cpp \
     zswcnodeobjsmodel.cpp \
     biocytin/biocytin.cpp \
-    dialogs/projectiondialog.cpp \
     zstackviewlocator.cpp \
-    dialogs/startsettingdialog.cpp \
     zstackreadthread.cpp \
     zswccolorscheme.cpp \
-    dialogs/moviedialog.cpp \
     zpunctumio.cpp \
-    dialogs/flyemdataquerydialog.cpp \
-    dialogs/flyemdataprocessdialog.cpp \
-    dialogs/autosaveswclistdialog.cpp \
     zswcfilelistmodel.cpp \
     zcommandline.cpp \
     neutube.cpp \
-    dialogs/diagnosisdialog.cpp \
     zpaintbundle.cpp \
-    dialogs/flyemdataexportdialog.cpp \
     zflyemqueryview.cpp \
-    dialogs/flyemgeosearchdialog.cpp \
     zqslogmessagereporter.cpp \
-    dialogs/flyemgeofilterdialog.cpp \
     zactionactivator.cpp \
     zswccurvaturefeatureanalyzer.cpp \
     zstackdocmenustore.cpp \
     zstackdocmenufactory.cpp \
-    dialogs/penwidthdialog.cpp \
-    dialogs/dvidobjectdialog.cpp \
     zpainter.cpp \
-    dialogs/resolutiondialog.cpp \
     dvid/zdvidrequest.cpp \
     zmatlabprocess.cpp \
     zneuronseed.cpp \
-    dialogs/dvidimagedialog.cpp \
     ztiledstackframe.cpp \
     ztilemanager.cpp \
     ztilemanagerview.cpp \
     ztilegraphicsitem.cpp \
     ztileinfo.cpp \
-    dialogs/flyemneuronthumbnaildialog.cpp \
     zmultitaskmanager.cpp \
     zinteractionevent.cpp \
-    dialogs/flyemhotspotdialog.cpp \
     zworkspacefactory.cpp \
     dvid/zdvidreader.cpp \
-    dialogs/flyembodyiddialog.cpp \
-    dialogs/zdviddialog.cpp \
-    dialogs/zdvidtargetproviderdialog.cpp \
-    dialogs/flyembodyfilterdialog.cpp \
     zflyemdvidreader.cpp \
     zstroke2darray.cpp \
     tilemanager.cpp \
@@ -852,17 +768,14 @@ SOURCES += main.cpp \
     zstackobjectarray.cpp \
     zwindowfactory.cpp \
     dvid/zdvidwriter.cpp \
-    dialogs/dvidskeletonizedialog.cpp \
     zdialogfactory.cpp \
     zwidgetfactory.cpp \
     zlabelededitwidget.cpp \
     zlabeledcombowidget.cpp \
-    dialogs/zspinboxdialog.cpp \
     zbuttonbox.cpp \
     zkeyeventswcmapper.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
-    dialogs/shapepaperdialog.cpp \
     zframefactory.cpp \
     zactionbutton.cpp \
     dvid/zdvidbufferreader.cpp \
@@ -871,7 +784,6 @@ SOURCES += main.cpp \
     zmouseeventprocessor.cpp \
     zstackoperator.cpp \
     zsleeper.cpp \
-    dialogs/dvidoperatedialog.cpp \
     z3dwindowfactory.cpp \
     zthreadfuturemap.cpp \
     zstackball.cpp \
@@ -885,20 +797,14 @@ SOURCES += main.cpp \
     zstackpatch.cpp \
     zrect2d.cpp \
     zobjectcolorscheme.cpp \
-    dialogs/synapseimportdialog.cpp \
     zstackdvidgrayscalefactory.cpp \
     zstackdocreader.cpp \
     zsegmentationproject.cpp \
     zsegmentationprojectmodel.cpp \
-    dialogs/zsubtractswcsdialog.cpp \
-    dialogs/zmarkswcsomadialog.cpp \
     zlabeledspinboxwidget.cpp \
-    dialogs/zspinboxgroupdialog.cpp \
-    dialogs/zautotracedialog.cpp \
     zstackviewmanager.cpp \
     zstackviewparam.cpp \
     zflyemdataloader.cpp \
-    dialogs/swcexportdialog.cpp \
     zprogressmanager.cpp \
     dvid/zdvidtile.cpp \
     dvid/zdvidresolution.cpp \
@@ -908,8 +814,6 @@ SOURCES += main.cpp \
     zmessageprocessor.cpp \
     zmessage.cpp \
     zmainwindowmessageprocessor.cpp \
-    dialogs/ztestdialog.cpp \
-    dialogs/ztestdialog2.cpp \
     zstackdocloader.cpp \
     zstackwidget.cpp \
     dvid/zdvidversiondag.cpp \
@@ -937,9 +841,7 @@ SOURCES += main.cpp \
     zkeyeventmapperfactory.cpp \
     zkeyoperationmapsequence.cpp \
     zpuncta.cpp \
-    dialogs/flyembodyinfodialog.cpp \
     biocytin/zbiocytinprojectiondoc.cpp \
-    dialogs/zflyemsplitcommitdialog.cpp \
     zstackdocfactory.cpp \
     zintcuboidobj.cpp \
     ztask.cpp \
@@ -951,19 +853,8 @@ SOURCES += main.cpp \
     zgraphobjsmodel.cpp \
     zsurfaceobjsmodel.cpp \
     zcubearray.cpp \
-    dvid/zdvidsynapsecommand.cpp \
-    dvid/zdvidannotationcommand.cpp \
-    dvid/zflyembookmarkcommand.cpp \
-    dvid/zdvidannotation.cpp \
-    dvid/zdvidsynapse.cpp \
-    dvid/zdvidsynapseensenmble.cpp \
-    dialogs/stringlistdialog.cpp \
     zroiwidget.cpp \
-    dialogs/flyemtododialog.cpp \
     zstackdocselector.cpp \
-    dialogs/flyemprojectdialog.cpp \
-    dialogs/zsegmentationprojectdialog.cpp \
-    dialogs/flyemsettingdialog.cpp \
     protocols/protocolswitcher.cpp \
     protocols/protocolchooser.cpp \
     protocols/protocolmetadata.cpp \
@@ -979,16 +870,11 @@ SOURCES += main.cpp \
     protocols/todoreviewinputdialog.cpp \
     protocols/orphanlinkprotocol.cpp \
     protocols/todosearcher.cpp \
-    dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
     zapplication.cpp \
-    dialogs/flyemsynapsefilterdialog.cpp \
-    dialogs/zflyemsynapseannotationdialog.cpp \
     zdvidutil.cpp \
-    dialogs/zcontrastprotocaldialog.cpp \
-    dialogs/zflyemroitooldialog.cpp \
     dvid/zdvidpatchdatafetcher.cpp \
     dvid/zdvidpatchdataupdater.cpp \
     dvid/zdviddatafetcher.cpp \
@@ -1022,11 +908,9 @@ SOURCES += main.cpp \
     zmeshobjsmodel.cpp \
     zopenglwidget.cpp \
     zstackreader.cpp \
-    dvid/zdvidpath.cpp \
     misc/zvtkutil.cpp \
     zstackdocaccessor.cpp \
     zcontrastprotocol.cpp \
-    dialogs/zflyemmergeuploaddialog.cpp \
     zmeshfactory.cpp \
     zstackdoc3dhelper.cpp \
     zstackobjectinfo.cpp \
@@ -1064,6 +948,12 @@ SOURCES += main.cpp \
     protocols/taskbodyhistory.cpp \
     protocols/taskbodycleave.cpp \
     protocols/taskbodymerge.cpp \
+    dvid/zdvidsynapsecommand.cpp \
+    dvid/zdvidannotationcommand.cpp \
+    dvid/zflyembookmarkcommand.cpp \
+    dvid/zdvidannotation.cpp \
+    dvid/zdvidsynapse.cpp \
+    dvid/zdvidsynapseensenmble.cpp \
     dvid/zdvidbodyhelper.cpp \
     dvid/zdviddataslicetaskfactory.cpp \
     dvid/zdviddataslicetask.cpp \
@@ -1071,6 +961,7 @@ SOURCES += main.cpp \
     dvid/zdvidblockstream.cpp \
     dvid/zdvidgraysliceensemble.cpp \
     dvid/zdvidenv.cpp \
+    dvid/zdvidpath.cpp \
     imgproc/zstackmultiscalewatershed.cpp
 
 DISTFILES += \

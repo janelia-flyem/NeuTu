@@ -24,12 +24,21 @@ TEST(FlyEmTodoBlockGrid, Source)
 
   {
     FlyEmTodoChunk chunk = grid.getChunk(0, 0, 0);
-    ZFlyEmToDoItem item = chunk.getItem(16, 16, 16);
+    ZFlyEmToDoItem item = chunk.getItem({16, 16, 16});
     ASSERT_TRUE(item.isValid());
     ASSERT_EQ(ZIntPoint(16, 16, 16), item.getPosition());
 
-    item = chunk.getItem(15, 16, 16);
+    item = chunk.getItem({15, 16, 16});
     ASSERT_FALSE(item.isValid());
+  }
+
+  {
+    ZFlyEmToDoItem item = grid.getItem({160, 160, 160});
+    ASSERT_FALSE(item.isValid());
+    source->saveItem(ZFlyEmToDoItem({160, 160, 160}));
+    ASSERT_FALSE(grid.getItem({160, 160, 160}).isValid());
+    grid.updateItem({160, 160, 160});
+    ASSERT_TRUE(grid.getItem({160, 160, 160}).isValid());
   }
 
   {
@@ -81,6 +90,42 @@ TEST(FlyEmTodoBlockGrid, Source)
     ASSERT_THROW(grid.removeItem(ZIntPoint(29, 29, 29)), std::exception);
 
   }
+}
+
+TEST(FlyEmTodoBlockGrid, Move)
+{
+  FlyEmTodoBlockGrid grid;
+  grid.setBlockSize(64, 64, 64);
+  ASSERT_EQ(ZIntPoint(64, 64, 64), grid.getBlockSize());
+
+  auto source = std::shared_ptr<FlyEmTodoMockSource>(
+        new FlyEmTodoMockSource);
+  grid.setSource(source);
+
+  grid.addItem(ZFlyEmToDoItem({10, 20, 30}));
+  grid.moveItem({10, 20, 30}, {40, 50, 60});
+  ASSERT_FALSE(grid.getItem({10, 20, 30}).isValid());
+  ASSERT_TRUE(grid.getItem({40, 50, 60}).isValid());
+}
+
+TEST(FlyEmTodoBlockGrid, Update)
+{
+  FlyEmTodoBlockGrid grid;
+  grid.setBlockSize(64, 64, 64);
+  ASSERT_EQ(ZIntPoint(64, 64, 64), grid.getBlockSize());
+
+  auto source = std::shared_ptr<FlyEmTodoMockSource>(
+        new FlyEmTodoMockSource);
+  grid.setSource(source);
+
+  grid.addItem(ZFlyEmToDoItem({10, 20, 30}));
+  ASSERT_TRUE(grid.getItem({10, 20, 30}).isValid());
+  source->removeItem({10, 20, 30});
+  grid.updateItem({10, 20, 30});
+  ASSERT_FALSE(grid.getItem({10, 20, 30}).isValid());
+  source->saveItem(ZFlyEmToDoItem({10, 20, 30}));
+  grid.updateItem({10, 20, 30});
+  ASSERT_TRUE(grid.getItem({10, 20, 30}).isValid());
 }
 
 TEST(FlyEmTodoBlockGrid, Selection)

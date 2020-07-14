@@ -102,6 +102,8 @@
 #include "test/zdvidurltest.h"
 #include "test/zflyembodycolorschemetest.h"
 
+#include "bigdata/tests/zitemchunktest.h"
+
 #include "data3d/tests/utilitiestest.h"
 #include "data3d/tests/zmodelviewtranformtest.h"
 #include "data3d/tests/zviewplanetransformtest.h"

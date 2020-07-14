@@ -23,8 +23,14 @@ HEADERS += \
     $$PWD/flyemdataframeoptiondialog.h \
     $$PWD/flyemdef.h \
     $$PWD/flyemorthocontrolform.h \
+    $$PWD/flyempointannotationensemble.hpp \
     $$PWD/flyemproofcontrolform.h \
     $$PWD/flyemsplitcontrolform.h \
+    $$PWD/flyemsynapseblockgrid.h \
+    $$PWD/flyemsynapsechunk.h \
+    $$PWD/flyemsynapsedvidsource.h \
+    $$PWD/flyemsynapseensemble.h \
+    $$PWD/flyemsynapsesource.h \
     $$PWD/flyemtodoblockgrid.h \
     $$PWD/flyemtodochunk.h \
     $$PWD/flyemtododvidsource.h \
@@ -157,6 +163,11 @@ SOURCES += \
     $$PWD/flyemorthocontrolform.cpp \
     $$PWD/flyemproofcontrolform.cpp \
     $$PWD/flyemsplitcontrolform.cpp \
+    $$PWD/flyemsynapseblockgrid.cpp \
+    $$PWD/flyemsynapsechunk.cpp \
+    $$PWD/flyemsynapsedvidsource.cpp \
+    $$PWD/flyemsynapseensemble.cpp \
+    $$PWD/flyemsynapsesource.cpp \
     $$PWD/flyemtodoblockgrid.cpp \
     $$PWD/flyemtodochunk.cpp \
     $$PWD/flyemtododvidsource.cpp \

@@ -3,8 +3,13 @@
 #include <QPen>
 
 #include "common/math.h"
+#include "common/utilities.h"
 #include "logging/zqslog.h"
-#include "zpainter.h"
+#include "data3d/displayconfig.h"
+#include "vis2d/zslicepainter.h"
+#include "vis2d/utilities.h"
+
+//#include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
@@ -12,7 +17,6 @@
 #include "zstackball.h"
 #include "c_json.h"
 #include "zlinesegmentobject.h"
-#include "data3d/displayconfig.h"
 #include "dvid/zdvidannotation.h"
 //#include "tz_constant.h"
 #include "dvid/zdvidreader.h"
@@ -31,6 +35,7 @@ void ZDvidSynapse::init()
   m_type = GetType();
   m_projectionVisible = false;
   m_kind = EKind::KIND_INVALID;
+  m_usingCosmeticPen = true;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -213,6 +218,7 @@ QColor ZDvidSynapse::GetArrowColor(bool verified)
   return color;
 }
 
+#if 0
 void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
                            neutu::EAxis sliceAxis) const
 {
@@ -539,6 +545,56 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
   }
 }
+#endif
+
+bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
+{
+  bool painted = false;
+  this->_hit = [](double,double,double) { return false; };
+
+  if (isVisible()) {
+    ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+    QPen pen(getColor());
+    pen.setCosmetic(m_usingCosmeticPen);
+    painter->setPen(pen);
+
+    const double depthScale = 2.0;
+    const double fadingFactor = 1.0;
+    ZPoint pos = getPosition().toPoint();
+    s3Painter.drawBall(painter, pos, getRadius(), depthScale, fadingFactor);
+
+    if (isSelected()) {
+      neutu::SetPenColor(painter, Qt::yellow);
+      s3Painter.drawBoundBox(painter, pos, getRadius(), depthScale);
+
+      size_t index = 0;
+      for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+           iter != m_partnerHint.end(); ++iter, ++index) {
+        if (getKind() == EKind::KIND_PRE_SYN && m_partnerKind[index] == EKind::KIND_PRE_SYN) {
+          neutu::SetPenColor(painter, QColor(0, 255, 255));
+        } else if (m_partnerKind[index] == EKind::KIND_UNKNOWN) {
+          neutu::SetPenColor(painter, QColor(255, 0, 0));
+        } else {
+          neutu::SetPenColor(painter, QColor(255, 0, 255));
+        }
+        ZLineSegment line(getPosition().toPoint(), iter->toPoint());
+        s3Painter.drawLine(painter, line);
+      }
+    }
+
+    if (s3Painter.getPaintedHint()) {
+      this->_hit = s3Painter.getBallHitFunc(
+            getX(), getY(), getZ(), getRadius(), depthScale);
+    }
+
+    painted = s3Painter.getPaintedHint();
+  }
+
+  return false;
+}
 
 std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)
 {
@@ -623,8 +679,8 @@ void ZDvidSynapse::updatePartnerProperty(const ZDvidReader &reader)
 
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
-      ZDvidSynapse synapse =
-          reader.readSynapse(m_partnerHint[i], dvid::EAnnotationLoadMode::PARTNER_LOCATION);
+      ZDvidSynapse synapse = reader.readSynapse(
+            m_partnerHint[i], dvid::EAnnotationLoadMode::PARTNER_LOCATION);
       if (synapse.isValid()) {
         if (synapse.hasPartner(getPosition())) {
           m_isPartnerVerified[i] = synapse.isVerified();

@@ -20,7 +20,8 @@ public:
   neutu::EAxis getSliceAxis() const;
 
   bool hitTest(ZStackDoc *doc, double x, double y, double z);
-  bool hitTest(ZStackDoc *doc, const ZPoint &pt, const ZIntPoint &widgetPosition);
+  bool hitTest(ZStackDoc *doc, const ZPoint &pt);
+//  bool hitTest(ZStackDoc *doc, const ZPoint &pt, const ZIntPoint &widgetPosition);
   bool hitTest(ZStackDoc *doc, double x, double y);
 
 //  Swc_Tree_Node* getHitSwcNode() const;

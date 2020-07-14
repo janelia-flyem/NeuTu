@@ -169,12 +169,15 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapseOp::undo()
     for (size_t i = 0; i < m_synapseBackup.size(); ++i) {
       ZJsonObject synapseJson(m_synapseBackup.value(i));
       ZIntPoint currentPos = ZDvidAnnotation::GetPosition(synapseJson);
+      m_doc->updateSynapse(currentPos);
+      /*
       if (m_synapseSet.count(currentPos) == 0) { //related synapses
         m_doc->updateSynapsePartner(ZDvidAnnotation::GetPosition(synapseJson));
       } else {
         m_doc->addSynapse(currentPos, ZDvidAnnotation::GetKind(synapseJson),
                           ZDvidSynapseEnsemble::EDataScope::LOCAL);
       }
+      */
       m_doc->notifySynapseEdited(currentPos);
     }
 
@@ -224,17 +227,6 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::redo()
   } else {
     m_doc->notify(ZWidgetMessage("Invalid DVID reader", neutu::EMessageType::ERROR));
   }
-  /*
-  ZDvidSynapseEnsemble *se = m_doc->getDvidSynapseEnsemble();
-  if (se != NULL) {
-    ZDvidReader reader;
-    if (reader.open(m_doc->getDvidTarget())) {
-      m_synapseBackup = reader.readSynapseJson(m_synapse);
-      se->removeSynapse(m_synapse, ZDvidSynapseEnsemble::EDataScope::DATA_GLOBAL);
-
-    }
-  }
-  */
 }
 
 void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()

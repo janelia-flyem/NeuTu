@@ -1002,21 +1002,6 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
       synapse.loadJsonObject(obj, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
       synapse.updatePartner();
       synapse.updatePartnerProperty(m_reader);
-#if 0
-      if (obj.hasKey("Rels")) {
-        ZJsonArray jsonArray(obj.value("Rels"));
-        if (jsonArray.size() > 0) {
-          for (size_t i = 0; i < jsonArray.size(); ++i) {
-            ZJsonObject partnerJson(jsonArray.value(i));
-            if (partnerJson.hasKey("To")) {
-              ZJsonArray posJson(partnerJson.value("To"));
-              std::vector<int> coords = posJson.toIntegerArray();
-              synapse.addPartner(coords[0], coords[1], coords[2]);
-            }
-          }
-        }
-      }
-#endif
     }
   }
 }

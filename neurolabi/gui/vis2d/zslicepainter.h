@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <utility>
+#include <functional>
 
 #include <QVector>
 
@@ -13,6 +14,7 @@
 class QPainter;
 class QImage;
 class QLineF;
+class QPoint;
 class QPointF;
 class ZLineSegment;
 class ZPoint;
@@ -36,6 +38,7 @@ public:
 
   void drawCircle(QPainter *painter, double cx, double cy, double r) const;
   void drawStar(QPainter *painter, double cx, double cy, double r) const;
+  void drawCross(QPainter *painter, double cx, double cy, double r) const;
   void drawLine(
       QPainter *painter, double x0, double y0, double x1, double y1) const;
   void drawLines(
@@ -43,8 +46,10 @@ public:
 //  void drawLines(QPainter *painter, const QVector<QLineF> &lines) const;
   void drawLines(QPainter *painter, const std::vector<QLineF> &lines) const;
   void drawPolyline(QPainter *painter, const std::vector<QPointF> &points) const;
+  void drawPolyline(QPainter *painter, const std::vector<QPoint> &points) const;
   void drawPoint(QPainter *painter, double x, double y) const;
   void drawPoints(QPainter *painter, const std::vector<QPointF> &points) const;
+  void drawPoints(QPainter *painter, const std::vector<QPoint> &points) const;
   void drawRect(
       QPainter *painter, double x0, double y0, double x1, double y1) const;
   void drawRect(
@@ -59,6 +64,9 @@ private:
   bool intersects(QPainter *painter, double x, double y) const;
   bool intersects(QPainter *painter, double x0, double y0, double x1, double y1) const;
   bool intersects(QPainter *painter, double x, double y, double r) const;
+  void drawCircleBase(
+      QPainter *painter, double cx, double cy, double r,
+      std::function<void(QPainter*)> drawFunc) const;
 
 private:
   ZViewPlaneTransform m_viewPlaneTransform;
@@ -105,6 +113,12 @@ public:
       QPainter *painter, const std::vector<QPointF> &points,
       double z, neutu::EAxis sliceAxis) const;
 
+  void drawLineProjection(QPainter *painter, const ZLineSegment &line);
+  void drawBallProjection(
+      QPainter *painter, double cx, double cy, double cz, double r);
+  void drawCrossProjection(
+      QPainter *painter, double cx, double cy, double cz, double r);
+
   /*!
    * \brief Set cut plane
    *
@@ -120,6 +134,10 @@ public:
   void setCutPlane(neutu::EAxis sliceAxis, double cutDepth);
 
   bool getPaintedHint() const;
+
+  std::function<bool(double,double,double)>
+  getBallHitFunc(
+      double cx, double cy, double cz, double r, double depthScale) const;
 
 private:
   ZSlice2dPainter m_painterHelper;

@@ -417,6 +417,12 @@ ZStackObjectSourceFactory::MakeTodoEnsembleSource()
 }
 
 std::string
+ZStackObjectSourceFactory::MakeSynapseEnsembleSource()
+{
+  return "#.DVIDFlyEMSynapseEnsemble";
+}
+
+std::string
 ZStackObjectSourceFactory::MakeTodoListEnsembleSource()
 {
   return "#.DVIDFlyEMTodoList";

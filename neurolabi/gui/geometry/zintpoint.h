@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <initializer_list>
 
 #include <boost/functional/hash.hpp>
 

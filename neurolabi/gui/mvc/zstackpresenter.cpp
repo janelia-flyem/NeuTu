@@ -92,6 +92,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_SWC, stroke);
 
+  /*
   stroke = new ZStroke2d;
   stroke->setVisible(false);
   stroke->setFilled(false);
@@ -99,6 +100,17 @@ void ZStackPresenter::initActiveObject()
   stroke->hideStart(true);
   stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
   addActiveObject(ROLE_SYNAPSE, stroke);
+  */
+
+  {
+    ZStackBall *obj = new ZStackBall;
+    obj->setVisible(false);
+    obj->useCosmeticPen(true);
+    obj->setRadius(5.0);
+    obj->setColor(0, 255, 0);
+    obj->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
+    addActiveObject(ROLE_SYNAPSE, obj);
+  }
 
   {
     ZStackBall *obj = new ZStackBall;
@@ -3539,7 +3551,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     ZStackObject *obj = op.getHitObject<ZStackObject>();
     if (obj) {
       obj->processHit(ZStackObject::ESelection::SELECT_SINGLE);
-      buddyDocument()->setSelected(obj, true);
+      buddyDocument()->setSelected(obj, obj->isSelected());
 //      buddyDocument()->processObjectModified(
 //            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
       interactionEvent.setEvent(
@@ -3551,8 +3563,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
   {
     ZStackObject *obj = op.getHitObject<ZStackObject>();
     if (obj) {
-      buddyDocument()->setSelected(obj, true);
+//      buddyDocument()->setSelected(obj, true);
       obj->processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
+      buddyDocument()->setSelected(obj, obj->isSelected());
       buddyDocument()->processObjectModified(
             obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
 //      buddyDocument()->toggleSelected(obj);
@@ -3568,8 +3581,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     {
       ZStackObject *obj = op.getHitObject<ZStackObject>();
       if (obj) {
-        buddyDocument()->toggleSelected(obj);
+//        buddyDocument()->toggleSelected(obj);
         obj->processHit(ZStackObject::ESelection::SELECT_TOGGLE);
+        buddyDocument()->setSelected(obj, obj->isSelected());
         buddyDocument()->processObjectModified(
               obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
         interactionEvent.setEvent(

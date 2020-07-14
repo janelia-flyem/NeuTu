@@ -29,8 +29,10 @@ public:
 //  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
 //  const std::string& className() const;
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+//  void display(ZPainter &painter, int slice, EDisplayStyle option,
+//               neutu::EAxis sliceAxis) const;
+
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
 
   std::string getConfidenceStr() const;
   void setConfidence(const std::string str);

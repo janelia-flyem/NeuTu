@@ -172,11 +172,11 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 //  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<neutu::data3d::ETarget>)),
 //                m_view, SLOT(paintObject(QSet<neutu::data3d::ETarget>)),
 //                Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
-                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
+//                m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
+//                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
+//                m_view, SLOT(paintObject()), Qt::AutoConnection);
   /*
   connectAction(
         m_doc.get(), SIGNAL(objectSelectionChanged(
@@ -191,15 +191,15 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
                 SLOT(paintObject(
                        const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
                 Qt::AutoConnection);
-  connectAction(m_doc.get(),
-                SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(),
+//                SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
+//                m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
+//                m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
+//          m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
+//          m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
                 m_view, SLOT(paintStack()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(zoomingTo(int, int, int)),

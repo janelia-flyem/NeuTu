@@ -31511,6 +31511,56 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZStack *stack = ZStackFactory::MakeZeroStack(32, 16, 1);
+  for (int j = 0; j < stack->height(); j++) {
+    for (int i = 0; i < stack->width(); i++) {
+      stack->setIntValue(i, j, 0, 0, (i % 2 == j % 2) ? 0 : 255);
+    }
+  }
+
+  QImage image(
+        stack->array8(), stack->width(), stack->height(), stack->width(),
+        QImage::Format_Grayscale8);
+
+  QPixmap pixmap(QSize(800, 600));
+  pixmap.fill(Qt::gray);
+  QPainter painter(&pixmap);
+
+  double zoomRatio = std::min(
+        double(pixmap.width()) / image.width(),
+        double(pixmap.height()) / image.height());
+
+  double sourceX = image.width() / 2.0;
+  double sourceY = image.height() / 2.0;
+  double targetX = pixmap.width() / 2.0;
+  double targetY = pixmap.height() / 2.0;
+
+  double dX = targetX - sourceX * zoomRatio;
+  double dY = targetY - sourceY * zoomRatio;
+
+  ZViewPlaneTransform t;
+  t.set(dX, dY, zoomRatio);
+
+
+  QPen pen(Qt::red);
+  pen.setCosmetic(true);
+  painter.setPen(pen);
+
+  ZSlice3dPainter s3Painter;
+  s3Painter.setViewCanvasTransform(t);
+
+  pen.setWidth(3);
+  painter.setPen(pen);
+
+  s3Painter.drawLineProjection(
+        &painter, ZLineSegment(ZPoint(1, 1, -10), ZPoint(10, 10, -100)));
+  s3Painter.drawBallProjection(&painter, 5, 10, -15, 8);
+  s3Painter.drawCrossProjection(&painter, 5, 10, -15, 8);
+
+  pixmap.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
+
+#if 0
 //  ZStack stack;
 //  stack.load(GET_BENCHMARK_DIR + "/checkboard8x6.tif");
 
@@ -31611,7 +31661,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   ZStack *stack = new ZStack;
   stack->load("/Users/zhaot/Work/neutu/neurolabi/data/_system/emstack2.tif");
   ZStackFrame *frame = ZStackFrame::Make(NULL);
@@ -31621,10 +31671,12 @@ void ZTest::test(MainWindow *host)
 //  ball->setColor(255, 0, 0);
 //  frame->document()->addObject(ball);
 
+  /*
   FlyEmTodoEnsemble *obj = new FlyEmTodoEnsemble();
   auto source = std::shared_ptr<FlyEmTodoMockSource>(
         new FlyEmTodoMockSource);
   obj->setSource(source);
+  */
 
   /*
   ZFlyEmToDoItem *obj = new ZFlyEmToDoItem;
@@ -31663,6 +31715,24 @@ void ZTest::test(MainWindow *host)
   obj->append(128, 125, 126);
 
   */
+
+  /*
+  ZFlyEmBookmark *obj = new ZFlyEmBookmark;
+  obj->setCenter(125, 125, 125);
+  obj->setCustom(true);
+  */
+
+  /*
+  ZDvidSynapse *obj = new ZDvidSynapse;
+  obj->setPosition(125, 125, 125);
+  */
+
+  ZObject3dScan *obj = ZObject3dFactory::MakeBoxObject3dScan(
+        ZIntCuboid({10, 10, 125}, {20, 20, 125}), nullptr);
+  obj->setDsIntv(3, 3, 0);
+  obj->setColor(255, 0, 0);
+//  obj->addSegment(125, 125, 100, 125);
+//  obj->addSegment(125, 124, 100, 125);
 
   frame->document()->addObject(obj);
 
@@ -31907,7 +31977,7 @@ void ZTest::test(MainWindow *host)
   std::cout << s2.toJsonObject().dumpString(2) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZBlockGrid grid;
   grid.setGridSize(1000, 1000, 1000);
   grid.setBlockSize(32, 32, 32);

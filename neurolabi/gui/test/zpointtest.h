@@ -11,17 +11,26 @@
 
 TEST(ZIntPoint, Basic)
 {
-  ZIntPoint pt;
-  ASSERT_TRUE(pt.isZero());
+  {
+    ZIntPoint pt;
+    ASSERT_TRUE(pt.isZero());
 
-  pt.invalidate();
-  ASSERT_FALSE(pt.isValid());
+    pt.invalidate();
+    ASSERT_FALSE(pt.isValid());
 
-  pt.set(1, 2, 3);
-  ASSERT_EQ(1, pt.getValue(neutu::EAxis::X));
-  ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
-  ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
-  ASSERT_EQ(0, pt.getValue(neutu::EAxis::ARB));
+    pt.set(1, 2, 3);
+    ASSERT_EQ(1, pt.getValue(neutu::EAxis::X));
+    ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
+    ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
+    ASSERT_EQ(0, pt.getValue(neutu::EAxis::ARB));
+  }
+
+  {
+    ZIntPoint pt({1, 2, 3});
+    ASSERT_EQ(1, pt.getValue(neutu::EAxis::X));
+    ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
+    ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
+  }
 }
 
 TEST(ZIntPoint, ToPoint)

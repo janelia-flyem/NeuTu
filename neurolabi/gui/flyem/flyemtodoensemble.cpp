@@ -1,7 +1,7 @@
 #include "flyemtodoensemble.h"
 
-#include "geometry/zaffinerect.h"
-#include "data3d/displayconfig.h"
+//#include "geometry/zaffinerect.h"
+//#include "data3d/displayconfig.h"
 
 #include "flyemtodoblockgrid.h"
 #include "flyemtodochunk.h"
@@ -11,7 +11,9 @@ FlyEmTodoEnsemble::FlyEmTodoEnsemble()
 {
   m_type = GetType();
   setTarget(neutu::data3d::ETarget::NONBLOCKING_OBJECT_CANVAS);
-  m_blockGrid = std::shared_ptr<FlyEmTodoBlockGrid>(new FlyEmTodoBlockGrid);
+  m_blockGrid = std::shared_ptr<
+      ZIntPointAnnotationBlockGrid<ZFlyEmToDoItem, FlyEmTodoChunk>>(
+        new FlyEmTodoBlockGrid);
 }
 
 FlyEmTodoEnsemble::~FlyEmTodoEnsemble()
@@ -34,6 +36,7 @@ void FlyEmTodoEnsemble::setSource(std::shared_ptr<FlyEmTodoSource> source)
 }
 */
 
+#if 0
 bool FlyEmTodoEnsemble::display(
     QPainter *painter, const DisplayConfig &config) const
 {
@@ -72,7 +75,7 @@ void FlyEmTodoEnsemble::addItem(const ZFlyEmToDoItem &item)
 bool FlyEmTodoEnsemble::hit(double x, double y, double z)
 {
   if (isVisible() && isHittable()) {
-    m_hitItem = m_blockGrid->pickClosestExistingItem(
+    m_hitItem = m_blockGrid->hitClosestExistingItem(
           x, y, z, m_blockGrid->getBlockSize().toPoint().length() * 0.5);
 
     return m_hitItem.isValid();
@@ -150,6 +153,7 @@ void FlyEmTodoEnsemble::deselectSub()
   m_selector.deselectAll();
   processDeselected();
 }
+#endif
 
 void FlyEmTodoEnsemble::setDvidTarget(const ZDvidTarget &target)
 {
@@ -158,6 +162,7 @@ void FlyEmTodoEnsemble::setDvidTarget(const ZDvidTarget &target)
   m_blockGrid->setSource(std::shared_ptr<FlyEmTodoSource>(source));
 }
 
+#if 0
 void FlyEmTodoEnsemble::removeItem(const ZIntPoint &pos)
 {
   m_blockGrid->removeItem(pos);
@@ -182,6 +187,7 @@ int FlyEmTodoEnsemble::removeSelected(
 
   return removed.size();
 }
+#endif
 
 void FlyEmTodoEnsemble::_setSource(std::shared_ptr<FlyEmTodoSource> source)
 {
@@ -195,5 +201,5 @@ ZFlyEmToDoItem FlyEmTodoEnsemble::_getHitItem() const
 
 std::shared_ptr<FlyEmTodoBlockGrid> FlyEmTodoEnsemble::_getBlockGrid() const
 {
-  return m_blockGrid;
+  return std::dynamic_pointer_cast<FlyEmTodoBlockGrid>(m_blockGrid);
 }

@@ -121,6 +121,11 @@ void ZDvidLabelSlice::setOpacity(double opacity)
   m_opacity = opacity;
 }
 
+double ZDvidLabelSlice::getOpacity() const
+{
+  return m_opacity;
+}
+
 void ZDvidLabelSlice::setCenterCut(int width, int height)
 {
   getHelper()->setCenterCut(width, height);
@@ -348,6 +353,7 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
   forceUpdate(getHelper()->getViewParam(), ignoringHidden);
 }
 
+/*
 bool ZDvidLabelSlice::hasValidPaintBuffer() const
 {
   bool valid = false;
@@ -365,6 +371,7 @@ bool ZDvidLabelSlice::hasValidPaintBuffer() const
 
   return valid;
 }
+*/
 
 void ZDvidLabelSlice::invalidatePaintBuffer()
 {

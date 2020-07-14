@@ -41,6 +41,8 @@ public:
       const ZDvidReader &reader, const ZIntCuboid &box);
   static ZFlyEmToDoItem ReadToDoItem(
       const ZDvidReader &reader, int x, int y, int z);
+  static ZFlyEmToDoItem ReadToDoItem(
+      const ZDvidReader &reader, const ZIntPoint &pos);
   static ZIntCuboid ReadTodoDataRange(const ZDvidReader &reader);
 
   static ZMesh* ReadRoiMesh(
@@ -68,6 +70,15 @@ public:
   static std::unordered_map<ZIntPoint, uint64_t> ReadSynapseLabel(
       const ZDvidReader &reader, const std::vector<ZDvidSynapse>& synapseArray);
 
+  static std::vector<ZDvidSynapse> ReadSynapse(
+      const ZDvidReader &reader, const ZIntCuboid &box,
+      dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER);
+  static void UpdateSynapsePartner(
+      const ZDvidReader &reader, ZDvidSynapse *synapse);
+  static void UpdateSynapse(
+      const ZDvidReader &reader, ZDvidSynapse *synapse);
+  static ZDvidSynapse ReadSynapse(
+      const ZDvidReader &reader, const ZIntPoint &pos);
 
 private:
   static ZMesh* LoadRoi(

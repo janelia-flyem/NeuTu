@@ -1,5 +1,6 @@
 #include "flyemtodoblockgrid.h"
 
+#if 0
 #include "neulib/core/stringbuilder.h"
 #include "common/math.h"
 #include "geometry/zgeometry.h"
@@ -225,3 +226,4 @@ std::vector<ZFlyEmToDoItem> FlyEmTodoBlockGrid::getIntersectTodoList(
 
 }
 */
+#endif

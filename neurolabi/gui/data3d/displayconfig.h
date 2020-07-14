@@ -83,6 +83,7 @@ public:
 private:
   ZModelViewTransform m_transform;
   ViewSpaceAlignedDisplayConfig m_alignedConfig;
+  uint64_t m_viewerId = 0;
 };
 
 class DisplayConfigBuilder {

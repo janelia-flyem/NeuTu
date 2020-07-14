@@ -43,9 +43,15 @@ public:
 
   ZDvidAnnotation* clone() const override;
 
+
   bool display(QPainter *painter, const DisplayConfig &config) const override {
     return false;
   }
+  /*
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+  */
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const override;
@@ -93,8 +99,9 @@ public:
   int getZ() const;
 
 //  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutu::EAxis axis) override;
-  bool hit(double x, double y, double z) override;
+//  bool hit(double x, double y, neutu::EAxis axis) override;
+//  bool hit(double x, double y, double z) override;
+  void setDefaultHit();
 
   void loadJsonObject(
       const ZJsonObject &obj,
@@ -103,6 +110,7 @@ public:
 
   void clearPartner();
   void addPartner(int x, int y, int z);
+  void addPartner(const ZIntPoint &pos);
   bool hasPartner(const ZIntPoint &pos);
 
   void addTag(const std::string &tag);

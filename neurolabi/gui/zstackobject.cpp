@@ -311,9 +311,9 @@ bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
   return false;
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
+bool ZStackObject::hit(double x, double y, double z)
 {
-  return false;
+  return _hit(x, y, z);
 }
 
 bool ZStackObject::hit(const ZIntPoint &pt)
@@ -345,6 +345,11 @@ bool ZStackObject::hitWidgetPos(
 void ZStackObject::setHitPoint(const ZIntPoint &pt)
 {
   m_hitPoint = pt;
+}
+
+void ZStackObject::setHitFunc(std::function<bool (double, double, double)> f)
+{
+  this->_hit = f;
 }
 
 bool ZStackObject::fromSameSource(const ZStackObject *obj) const

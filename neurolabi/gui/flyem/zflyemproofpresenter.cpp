@@ -1249,19 +1249,23 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     if (m_interactiveContext.synapseEditMode() !=
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {
-      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
+      ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_SYNAPSE);
+//      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
       if (m_interactiveContext.synapseEditMode() ==
           ZInteractiveContext::SYNAPSE_ADD_PRE ||
           m_interactiveContext.synapseEditMode() ==
                     ZInteractiveContext::SYNAPSE_ADD_POST) {
-        updateActiveObjectForSynapseAdd(currentStackPos);
+        updateActiveObjectForSynapseAdd(currentDataPos);
       } else if (m_interactiveContext.synapseEditMode() ==
                  ZInteractiveContext::SYNAPSE_MOVE) {
-        updateActiveObjectForSynapseMove(currentStackPos);
+        updateActiveObjectForSynapseMove(currentDataPos);
       }
+      ball->setCenter(currentDataPos);
+      /*
       ZPoint pos = currentStackPos;
 //      pos.shiftSliceAxis(buddyView()->getSliceAxis());
       stroke->setLast(pos.x(), pos.y());
+      */
       if (e != NULL) {
         e->setEvent(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
@@ -1474,13 +1478,26 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
-  return updateActiveObjectForSynapseMove(currentStackPos);
+//  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
+  return updateActiveObjectForSynapseMove(event.getDataPosition());
 }
 
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
-    const ZPoint &currentStackPos)
+    const ZPoint &currentPos)
 {
+  ZDvidSynapse synapse = getCompleteDocument()->getSingleSelectedSynapse();
+  if (synapse.isValid()) {
+    ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_SYNAPSE);
+    ball->setColor(synapse.getColor());
+    ball->setRadius(synapse.getRadius());
+    ball->setCenter(currentPos);
+
+    return true;
+  }
+
+  return false;
+
+#if 0
   ZDvidSynapseEnsemble *se = getCompleteDocument()->getDvidSynapseEnsemble(
         buddyView()->getSliceAxis());
   if (se != NULL) {
@@ -1491,6 +1508,11 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
       ZDvidSynapse synapse = se->getSynapse(
             pt, ZDvidSynapseEnsemble::EDataScope::LOCAL);
       if (synapse.isValid()) {
+        ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_SYNAPSE);
+        ball->setColor(synapse.getColor());
+        ball->setRadius(synapse.getRadius());
+        ball->setCenter(currentPos);
+        /*
         ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
         stroke->setColor(synapse.getColor());
         stroke->setWidth(synapse.getRadius() * 2.0);
@@ -1501,6 +1523,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
         stroke->set(pos.x(), pos.y());
 
         stroke->append(pos.x(), pos.y());
+        */
 
         return true;
       }
@@ -1508,21 +1531,43 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
   }
 
   return false;
+#endif
 }
 
 void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
-  updateActiveObjectForSynapseAdd(currentStackPos);
+  updateActiveObjectForSynapseAdd(event.getDataPosition());
+//  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
+//  updateActiveObjectForSynapseAdd(currentStackPos);
 }
 
 void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
-    const ZPoint &currentStackPos)
+    const ZPoint &currentDataPos)
 {
+  ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_SYNAPSE);
+  if (ball) {
+    ball->setCenter(currentDataPos);
+    ZDvidSynapse::EKind kind  = ZDvidSynapse::EKind::KIND_UNKNOWN;
+    switch (interactiveContext().synapseEditMode()) {
+    case ZInteractiveContext::SYNAPSE_ADD_PRE:
+      kind = ZDvidSynapse::EKind::KIND_PRE_SYN;
+      break;
+    case ZInteractiveContext::SYNAPSE_ADD_POST:
+      kind = ZDvidSynapse::EKind::KIND_POST_SYN;
+      break;
+    default:
+      break;
+    }
+    QColor color = ZDvidSynapse::GetDefaultColor(kind);
+    color.setAlpha(200);
+    ball->setColor(color);
+    ball->setRadius(ZDvidSynapse::GetDefaultRadius(kind));
+  }
+#if 0
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
 
-  ZPoint pos = currentStackPos;
+  ZPoint pos = currentDataPos;
 //  pos.shiftSliceAxis(buddyView()->getSliceAxis());
 #ifdef _DEBUG_2
   std::cout << "Update stroke: " << this << " " << pos.x() << ", " << pos.y()
@@ -1546,6 +1591,7 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
   color.setAlpha(200);
   stroke->setColor(color);
   stroke->setWidth(ZDvidSynapse::GetDefaultRadius(kind) * 2.0);
+#endif
 }
 
 /*

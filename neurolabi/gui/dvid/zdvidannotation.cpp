@@ -223,6 +223,7 @@ void ZDvidAnnotation::setDefaultColor()
   setColor(GetDefaultColor(m_kind));
 }
 
+#if 0
 bool ZDvidAnnotation::hit(double x, double y, double z)
 {
   double d2 = m_position.distanceSquareTo(x, y, z);
@@ -257,6 +258,7 @@ bool ZDvidAnnotation::hit(double x, double y, neutu::EAxis axis)
 
   return d2 <= m_radius * m_radius;
 }
+#endif
 
 /*
 void ZDvidAnnotation::setProperty(ZJsonObject propJson)
@@ -472,6 +474,11 @@ void ZDvidAnnotation::addPartner(int x, int y, int z)
   m_partnerHint.push_back(ZIntPoint(x, y, z));
 }
 
+void ZDvidAnnotation::addPartner(const ZIntPoint &pos)
+{
+  m_partnerHint.push_back(pos);
+}
+
 bool ZDvidAnnotation::hasPartner(const ZIntPoint &pos)
 {
   for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
@@ -627,6 +634,13 @@ int ZDvidAnnotation::getY() const
 int ZDvidAnnotation::getZ() const
 {
   return getPosition().getZ();
+}
+
+void ZDvidAnnotation::setDefaultHit()
+{
+  this->_hit = [this](double x, double y, double z) {
+    return getPosition().distanceSquareTo(x, y, z) <= getRadius() * getRadius();
+  };
 }
 
 template < >

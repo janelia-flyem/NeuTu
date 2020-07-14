@@ -45,6 +45,9 @@ void ZStackBall::init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
   m_type = ZStackObject::EType::STACK_BALL;
+  _hit = [&](double xx, double yy, double zz) {
+    return m_center.distanceTo(xx, yy, zz) <= m_r;
+  };
 }
 
 
@@ -558,6 +561,7 @@ void ZStackBall::scale(double sx, double sy, double sz)
   m_r *= sqrt(sx * sy);
 }
 
+/*
 bool ZStackBall::hit(double x, double y, double z)
 {
   return m_center.distanceTo(x, y, z) <= m_r;
@@ -575,6 +579,6 @@ bool ZStackBall::hit(double x, double y, neutu::EAxis axis)
 
   return d2 <= m_r * m_r;
 }
-
+*/
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackBall)

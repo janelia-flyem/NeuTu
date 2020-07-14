@@ -8,6 +8,7 @@ include($${PWD}/interface/interface.pri)
 include($${PWD}/filesystem/filesystem.pri)
 include($${PWD}/neurolabi/neurolabi.pri)
 include($${PWD}/data3d/data3d.pri)
+include($${PWD}/bigdata/bigdata.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
@@ -178,10 +179,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zstackarray.h \
    $${PWD}/tr1_header.h \
    $${PWD}/zvoxelgraphics.h \
-   $${PWD}/bigdata/zdvidblockgrid.h \
-   $${PWD}/bigdata/zstackblockgrid.h \
-   $${PWD}/bigdata/zblockgrid.h \
-   $${PWD}/bigdata/zblockgridfactory.h \
    $${PWD}/zsparsestack.h \
    $${PWD}/zstackobject.h \
    $${PWD}/zobject3dfactory.h \
@@ -362,10 +359,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zstackarray.cpp \
    $${PWD}/flyem/zflyemconfig.cpp \
    $${PWD}/zvoxelgraphics.cpp \
-   $${PWD}/bigdata/zdvidblockgrid.cpp \
-   $${PWD}/bigdata/zstackblockgrid.cpp \
-   $${PWD}/bigdata/zblockgrid.cpp \
-   $${PWD}/bigdata/zblockgridfactory.cpp \
    $${PWD}/zsparsestack.cpp \
    $${PWD}/zstackobject.cpp \
    $${PWD}/zobject3dfactory.cpp \

@@ -67,6 +67,7 @@ public:
   static std::string MakeTodoListEnsembleSource();
   static std::string MakeTodoListEnsembleSource(neutu::EAxis axis);
   static std::string MakeTodoEnsembleSource();
+  static std::string MakeSynapseEnsembleSource();
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
   static std::string MakeCrossHairSource();

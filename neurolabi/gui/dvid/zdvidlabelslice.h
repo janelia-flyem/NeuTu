@@ -43,6 +43,7 @@ public:
   }
 
   void setOpacity(double opacity);
+  double getOpacity() const;
   void setMaxSize(const ZStackViewParam &viewParam, int maxWidth, int maxHeight);
 
   bool update(const ZStackViewParam &viewParam);
@@ -233,7 +234,7 @@ private:
 
   int getFirstZoom(const ZStackViewParam &viewParam) const;
 
-  bool hasValidPaintBuffer() const;
+//  bool hasValidPaintBuffer() const;
 
 private:
   ZSliceCanvas m_imageCanvas;

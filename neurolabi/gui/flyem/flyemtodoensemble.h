@@ -1,33 +1,37 @@
 #ifndef FLYEMTODOENSEMBLE_H
 #define FLYEMTODOENSEMBLE_H
 
-#include <memory>
-#include <functional>
+//#include <memory>
+//#include <functional>
 
-#include "zstackobject.h"
+//#include "zstackobject.h"
 #include "zflyemtodoitem.h"
-#include "zselector.h"
+#include "flyemtodochunk.h"
+#include "flyempointannotationensemble.hpp"
+//#include "zselector.h"
 
 class FlyEmTodoBlockGrid;
 class FlyEmTodoSource;
 class ZDvidTarget;
 
-class FlyEmTodoEnsemble : public ZStackObject
+class FlyEmTodoEnsemble :
+    public FlyEmPointAnnotationEnsemble<ZFlyEmToDoItem, FlyEmTodoChunk>
 {
 public:
   FlyEmTodoEnsemble();
-  virtual ~FlyEmTodoEnsemble();
+  ~FlyEmTodoEnsemble() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::FLYEM_TODO_ENSEMBLE;
   }
 
-  bool display(
-      QPainter *painter, const DisplayConfig &config) const override;
+//  bool display(
+//      QPainter *painter, const DisplayConfig &config) const override;
 
 
   void setDvidTarget(const ZDvidTarget &target);
 
+#if 0
   void addItem(const ZFlyEmToDoItem &item);
   void removeItem(const ZIntPoint &pos);
 
@@ -57,22 +61,22 @@ public:
                neutu::EAxis sliceAxis) const override;
   void display(ZPainter &painter, const DisplayConfig &config) const override;
   */
-
+#endif
 public: //For testing
   void _setSource(std::shared_ptr<FlyEmTodoSource> source);
   ZFlyEmToDoItem _getHitItem() const;
   std::shared_ptr<FlyEmTodoBlockGrid> _getBlockGrid() const;
 
-private:
-  void selectAt(const ZIntPoint &pos);
-  void deselectAt(const ZIntPoint &pos);
-  void setSelectionAt(const ZIntPoint &pos, bool selecting);
-  void processDeselected();
+//private:
+//  void selectAt(const ZIntPoint &pos);
+//  void deselectAt(const ZIntPoint &pos);
+//  void setSelectionAt(const ZIntPoint &pos, bool selecting);
+//  void processDeselected();
 
-private:
-  std::shared_ptr<FlyEmTodoBlockGrid> m_blockGrid;
-  ZFlyEmToDoItem m_hitItem;
-  ZSelector<ZIntPoint> m_selector;
+//private:
+//  std::shared_ptr<FlyEmTodoBlockGrid> m_blockGrid;
+//  ZFlyEmToDoItem m_hitItem;
+//  ZSelector<ZIntPoint> m_selector;
 };
 
 #endif // FLYEMTODOENSEMBLE_H

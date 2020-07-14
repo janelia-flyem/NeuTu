@@ -850,7 +850,7 @@ private:
   void addForeground(ZStack *stack);
   void addForegroundSlice8(ZStack *stack);
   int subtractForegroundSlice8(ZStack *stack);
-  void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
+//  void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
   void makeZProjection(ZObject3dScan *obj, int z) const;
 
@@ -867,6 +867,8 @@ private:
   void canonizeConst() const;
 
   bool isAdjacentToOld(const ZObject3dScan &obj) const;
+
+  bool getDefaultCosmetic(ZStackObject::EDisplayStyle style) const;
 
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;

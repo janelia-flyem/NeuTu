@@ -1,6 +1,54 @@
 HEADERS += $$PWD/userfeedbackdialog.h \
+    $$PWD/flyemsynapsefilterdialog.h \
+    $$PWD/zflyemsynapseannotationdialog.h \
+    $$PWD/zcontrastprotocaldialog.h \
+    $$PWD/zflyemroitooldialog.h \
+    $$PWD/zflyembodysplitdialog.h \
+    $$PWD/zflyemmergeuploaddialog.h \
+    $$PWD/zflyemproofsettingdialog.h \
+    $$PWD/dvidbranchdialog.h \
+    $$PWD/zneu3sliceviewdialog.h \
+    $$PWD/zflyemtodoannotationdialog.h \
+    $$PWD/resolutiondialog.h \
+    $$PWD/dvidimagedialog.h \
+    $$PWD/flyemneuronthumbnaildialog.h \
+    $$PWD/flyemhotspotdialog.h \
+    $$PWD/dvidskeletonizedialog.h \
+    $$PWD/zspinboxdialog.h \
+    $$PWD/shapepaperdialog.h \
+    $$PWD/dvidoperatedialog.h \
+    $$PWD/synapseimportdialog.h \
+    $$PWD/flyemprojectdialog.h \
+    $$PWD/zsegmentationprojectdialog.h \
+    $$PWD/zsubtractswcsdialog.h \
+    $$PWD/zmarkswcsomadialog.h \
+    $$PWD/zspinboxgroupdialog.h \
+    $$PWD/zautotracedialog.h \
+    $$PWD/swcexportdialog.h \
+    $$PWD/ztestdialog.h \
+    $$PWD/ztestdialog2.h \
+    $$PWD/flyembodyinfodialog.h \
+    $$PWD/zflyemsplitcommitdialog.h \
+    $$PWD/stringlistdialog.h \
+    $$PWD/flyemtododialog.h \
+    $$PWD/tipdetectordialog.h \
+    $$PWD/helpdialog.h \
+    $$PWD/zalphadialog.h \
+    $$PWD/projectiondialog.h \
+    $$PWD/startsettingdialog.h \
+    $$PWD/moviedialog.h \
+    $$PWD/informationdialog.h \
+    $$PWD/flyemdataquerydialog.h \
+    $$PWD/flyemdataprocessdialog.h \
+    $$PWD/autosaveswclistdialog.h \
+    $$PWD/flyemdataexportdialog.h \
+    $$PWD/flyemgeosearchdialog.h \
+    $$PWD/flyemgeofilterdialog.h \
+    $$PWD/penwidthdialog.h \
+    $$PWD/dvidobjectdialog.h \
     $$PWD/zsynapsepropertydialog.h \
     $$PWD/settingdialog.h \
+    $$PWD/neuprintdatasetdialog.h \
     $$PWD/frameinfodialog.h \
     $$PWD/traceoutputdialog.h \
     $$PWD/bcadjustdialog.h \
@@ -40,10 +88,13 @@ HEADERS += $$PWD/userfeedbackdialog.h \
     $$PWD/neuprintquerydialog.h \
     $$PWD/zflyemtodofilterdialog.h \
     $$PWD/zstackframesettingdialog.h \
+    $$PWD/diagnosisdialog.h \
+    $$PWD/flyemsettingdialog.h \
     $$PWD/neuprintsetupdialog.h \
     $$PWD/channeldialog.h
 
 FORMS += $$PWD/traceoutputdialog.ui \
+    $$PWD/flyembodyinfodialog.ui \
     $$PWD/bcadjustdialog.ui \
     $$PWD/channeldialog.ui \
     $$PWD/cannyedgedialog.ui \
@@ -133,6 +184,64 @@ FORMS += $$PWD/traceoutputdialog.ui \
     $$PWD/neuprintsetupdialog.ui
 
 SOURCES += $$PWD/distancemapdialog.cpp \
+    $$PWD/flyembodyinfodialog.cpp \
+    $$PWD/zsubtractswcsdialog.cpp \
+    $$PWD/zmarkswcsomadialog.cpp \
+    $$PWD/zspinboxgroupdialog.cpp \
+    $$PWD/zautotracedialog.cpp \
+    $$PWD/swcexportdialog.cpp \
+    $$PWD/ztestdialog.cpp \
+    $$PWD/ztestdialog2.cpp \
+    $$PWD/zflyemsplitcommitdialog.cpp \
+    $$PWD/stringlistdialog.cpp \
+    $$PWD/flyemtododialog.cpp \
+    $$PWD/flyemprojectdialog.cpp \
+    $$PWD/zsegmentationprojectdialog.cpp \
+    $$PWD/flyemsettingdialog.cpp \
+    $$PWD/tipdetectordialog.cpp \
+    $$PWD/flyemsynapsefilterdialog.cpp \
+    $$PWD/zflyemsynapseannotationdialog.cpp \
+    $$PWD/zcontrastprotocaldialog.cpp \
+    $$PWD/zflyemroitooldialog.cpp \
+    $$PWD/zflyemmergeuploaddialog.cpp \
+    $$PWD/resolutiondialog.cpp \
+    $$PWD/dvidimagedialog.cpp \
+    $$PWD/flyemneuronthumbnaildialog.cpp \
+    $$PWD/flyemhotspotdialog.cpp \
+    $$PWD/flyembodyiddialog.cpp \
+    $$PWD/zdviddialog.cpp \
+    $$PWD/zdvidtargetproviderdialog.cpp \
+    $$PWD/flyembodyfilterdialog.cpp \
+    $$PWD/dvidskeletonizedialog.cpp \
+    $$PWD/zspinboxdialog.cpp \
+    $$PWD/shapepaperdialog.cpp \
+    $$PWD/dvidoperatedialog.cpp \
+    $$PWD/synapseimportdialog.cpp \
+    $$PWD/neuprintdatasetdialog.cpp \
+    $$PWD/userfeedbackdialog.cpp \
+    $$PWD/zsynapsepropertydialog.cpp \
+    $$PWD/traceoutputdialog.cpp \
+    $$PWD/bcadjustdialog.cpp \
+    $$PWD/channeldialog.cpp \
+    $$PWD/zeditswcdialog.cpp \
+    $$PWD/cannyedgedialog.cpp \
+    $$PWD/swctypedialog.cpp \
+    $$PWD/swcsizedialog.cpp \
+    $$PWD/swcskeletontransformdialog.cpp \
+    $$PWD/zalphadialog.cpp \
+    $$PWD/helpdialog.cpp \
+    $$PWD/startsettingdialog.cpp \
+    $$PWD/moviedialog.cpp \
+    $$PWD/flyemdataquerydialog.cpp \
+    $$PWD/flyemdataprocessdialog.cpp \
+    $$PWD/autosaveswclistdialog.cpp \
+    $$PWD/projectiondialog.cpp \
+    $$PWD/diagnosisdialog.cpp \
+    $$PWD/flyemdataexportdialog.cpp \
+    $$PWD/flyemgeosearchdialog.cpp \
+    $$PWD/flyemgeofilterdialog.cpp \
+    $$PWD/penwidthdialog.cpp \
+    $$PWD/dvidobjectdialog.cpp \
     $$PWD/settingdialog.cpp \
     $$PWD/frameinfodialog.cpp \
     $$PWD/regionexpanddialog.cpp \

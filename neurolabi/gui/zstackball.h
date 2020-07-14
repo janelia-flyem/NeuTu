@@ -90,8 +90,8 @@ public:
   void scaleCenter(double sx, double sy, double sz);
   void scale(double sx, double sy, double sz);
 
-  bool hit(double x, double y, double z) override;
-  bool hit(double x, double y, neutu::EAxis axis) override;
+//  bool hit(double x, double y, double z) override;
+//  bool hit(double x, double y, neutu::EAxis axis) override;
 
 private:
   double getAdjustedRadius(double r) const;
