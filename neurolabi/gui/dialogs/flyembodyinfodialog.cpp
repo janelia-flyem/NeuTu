@@ -303,8 +303,9 @@ namespace {
 std::string get_annotation_primary_neurite(const ZJsonObject &bodyData)
 {
   ZJsonObjectParser parser;
-  return
-      parser.getValue(bodyData, ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "");
+  return parser.getValue(
+        bodyData, {ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
+                   ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE}, std::string());
 }
 
 std::string get_annotation_name(const ZJsonObject &bodyData)
@@ -1266,7 +1267,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 entry.setNonEmptyEntry(
-                      ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE,
+                      ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
                       get_annotation_primary_neurite(bodyData));
             }
 

@@ -1,10 +1,11 @@
 #ifndef ZJSONTEST_H
 #define ZJSONTEST_H
 
+#include "c_json.h"
 #include "ztestheader.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
-#include "c_json.h"
+#include "zjsonobjectparser.h"
 
 #ifdef _USE_GTEST_
 
@@ -161,6 +162,26 @@ TEST(ZJsonParser, basic)
   ASSERT_TRUE(ZJsonParser::IsObject("{}"));
   ASSERT_FALSE(ZJsonParser::IsObject("test"));
   ASSERT_FALSE(ZJsonParser::IsObject("[1, 2, 3]"));
+}
+
+TEST(ZJsonObjectParser, Basic)
+{
+  ZJsonObject obj;
+  obj.setEntry("test1", 10);
+  obj.setEntry("test3", true);
+  obj.setEntry(("key1"), "v1");
+
+  ZJsonObjectParser parser;
+  ASSERT_EQ(10, parser.getValue(obj, "test1", 1));
+  ASSERT_EQ(1, parser.getValue(obj, "test2", 1));
+  ASSERT_EQ(true, parser.getValue(obj, "test3", false));
+  ASSERT_EQ("v1", parser.getValue(obj, "key1", ""));
+
+  ASSERT_EQ(10, parser.getValue(obj, {"test1", "test2"}, 1));
+  ASSERT_EQ(10, parser.getValue(obj, {"test2", "test1"}, 1));
+  ASSERT_EQ(1, parser.getValue(obj, {"test4", "test5"}, 1));
+  ASSERT_EQ("v1", parser.getValue(obj, {"key2", "key1"}, std::string("")));
+  ASSERT_EQ("", parser.getValue(obj, {"key2", "key3"}, std::string()));
 }
 
 
