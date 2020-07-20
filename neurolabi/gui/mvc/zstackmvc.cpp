@@ -210,7 +210,7 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
                 m_view, SLOT(updateViewBox()), Qt::QueuedConnection);
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObjectInfoSet)),
-                m_presenter, SLOT(processObjectModified(ZStackObjectInfoSet)),
+                this, SLOT(processObjectModified(ZStackObjectInfoSet)),
                 Qt::AutoConnection);
 }
 
@@ -455,6 +455,12 @@ void ZStackMvc::saveStack()
       }
     }
   }
+}
+
+void ZStackMvc::processObjectModified(const ZStackObjectInfoSet &objSet)
+{
+  getPresenter()->processObjectModified(objSet);
+//  getView()->paintObject(objSet.getTarget());
 }
 
 #if 0

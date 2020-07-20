@@ -148,6 +148,11 @@ bool ZFlyEmBodySplitProject::hasFinalSplitResult() const
   return !m_splitList.empty();
 }
 
+void ZFlyEmBodySplitProject::invalidateResult()
+{
+  m_splitList.clear();
+}
+
 void ZFlyEmBodySplitProject::shallowClearDataFrame()
 {
   /*
@@ -2341,12 +2346,14 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
          iter != newSeedSet.end(); ++iter) {
       ZDocPlayer *seed = *iter;
       seed->setLabel(1);
+      getDocument()->bufferObjectModified(seed->getData());
     }
 
     for (QSet<ZDocPlayer*>::iterator iter = oldSeedSet.begin();
          iter != oldSeedSet.end(); ++iter) {
       ZDocPlayer *seed = *iter;
       seed->setLabel(label);
+      getDocument()->bufferObjectModified(seed->getData());
     }
 
     ZOUT(LTRACE(), 5) << "Swap seed label";
@@ -2356,7 +2363,7 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
-      if (splitObj != NULL) {
+      if (splitObj) {
         if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
           if ((int) splitObj->getLabel() == label) {
             splitObj->setLabel(1);
@@ -2365,18 +2372,24 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
             splitObj->setLabel(label);
             splitObj->setColor(ZStroke2d::GetLabelColor(label));
           }
+          getDocument()->bufferObjectModified(splitObj);
         }
       }
     }
 
     ZStack *labelField = getDocument()->getLabelField();
-    if (labelField != NULL) {
+    if (labelField) {
       labelField->swapValue(1, label);
+      getDocument()->notifyStackModified(false);
     }
 
+    getDocument()->processObjectModified();
+
+    /*
     if (m_dataFrame != NULL) {
       m_dataFrame->view()->paintObject();
     }
+    */
   }
 }
 

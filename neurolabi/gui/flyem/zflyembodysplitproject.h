@@ -112,23 +112,6 @@ public:
   std::string getSeedKey(uint64_t bodyId) const;
   std::string getBackupSeedKey(uint64_t bodyId) const;
 
-  /*
-  class ThreadManager {
-  public:
-    enum EThreadName {
-      THREAD_SPLIT, THREAD_PROCESS_ALL_SEED
-    };
-
-    void updateThread(EThreadName name, QFuture<void> future);
-    bool isAlive(EThreadName);
-
-  private:
-    ZThreadFutureMap m_futureMap;
-  };
-  */
-
-//  void closeBodyWindow();
-
   bool isReadyForSplit(const ZDvidTarget &target);
 
   void emitMessage(const QString &msg, bool appending = true);
@@ -142,6 +125,7 @@ public:
   void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
 
   bool hasFinalSplitResult() const;
+  void invalidateResult();
 
 public: //Obsolete functions
   ZFlyEmNeuron getFlyEmNeuron() const;

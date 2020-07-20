@@ -22,6 +22,7 @@ class QMainWindow;
 class ZIntPoint;
 class ZPoint;
 class ZStressTestOptionDialog;
+class ZStackObjectInfoSet;
 
 /*!
  * \brief The MVC class for stack operation
@@ -123,6 +124,7 @@ public slots:
   void saveStack();
 
   virtual bool processKeyEvent(QKeyEvent *event);
+  virtual void processObjectModified(const ZStackObjectInfoSet &objSet);
 
   virtual void testSlot();
 

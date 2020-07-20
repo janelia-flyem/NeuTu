@@ -3361,11 +3361,18 @@ void ZFlyEmProofMvc::testBodyVis()
   }
 }
 
+void ZFlyEmProofMvc::processObjectModified(const ZStackObjectInfoSet &objSet)
+{
+  ZStackMvc::processObjectModified(objSet);
+  if (objSet.hasDataModified(ZStackObjectRole::ROLE_SEGMENTATION)) {
+    m_splitProject.invalidateResult();
+  }
+}
+
 void ZFlyEmProofMvc::testSlot()
 {
   getCompleteDocument()->testSlot();
 }
-
 
 void ZFlyEmProofMvc::testBodyMerge()
 {
@@ -4695,12 +4702,6 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
             ZWidgetMessage(msg, neutu::EMessageType::ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
     } else if (checkOutBody(bodyId, mode)) {
-#ifdef _DEBUG_2
-      bodyId = 14742253;
-#endif
-
-//      launchSplitFunc(bodyId);
-
       const QString threadId = "launchSplitFunc";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
@@ -4709,6 +4710,16 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
             QtConcurrent::run(
               this, &ZFlyEmProofMvc::launchSplitFunc, bodyId, mode);
         m_futureMap[threadId] = future;
+      } else {
+        m_futureMap.waitForFinished(threadId);
+        if (m_splitProject.getBodyId() != bodyId) {
+          checkInBodyWithMessage(bodyId, mode);
+          emit errorGenerated(
+                QString("Failed to launch split for %1 because %2 is "
+                        "already in the split mode.")
+                .arg(bodyId)
+                .arg(m_splitProject.getBodyId()));
+        }
       }
     } else {
       if (getSupervisor() != NULL) {
@@ -5822,7 +5833,7 @@ void ZFlyEmProofMvc::setMainSeed()
   if (dlg->exec()) {
     int label = dlg->getValue();
     m_splitProject.swapMainSeedLabel(label);
-    getView()->paintObject();
+//    getView()->paintObject();
     emit messageGenerated(QString("Label %1 is set the main seed.").arg(label));
   }
   delete dlg;
