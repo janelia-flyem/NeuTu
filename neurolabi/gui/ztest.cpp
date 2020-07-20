@@ -31727,10 +31727,17 @@ void ZTest::test(MainWindow *host)
   obj->setPosition(125, 125, 125);
   */
 
+  /*
   ZObject3dScan *obj = ZObject3dFactory::MakeBoxObject3dScan(
         ZIntCuboid({10, 10, 125}, {20, 20, 125}), nullptr);
   obj->setDsIntv(3, 3, 0);
   obj->setColor(255, 0, 0);
+  */
+
+  ZStroke2d *obj = new ZStroke2d;
+  obj->append(125, 125, 125);
+  obj->append(150, 150);
+  obj->setColor(Qt::red);
 //  obj->addSegment(125, 125, 100, 125);
 //  obj->addSegment(125, 124, 100, 125);
 

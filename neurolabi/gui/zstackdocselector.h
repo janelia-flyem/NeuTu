@@ -2,8 +2,9 @@
 #define ZSTACKDOCSELECTOR_H
 
 #include <map>
+#include <memory>
 
-#include "common/zsharedpointer.h"
+//#include "common/zsharedpointer.h"
 #include "zstackobject.h"
 
 class ZStackDoc;
@@ -11,7 +12,10 @@ class ZStackDoc;
 class ZStackDocSelector
 {
 public:
-  ZStackDocSelector(const ZSharedPointer<ZStackDoc> &doc);
+  ZStackDocSelector();
+  explicit ZStackDocSelector(const std::shared_ptr<ZStackDoc> &doc);
+
+  void setDocument(const std::shared_ptr<ZStackDoc> &doc);
 
   enum ESelectOption {
     SELECT_IGNORE, SELECT_NORMAL, SELECT_RECURSIVE
@@ -22,7 +26,7 @@ public:
   void setSelectOption(ZStackObject::EType type, ESelectOption option);
 
 private:
-  ZSharedPointer<ZStackDoc> m_doc;
+  std::shared_ptr<ZStackDoc> m_doc;
   std::map<ZStackObject::EType, ESelectOption> m_option;
 };
 

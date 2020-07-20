@@ -4664,8 +4664,9 @@ void ZStackDoc::deselectAllObject(bool recursive)
                      ZStackObject::EType::LOCSEG_CHAIN));
 
   m_objectGroup.setSelected(false, [this](const ZStackObject* obj) {
-    bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+    bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
   });
+  processObjectModified();
 }
 
 void ZStackDoc::deselectAllObject(ZStackObjectRole::TRole role)
@@ -5047,7 +5048,7 @@ void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
     if (obj->isSelectable()) {
       m_objectGroup.setSelected(obj, selecting);
       processObjectModified(
-                  obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+                  obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
     }
   }
 }
@@ -5068,7 +5069,7 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
   if (obj != NULL) {
     m_objectGroup.setSelected(obj, true);
     processObjectModified(
-                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
   }
 
 //  m_objectGroup.getSelector()->selectObject(obj);

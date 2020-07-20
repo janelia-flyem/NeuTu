@@ -1243,6 +1243,11 @@ uint64_t ZDvidLabelSlice::getHitLabel() const
   return m_hitLabel;
 }
 
+void ZDvidLabelSlice::processHit(ESelection s)
+{
+
+}
+
 void ZDvidLabelSlice::selectHit(bool appending)
 {
   if (m_hitLabel > 0) {
@@ -1251,8 +1256,6 @@ void ZDvidLabelSlice::selectHit(bool appending)
     }
 
     addSelection(m_hitLabel, neutu::ELabelSource::MAPPED);
-//    addSelection(m_hitLabel);
-//    m_selectedOriginal.insert(m_hitLabel);
   }
 }
 

@@ -65,7 +65,8 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, double z) override;
+  void processHit(ESelection s) override;
 
   void selectHit(bool appending = false);
 //  void selectLabel(uint64_t bodyId, bool appending = false);

@@ -185,19 +185,11 @@ bool ZStroke2d::display(QPainter *painter, const DisplayConfig &config) const
   ZSliceCanvas canvas; //Must be outside of the scope to live long enough
   bool painted = false;
 
-  if (!m_pointArray.empty() && getSliceAxis() != neutu::EAxis::ARB && isVisible()) {
+  if (!m_pointArray.empty() &&
+      getSliceAxis() != neutu::EAxis::ARB && isVisible()) {
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
     QPainter *canvasPainter = painter;
     std::unique_ptr<ZSliceCanvasPaintHelper> paintHelper;
-
-    /*
-    neutu::ApplyOnce releasePainter(neutu::NullFunction, [&]() {
-      if (paintHelper) {
-        canvasPainter->end();
-        delete paintHelper;
-      }
-    });
-    */
 
     double s = config.getViewCanvasTransform().getScale();
     if (s > 2.0) {
@@ -270,6 +262,21 @@ bool ZStroke2d::display(QPainter *painter, const DisplayConfig &config) const
           painted = s3Painter.getPaintedHint();
         }
       }
+    }
+
+    if (isSelected()) {
+      pen.setCosmetic(true);
+      pen.setWidthF(1.0);
+      pen.setColor(Qt::yellow);
+      painter->setPen(pen);
+      auto s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+
+      radius = std::max(0.5, radius - 1.0);
+      s3Painter.drawBall(painter, getFirstPoint(), radius, 1.0, 0.5);
+      if (m_pointArray.size() > 1) {
+        s3Painter.drawBall(painter, getLastPoint(), radius, 1.0, 0.5);
+      }
+      s3Painter.drawPlanePolyline(painter, m_pointArray, m_z, getSliceAxis());
     }
   }
 
@@ -732,6 +739,31 @@ bool ZStroke2d::getPoint(double *x, double *y, size_t index) const
   *y = m_pointArray[index].y();
 
   return true;
+}
+
+ZPoint ZStroke2d::getPoint(size_t index) const
+{
+  ZPoint pt;
+  pt.invalidate();
+  if (index < m_pointArray.size()) {
+    pt.set(m_pointArray[index].x(), m_pointArray[index].y(), m_z);
+  }
+
+  return pt;
+}
+
+ZPoint ZStroke2d::getFirstPoint() const
+{
+  return getPoint(0);
+}
+
+ZPoint ZStroke2d::getLastPoint() const
+{
+  if (!m_pointArray.empty()) {
+    return getPoint(m_pointArray.size() - 1);
+  }
+
+  return ZPoint::INVALID_POINT;
 }
 
 

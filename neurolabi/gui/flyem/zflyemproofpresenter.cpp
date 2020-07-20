@@ -1103,10 +1103,12 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
+//  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
   ZPoint currentDataPos = event.getDataPosition();
 
   bool processed = true;
+
+  m_docSelector.setDocument(getSharedBuddyDocument());
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
@@ -1150,10 +1152,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
         getCompleteDocument()->getObjectList<ZFlyEmToDoList>();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
 
-    ZStackDocSelector docSelector(getSharedBuddyDocument());
-    docSelector.setSelectOption(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE,
-                                ZStackDocSelector::SELECT_RECURSIVE);
-    docSelector.deselectAll();
+    m_docSelector.deselectAll();
 //    docSelector.setSelectOption(ZStackObject);
 
     for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
@@ -1208,11 +1207,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     QList<ZDvidSynapseEnsemble*> seList =
         getCompleteDocument()->getDvidSynapseEnsembleList();
     ZIntPoint hitPoint = op.getHitObject()->getHitPoint();
-
-    ZStackDocSelector docSelector(getSharedBuddyDocument());
-    docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_LIST,
-                                ZStackDocSelector::SELECT_RECURSIVE);
-    docSelector.deselectAll();
+    m_docSelector.deselectAll();
 
     for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
          iter != seList.end(); ++iter) {
@@ -1274,7 +1269,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_SINGLE:
   {
-    buddyDocument()->deselectAllObject(false);
+//    buddyDocument()->deselectAllObject(false);
     std::set<uint64_t> bodySet;
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();

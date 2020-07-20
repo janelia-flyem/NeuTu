@@ -125,6 +125,9 @@ public:
   bool getLastPoint(int *x, int *y) const;
   bool getLastPoint(double *x, double *y) const;
   bool getPoint(double *x, double *y, size_t index) const;
+  ZPoint getPoint(size_t index) const;
+  ZPoint getFirstPoint() const;
+  ZPoint getLastPoint() const;
 
   inline size_t getPointNumber() const { return m_pointArray.size(); }
 

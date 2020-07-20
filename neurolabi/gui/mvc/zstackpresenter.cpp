@@ -198,6 +198,11 @@ void ZStackPresenter::init()
 
 //  m_menuFactory = NULL;
   m_actionFactory = new ZActionFactory;
+
+  m_docSelector.setSelectOption(ZStackObject::EType::FLYEM_SYNAPSE_ENSEMBLE,
+                                ZStackDocSelector::SELECT_RECURSIVE);
+  m_docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_ENSEMBLE,
+                                ZStackDocSelector::SELECT_RECURSIVE);
 }
 
 void ZStackPresenter::addActiveObject(EObjectRole role, ZStackObject *obj)
@@ -3190,6 +3195,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
   ZPoint currentModelPos = event.getPosition(neutu::data3d::ESpace::MODEL);
 //  ZPoint currentRawStackPos = event.getPosition(neutu::ECoordinateSystem::RAW_STACK);
 
+  m_docSelector.setDocument(getSharedBuddyDocument());
+
   buddyDocument()->getObjectGroup().resetSelector();
 
   switch (op.getOperation()) {
@@ -3540,14 +3547,16 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_DESELECT_ALL:
-    buddyDocument()->deselectAllObject();
+    m_docSelector.deselectAll();
+//    buddyDocument()->processObjectModified();
+//    buddyDocument()->deselectAllObject();
     interactionEvent.setEvent(ZInteractionEvent::EVENT_ALL_OBJECT_DESELCTED);
     break;
   case ZStackOperator::OP_OBJECT_SELECT_SINGLE:
   {
 //    buddyDocument()->deselectAllObject(false);
-    ZStackDocSelector docSelector(getSharedBuddyDocument());
-    docSelector.deselectAll();
+//    ZStackDocSelector docSelector(getSharedBuddyDocument());
+    m_docSelector.deselectAll();
     ZStackObject *obj = op.getHitObject<ZStackObject>();
     if (obj) {
       obj->processHit(ZStackObject::ESelection::SELECT_SINGLE);
@@ -3567,7 +3576,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       obj->processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
       buddyDocument()->setSelected(obj, obj->isSelected());
       buddyDocument()->processObjectModified(
-            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
 //      buddyDocument()->toggleSelected(obj);
 
 //      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
@@ -3585,7 +3594,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
         obj->processHit(ZStackObject::ESelection::SELECT_TOGGLE);
         buddyDocument()->setSelected(obj, obj->isSelected());
         buddyDocument()->processObjectModified(
-              obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+              obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT_SELECTED);
       }
@@ -3596,14 +3605,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
 //    buddyDocument()->deselectAllObject(false);
 //    buddyDocument()->deselectAllObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK);
     if (op.getHitObject<ZStackObject>() != NULL) {
-      ZStackDocSelector docSelector(getSharedBuddyDocument());
-      docSelector.setSelectOption(ZStackObject::EType::DVID_SYNAPE_ENSEMBLE,
-                                  ZStackDocSelector::SELECT_RECURSIVE);
-//      docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_LIST,
-//                                  ZStackDocSelector::SELECT_RECURSIVE);
-      docSelector.setSelectOption(ZStackObject::EType::FLYEM_TODO_ENSEMBLE,
-                                  ZStackDocSelector::SELECT_RECURSIVE);
-      docSelector.deselectAll();
+      m_docSelector.deselectAll();
 
       buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
       interactionEvent.setEvent(
@@ -3611,7 +3613,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_STROKE_SELECT_SINGLE:
-    buddyDocument()->deselectAllObject();
+    m_docSelector.deselectAll();
+//    buddyDocument()->deselectAllObject();
     if (op.getHitObject<ZStroke2d>() != NULL) {
       buddyDocument()->setSelected(op.getHitObject<ZStroke2d>(), true);
       interactionEvent.setEvent(

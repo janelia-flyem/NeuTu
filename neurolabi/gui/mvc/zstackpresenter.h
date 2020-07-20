@@ -25,6 +25,7 @@
 #include "zstackball.h"
 #include "zactionfactory.h"
 #include "zjsonobject.h"
+#include "zstackdocselector.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -579,6 +580,7 @@ protected:
   //ZMouseEventMoveMapper m_moveMapper;
 
   ZMouseEventProcessor m_mouseEventProcessor;
+  ZStackDocSelector m_docSelector;
 
   ZActionFactory *m_actionFactory;
   std::unique_ptr<ZStackDocMenuFactory> m_menuFactory;
