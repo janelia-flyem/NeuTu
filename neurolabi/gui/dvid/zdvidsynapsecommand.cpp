@@ -245,7 +245,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
         ZDvidSynapse synapse;
         synapse.loadJsonObject(
               m_synapseBackup, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
-        m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
+        m_doc->addSynapse(synapse/*, ZDvidSynapseEnsemble::EDataScope::LOCAL*/);
         m_doc->notifySynapseEdited(synapse);
         QString msg = QString("Synapse removal undone at (%1, %2, %3)").
             arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());
@@ -366,7 +366,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapses::undo()
            ++iter) {
         synapse.loadJsonObject(
               *iter, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
-        m_doc->addSynapse(synapse, ZDvidSynapseEnsemble::EDataScope::LOCAL);
+        m_doc->addSynapse(synapse/*, ZDvidSynapseEnsemble::EDataScope::LOCAL*/);
         m_doc->notifySynapseEdited(synapse);
 
         QString msg = QString("Synapse removal undone at (%1, %2, %3)").
@@ -394,7 +394,7 @@ ZStackDocCommand::DvidSynapseEdit::AddSynapse::~AddSynapse()
 
 void ZStackDocCommand::DvidSynapseEdit::AddSynapse::redo()
 {
-  m_doc->addSynapse(m_synapse, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
+  m_doc->addSynapse(m_synapse/*, ZDvidSynapseEnsemble::EDataScope::GLOBAL*/);
   m_doc->notifySynapseEdited(m_synapse);
   QString msg = QString("Synapse added at (%1, %2, %3)").
       arg(m_synapse.getX()).arg(m_synapse.getY()).arg(m_synapse.getZ());

@@ -15,7 +15,7 @@ public:
 
   typedef uint64_t TState;
 
-  static const TState STATE_UNKNOWN = 0;
+  static const TState STATE_UNKNOWN = 0xFFFFFFFFFFFFFFFF;
   static const TState STATE_MODIFIED = BIT_FLAG(1);
   static const TState STATE_ADDED = BIT_FLAG(2);
   static const TState STATE_REMOVED = BIT_FLAG(3);
@@ -39,6 +39,7 @@ public:
   }
 
   void set(const ZStackObject &obj);
+  void clear();
 
   ZStackObject::EType getType() const {
     return m_type;
@@ -95,7 +96,9 @@ public:
    * \return true iff the changing flag contains STATE_ADDED, STATE_REMOVED, or
    * STATE_MODIFIED or the flag is STATE_UNKNOWN.
    */
-  bool hasObjectDataModified(ZStackObject::EType type) const;
+  bool hasDataModified(ZStackObject::EType type) const;
+  bool hasDataModified(ZStackObjectRole::TRole role) const;
+//  bool hasObjectDataModified(ZStackObject::EType type) const;
 
   bool hasObjectAddedOrRemoved() const;
 

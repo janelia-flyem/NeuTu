@@ -116,11 +116,13 @@ public:
   static const char *KEY_MAJOR_INPUT;
   static const char *KEY_MAJOR_OUTPUT;
   static const char *KEY_PRIMARY_NEURITE;
+  static const char *KEY_CELL_BODY_FIBER;
   static const char *KEY_LOCATION;
   static const char *KEY_OUT_OF_BOUNDS;
   static const char *KEY_CROSS_MIDLINE;
   static const char *KEY_NEURONTRANSMITTER;
   static const char *KEY_SYNONYM;
+  static const char *KEY_NOTES;
   static const char *KEY_CLONAL_UNIT;
   static const char *KEY_AUTO_TYPE;
   static const char *KEY_PROPERTY;

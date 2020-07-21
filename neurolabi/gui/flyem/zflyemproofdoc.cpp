@@ -2377,9 +2377,20 @@ void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
 }
 
 void ZFlyEmProofDoc::annotateSelectedTodoItem(
-    ZFlyEmTodoAnnotationDialog *dlg, neutu::EAxis axis)
+    ZFlyEmTodoAnnotationDialog *dlg, neutu::EAxis /*axis*/)
 {
-  ZFlyEmToDoList *todoList = getTodoList(axis);
+  FlyEmTodoEnsemble *te = getTodoEnsemble();
+
+  ZFlyEmToDoItem item = te->getSingleSelectedItem();
+  if (item.isValid()) {
+    dlg->init(item);
+    if (dlg->exec()) {
+      dlg->annotate(&item);
+      addTodoItem(item);
+    }
+  }
+
+    /*
   if (todoList) {
     const auto &selectedSet = todoList->getSelector().getSelectedSet();
     if (selectedSet.size() == 1) {
@@ -2398,6 +2409,7 @@ void ZFlyEmProofDoc::annotateSelectedTodoItem(
       }
     } 
   }
+  */
 }
 
 void ZFlyEmProofDoc::setTodoItemToNormal()
@@ -2453,8 +2465,21 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(const ZIntPoint &dest)
 #endif
 
 void ZFlyEmProofDoc::annotateSelectedSynapse(
-    ZFlyEmSynapseAnnotationDialog *dlg, neutu::EAxis axis)
+    ZFlyEmSynapseAnnotationDialog *dlg, neutu::EAxis /*axis*/)
 {
+  FlyEmSynapseEnsemble *te = getSynapseEnsemble();
+
+  ZDvidSynapse item = te->getSingleSelectedItem();
+  if (item.isValid()) {
+    dlg->set(item);
+    if (dlg->exec()) {
+      item.updateProperty(dlg->getPropJson());
+      addSynapse(item);
+//      annotateSynapse(item.getPosition(), dlg->getPropJson(), axis);
+    }
+  }
+
+  /*
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(axis);
   if (se != NULL) {
     if (se->getSelector().getSelectedSet().size() == 1) {
@@ -2467,6 +2492,7 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
       }
     }
   }
+  */
 }
 
 QColor ZFlyEmProofDoc::getSeedColor(int label) const
@@ -2531,7 +2557,7 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
 
 void ZFlyEmProofDoc::addSynapse(
     const ZIntPoint &pt, ZDvidSynapse::EKind kind,
-    ZDvidSynapseEnsemble::EDataScope scope)
+    ZDvidSynapseEnsemble::EDataScope /*scope*/)
 {
   ZDvidSynapse synapse;
   synapse.setPosition(pt);
@@ -2540,7 +2566,7 @@ void ZFlyEmProofDoc::addSynapse(
   synapse.setDefaultColor();
   synapse.setUserName(neutu::GetCurrentUserName());
 
-  addSynapse(synapse, scope);
+  addSynapse(synapse);
 
   /*
 //  ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::EDataScope::DATA_GLOBAL;
@@ -2590,11 +2616,10 @@ void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
   ZFlyEmToDoItem item(pos);
   item.setUserName(neutu::GetCurrentUserName());
 
-  addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+  addTodoItem(item);
 }
 
-void ZFlyEmProofDoc::addTodoItem(
-    const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope /*scope*/)
+void ZFlyEmProofDoc::addTodoItem(const ZFlyEmToDoItem &item)
 {
   ZOUT(LTRACE(), 5) << "Add to do item";
   FlyEmTodoEnsemble *te = getTodoEnsemble();
@@ -2648,8 +2673,7 @@ void ZFlyEmProofDoc::removeSynapse(
   */
 }
 
-void ZFlyEmProofDoc::addSynapse(
-    const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope /*scope*/)
+void ZFlyEmProofDoc::addSynapse(const ZDvidSynapse &synapse)
 {
   FlyEmSynapseEnsemble *se = getSynapseEnsemble();
   try {
@@ -4634,7 +4658,7 @@ void ZFlyEmProofDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
   ZStackDoc::_processObjectModified(infoSet);
   if (!m_loadingAssignedBookmark &&
-      infoSet.hasObjectDataModified(ZStackObject::EType::FLYEM_BOOKMARK)) {
+      infoSet.hasDataModified(ZStackObject::EType::FLYEM_BOOKMARK)) {
     emit userBookmarkModified();
   }
 }

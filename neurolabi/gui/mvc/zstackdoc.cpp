@@ -6271,7 +6271,7 @@ void ZStackDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
     default:
       break;
     }
-    if (infoSet.hasObjectDataModified(type)) {
+    if (infoSet.hasDataModified(type)) {
       setSaved(type, false);
     }
   }

@@ -403,9 +403,9 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
       }
     } else if (op.getHitObject()->getType() == ZStackObject::EType::FLYEM_BOOKMARK) {
       op.setOperation(ZStackOperator::OP_BOOKMARK_ANNOTATE);
-    } else if (op.getHitObject()->getType() == ZStackObject::EType::DVID_SYNAPE_ENSEMBLE) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::FLYEM_SYNAPSE_ENSEMBLE) {
       op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_ANNOTATE);
-    } else if (op.getHitObject()->getType() == ZStackObject::EType::FLYEM_TODO_LIST) {
+    } else if (op.getHitObject()->getType() == ZStackObject::EType::FLYEM_TODO_ENSEMBLE) {
       op.setOperation(ZStackOperator::OP_FLYEM_TODO_ANNOTATE);
     }
   }

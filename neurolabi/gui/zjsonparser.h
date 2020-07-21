@@ -48,17 +48,6 @@ public:
     }
   };
 
-//  T getValue<T,
-//  void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>>(const json_t *value) const
-//  {
-//    if (value == NULL) {
-//      return m_defaultIntValue;
-//    }
-
-//    return integerValue(value);
-//  }
-
-
   template<typename T>
   T getValue(const json_t *value) const {
     return GetValueHelper<T>::GetValue(value);

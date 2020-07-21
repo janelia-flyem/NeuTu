@@ -28,6 +28,13 @@ void ZStackObjectInfo::set(const ZStackObject &obj)
   setRole(obj.getRole());
 }
 
+void ZStackObjectInfo::clear()
+{
+  setTarget(neutu::data3d::ETarget::TARGET_NONE);
+  setType(ZStackObject::EType::UNIDENTIFIED);
+  setRole(ZStackObjectRole::ROLE_NONE);
+}
+
 void ZStackObjectInfo::print() const
 {
   std::cout << toString()  << std::endl;
@@ -79,6 +86,18 @@ bool ZStackObjectInfoSet::hasObjectModified(ZStackObject::EType type) const
   return contains(type);
 }
 
+namespace {
+
+bool has_overlapping_flag(ZStackObjectInfo::TState state, ZStackObjectInfo::TState flag)
+{
+  return state & flag;
+}
+
+static const ZStackObjectInfo::TState DATA_MODIFIED_FLAG =
+    ZStackObjectInfo::STATE_REMOVED | ZStackObjectInfo::STATE_ADDED |
+    ZStackObjectInfo::STATE_MODIFIED;
+}
+
 bool ZStackObjectInfoSet::hasObjectModified(
     ZStackObject::EType type, ZStackObjectInfo::TState flag) const
 {
@@ -104,11 +123,18 @@ bool ZStackObjectInfoSet::hasObjectModified(
   return false;
 }
 
+/*
 bool ZStackObjectInfoSet::hasObjectDataModified(ZStackObject::EType type) const
 {
   return hasObjectModified(
         type, ZStackObjectInfo::STATE_ADDED | ZStackObjectInfo::STATE_REMOVED |
         ZStackObjectInfo::STATE_MODIFIED);
+}
+*/
+
+bool ZStackObjectInfoSet::hasDataModified(ZStackObject::EType type) const
+{
+  return hasObjectModified(type, DATA_MODIFIED_FLAG);
 }
 
 bool ZStackObjectInfoSet::onlyVisibilityChanged(ZStackObject::EType type) const
@@ -148,6 +174,18 @@ bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
 {
   foreach (const ZStackObjectInfo &info, keys()) {
     if (info.getRole().hasRole(role)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStackObjectInfoSet::hasDataModified(ZStackObjectRole::TRole role) const
+{
+  foreach (const ZStackObjectInfo &info, keys()) {
+    if (info.getRole().hasRole(role) &&
+        has_overlapping_flag((*this)[info], DATA_MODIFIED_FLAG)) {
       return true;
     }
   }

@@ -26,6 +26,8 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   json.setEntry("clonal unit", "clonal unit test");
   json.setEntry("auto-type", "auto type test");
   json.setEntry("property", "Distinct");
+  json.setEntry(ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "neurite test");
+  json.setEntry(ZFlyEmBodyAnnotation::KEY_SYNONYM, "note test");
 
   annot.loadJsonObject(json);
 
@@ -39,11 +41,17 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("clonal unit test", annot.getClonalUnit());
   ASSERT_EQ("auto type test", annot.getAutoType());
   ASSERT_EQ("Distinct", annot.getProperty());
+  ASSERT_EQ("neurite test", annot.getPrimaryNeurite());
+  ASSERT_EQ("note test", annot.getSynonym());
 
   ZJsonObject json2 = annot.toJsonObject();
   ZJsonObjectParser parser;
   ASSERT_EQ("clonal unit test", parser.getValue(json2, "clonal unit", ""));
   ASSERT_EQ("auto type test", parser.getValue(json2, "auto-type", ""));
+  ASSERT_EQ("neurite test", parser.getValue(
+              json2, ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, ""));
+  ASSERT_EQ("note test", parser.getValue(
+              json2, ZFlyEmBodyAnnotation::KEY_NOTES, ""));
 
   annot.clear();
   ASSERT_EQ(uint64_t(0), annot.getBodyId());
@@ -54,6 +62,17 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("", annot.getUser());
   ASSERT_EQ("", annot.getNamingUser());
   ASSERT_EQ("", annot.getProperty());
+  ASSERT_EQ("", annot.getPrimaryNeurite());
+  ASSERT_EQ("", annot.getSynonym());
+
+  ZJsonObject json3;
+  json3.setEntry(ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, "neurite test");
+  json3.setEntry(ZFlyEmBodyAnnotation::KEY_NOTES, "note test");
+  annot.loadJsonObject(json3);
+  ASSERT_EQ("neurite test", parser.getValue(
+              json2, ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, ""));
+  ASSERT_EQ("note test", parser.getValue(
+              json2, ZFlyEmBodyAnnotation::KEY_NOTES, ""));
 }
 
 TEST(ZFlyEmBodyAnnotation, merge)

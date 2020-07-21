@@ -636,7 +636,7 @@ bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) con
 
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
-    QPen pen(getColor());
+    QPen pen(getDisplayColor());
     pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 

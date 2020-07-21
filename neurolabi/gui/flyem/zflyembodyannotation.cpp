@@ -6,6 +6,7 @@
 
 #include "zjsonparser.h"
 #include "zjsonobject.h"
+#include "zjsonobjectparser.h"
 #include "zstring.h"
 
 const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "body ID";
@@ -20,11 +21,13 @@ const char *ZFlyEmBodyAnnotation::KEY_PROPERTY = "property";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_INPUT = "major input";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_OUTPUT = "major output";
 const char *ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE = "primary neurite";
+const char *ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER = "cell body fiber";
 const char *ZFlyEmBodyAnnotation::KEY_LOCATION = "location";
 const char *ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS = "out of bounds";
 const char *ZFlyEmBodyAnnotation::KEY_CROSS_MIDLINE = "cross midline";
 const char *ZFlyEmBodyAnnotation::KEY_NEURONTRANSMITTER = "neurotransmitter";
 const char *ZFlyEmBodyAnnotation::KEY_SYNONYM = "synonym";
+const char *ZFlyEmBodyAnnotation::KEY_NOTES = "notes";
 const char *ZFlyEmBodyAnnotation::KEY_CLONAL_UNIT = "clonal unit";
 const char *ZFlyEmBodyAnnotation::KEY_AUTO_TYPE = "auto-type";
 
@@ -101,12 +104,12 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
     obj.setNonEmptyEntry(KEY_INSTANCE, m_instance);
     obj.setNonEmptyEntry(KEY_MAJOR_INPUT, m_majorInput);
     obj.setNonEmptyEntry(KEY_MAJOR_OUTPUT, m_majorOutput);
-    obj.setNonEmptyEntry(KEY_PRIMARY_NEURITE, m_primaryNeurite);
+    obj.setNonEmptyEntry(KEY_CELL_BODY_FIBER, m_primaryNeurite);
     obj.setNonEmptyEntry(KEY_LOCATION, m_location);
     obj.setTrueEntry(KEY_OUT_OF_BOUNDS, m_outOfBounds);
     obj.setTrueEntry(KEY_CROSS_MIDLINE, m_crossMidline);
     obj.setNonEmptyEntry(KEY_NEURONTRANSMITTER, m_neurotransmitter);
-    obj.setNonEmptyEntry(KEY_SYNONYM, m_synonym);
+    obj.setNonEmptyEntry(KEY_NOTES, m_synonym);
     obj.setNonEmptyEntry(KEY_CLONAL_UNIT, m_clonalUnit);
     obj.setNonEmptyEntry(KEY_AUTO_TYPE, m_autoType);
     obj.setNonEmptyEntry(KEY_PROPERTY, m_property);
@@ -171,6 +174,8 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setName(ZJsonParser::stringValue(annotationJson["Name"]));
     }
   } else {
+    ZJsonObjectParser objParser;
+
     if (obj.hasKey(KEY_BODY_ID)) {
       setBodyId(ZJsonParser::integerValue(obj[KEY_BODY_ID]));
     }
@@ -215,9 +220,14 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setMajorOutput(ZJsonParser::stringValue(obj[KEY_MAJOR_OUTPUT]));
     }
 
+    setPrimaryNeurite(
+          objParser.getValue(obj, {KEY_CELL_BODY_FIBER, KEY_PRIMARY_NEURITE},
+                             std::string()));
+    /*
     if (obj.hasKey(KEY_PRIMARY_NEURITE)) {
       setPrimaryNeurite(ZJsonParser::stringValue(obj[KEY_PRIMARY_NEURITE]));
     }
+    */
 
     if (obj.hasKey(KEY_LOCATION)) {
       setLocation(ZJsonParser::stringValue(obj[KEY_LOCATION]));
@@ -235,9 +245,12 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setNeurotransmitter(ZJsonParser::stringValue(obj[KEY_NEURONTRANSMITTER]));
     }
 
+    setSynonym(objParser.getValue(obj, {KEY_NOTES, KEY_SYNONYM}, std::string()));
+    /*
     if (obj.hasKey(KEY_SYNONYM)) {
       setSynonym(ZJsonParser::stringValue(obj[KEY_SYNONYM]));
     }
+    */
 
     if (obj.hasKey(KEY_CLONAL_UNIT)) {
       setClonalUnit(ZJsonParser::stringValue(obj[KEY_CLONAL_UNIT]));

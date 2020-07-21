@@ -443,6 +443,8 @@ public slots:
 
   void configureRecorder();
 
+  void processObjectModified(const ZStackObjectInfoSet &objSet) override;
+
 protected slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
@@ -673,12 +675,7 @@ protected:
   m_assignedBookmarkModel;
   QMap<flyem::EProofreadingMode, ZFlyEmBookmarkListModel*>
   m_userBookmarkModel;
-//  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
-//  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
-//  QSortFilterProxyModel *m_assignedBookmarkProxy;
-//  QSortFilterProxyModel *m_userBookmarkProxy;
-//  ZFlyEmBookmarkArray m_bookmarkArray;
 
   ZThreadFutureMap m_futureMap;
 
@@ -692,26 +689,6 @@ protected:
   friend class FlyEmMvcDialogManager;
 
   FlyEmMvcDialogManager *m_dlgManager = nullptr; //Using raw pointer is fine because it's not exposed anyway
-
-//  ZDvidTargetProviderDialog *m_dvidDlg;
-//  FlyEmBodyInfoDialog *m_bodyInfoDlg;
-//  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
-//  FlyEmBodyInfoDialog *m_neuprintBodyDlg = nullptr;
-//  ZFlyEmSplitCommitDialog *m_splitCommitDlg;
-//  FlyEmTodoDialog *m_todoDlg;
-//  ZFlyEmRoiToolDialog *m_roiDlg;
-//  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
-//  ZFlyEmBodyChopDialog *m_bodyChopDlg;
-//  ZInfoDialog *m_infoDlg;
-//  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
-//  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
-//  FlyEmBodyIdDialog *m_bodyIdDialog;
-//  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
-//  ZFlyEmProofSettingDialog *m_settingDlg;
-//  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
-//  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
-//  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
-//  ZContrastProtocalDialog *m_contrastDlg = nullptr;
 
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;

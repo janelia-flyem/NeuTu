@@ -3371,11 +3371,18 @@ void ZFlyEmProofMvc::testBodyVis()
   }
 }
 
+void ZFlyEmProofMvc::processObjectModified(const ZStackObjectInfoSet &objSet)
+{
+  ZStackMvc::processObjectModified(objSet);
+  if (objSet.hasDataModified(ZStackObjectRole::ROLE_SEGMENTATION)) {
+    m_splitProject.invalidateResult();
+  }
+}
+
 void ZFlyEmProofMvc::testSlot()
 {
   getCompleteDocument()->testSlot();
 }
-
 
 void ZFlyEmProofMvc::testBodyMerge()
 {
@@ -3787,29 +3794,35 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
 //  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(
 //        bodyId, neutu::EBodyLabelType::BODY);
 
-  body->setTarget(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
-  body->setZOrder(0);
-  body->setSource(
-        ZStackObjectSourceFactory::MakeSplitObjectSource());
-//  body->setHittable(false);
-  body->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
-  body->setSelectable(false);
-  KINFO << QString("Adding body: %1").arg(bodyId);
-  getDocument()->addObject(body, true);
+  if (body) {
+    body->setTarget(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
+    body->setZOrder(0);
+    body->setSource(
+          ZStackObjectSourceFactory::MakeSplitObjectSource());
+    //  body->setHittable(false);
+    body->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
+    body->setSelectable(false);
+    body->setColor(getCompleteDocument()->getBodyColor(bodyId));
+    body->setVisible(true);
+    body->setProjectionVisible(false);
+    KINFO << QString("Adding body: %1").arg(bodyId);
+    getDocument()->addObject(body, true);
+  }
 
   return body;
 }
 
 void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode)
 {
+  QString errorMsg;
+
+  //Review-TZ: need to avoid creating a new reader here.
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     getProgressSignal()->startProgress("Launching split ...");
     getProgressSignal()->advanceProgress(0.1);
 
     if (reader.hasCoarseSparseVolume(bodyId)) {
-      exitHighlightMode();
-
       getProgressSignal()->advanceProgress(0.1);
       ZDvidSparseStack *body = getCachedBodyForSplit(bodyId);
 
@@ -3818,38 +3831,28 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode
         body = updateBodyForSplit(bodyId, reader);
       }
 
-      if (mode == neutu::EBodySplitMode::ONLINE) {
-//        body->runFillValueFunc(); //disable prefetching
+      if (body) {
+        if (mode == neutu::EBodySplitMode::ONLINE) {
+  //        body->runFillValueFunc(); //disable prefetching
+        }
+
+//        m_splitProject.setBodyId(bodyId);
+
+        getProgressSignal()->advanceProgress(0.1);
+
+        emit splitBodyLoaded(bodyId, mode);
+      } else {
+        errorMsg = QString("Failed to read body data: %1").arg(bodyId);
       }
-
-      m_splitProject.setBodyId(bodyId);
-
-      getCompleteDocument()->setSegmentationVisibility(false);
-      /*
-      ZDvidLabelSlice *labelSlice =
-          getCompleteDocument()->getDvidLabelSlice(neutu::EAxis::Z, false);
-      ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
-      labelSlice->setVisible(false);
-//      labelSlice->setHittable(false);
-      labelSlice->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
-      */
-
-//      body->setColor(labelSlice->getLabelColor(
-//                       bodyId, neutu::ELabelSource::ORIGINAL));
-      body->setColor(getCompleteDocument()->getBodyColor(bodyId));
-      body->setVisible(true);
-      body->setProjectionVisible(false);
-
-      getProgressSignal()->advanceProgress(0.1);
-
-      getCompleteDocument()->deprecateSplitSource();
-
-      emit splitBodyLoaded(bodyId, mode);
     } else {
-      QString msg = QString("Invalid body id: %1").arg(bodyId);
+      errorMsg = QString("Invalid body id: %1").arg(bodyId);
+    }
+
+    if (!errorMsg.isEmpty()) {
       emit messageGenerated(
-            ZWidgetMessage(msg, neutu::EMessageType::ERROR, ZWidgetMessage::TARGET_DIALOG));
-      emit errorGenerated(msg);
+            ZWidgetMessage(errorMsg, neutu::EMessageType::ERROR,
+                           ZWidgetMessage::TARGET_DIALOG));
+      emit errorGenerated(errorMsg);
     }
 
     //      getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, true);
@@ -4665,18 +4668,20 @@ void ZFlyEmProofMvc::clearBodyMergeStage()
 void ZFlyEmProofMvc::presentBodySplit(
     uint64_t bodyId, neutu::EBodySplitMode mode)
 {
+  exitHighlightMode();
+
+  getCompleteDocument()->deprecateSplitSource();
+  getCompleteDocument()->setSegmentationVisibility(false);
+
   enableSplit(mode);
 
   ZOUT(LINFO(), 3) << "Removing ROI";
   getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
-//  m_latencyLabelWidget->hide();
-
-  m_paintLabelWidget->show();
-//  m_mergeProject.closeBodyWindow();
-
   m_splitProject.setBodyId(bodyId);
   m_splitProject.downloadSeed();
+
+  m_paintLabelWidget->show();
 
   updateAssignedBookmarkTable();
   updateUserBookmarkTable();
@@ -4709,12 +4714,6 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
             ZWidgetMessage(msg, neutu::EMessageType::ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
     } else if (checkOutBody(bodyId, mode)) {
-#ifdef _DEBUG_2
-      bodyId = 14742253;
-#endif
-
-//      launchSplitFunc(bodyId);
-
       const QString threadId = "launchSplitFunc";
       if (!m_futureMap.isAlive(threadId)) {
         m_futureMap.removeDeadThread();
@@ -4723,6 +4722,16 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
             QtConcurrent::run(
               this, &ZFlyEmProofMvc::launchSplitFunc, bodyId, mode);
         m_futureMap[threadId] = future;
+      } else {
+        m_futureMap.waitForFinished(threadId);
+        if (m_splitProject.getBodyId() != bodyId) {
+          checkInBodyWithMessage(bodyId, mode);
+          emit errorGenerated(
+                QString("Failed to launch split for %1 because %2 is "
+                        "already in the split mode.")
+                .arg(bodyId)
+                .arg(m_splitProject.getBodyId()));
+        }
       }
     } else {
       if (getSupervisor() != NULL) {

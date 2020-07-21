@@ -354,8 +354,7 @@ public: //Synapse functions
 
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
-  void addSynapse(
-      const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope);
+  void addSynapse(const ZDvidSynapse &synapse);
   void moveSynapse(
       const ZIntPoint &from, const ZIntPoint &to,
       ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::EDataScope::GLOBAL);
@@ -371,7 +370,7 @@ public: //Todo list functions
   void removeTodoItem(
       const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope);
   void addTodoItem(const ZIntPoint &pos);
-  void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
+  void addTodoItem(const ZFlyEmToDoItem &item);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
