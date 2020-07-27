@@ -306,6 +306,11 @@ bool ZStackObject::isSliceVisible(const DisplayConfig &/*config*/) const
   return true;
 }
 
+void ZStackObject::setHittable(bool on)
+{
+  m_hittable = on;
+}
+
 bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
 {
   return false;
@@ -313,7 +318,11 @@ bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
 
 bool ZStackObject::hit(double x, double y, double z)
 {
-  return _hit(x, y, z);
+  if (m_hittable) {
+    return _hit(this, x, y, z);
+  }
+
+  return false;
 }
 
 bool ZStackObject::hit(const ZIntPoint &pt)
@@ -347,7 +356,8 @@ void ZStackObject::setHitPoint(const ZIntPoint &pt)
   m_hitPoint = pt;
 }
 
-void ZStackObject::setHitFunc(std::function<bool (double, double, double)> f)
+void ZStackObject::setHitFunc(
+    std::function<bool(const ZStackObject*, double, double, double)> f)
 {
   this->_hit = f;
 }

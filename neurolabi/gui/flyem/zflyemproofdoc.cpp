@@ -1505,7 +1505,7 @@ bool ZFlyEmProofDoc::bodySelectionMessageEnabled()
 
 void ZFlyEmProofDoc::notifyBodySelectionChanged()
 {
-  if (emitBodySelectionMessage) {
+  if (bodySelectionMessageEnabled()) {
     emit messageGenerated(ZWidgetMessage(getBodySelectionMessage()));
   }
   emit bodySelectionChanged();
@@ -5061,6 +5061,16 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 //    addObject(roi);
 //  }
 
+  roi->setCuboid(rect->getIntBoundBox());
+
+  if (appending) {
+    ZIntCuboidObj *oldRoi = getSplitRoi();
+    if (oldRoi != NULL) {
+      roi->join(oldRoi->getCuboid());
+    }
+  }
+
+  /*
   if (rect != NULL) {
     if (rect->isValid()) {
       int sz = neutu::iround(sqrt(rect->getWidth() * rect->getWidth() +
@@ -5072,15 +5082,9 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
       roi->setLastCorner(roi->getFirstCorner());
     }
   }
+  */
   deprecateSplitSource();
 //  m_splitSource.reset();
-
-  if (appending) {
-    ZIntCuboidObj *oldRoi = getSplitRoi();
-    if (oldRoi != NULL) {
-      roi->join(oldRoi->getCuboid());
-    }
-  }
 
   executeRemoveObjectCommand(getSplitRoi());
 
@@ -5361,7 +5365,7 @@ void ZFlyEmProofDoc::updateBodyColor(
     } else {
       slice->removeCustomColorMap();
     }
-    slice->paintBuffer();
+    slice->invalidatePaintBuffer();
 
     processObjectModified(slice);
   }
@@ -5408,14 +5412,14 @@ void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
 
 void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
 {
-  ZRect2d rect = getRect2dRoi();
+//  ZRect2d rect = getRect2dRoi();
 
-  if (rect.isValid()) {
+//  ZIntCuboid box = rect.get
+  ZAffineRect rect = getRect2dRoi()->getAffineRect();
+  if (!rect.isEmpty()) {
     ZDvidReader &reader = getDvidReader();
     if (reader.good()) {
-      std::set<uint64_t> bodySet = reader.readBodyId(
-            rect.getMinX(), rect.getMinY(), z,
-            rect.getWidth(), rect.getHeight(), 1);
+      std::set<uint64_t> bodySet = reader.readBodyId(rect);
       if (appending) {
         addSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
       } else {

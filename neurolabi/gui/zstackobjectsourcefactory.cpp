@@ -468,3 +468,8 @@ ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutu::EAxis axis)
 
   return source;
 }
+
+std::string ZStackObjectSourceFactory::MakePositionHintSource()
+{
+  return "#2DViewPositionHint";
+}

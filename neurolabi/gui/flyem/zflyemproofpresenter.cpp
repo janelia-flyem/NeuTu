@@ -22,7 +22,7 @@
 #include "zinteractionevent.h"
 #include "zstackdocselector.h"
 #include "neutubeconfig.h"
-#include "dvid/zdvidlabelslice.h"
+//#include "dvid/zdvidlabelslice.h"
 #include "zflyemtododelegate.h"
 #include "zflyemproofdocutil.h"
 #include "neuroglancer/zneuroglancerpathfactory.h"
@@ -247,11 +247,14 @@ void ZFlyEmProofPresenter::selectBodyInRoi()
 
 void ZFlyEmProofPresenter::zoomInRectRoi()
 { 
-  ZRect2d rect = buddyDocument()->getRect2dRoi();
+  ZAffineRect rect = buddyDocument()->getRectRoi();
 
-  if (rect.isValid()) {
-    buddyView()->setViewPort(QRect(rect.getMinX(), rect.getMinY(),
-                               rect.getWidth(), rect.getHeight()));
+  if (!rect.isEmpty()) {
+//    ZIntCuboid box = rect.getIntBoundBox();
+    buddyView()->zoomTo(
+          rect.getCenter(), std::max(rect.getWidth(), rect.getHeight()), false);
+//    buddyView()->setViewPort(QRect(rect.getMinX(), rect.getMinY(),
+//                               rect.getWidth(), rect.getHeight()));
     buddyDocument()->executeRemoveRectRoiCommand();
   }
 }
@@ -1113,10 +1116,11 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
     if (isHighlight()) {
-      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-      ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
-      ZIntPoint pos = currentStackPos.roundToIntPoint();
-      emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
+//      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+//      ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
+//      ZIntPoint pos = currentStackPos.roundToIntPoint();
+      emit selectingBodyAt(
+            currentDataPos.getX(), currentDataPos.getY(), currentDataPos.getZ());
     }
     break;
   case ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU:
@@ -1269,6 +1273,15 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_SINGLE:
   {
+    ZStackObject *obj = op.getHitObject();
+//    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+    if (obj) {
+      obj->processHit(ZStackObject::ESelection::SELECT_SINGLE);
+      getCompleteDocument()->notifyBodySelectionChanged();
+    }
+  }
+    /*
+  {
 //    buddyDocument()->deselectAllObject(false);
     std::set<uint64_t> bodySet;
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
@@ -1281,8 +1294,18 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     getCompleteDocument()->setSelectedBody(
           bodySet, neutu::ELabelSource::ORIGINAL);
   }
+  */
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
+  {
+    ZStackObject *labelSlice = op.getHitObject();
+//    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+    if (labelSlice) {
+      labelSlice->processHit(ZStackObject::ESelection::SELECT_TOGGLE);
+      getCompleteDocument()->notifyBodySelectionChanged();
+    }
+  }
+    /*
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
           neutu::ELabelSource::MAPPED);
@@ -1303,8 +1326,18 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 //    e->setEvent(
 //          ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
   }
+  */
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
+  {
+    ZStackObject *labelSlice = op.getHitObject();
+//    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+    if (labelSlice) {
+      labelSlice->processHit(ZStackObject::ESelection::SELECT_TOGGLE_SINGLE);
+      getCompleteDocument()->notifyBodySelectionChanged();
+    }
+  }
+#if 0
   { //Deselect all other bodies. Select the hit body if it is not selected.
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
           neutu::ELabelSource::MAPPED);
@@ -1324,8 +1357,18 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 //    e->setEvent(
 //          ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
   }
+#endif
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
+  {
+    ZStackObject *labelSlice = op.getHitObject();
+//    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
+    if (labelSlice) {
+      labelSlice->processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
+      getCompleteDocument()->notifyBodySelectionChanged();
+    }
+  }
+    /*
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
           neutu::ELabelSource::MAPPED);
@@ -1342,6 +1385,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 //    e->setEvent(
 //          ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE);
   }
+  */
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:
     break;
@@ -1382,9 +1426,12 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
 
+    ZAffineRect rect = buddyDocument()->getRectRoi();
+
     if (parser.getValue(obj, "location", "") == "rectroi") {
-      ZRect2d rect = buddyDocument()->getRect2dRoi();
-      pt.set(rect.getCenter().toPoint());
+      if (rect.isNonEmpty()) {
+        pt.set(rect.getCenter());
+      }
     }
 
 //    ZDvidTarget target = getCompleteDocument()->getDvidTarget();
@@ -1397,11 +1444,11 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
 //        ZFlyEmProofDocUtil::GetUserBookmarkList(getCompleteDocument());
 
     QList<std::shared_ptr<ZNeuroglancerLayerSpec>> additionalLayers;
-    ZRect2d rect = buddyDocument()->getRect2dRoi();
-    if (rect.isValid()) {
+    ZIntCuboid box = buddyDocument()->getCuboidRoi();
+    if (!box.isEmpty()) {
       auto layer = ZNeuroglancerLayerSpecFactory::MakeLocalAnnotationLayer(
             "local_annotation");
-      layer->addAnnotation(rect.getBoundBox());
+      layer->addAnnotation(ZCuboid::FromIntCuboid(box));
       additionalLayers.append(layer);
     }
 
@@ -1446,27 +1493,31 @@ bool ZFlyEmProofPresenter::showingData() const
 
 void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
-  if (isSplitOn()) {
-    ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
-    if (doc != NULL) {
-      doc->updateSplitRoi(rect, appending);
+  if (!rect->isEmpty()) {
+    if (isSplitOn()) {
+      ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
+      if (doc != NULL) {
+        doc->updateSplitRoi(rect, appending);
+      }
+    } else {
+      /*
+      if (interactiveContext().rectSpan()) {
+        rect->setZSpan((rect->getWidth() + rect->getHeight()) / 4);
+        rect->setPenetrating(false);
+      }
+      */
+      buddyDocument()->processRectRoiUpdate(rect, appending);
+      interactiveContext().setAcceptingRect(true);
+      QMenu *menu = getContextMenu();
+      if (!menu->isEmpty()) {
+        const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
+              Qt::LeftButton, ZMouseEvent::EAction::RELEASE);
+        QPoint currentWidgetPos(event.getWidgetPosition().getX(),
+                                event.getWidgetPosition().getY());
+        buddyView()->showContextMenu(menu, currentWidgetPos);
+      }
+      interactiveContext().setAcceptingRect(false);
     }
-  } else {
-    if (interactiveContext().rectSpan()) {
-      rect->setZSpan((rect->getWidth() + rect->getHeight()) / 4);
-      rect->setPenetrating(false);
-    }
-    buddyDocument()->processRectRoiUpdate(rect, appending);
-    interactiveContext().setAcceptingRect(true);
-    QMenu *menu = getContextMenu();
-    if (!menu->isEmpty()) {
-      const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
-            Qt::LeftButton, ZMouseEvent::EAction::RELEASE);
-      QPoint currentWidgetPos(event.getWidgetPosition().getX(),
-                              event.getWidgetPosition().getY());
-      buddyView()->showContextMenu(menu, currentWidgetPos);
-    }
-    interactiveContext().setAcceptingRect(false);
   }
 }
 

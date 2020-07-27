@@ -74,6 +74,7 @@ public:
   void deselectAll();
   void toggleHitSelection(bool appending = false);
   void clearSelection();
+  void clearSelectionWithExclusion(const std::set<uint64_t> excluded);
 
   bool isSelectionFrozen() const { return m_selectionFrozen; }
   void freezeSelection(bool on) { m_selectionFrozen = on; }
@@ -114,9 +115,7 @@ public:
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);
   void updateLabelColor();
 
-  const std::shared_ptr<ZFlyEmBodyColorScheme> getColorScheme() const {
-    return m_defaultColorSheme;
-  }
+  std::shared_ptr<ZFlyEmBodyColorScheme> getColorScheme() const;
 
   QColor getLabelColor(uint64_t label, neutu::ELabelSource labelType) const;
   QColor getLabelColor(int64_t label, neutu::ELabelSource labelType) const;
@@ -169,6 +168,7 @@ public:
 
   void paintBuffer();
   void invalidatePaintBuffer();
+  bool isPaintBufferValid() const;
 
 //  QRect getDataRect(const ZStackViewParam &viewParam) const;
 
@@ -191,8 +191,8 @@ private:
 
   void forceUpdate(
       const ZStackViewParam &viewParam, bool ignoringHidden);
-  void forceUpdate(const QRect &viewPort, int z, int zoom);
-  void forceUpdate(const ZArbSliceViewParam &viewParam, int zoom);
+//  void forceUpdate(const QRect &viewPort, int z, int zoom);
+//  void forceUpdate(const ZArbSliceViewParam &viewParam, int zoom);
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
@@ -232,6 +232,7 @@ private:
   void setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
 
   bool isPaintBufferAllocNeeded(int width, int height) const;
+  bool isPaintBufferUpdateNeeded() const;
 
   int getFirstZoom(const ZStackViewParam &viewParam) const;
 
@@ -239,10 +240,16 @@ private:
 
 private:
   ZSliceCanvas m_imageCanvas;
-  ZImage *m_paintBuffer;
-  double m_opacity = 0.3;
+  ZImage *m_paintBuffer = nullptr;
+  bool m_isPaintBufferValid = false;
+
+  ZArray *m_labelArray;
+  ZArray *m_mappedLabelArray;
+  QMutex m_updateMutex; //Review-TZ: does not seem used properly
 
   ZObject3dScanArray m_objArray;
+
+  double m_opacity = 0.3;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_defaultColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
@@ -252,11 +259,6 @@ private:
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
   ZFlyEmBodyMerger *m_bodyMerger;
-
-
-  ZArray *m_labelArray;
-  ZArray *m_mappedLabelArray;
-  QMutex m_updateMutex;
 
   std::set<uint64_t> m_prevSelectedOriginal;
   ZSelector<uint64_t> m_selector; //original labels

@@ -44,9 +44,10 @@ ZStackBall::ZStackBall(const ZPoint &center, double r)
 void ZStackBall::init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
-  m_type = ZStackObject::EType::STACK_BALL;
-  _hit = [&](double xx, double yy, double zz) {
-    return m_center.distanceTo(xx, yy, zz) <= m_r;
+  m_type = GetType();
+  _hit = [=](const ZStackObject *obj, double xx, double yy, double zz) {
+    auto s = dynamic_cast<const ZStackBall*>(obj);
+    return s->m_center.distanceSquareTo(xx, yy, zz) <= s->m_r * s->m_r;
   };
 }
 
@@ -82,15 +83,6 @@ void ZStackBall::setCenter(const ZIntPoint &center)
   setCenter(center.getX(), center.getY(), center.getZ());
 }
 
-//void ZCircle::display(QImage *image, int n, Display_Style style) const
-//{
-//#if defined(_QT_GUI_USED_)
-//  QPainter painter(image);
-//  painter.setPen(m_color);
-//  display(&painter, n, style);
-//#endif
-//}
-
 ZCuboid ZStackBall::getBoundBox() const
 {
   ZCuboid box;
@@ -98,31 +90,6 @@ ZCuboid ZStackBall::getBoundBox() const
 
   return box;
 }
-
-#if 0
-bool ZStackBall::display(
-    QPainter *painter, int z, EDisplayStyle option, EDisplaySliceMode sliceMode,
-    neutu::EAxis sliceAxis) const
-{
-  ZPainter zp;
-  zp.attachPainter(painter);
-  int slice = z;
-  if (z < 0) {
-    zp.setZOffset(z);
-    slice = 0;
-  }
-
-  if (sliceMode == EDisplaySliceMode::PROJECTION) {
-    slice = -1;
-  }
-
-  display(zp, slice, option, sliceAxis);
-
-  zp.detachPainter();
-
-  return zp.isPainted();
-}
-#endif
 
 bool ZStackBall::isSliceVisible(
     int z, neutu::EAxis axis, const ZAffinePlane &plane) const
@@ -149,6 +116,14 @@ bool ZStackBall::display(QPainter *painter, const DisplayConfig &config) const
     QPen pen(getColor());
     pen.setCosmetic(true);
     painter->setPen(pen);
+
+    if (hasVisualEffect(neutu::display::Sphere::VE_FORCE_FILL)) {
+      painter->setBrush(getColor());
+    }
+
+    if (hasVisualEffect(neutu::display::Sphere::VE_NO_BORDER)) {
+      neutu::SetPenColor(painter, Qt::transparent);
+    }
 
     double depthScale = 0.5;
     s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);

@@ -20,6 +20,10 @@ public:
   ZStackBall(const ZPoint &center, double r);
   virtual ~ZStackBall() {}
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::EType::STACK_BALL;
+  }
+
   void set(double x, double y, double z, double r);
   void set(const ZPoint &center, double r);
   void set(const ZIntPoint &center, double r);

@@ -15,7 +15,10 @@ FlyEmSynapseEnsemble::FlyEmSynapseEnsemble()
 
 void FlyEmSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 {
+  _setDvidTarget<FlyEmSynapseDvidSource>(target);
+  /*
   FlyEmSynapseDvidSource *source = new FlyEmSynapseDvidSource;
   source->setDvidTarget(target);
   m_blockGrid->setSource(std::shared_ptr<FlyEmSynapseSource>(source));
+  */
 }

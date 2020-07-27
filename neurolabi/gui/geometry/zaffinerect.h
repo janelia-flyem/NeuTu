@@ -47,6 +47,7 @@ public:
   void setCenter(const ZPoint &offset);
   void setCenter(double x, double y, double z);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
+  void setPlane(const ZPlane &plane);
   void setPlane(const ZAffinePlane &plane);
 
   /*!
@@ -86,6 +87,7 @@ public:
   bool contains(const ZPoint &pt, double d) const;
 
   bool isEmpty() const;
+  bool isNonEmpty() const;
 
   friend std::ostream& operator<<(std::ostream& stream, const ZAffineRect &r);
   bool operator== (const ZAffineRect &p) const;

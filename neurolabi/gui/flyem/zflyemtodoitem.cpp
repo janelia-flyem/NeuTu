@@ -8,6 +8,7 @@
 #include "common/utilities.h"
 #include "vis2d/zslicepainter.h"
 #include "vis2d/utilities.h"
+#include "data3d/displayconfig.h"
 
 #include "zpainter.h"
 #include "zjsonparser.h"
@@ -652,10 +653,18 @@ bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) con
     }
 
     if (s3Painter.getPaintedHint()) {
-      this->_hit = s3Painter.getBallHitFunc(
-            getX(), getY(), getZ(), getRadius(), depthScale);
+      this->_hit = [=](const ZStackObject *obj, double x, double y ,double z) {
+        auto s = dynamic_cast<const ZFlyEmToDoItem*>(obj);
+        ZIntPoint center = s->getPosition();
+        return ZSlice3dPainter::BallHitTest(
+              x, y, z, center.getX(), center.getY(), center.getZ(), s->getRadius(),
+              config.getWorldViewTransform(), depthScale);
+      };
+
+//      this->_hit = s3Painter.getBallHitFunc(
+//            getX(), getY(), getZ(), getRadius(), depthScale);
     } else {
-      this->_hit = [](double,double,double) { return false; };
+      this->_hit = [](const ZStackObject*,double,double,double) { return false; };
     }
 
     return s3Painter.getPaintedHint();

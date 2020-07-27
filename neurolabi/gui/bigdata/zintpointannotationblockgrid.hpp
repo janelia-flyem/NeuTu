@@ -10,7 +10,7 @@
 #include "zintpointannotationchunk.h"
 #include "zintpointannotationsource.hpp"
 
-template<typename T, typename TChunk>
+template<typename TItem, typename TChunk>
 class ZIntPointAnnotationBlockGrid : public ZBlockGrid
 {
 public:
@@ -18,75 +18,64 @@ public:
     m_emptyChunk.invalidate();
   }
 
-  void setSource(std::shared_ptr<ZIntPointAnnotationSource<T>> source)
+  void setSource(std::shared_ptr<ZIntPointAnnotationSource<TItem>> source)
   {
     m_source = source;
     setBlockSize(source->getBlockSize());
     setGridByRange(source->getRange());
   }
 
-  void addItem(const T &item);
+  void addItem(const TItem &item);
   void removeItem(const ZIntPoint &pos);
-  void removeItem(int x, int y, int z) {
-    removeItem(ZIntPoint(x, y, z));
-  }
-  void updateItem(const ZIntPoint &pos);
+  void removeItem(int x, int y, int z);
   void moveItem(const ZIntPoint &from, const ZIntPoint &to);
 
-  void processItem(const ZIntPoint &pos, std::function<void(T*)> f);
+  void syncItemToCache(const ZIntPoint &pos);
+  void processItemInCache(const ZIntPoint &pos, std::function<void(TItem*)> f);
 
-  void updatePartner(const ZIntPoint &pos)
+  void syncPartnerToCache(const ZIntPoint &pos)
   {
-    processItem(pos, [this](T *item) {
+    processItemInCache(pos, [this](TItem *item) {
       m_source->updatePartner(item);
     });
   }
 
-  /*
-  std::vector<ZFlyEmToDoItem> getIntersectTodoList(
-      const ZAffineRect &plane) const;
-      */
-
-  T getExistingItem(int x, int y, int z) const
+  TItem getCachedItem(int x, int y, int z) const
   {
-    return getExistingItem({x, y, z});
+    return getCachedItem({x, y, z});
   }
 
-  T getExistingItem(const ZIntPoint &pos) const;
+  TItem getCachedItem(const ZIntPoint &pos) const;
 
-  T getItem(int x, int y, int z) const
+  TItem getItem(int x, int y, int z) const
   {
-    return getExistingItem(ZIntPoint(x, y, z));
+    return getItem(ZIntPoint(x, y, z));
   }
 
-  T getItem(const ZIntPoint &pos) const
+  TItem getItem(const ZIntPoint &pos) const
   {
     ZIntPoint blockIndex = getBlockIndex(pos);
     if (containsBlock(blockIndex)) {
       std::lock_guard<std::mutex> guard(m_chunkMutex);
-      auto key = blockIndex;
-      if (m_chunkMap.count(key) > 0) {
-        TChunk &chunk = m_chunkMap.at(key);
-        return chunk.getItem(pos);
-      }
+      return getChunkRef(blockIndex).getItem(pos);
     }
 
-    return T();
+    return TItem();
   }
 
-  T pickExistingItem(double x, double y, double z) const
+  TItem pickCachedItem(double x, double y, double z) const
   {
     ZIntPoint pos = ZPoint(x, y, z).toIntPoint();
-    return getExistingItem(pos);
+    return getCachedItem(pos);
   }
 
-  T pickClosestExistingItem(
+  TItem pickClosestCachedItem(
       double x, double y, double z, double r) const;
-  T hitClosestExistingItem(
+  TItem hitClosestCachedItem(
       double x, double y, double z, double r) const;
 
   void forEachItemInChunk(
-      int i, int j, int k, std::function<void(const T &item)> f)
+      int i, int j, int k, std::function<void(const TItem &item)> f)
   {
     if (containsBlock(i, j, k)) {
       std::lock_guard<std::mutex> guard(m_chunkMutex);
@@ -99,7 +88,7 @@ public:
 
   void processChunk(
       int i, int j, int k,
-      std::function<void(const ZIntPointAnnotationChunk<T> &item)> f) const
+      std::function<void(const ZIntPointAnnotationChunk<TItem> &item)> f) const
   {
     std::lock_guard<std::mutex> guard(m_chunkMutex);
     f(getChunkRef(i, j, k));
@@ -111,7 +100,7 @@ public:
     return getChunkRef(i, j, k);
   }
 
-  bool setExistingSelection(const ZIntPoint &itemPos, bool selecting);
+  bool setSelectionForCached(const ZIntPoint &itemPos, bool selecting);
 
 private:
   static std::string GetChunkKey(int i, int j, int k);
@@ -133,31 +122,30 @@ private:
   TChunk& getChunkRef(const ZIntPoint &index) const
   {
     ZIntPoint key = index;
-    if (m_chunkMap.count(key) > 0) {
-      return m_chunkMap.at(key);
-    } else {
-      if (m_source) {
-        std::vector<T> todoList = m_source->getData(getBlockBox(index));
-        TChunk &chunk = m_chunkMap[key];
-        chunk.update(todoList);
-//        chunk.addItem(todoList);
-//        chunk.setReady(true);
-        return chunk;
-      }
+    if (m_chunkMap.count(key) == 0 && m_source) {
+      m_chunkMap[key];
     }
 
-    return m_emptyChunk;
+    TChunk &chunk =
+        (m_chunkMap.count(key) > 0) ? m_chunkMap.at(key) : m_emptyChunk;
+
+    if (chunk.updateNeeded() && m_source) {
+      std::vector<TItem> todoList = m_source->getData(getBlockBox(index));
+      chunk.update(todoList);
+    }
+
+    return chunk;
   }
 
 private:
   mutable std::mutex m_chunkMutex;
   mutable std::unordered_map<ZIntPoint, TChunk> m_chunkMap;
   mutable TChunk m_emptyChunk;
-  std::shared_ptr<ZIntPointAnnotationSource<T>> m_source;
+  std::shared_ptr<ZIntPointAnnotationSource<TItem>> m_source;
 };
 
-template<typename T, typename TChunk>
-void ZIntPointAnnotationBlockGrid<T, TChunk>::addItem(const T &item)
+template<typename TItem, typename TChunk>
+void ZIntPointAnnotationBlockGrid<TItem, TChunk>::addItem(const TItem &item)
 {
   if (item.isValid()) {
     std::lock_guard<std::mutex> guard(m_chunkMutex);
@@ -171,8 +159,8 @@ void ZIntPointAnnotationBlockGrid<T, TChunk>::addItem(const T &item)
   }
 }
 
-template<typename T, typename TChunk>
-void ZIntPointAnnotationBlockGrid<T, TChunk>::removeItem(const ZIntPoint &pos)
+template<typename TItem, typename TChunk>
+void ZIntPointAnnotationBlockGrid<TItem, TChunk>::removeItem(const ZIntPoint &pos)
 {
   std::lock_guard<std::mutex> guard(m_chunkMutex);
   TChunk &chunk = getHostChunkRef(pos);
@@ -184,13 +172,19 @@ void ZIntPointAnnotationBlockGrid<T, TChunk>::removeItem(const ZIntPoint &pos)
   }
 }
 
-template<typename T, typename TChunk>
-void ZIntPointAnnotationBlockGrid<T, TChunk>::updateItem(const ZIntPoint &pos)
+template<typename TItem, typename TChunk>
+void ZIntPointAnnotationBlockGrid<TItem, TChunk>::removeItem(int x, int y, int z)
+{
+   removeItem(ZIntPoint(x, y, z));
+ }
+
+template<typename TItem, typename TChunk>
+void ZIntPointAnnotationBlockGrid<TItem, TChunk>::syncItemToCache(const ZIntPoint &pos)
 {
   std::lock_guard<std::mutex> guard(m_chunkMutex);
   TChunk &chunk = getHostChunkRef(pos);
   if (chunk.isValid()) {
-    T item = m_source->getItem(pos);
+    TItem item = m_source->getItem(pos);
     if (item.isValid()) {
       chunk.addItem(item);
     } else {
@@ -199,8 +193,8 @@ void ZIntPointAnnotationBlockGrid<T, TChunk>::updateItem(const ZIntPoint &pos)
   }
 }
 
-template<typename T, typename TChunk>
-void ZIntPointAnnotationBlockGrid<T, TChunk>::moveItem(
+template<typename TItem, typename TChunk>
+void ZIntPointAnnotationBlockGrid<TItem, TChunk>::moveItem(
     const ZIntPoint &from, const ZIntPoint &to)
 {
   if (from != to) {
@@ -210,7 +204,7 @@ void ZIntPointAnnotationBlockGrid<T, TChunk>::moveItem(
     if (sourceChunk.isValid() && dstChunk.isValid()) {
       m_source->moveItem(from, to);
       sourceChunk.removeItem(from);
-      T item = m_source->getItem(to);
+      TItem item = m_source->getItem(to);
       if (item.isValid()) {
         dstChunk.addItem(item);
       } else {
@@ -222,30 +216,30 @@ void ZIntPointAnnotationBlockGrid<T, TChunk>::moveItem(
   }
 }
 
-template<typename T, typename TChunk>
-void ZIntPointAnnotationBlockGrid<T, TChunk>::processItem(
-    const ZIntPoint &pos, std::function<void(T*)> f)
+template<typename TItem, typename TChunk>
+void ZIntPointAnnotationBlockGrid<TItem, TChunk>::processItemInCache(
+    const ZIntPoint &pos, std::function<void(TItem*)> f)
 {
   std::lock_guard<std::mutex> guard(m_chunkMutex);
   ZIntPoint index = getBlockIndex(pos);
   if (containsBlock(index)) {
-    T& item =  getChunkRef(index).getItemRef(pos);
+    TItem& item =  getChunkRef(index).getItemRef(pos);
     if (item.isValid()) {
       f(&item);
     }
   }
 }
 
-template<typename T, typename TChunk>
-T ZIntPointAnnotationBlockGrid<T, TChunk>::pickClosestExistingItem(
+template<typename TItem, typename TChunk>
+TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::pickClosestCachedItem(
     double x, double y, double z, double r) const
 {
   ZIntPoint pos = ZPoint(x, y, z).toIntPoint();
   ZIntPoint blockIndex = getBlockIndex(pos);
-  std::vector<T> itemList;
+  std::vector<TItem> itemList;
   if (containsBlock(blockIndex)) {
     std::lock_guard<std::mutex> guard(m_chunkMutex);
-    T item = getChunkRef(blockIndex).pickClosestItem(x, y, z, r);
+    TItem item = getChunkRef(blockIndex).pickClosestItem(x, y, z, r);
     if (item.isValid()) {
       itemList.push_back(item);
     }
@@ -256,16 +250,16 @@ T ZIntPointAnnotationBlockGrid<T, TChunk>::pickClosestExistingItem(
         [&](int i, int j, int k) {
     if (containsBlock(i, j, k)) {
       std::lock_guard<std::mutex> guard(m_chunkMutex);
-      T item = getChunkRef(i, j, k).pickClosestItem(x, y, z, r);
+      TItem item = getChunkRef(i, j, k).pickClosestItem(x, y, z, r);
       if (item.isValid()) {
         itemList.push_back(item);
       }
     }
   });
 
-  T picked;
+  TItem picked;
   double minDist2 = Infinity;
-  for (const T &t : itemList) {
+  for (const TItem &t : itemList) {
     double d2 = t.getPosition().distanceSquareTo(x, y, z);
     if (d2 < minDist2) {
       minDist2 = d2;
@@ -276,16 +270,16 @@ T ZIntPointAnnotationBlockGrid<T, TChunk>::pickClosestExistingItem(
   return picked;
 }
 
-template<typename T, typename TChunk>
-T ZIntPointAnnotationBlockGrid<T, TChunk>::hitClosestExistingItem(
+template<typename TItem, typename TChunk>
+TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::hitClosestCachedItem(
     double x, double y, double z, double r) const
 {
   ZIntPoint pos = ZPoint(x, y, z).toIntPoint();
   ZIntPoint blockIndex = getBlockIndex(pos);
-  std::vector<T> itemList;
+  std::vector<TItem> itemList;
   if (containsBlock(blockIndex)) {
     std::lock_guard<std::mutex> guard(m_chunkMutex);
-    T item = getChunkRef(blockIndex).hitClosestItem(x, y, z, r);
+    TItem item = getChunkRef(blockIndex).hitClosestItem(x, y, z, r);
     if (item.isValid()) {
       itemList.push_back(item);
     }
@@ -296,16 +290,16 @@ T ZIntPointAnnotationBlockGrid<T, TChunk>::hitClosestExistingItem(
         [&](int i, int j, int k) {
     if (containsBlock(i, j, k)) {
       std::lock_guard<std::mutex> guard(m_chunkMutex);
-      T item = getChunkRef(i, j, k).hitClosestItem(x, y, z, r);
+      TItem item = getChunkRef(i, j, k).hitClosestItem(x, y, z, r);
       if (item.isValid()) {
         itemList.push_back(item);
       }
     }
   });
 
-  T picked;
+  TItem picked;
   double minDist2 = Infinity;
-  for (const T &t : itemList) {
+  for (const TItem &t : itemList) {
     double d2 = t.getPosition().distanceSquareTo(x, y, z);
     if (d2 < minDist2) {
       minDist2 = d2;
@@ -316,8 +310,8 @@ T ZIntPointAnnotationBlockGrid<T, TChunk>::hitClosestExistingItem(
   return picked;
 }
 
-template<typename T, typename TChunk>
-bool ZIntPointAnnotationBlockGrid<T, TChunk>::setExistingSelection(
+template<typename TItem, typename TChunk>
+bool ZIntPointAnnotationBlockGrid<TItem, TChunk>::setSelectionForCached(
     const ZIntPoint &itemPos, bool selecting)
 {
   ZIntPoint blockIndex = getBlockIndex(itemPos);
@@ -326,7 +320,7 @@ bool ZIntPointAnnotationBlockGrid<T, TChunk>::setExistingSelection(
     auto key = blockIndex;
     if (m_chunkMap.count(key) > 0) {
       TChunk &chunk = m_chunkMap.at(key);
-      T &item = chunk.getItemRef(itemPos);
+      TItem &item = chunk.getItemRef(itemPos);
       if (item.isValid()) {
         item.setSelected(selecting);
         m_source->updatePartner(&item);
@@ -338,8 +332,9 @@ bool ZIntPointAnnotationBlockGrid<T, TChunk>::setExistingSelection(
   return false;
 }
 
-template<typename T, typename TChunk>
-T ZIntPointAnnotationBlockGrid<T, TChunk>::getExistingItem(const ZIntPoint &pos) const
+template<typename TItem, typename TChunk>
+TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::getCachedItem(
+    const ZIntPoint &pos) const
 {
   ZIntPoint blockIndex = getBlockIndex(pos);
   if (containsBlock(blockIndex)) {
@@ -351,7 +346,7 @@ T ZIntPointAnnotationBlockGrid<T, TChunk>::getExistingItem(const ZIntPoint &pos)
     }
   }
 
-  return T();
+  return TItem();
 }
 
 #endif // ZINTPOINTANNOTATIONBLOCKGRID_HPP

@@ -588,13 +588,6 @@ HEADERS += mainwindow.h \
     ztakescreenshotwidget.h \
     zioutils.h \
     zmeshobjsmodel.h \
-    protocols/taskprotocoltask.h \
-    protocols/taskbodyreview.h \
-    protocols/tasktesttask.h \
-    protocols/tasksplitseeds.h \
-    protocols/bodyprefetchqueue.h \
-    protocols/taskbodyhistory.h \
-    protocols/taskbodycleave.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
@@ -627,6 +620,13 @@ HEADERS += mainwindow.h \
     zstackblockfactory.h \
     dvid/zdvidstackblockfactory.h \
     zstackblocksource.h \
+    protocols/taskprotocoltask.h \
+    protocols/taskbodyreview.h \
+    protocols/tasktesttask.h \
+    protocols/tasksplitseeds.h \
+    protocols/bodyprefetchqueue.h \
+    protocols/taskbodyhistory.h \
+    protocols/taskbodycleave.h \
     protocols/protocoltaskfactory.h \
     protocols/protocoltaskconfig.h \
     protocols/taskfalsesplitreview.h \

@@ -41,70 +41,70 @@ TEST(FlyEmTodoEnsemble, Basic)
 
   te.processHit(ZStackObject::ESelection::SELECT_SINGLE);
   ASSERT_FALSE(te.isSelected());
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
   ASSERT_FALSE(te._getHitItem().isValid());
 
   te.processHit(ZStackObject::ESelection::SELECT_SINGLE);
   ASSERT_FALSE(te.isSelected());
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
 
   ASSERT_TRUE(te.hit(16, 16, 16));
   te.processHit(ZStackObject::ESelection::SELECT_SINGLE);
   ASSERT_FALSE(te.isSelected());
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
 
   te.processHit(ZStackObject::ESelection::SELECT_TOGGLE);
   ASSERT_FALSE(te.isSelected());
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
 
   ASSERT_TRUE(te.hit(16, 16, 16));
   te.processHit(ZStackObject::ESelection::SELECT_TOGGLE);
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
   ASSERT_FALSE(te.isSelected());
 
   ASSERT_TRUE(te.hit(16, 16, 16));
   te.processHit(ZStackObject::ESelection::SELECT_TOGGLE);
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
   ASSERT_FALSE(te.isSelected());
 
   ASSERT_TRUE(te.hit(16, 16, 28));
   te.processHit(ZStackObject::ESelection::SELECT_TOGGLE);
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
   ASSERT_FALSE(te.isSelected());
 
   te.processHit(ZStackObject::ESelection::DESELECT);
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
   ASSERT_FALSE(te.isSelected());
 
   ASSERT_TRUE(te.hit(16, 16, 16));
   te.processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
   ASSERT_TRUE(te.hit(16, 16, 28));
   te.processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
   ASSERT_FALSE(te.isSelected());
 
   te.deselect(true);
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 16).isSelected());
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 16).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
   ASSERT_FALSE(te.isSelected());
 
   item.setPosition(16, 16, 33);
   te.addItem(item);
   ASSERT_TRUE(te.hit(16, 16, 28));
   te.processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
 
   ASSERT_TRUE(te.hit(16, 16, 31));
   te.processHit(ZStackObject::ESelection::SELECT_SINGLE);
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 28).isSelected());
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 33).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 28).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 33).isSelected());
 
   auto errorProcessor = [](const std::string &str) {
     std::cout << str << std::endl;
@@ -116,15 +116,15 @@ TEST(FlyEmTodoEnsemble, Basic)
   item.setPosition(16, 16, 33);
   item.setSelected(true);
   te.addItem(item);
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 33).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 33).isSelected());
 
   item.setSelected(false);
   te.addItem(item);
-  ASSERT_FALSE(te._getBlockGrid()->getExistingItem(16, 16, 33).isSelected());
+  ASSERT_FALSE(te._getBlockGrid()->getCachedItem(16, 16, 33).isSelected());
 
   item.setSelected(true);
   te.addItem(item);
-  ASSERT_TRUE(te._getBlockGrid()->getExistingItem(16, 16, 33).isSelected());
+  ASSERT_TRUE(te._getBlockGrid()->getCachedItem(16, 16, 33).isSelected());
 
   item.setPosition(30, 40, 50);
   item.setSelected(true);

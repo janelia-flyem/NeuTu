@@ -522,7 +522,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ZOOM_TO_RECT:
     action = new QAction("Zoom in", parent);
-    action->setIcon(QIcon(":/images/zoom2.png"));
+    action->setIcon(QFontIcon::icon(0xF00E, Qt::darkGray));
+//    action->setIcon(QIcon(":/images/zoom2.png"));
     break;
   case ACTION_ENTER_RECT_ROI_MODE:
     action = new QAction("Draw rectangle ROI", parent);

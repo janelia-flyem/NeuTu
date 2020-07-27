@@ -439,22 +439,29 @@ void ZSlice3dPainter::drawBall(
            depthScale, fadingFactor);
 }
 
+bool ZSlice3dPainter::BallHitTest(
+    double x, double y, double z, double cx, double cy, double cz, double r,
+    const ZModelViewTransform &transform, double depthScale)
+{
+  ZPoint newPoint = transform.transform({x, y, z});
+  ZPoint newCenter = transform.transform({cx, cy, cz});
+  ZPoint dp = newPoint - newCenter;
+  double dz = adjusted_depth(std::fabs(dp.getZ()), r, depthScale);
+  if (dz < r) {
+    double adjustedRadiusSquare = r * r  - dz * dz;
+    return dp.getX() * dp.getX() + dp.getY() * dp.getY() < adjustedRadiusSquare;
+  }
+
+  return false;
+}
+
 std::function<bool(double,double,double)>
 ZSlice3dPainter::getBallHitFunc(
     double cx, double cy, double cz, double r, double depthScale) const
 {
   auto transform = m_worldViewTransform;
   return [=](double x, double y, double z) {
-    ZPoint newPoint = transform.transform({x, y, z});
-    ZPoint newCenter = transform.transform({cx, cy, cz});
-    ZPoint dp = newPoint - newCenter;
-    double dz = adjusted_depth(std::fabs(dp.getZ()), r, depthScale);
-    if (dz < r) {
-      double adjustedRadiusSquare = r * r  - dz * dz;
-      return dp.getX() * dp.getX() + dp.getY() * dp.getY() < adjustedRadiusSquare;
-    }
-
-    return false;
+    return BallHitTest(x, y, z, cx, cy, cz, r, transform, depthScale);
   };
 }
 
@@ -567,6 +574,17 @@ void ZSlice3dPainter::drawCrossProjection(
 {
   ZPoint newCenter = m_worldViewTransform.getCutPlane().align({cx, cy, cz});
   m_painterHelper.drawCross(painter, newCenter.getX(), newCenter.getY(), r);
+}
+
+void ZSlice3dPainter::drawRectProjection(
+    QPainter *painter, double x0, double y0, double x1, double y1, double z)
+{
+  ZPoint minCorner = m_worldViewTransform.getCutPlane().align({x0, y0, z});
+  ZPoint maxCorner = m_worldViewTransform.getCutPlane().align({x1, y1, z});
+
+  m_painterHelper.drawRect(
+        painter, minCorner.getX(), minCorner.getY(),
+        maxCorner.getX(), maxCorner.getY());
 }
 
 void ZSlice3dPainter::drawLine(QPainter *painter, const ZLineSegment &line)

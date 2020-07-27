@@ -442,17 +442,18 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
   ZStackOperator op = initOperation();
   op.setPressedButtons(event.getButtons());
 
-  if (event.isInStack()) {
-    switch (m_context->getUniqueMode()) {
-    case ZInteractiveContext::INTERACT_STROKE_DRAW:
+
+  switch (m_context->getUniqueMode()) {
+  case ZInteractiveContext::INTERACT_STROKE_DRAW:
+    if (event.isInStack()) {
       op.setOperation(ZStackOperator::OP_STROKE_START_PAINT);
-      break;
-    case ZInteractiveContext::INTERACT_RECT_DRAW:
-      op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
-      break;
-    default:
-      break;
     }
+    break;
+  case ZInteractiveContext::INTERACT_RECT_DRAW:
+    op.setOperation(ZStackOperator::OP_RECT_ROI_INIT);
+    break;
+  default:
+    break;
   }
 
   if (op.isNull()) {

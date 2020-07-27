@@ -337,9 +337,9 @@ void ZImageWidget::zoomTo(
 {
   if (space == neutu::data3d::ESpace::CANVAS) {
     m_sliceViewTransform.setScale(
-          m_sliceViewTransform.getScale() * std::min(w / width(), h / height()));
+          m_sliceViewTransform.getScale() * std::min(width() / w, height() / h));
   } else {
-    m_sliceViewTransform.setScale(std::min(w / width(), h / height()));
+    m_sliceViewTransform.setScale(std::min(width() / w, height() / h));
   }
   m_sliceViewTransform.setCutCenter(pt);
   notifyTransformChanged();

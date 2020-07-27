@@ -49,6 +49,8 @@ ZIntCuboid MakeSphereBox(const ZIntPoint &center, int radius);
 int GetZoomScale(int zoom);
 int GetZoomLevel(int scale);
 
+ZPlane GetPlane(neutu::EAxis axis);
+
 void CopyToArray(const ZIntPoint &pt, int v[]);
 
 /*!

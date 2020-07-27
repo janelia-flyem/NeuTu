@@ -523,11 +523,8 @@ public:
 
   virtual void diagnose() const;
 
-  /*
-  ZNeuronTracer &getNeuronTracer() {
-    return m_neuronTracer;
-  }
-  */
+  void activateLocationHint(double x, double y, double z);
+  void activateLocationHint(const ZPoint &pt);
 
 public: //Image processing
   static int autoThreshold(Stack* getStack);
@@ -862,7 +859,8 @@ public:
 
   void clearSelectedSet();
 
-  ZRect2d getRect2dRoi() const;
+  ZRect2d* getRect2dRoi() const;
+  ZAffineRect getRectRoi() const;
   ZIntCuboid getCuboidRoi() const;
 
   ZCuboid getSelectedBoundBox() const;
@@ -1350,16 +1348,6 @@ signals:
 //  void punctaModified();
 //  void meshModified();
   void swcModified();
-//  void seedModified();
-//  void chainModified();
-//  void obj3dModified();
-//  void object3dScanModified();
-//  void stackPatchModified();
-//  void sparseObjectModified();
-//  void strokeModified();
-//  void graph3dModified();
-//  void cube3dModified();
-//  void todoModified();
   void objectModified();
 //  void objectModified(neutu::data3d::ETarget);
 //  void objectModified(QSet<neutu::data3d::ETarget>);
@@ -1416,6 +1404,8 @@ signals:
   void zoomingTo(int x, int y, int z);
   void updatingLatency(int);
 
+  void hidingLocationObject(double x, double y, double z);
+
 protected:
   void autoSaveSwc();
   virtual void autoSave();
@@ -1467,6 +1457,8 @@ private:
 
   template <class C, class T>
   void setObjectSelectedP(const C &objList, bool select);
+
+  void hideLocationObject(ZStackBall *obj, double x, double y, double z);
 
 private slots:
   void shortcutTest();

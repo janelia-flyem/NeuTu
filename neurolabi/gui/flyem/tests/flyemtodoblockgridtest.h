@@ -37,23 +37,23 @@ TEST(FlyEmTodoBlockGrid, Source)
     ASSERT_FALSE(item.isValid());
     source->saveItem(ZFlyEmToDoItem({160, 160, 160}));
     ASSERT_FALSE(grid.getItem({160, 160, 160}).isValid());
-    grid.updateItem({160, 160, 160});
+    grid.syncItemToCache({160, 160, 160});
     ASSERT_TRUE(grid.getItem({160, 160, 160}).isValid());
   }
 
   {
-    ZFlyEmToDoItem item = grid.pickExistingItem(16, 16, 16);
+    ZFlyEmToDoItem item = grid.pickCachedItem(16, 16, 16);
     ASSERT_TRUE(item.isValid());
 
-    item = grid.pickExistingItem(15, 16, 16);
+    item = grid.pickCachedItem(15, 16, 16);
     ASSERT_FALSE(item.isValid());
 
-    item = grid.pickClosestExistingItem(15, 16, 16, 2);
+    item = grid.pickClosestCachedItem(15, 16, 16, 2);
     ASSERT_TRUE(item.isValid());
     ASSERT_EQ(ZIntPoint(16, 16, 16), item.getPosition());
 
     grid.addItem(ZFlyEmToDoItem(15, 16, 16));
-    item = grid.pickExistingItem(15, 16, 16);
+    item = grid.pickCachedItem(15, 16, 16);
     ASSERT_TRUE(item.isValid());
 
     std::vector<ZFlyEmToDoItem> itemList;
@@ -69,7 +69,7 @@ TEST(FlyEmTodoBlockGrid, Source)
       itemList.push_back(item);
     });
     ASSERT_EQ(3, itemList.size());
-    item = grid.pickClosestExistingItem(16, 16, 31, 5);
+    item = grid.pickClosestCachedItem(16, 16, 31, 5);
     ASSERT_TRUE(item.isValid());
     ASSERT_EQ(ZIntPoint(16, 16, 33), item.getPosition());
 
@@ -78,7 +78,7 @@ TEST(FlyEmTodoBlockGrid, Source)
     grid.addItem(ZFlyEmToDoItem(29, 29, 33));
     grid.addItem(ZFlyEmToDoItem(29, 33, 33));
     grid.addItem(ZFlyEmToDoItem(33, 29, 29));
-    item = grid.pickClosestExistingItem(31, 31, 31, 10);
+    item = grid.pickClosestCachedItem(31, 31, 31, 10);
     ASSERT_TRUE(item.isValid());
     ASSERT_EQ(ZIntPoint(33, 32, 32), item.getPosition());
 
@@ -121,10 +121,10 @@ TEST(FlyEmTodoBlockGrid, Update)
   grid.addItem(ZFlyEmToDoItem({10, 20, 30}));
   ASSERT_TRUE(grid.getItem({10, 20, 30}).isValid());
   source->removeItem({10, 20, 30});
-  grid.updateItem({10, 20, 30});
+  grid.syncItemToCache({10, 20, 30});
   ASSERT_FALSE(grid.getItem({10, 20, 30}).isValid());
   source->saveItem(ZFlyEmToDoItem({10, 20, 30}));
-  grid.updateItem({10, 20, 30});
+  grid.syncItemToCache({10, 20, 30});
   ASSERT_TRUE(grid.getItem({10, 20, 30}).isValid());
 }
 
@@ -136,22 +136,22 @@ TEST(FlyEmTodoBlockGrid, Selection)
         new FlyEmTodoMockSource);
   grid.setSource(source);
 
-  ASSERT_FALSE(grid.setExistingSelection(ZIntPoint(16, 16, 16), true));
+  ASSERT_FALSE(grid.setSelectionForCached(ZIntPoint(16, 16, 16), true));
 
   grid.addItem(ZFlyEmToDoItem(16, 16, 28));
-  ZFlyEmToDoItem item = grid.getExistingItem(16, 16, 16);
+  ZFlyEmToDoItem item = grid.getCachedItem(16, 16, 16);
   ASSERT_FALSE(item.isSelected());
 
-  item = grid.getExistingItem(16, 16, 28);
+  item = grid.getCachedItem(16, 16, 28);
   ASSERT_FALSE(item.isSelected());
 
-  ASSERT_TRUE(grid.setExistingSelection(ZIntPoint(16, 16, 16), true));
-  ASSERT_TRUE(grid.setExistingSelection(ZIntPoint(16, 16, 28), true));
+  ASSERT_TRUE(grid.setSelectionForCached(ZIntPoint(16, 16, 16), true));
+  ASSERT_TRUE(grid.setSelectionForCached(ZIntPoint(16, 16, 28), true));
 
- item = grid.getExistingItem(16, 16, 16);
+ item = grid.getCachedItem(16, 16, 16);
   ASSERT_TRUE(item.isSelected());
 
-  item = grid.getExistingItem(16, 16, 28);
+  item = grid.getCachedItem(16, 16, 28);
   ASSERT_TRUE(item.isSelected());
 }
 

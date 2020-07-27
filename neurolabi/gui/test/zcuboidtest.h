@@ -3,8 +3,10 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
+
+#include "zjsonarray.h"
+
 #include "geometry/zintcuboidarray.h"
-//#include "flyem/zintcuboidcomposition.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zintcuboidface.h"
 #include "common/zsharedpointer.h"
@@ -12,6 +14,176 @@
 #include "geometry/zlinesegment.h"
 
 #ifdef _USE_GTEST_
+
+TEST(ZIntCuboid, Basic)
+{
+  ZIntCuboid box;
+  ASSERT_TRUE(box.isEmpty());
+
+  box.set(ZIntPoint(1, 2, 3), ZIntPoint(10, 20, 30));
+  ASSERT_FALSE(box.isEmpty());
+
+  ASSERT_EQ(ZIntPoint(1, 2, 3), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(10, 20, 30), box.getMaxCorner());
+
+  ASSERT_EQ(10, box.getWidth());
+  ASSERT_EQ(19, box.getHeight());
+  ASSERT_EQ(28, box.getDepth());
+
+  ASSERT_EQ(ZIntPoint(10, 19, 28), box.getSize());
+  ASSERT_EQ(10, box.getMinSideLength());
+  ASSERT_DOUBLE_EQ(
+        ZIntPoint(10, 19, 28).toPoint().length(), box.getDiagonalLength());
+
+  ASSERT_EQ(1, box.getMinX());
+  ASSERT_EQ(2, box.getMinY());
+  ASSERT_EQ(3, box.getMinZ());
+  ASSERT_EQ(10, box.getMaxX());
+  ASSERT_EQ(20, box.getMaxY());
+  ASSERT_EQ(30, box.getMaxZ());
+
+  ASSERT_EQ(10*19*28, box.getVolume());
+  ASSERT_EQ(6*7*8, box.getDsMaxVolume(1, 2, 3));
+
+  std::cout << box.getCenter() << std::endl;
+  box.setMaxCorner(100, 200, 300);
+  ASSERT_EQ(ZIntPoint(51, 101, 152), box.getCenter());
+  ASSERT_EQ(ZPoint(51, 101.5, 152), box.getExactCenter());
+}
+
+TEST(ZIntCuboid, Set)
+{
+  ZIntCuboid box;
+  box.setMinCorner(1, 2, 3);
+  box.setSize(10, 20, 30);
+
+  ASSERT_FALSE(box.isEmpty());
+  ASSERT_EQ(ZIntPoint(10, 20, 30), box.getSize());
+
+  box.setMaxCorner(-1, -2, -3);
+  ASSERT_TRUE(box.isEmpty());
+  ASSERT_EQ(0, box.getDiagonalLength());
+
+  box.setMaxCorner(10, 20, 30);
+  ASSERT_FALSE(box.isEmpty());
+  ASSERT_EQ(ZIntPoint(10, 19, 28), box.getSize()) << box;
+
+  box.setWidth(30);
+  box.setHeight(40);
+  box.setDepth(50);
+  ASSERT_EQ(ZIntPoint(30, 40, 50), box.getSize());
+  ASSERT_EQ(ZIntPoint(1, 2, 3), box.getMinCorner());
+
+  box.setDepth(60, neutu::ERangeReference::RANGE_MIN);
+  ASSERT_EQ(ZIntPoint(30, 40, 60), box.getSize());
+  ASSERT_EQ(ZIntPoint(1, 2, 3), box.getMinCorner());
+
+  box.setDepth(50, neutu::ERangeReference::RANGE_MAX);
+  ASSERT_EQ(ZIntPoint(30, 40, 50), box.getSize());
+  ASSERT_EQ(ZIntPoint(1, 2, 13), box.getMinCorner());
+
+  ZIntPoint center = box.getCenter();
+  box.setDepth(50, neutu::ERangeReference::RANGE_CENTER);
+  ASSERT_EQ(ZIntPoint(30, 40, 50), box.getSize());
+  ASSERT_EQ(center, box.getCenter());
+
+  box.setDepth(51, neutu::ERangeReference::RANGE_CENTER);
+  ASSERT_EQ(ZIntPoint(30, 40, 51), box.getSize());
+  ASSERT_EQ(center, box.getCenter());
+
+  box.setCenter({10, 20, 30});
+  ASSERT_EQ(ZIntPoint(30, 40, 51), box.getSize());
+  ASSERT_EQ(ZIntPoint(10, 20, 30), box.getCenter());
+
+  box.setSize(11, 21, 31);
+  box.setCenter({5, 6, 7});
+  ASSERT_EQ(ZIntPoint(11, 21, 31), box.getSize());
+  ASSERT_EQ(ZIntPoint(5, 6, 7), box.getCenter());
+
+  box.setMaxCorner(-1, -2, -3);
+  ASSERT_TRUE(box.isEmpty());
+}
+
+TEST(ZIntCuboid, Transform)
+{
+  ZIntCuboid box;
+  box.setMinCorner(1, 2, 3);
+  box.setMaxCorner(10, 20, 30);
+
+  box.translateX(-1);
+  ASSERT_EQ(ZIntPoint(0, 2, 3), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(9, 20, 30), box.getMaxCorner());
+
+  box.translate(1, 2, 3);
+  ASSERT_EQ(ZIntPoint(1, 4, 6), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(10, 22, 33), box.getMaxCorner());
+
+  box.scaleUp(2);
+  ASSERT_EQ(ZIntPoint(1, 4, 6) * 2, box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(10, 19, 28) * 2, box.getSize());
+
+  box.scaleUp({2, 3, 4});
+  ASSERT_EQ(ZIntPoint(2, 12, 24) * 2, box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(20, 57, 112) * 2, box.getSize());
+
+  box.scaleDown(2);
+  ASSERT_EQ(ZIntPoint(2, 12, 24), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(20, 57, 112), box.getSize());
+
+  box.scaleDown({2, 3, 4});
+  ASSERT_EQ(ZIntPoint(1, 4, 6), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(10, 19, 28), box.getSize());
+
+  box.scaleDown(4);
+  ASSERT_EQ(ZIntPoint(0, 1, 1), box.getMinCorner());
+  ASSERT_EQ(ZIntPoint(3, 5, 8), box.getSize());
+
+  box.setMinCorner(1, 2, 3);
+  box.setMaxCorner(10, 20, 30);
+
+  box.join(box);
+  ASSERT_EQ(ZIntCuboid(1, 2, 3, 10, 20, 30), box);
+
+  box.join({11, 21, 31, 15, 25, 35});
+  ASSERT_EQ(ZIntCuboid(1, 2, 3, 15, 25, 35), box);
+
+  box.join(20, 30, 40);
+  ASSERT_EQ(ZIntCuboid(1, 2, 3, 20, 30, 40), box);
+
+  box.join(-1, -2, -3);
+  ASSERT_EQ(ZIntCuboid(-1, -2, -3, 20, 30, 40), box);
+
+  box.joinX(25);
+  box.joinY(35);
+  box.joinZ(45);
+  ASSERT_EQ(ZIntCuboid(-1, -2, -3, 25, 35, 45), box);
+
+  box.expand(1, 2, 3);
+  ASSERT_EQ(ZIntCuboid(-2, -4, -6, 26, 37, 48), box);
+
+  box = box + ZIntPoint(1, 2, 3);
+  ASSERT_EQ(ZIntCuboid(-1, -2, -3, 27, 39, 51), box);
+
+  box = box - ZIntPoint(1, 2, 3);
+  ASSERT_EQ(ZIntCuboid(-2, -4, -6, 26, 37, 48), box);
+
+  box = box * ZIntPoint(10, 20, 30);
+  ASSERT_EQ(ZIntCuboid(-20, -80, -180, 260, 740, 1440), box);
+}
+
+TEST(ZIntCuboid, Json)
+{
+  ZIntCuboid box;
+  ZJsonArray json;
+  json.decode("[1, 2, 3, 4, 5, 6]");
+  box.loadJson(json);
+  ASSERT_EQ(ZIntCuboid(1, 2, 3, 4, 5, 6), box);
+
+  json.decode("[1, 2, 3, 4, 5]");
+  box.loadJson(json);
+  ASSERT_TRUE(box.isEmpty());
+}
+
 
 TEST(ZIntCuboid, compare)
 {
@@ -31,8 +203,11 @@ TEST(ZIntCuboid, compare)
   box2.setMaxZ(2);
   ASSERT_NE(box1, box2);
 
-  ASSERT_EQ(ZIntPoint(51, 101, 152), box1.getCenter());
-  ASSERT_EQ(ZPoint(51, 101.5, 152), box1.getExactCenter());
+  box1.set(ZIntPoint(1, 2, 3), ZIntPoint(10, 20, 30));
+  ASSERT_TRUE(box1.equals(box1));
+  ASSERT_TRUE(box1.hasOverlap(box1));
+  ASSERT_TRUE(box1.hasOverlap({1, 2, 3, 10, 20, 31}));
+  ASSERT_FALSE(box1.hasOverlap({100, 200, 300, 200, 300, 400}));
 }
 
 TEST(ZIntCuboid, size)
@@ -89,6 +264,21 @@ TEST(ZIntCuboid, Contains)
 
   ASSERT_TRUE(box.contains(box));
 
+  box.set(ZIntPoint(1, 2, 3), ZIntPoint(10, 20, 30));
+  ASSERT_TRUE(box.contains(1, 2, 3));
+  ASSERT_FALSE(box.contains(0, 2, 3));
+  ASSERT_FALSE(box.contains(1, 1, 3));
+  ASSERT_FALSE(box.contains(1, 2, 2));
+  ASSERT_TRUE(box.contains(10, 20, 30));
+  ASSERT_FALSE(box.contains(11, 20, 30));
+  ASSERT_FALSE(box.contains(10, 21, 30));
+  ASSERT_FALSE(box.contains(10, 20, 31));
+
+  ASSERT_TRUE(box.contains(box));
+  ASSERT_TRUE(box.contains({1, 2, 3, 10, 20, 30}));
+  ASSERT_FALSE(box.contains({1, 2, 3, 10, 20, 31}));
+
+  ASSERT_TRUE(box.containsYZ(2, 3));
 }
 
 TEST(ZIntCuboidArray, basic)
@@ -455,6 +645,12 @@ TEST(ZIntCuboid, dist)
   box2.set(0, 20, 30, 10, 30, 50);
   ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 15.0);
   ASSERT_DOUBLE_EQ(box2.computeDistance(box1), 15.0);
+
+  ZIntCuboid box;
+  box.set(ZIntPoint(1, 2, 3), ZIntPoint(10, 20, 30));
+  ASSERT_EQ(0, box.computeBlockDistance(box));
+  ASSERT_EQ(0, box.computeBlockDistance({1, 2, 3, 10, 20, 31}));
+  ASSERT_EQ(270, box.computeBlockDistance({100, 200, 300, 200, 300, 400}));
 }
 
 TEST(ZIntCuboid, hasOverlap)

@@ -76,11 +76,7 @@ bool ZBiocytinProjectionDoc::executeConnectSwcNodeCommand()
 
 void ZBiocytinProjectionDoc::processRectRoiUpdate()
 {
-  ZRect2d roi = getRect2dRoi();
-  if (roi.isValid()) {
-    selectSwcNode(roi);
-    removeRect2dRoi();
-  }
+  processRectRoiUpdate(getRect2dRoi());
 }
 
 void ZBiocytinProjectionDoc::processRectRoiUpdate(ZRect2d *rect)

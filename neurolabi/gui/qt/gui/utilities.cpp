@@ -297,6 +297,15 @@ void neutu::DrawCircle(
 }
 
 void neutu::DrawLine(
+    QPainter &painter, const QPoint &v0, const QPoint &v1,
+    const PixelCentered &p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+
+  painter.drawLine(v0, v1);
+}
+
+void neutu::DrawLine(
     QPainter &painter, double x0, double y0, double x1, double y1,
     const PixelCentered &p)
 {
@@ -326,6 +335,14 @@ void neutu::DrawRect(
   AdjustPixelCenter adjustOnce(&painter, p);
 
   painter.drawRect(QRectF(QPointF(x0, y0), QPointF(x1, y1)));
+}
+
+void neutu::DrawIntRect(
+    QPainter &painter, int x0, int y0, int x1, int y1, const PixelCentered &p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+
+  painter.drawRect(QRect(QPoint(x0, y0), QPoint(x1, y1)));
 }
 
 void neutu::DrawStar(

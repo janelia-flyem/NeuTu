@@ -158,15 +158,19 @@ TEST(ZStackBlockGrid, basic)
   grid.consumeStack(ZIntPoint(2, 2, 1), stack);
 
   ZStack *out = grid.toStack();
-  out->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete out;
+  out = nullptr;
+//  out->save(GET_TEST_DATA_DIR + "/test.tif");
 
   ASSERT_EQ(1, grid.getValue(39, 78, 73));
 
+  /*
   tic();
-  for (size_t i = 0; i < 20000000; ++i) {
+  for (size_t i = 0; i < 200000; ++i) {
     grid.getValue(39, 78, 73);
   }
   ptoc();
+  */
 
   ZStackBlockGrid grid1;
   grid1.setGridSize(5, 4, 3);

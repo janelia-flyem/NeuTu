@@ -2629,20 +2629,40 @@ std::set<uint64_t> ZDvidReader::readBodyId(
                     ignoringZero);
 }
 
-std::set<uint64_t> ZDvidReader::readBodyId(
-    int x0, int y0, int z0, int width, int height, int depth, bool ignoringZero)
-{
-  ZArray *array = readLabels64(x0, y0, z0, width, height, depth);
+namespace {
 
-  uint64_t *dataArray = array->getDataPointer<uint64_t>();
+std::set<uint64_t> extract_body_id(const ZArray *array, bool ignoringZero)
+{
   std::set<uint64_t> bodySet;
-  for (size_t i = 0; i < array->getElementNumber(); ++i) {
-    if (!ignoringZero || dataArray[i] > 0) {
-      bodySet.insert(dataArray[i]);
+
+  if (array) {
+    uint64_t *dataArray = array->getDataPointer<uint64_t>();
+    for (size_t i = 0; i < array->getElementNumber(); ++i) {
+      if (!ignoringZero || dataArray[i] > 0) {
+        bodySet.insert(dataArray[i]);
+      }
     }
   }
 
   return bodySet;
+}
+
+}
+
+std::set<uint64_t> ZDvidReader::readBodyId(
+    int x0, int y0, int z0, int width, int height, int depth, bool ignoringZero)
+{
+  std::unique_ptr<ZArray> array(readLabels64(x0, y0, z0, width, height, depth));
+
+  return extract_body_id(array.get(), ignoringZero);
+}
+
+std::set<uint64_t> ZDvidReader::readBodyId(
+    const ZAffineRect &rect, bool ignoringZero)
+{
+  std::unique_ptr<ZArray> array(readLabels64Lowtis(rect, 0, 0, 0, false));
+
+  return extract_body_id(array.get(), ignoringZero);
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(

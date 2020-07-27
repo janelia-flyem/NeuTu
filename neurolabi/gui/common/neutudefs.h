@@ -60,6 +60,10 @@ enum class ESizeHintOption {
   DEFAULT, CURRENT_BEST, TAKING_SPACE
 };
 
+enum class ERangeReference {
+  RANGE_MIN, RANGE_MAX, RANGE_CENTER
+};
+
 //Must have value X=0, Y=1, Z=2 for indexing
 enum class EAxis : int {
   X = 0, Y = 1, Z = 2
@@ -171,7 +175,7 @@ static const TVisualEffect VE_HIGHLIGHT_SELECTED = 1;
 namespace Sphere {
 static const TVisualEffect VE_DASH_PATTERN = BIT_FLAG(1);
 static const TVisualEffect VE_BOUND_BOX = BIT_FLAG(2);
-static const TVisualEffect VE_NO_CIRCLE = BIT_FLAG(3);
+static const TVisualEffect VE_NO_BORDER = BIT_FLAG(3);
 static const TVisualEffect VE_NO_FILL = BIT_FLAG(4);
 static const TVisualEffect VE_GRADIENT_FILL = BIT_FLAG(5);
 static const TVisualEffect VE_OUT_FOCUS_DIM = BIT_FLAG(6);

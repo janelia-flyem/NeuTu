@@ -103,6 +103,7 @@
 #include "test/zflyembodycolorschemetest.h"
 
 #include "bigdata/tests/zitemchunktest.h"
+#include "bigdata/tests/zdatachunktest.h"
 
 #include "data3d/tests/utilitiestest.h"
 #include "data3d/tests/zmodelviewtranformtest.h"

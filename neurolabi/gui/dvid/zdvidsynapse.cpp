@@ -550,7 +550,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
 bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
 {
   bool painted = false;
-  this->_hit = [](double,double,double) { return false; };
+  this->_hit = [](const ZStackObject*,double,double,double) { return false; };
 
   if (isVisible()) {
     ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
@@ -586,8 +586,16 @@ bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
     }
 
     if (s3Painter.getPaintedHint()) {
+      this->_hit = [=](const ZStackObject *obj, double x, double y ,double z) {
+        auto s = dynamic_cast<const ZDvidSynapse*>(obj);
+        return ZSlice3dPainter::BallHitTest(
+              x, y, z, s->getX(), s->getY(), s->getZ(), s->getRadius(),
+              config.getWorldViewTransform(), depthScale);
+      };
+      /*
       this->_hit = s3Painter.getBallHitFunc(
             getX(), getY(), getZ(), getRadius(), depthScale);
+            */
     }
 
     painted = s3Painter.getPaintedHint();

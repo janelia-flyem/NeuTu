@@ -29,6 +29,11 @@ bool ZAffineRect::isEmpty() const
   return m_width <= 0.0 || m_height <= 0.0;
 }
 
+bool ZAffineRect::isNonEmpty() const
+{
+  return !isEmpty();
+}
+
 ZPoint ZAffineRect::getV1() const
 {
   return m_ap.getV1();
@@ -57,6 +62,11 @@ void ZAffineRect::setCenter(double x, double y, double z)
 void ZAffineRect::setPlane(const ZPoint &v1, const ZPoint &v2)
 {
   m_ap.setPlane(v1, v2);
+}
+
+void ZAffineRect::setPlane(const ZPlane &plane)
+{
+  m_ap.setPlane(plane);
 }
 
 void ZAffineRect::setPlane(const ZAffinePlane &plane)

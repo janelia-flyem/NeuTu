@@ -963,7 +963,7 @@ std::vector<ZObject3d*> ZStackWatershedContainer::MakeBorderSeed(
     const uint8_t *boundaryArray = boundaryStack.array8();
     const uint8_t *array = stack.array8();
 
-    boundaryBox.scale(ZIntPoint(sx, sy, sz));
+    boundaryBox.scaleUp(ZIntPoint(sx, sy, sz));
     boundaryBox.expand(1, 1, 1);
     boundaryBox.intersect(
           ZIntCuboid(0, 0, 0, width * sx - 1, height * sy - 1, depth * sz - 1));

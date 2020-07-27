@@ -59,6 +59,10 @@ ZIntPoint ZIntCuboid::getSize() const
 
 double ZIntCuboid::getDiagonalLength() const
 {
+  if (isEmpty()) {
+    return 0;
+  }
+
   return ZPoint(getWidth(), getHeight(), getDepth()).length();
 }
 
@@ -118,7 +122,7 @@ void ZIntCuboid::translate(int dx, int dy, int dz)
   translate(ZIntPoint(dx, dy, dz));
 }
 
-void ZIntCuboid::scale(const ZIntPoint &s)
+void ZIntCuboid::scaleUp(const ZIntPoint &s)
 {
   ZIntPoint dim(getWidth(), getHeight(), getDepth());
 
@@ -127,9 +131,9 @@ void ZIntCuboid::scale(const ZIntPoint &s)
 }
 
 
-void ZIntCuboid::scale(int s)
+void ZIntCuboid::scaleUp(int s)
 {
-  scale(ZIntPoint(s, s, s));
+  scaleUp(ZIntPoint(s, s, s));
 }
 
 void ZIntCuboid::scaleDown(const ZIntPoint &s)
@@ -313,7 +317,7 @@ bool ZIntCuboid::contains(const ZIntCuboid &box) const
   return contains(box.getMinCorner()) && contains(box.getMaxCorner());
 }
 
-bool ZIntCuboid::containYZ(int y, int z) const
+bool ZIntCuboid::containsYZ(int y, int z) const
 {
   return IS_IN_CLOSE_RANGE(y, m_minCorner.getY(), m_maxCorner.getY()) &&
       IS_IN_CLOSE_RANGE(z, m_minCorner.getZ(), m_maxCorner.getZ());
@@ -390,6 +394,33 @@ void ZIntCuboid::setDepth(int depth)
   m_maxCorner.setZ(m_minCorner.getZ() + depth - 1);
 }
 
+void ZIntCuboid::setDepth(int depth, neutu::ERangeReference ref)
+{
+  if (depth != getDepth()) {
+    switch (ref) {
+    case neutu::ERangeReference::RANGE_MIN:
+      setDepth(depth);
+      break;
+    case neutu::ERangeReference::RANGE_MAX:
+      m_minCorner.setZ(m_maxCorner.getZ() - depth + 1);
+      break;
+    case neutu::ERangeReference::RANGE_CENTER:
+    {
+      int cz = m_minCorner.getZ() + getDepth() / 2;
+      if (depth <= 0) {
+        m_minCorner.setZ(cz);
+        m_maxCorner.setZ(cz - 1);
+      } else {
+        int d1 = depth / 2;
+        int d2 = depth - d1 - 1;
+        m_minCorner.setZ(cz - d1);
+        m_maxCorner.setZ(cz + d2);
+      }
+    }
+      break;
+    }
+  }
+}
 
 bool ZIntCuboid::equals(const ZIntCuboid &cuboid) const
 {
@@ -596,9 +627,19 @@ bool ZIntCuboid::operator !=(const ZIntCuboid &box) const
       m_maxCorner != box.m_maxCorner;
 }
 
+ZIntCuboid operator +(const ZIntCuboid &box, const ZIntPoint &pt)
+{
+  return ZIntCuboid(box.getMinCorner() + pt, box.getMaxCorner() + pt);
+}
+
 ZIntCuboid operator -(const ZIntCuboid &box, const ZIntPoint &pt)
 {
   return ZIntCuboid(box.getMinCorner() - pt, box.getMaxCorner() - pt);
+}
+
+ZIntCuboid operator *(const ZIntCuboid &box, const ZIntPoint &pt)
+{
+  return ZIntCuboid(box.getMinCorner() * pt, box.getMaxCorner() * pt);
 }
 
 void ZIntCuboid::downScale(int sx, int sy, int sz)

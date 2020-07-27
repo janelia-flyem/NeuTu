@@ -638,8 +638,10 @@ int ZDvidAnnotation::getZ() const
 
 void ZDvidAnnotation::setDefaultHit()
 {
-  this->_hit = [this](double x, double y, double z) {
-    return getPosition().distanceSquareTo(x, y, z) <= getRadius() * getRadius();
+  this->_hit = [](const ZStackObject *obj, double x, double y, double z) {
+    auto *s = dynamic_cast<const ZDvidAnnotation*>(obj);
+    return s->getPosition().distanceSquareTo(x, y, z) <=
+        s->getRadius() * s->getRadius();
   };
 }
 

@@ -7,25 +7,27 @@
 #include "zselector.h"
 #include "bigdata/zintpointannotationblockgrid.hpp"
 
-template<typename T, typename TChunk>
+class ZDvidTarget;
+
+template<typename TItem, typename TChunk>
 class FlyEmPointAnnotationEnsemble : public ZStackObject
 {
 public:
   bool display(
       QPainter *painter, const DisplayConfig &config) const override;
 
-  void addItem(const T &item);
+  void addItem(const TItem &item);
   void removeItem(const ZIntPoint &pos);
   void updatePartner(const ZIntPoint &pos);
   void updateItem(const ZIntPoint &pos);
   void moveItem(const ZIntPoint &from, const ZIntPoint &to);
 
-  T getItem(const ZIntPoint &pos) const
+  TItem getItem(const ZIntPoint &pos) const
   {
     return m_blockGrid->getItem(pos);
   }
 
-  T getSingleSelectedItem() const;
+  TItem getSingleSelectedItem() const;
 
   /*!
    * \brief Remove selected todos
@@ -49,9 +51,17 @@ protected:
   void setSelectionAt(const ZIntPoint &pos, bool selecting);
   void processDeselected();
 
+  template<typename TSource>
+  void _setDvidTarget(const ZDvidTarget &target)
+  {
+    TSource *source = new TSource;
+    source->setDvidTarget(target);
+    m_blockGrid->setSource(std::shared_ptr<TSource>(source));
+  }
+
 protected:
-  std::shared_ptr<ZIntPointAnnotationBlockGrid<T, TChunk>> m_blockGrid;
-  T m_hitItem;
+  std::shared_ptr<ZIntPointAnnotationBlockGrid<TItem, TChunk>> m_blockGrid;
+  TItem m_hitItem;
   ZSelector<ZIntPoint> m_selector;
 };
 
@@ -78,7 +88,7 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display(
 template<typename T, typename TChunk>
 void FlyEmPointAnnotationEnsemble<T, TChunk>::addItem(const T &item)
 {
-  T oldItem = m_blockGrid->getExistingItem(item.getPosition());
+  T oldItem = m_blockGrid->getCachedItem(item.getPosition());
   m_blockGrid->addItem(item);
 
   if (oldItem.isValid()) {
@@ -96,7 +106,7 @@ template<typename T, typename TChunk>
 bool FlyEmPointAnnotationEnsemble<T, TChunk>::hit(double x, double y, double z)
 {
   if (isVisible() && isHittable()) {
-    m_hitItem = m_blockGrid->hitClosestExistingItem(
+    m_hitItem = m_blockGrid->hitClosestCachedItem(
           x, y, z, m_blockGrid->getBlockSize().toPoint().length() * 0.5);
 
     return m_hitItem.isValid();
@@ -109,7 +119,7 @@ template<typename T, typename TChunk>
 void FlyEmPointAnnotationEnsemble<T, TChunk>::processDeselected()
 {
   m_selector.forEachDeselected([&](const ZIntPoint &pt) {
-    m_blockGrid->setExistingSelection(pt, false);
+    m_blockGrid->setSelectionForCached(pt, false);
   });
   m_selector.clearDeselected();
 //  setSelected(m_selector.hasSelected());
@@ -121,7 +131,7 @@ void FlyEmPointAnnotationEnsemble<T, TChunk>::setSelectionAt(
 {
   m_selector.setSelection(pos, selecting);
   processDeselected();
-  m_blockGrid->setExistingSelection(pos, selecting);
+  m_blockGrid->setSelectionForCached(pos, selecting);
 }
 
 template<typename T, typename TChunk>
@@ -194,13 +204,13 @@ void FlyEmPointAnnotationEnsemble<T, TChunk>::removeItem(const ZIntPoint &pos)
 template<typename T, typename TChunk>
 void FlyEmPointAnnotationEnsemble<T, TChunk>::updatePartner(const ZIntPoint &pos)
 {
-  m_blockGrid->updatePartner(pos);
+  m_blockGrid->syncPartnerToCache(pos);
 }
 
 template<typename T, typename TChunk>
 void FlyEmPointAnnotationEnsemble<T, TChunk>::updateItem(const ZIntPoint &pos)
 {
-  m_blockGrid->updateItem(pos);
+  m_blockGrid->syncItemToCache(pos);
 }
 
 template<typename T, typename TChunk>

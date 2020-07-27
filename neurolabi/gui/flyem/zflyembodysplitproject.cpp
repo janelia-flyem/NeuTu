@@ -2868,20 +2868,21 @@ void ZFlyEmBodySplitProject::updateBodyMask()
     if (showingBodyMask()) {
       ZDvidReader &reader = getMainReader();
       if (reader.good()) {
-        int currentSlice = frame->view()->sliceIndex();
+//        int currentSlice = frame->view()->sliceIndex();
 
-        ZRect2d rectRoi = frame->document()->getRect2dRoi();
-        ZIntPoint offset = frame->document()->getStackOffset();
-        if (!rectRoi.isValid()) {
-          int width = frame->document()->getStackWidth();
-          int height = frame->document()->getStackHeight();
-          rectRoi.set(offset.getX(), offset.getY(), width, height);
+        ZRect2d *rectRoi = frame->document()->getRect2dRoi();
+        ZIntCuboid box = rectRoi->getIntBoundBox();
+//        ZIntPoint offset = frame->document()->getStackOffset();
+        if (!rectRoi->isValid()) {
+//          int width = frame->document()->getStackWidth();
+//          int height = frame->document()->getStackHeight();
+          box = frame->document()->getStack()->getBoundBox();
+//          rectRoi.set(offset.getX(), offset.getY(), width, height);
         }
 
-        int z = currentSlice + offset.getZ();
-        ZArray *array = reader.readLabels64(
-              rectRoi.getX0(), rectRoi.getY0(), z,
-              rectRoi.getWidth(), rectRoi.getHeight(), 1);
+//        int z = currentSlice + offset.getZ();
+        box.setDepth(1, neutu::ERangeReference::RANGE_CENTER);
+        ZArray *array = reader.readLabels64(box);
         /*
         ZStack *stack = reader.readBodyLabel(
               rectRoi.getX0(), rectRoi.getY0(), z,

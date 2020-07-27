@@ -3085,8 +3085,11 @@ void ZStackPresenter::acceptRectRoi(bool appending)
         ZStackObject::EType::RECT2D,
         ZStackObjectSourceFactory::MakeRectRoiSource());
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
-  if (rect != NULL) {
+  if (rect) {
     rect->setColor(QColor(255, 255, 255));
+    if (interactiveContext().rectSpan()) {
+      rect->updateZSpanWithMinSide();
+    }
     processRectRoiUpdate(rect, appending);
   }
 
@@ -3237,7 +3240,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     buddyView()->setSliceIndex(buddyView()->sliceIndex() + 10);
     break;
   case ZStackOperator::OP_ZOOM_TO:
-    buddyView()->zoomTo(currentStackPos.roundToIntPoint());
+    buddyView()->zoomTo(currentModelPos.roundToIntPoint());
     break;
   case ZStackOperator::OP_START_ROTATE_VIEW:
     this->interactiveContext().backupExploreMode();
@@ -3818,8 +3821,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_RECT_ROI_INIT:
   {
-    ZRect2d *rect = new ZRect2d(currentStackPos.x(), currentStackPos.y(),
-                                0, 0);
+    ZRect2d *rect = new ZRect2d;
+    rect->setStartCorner(currentWidgetPos.x(), currentWidgetPos.y());
     rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);
     rect->setZ(buddyView()->getCurrentZ());
@@ -3850,6 +3853,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
           ZStackObjectSourceFactory::MakeRectRoiSource());
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
+      /*
       ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
             Qt::LeftButton, ZMouseEvent::EAction::PRESS, neutu::ECoordinateSystem::STACK);
 //      grabPosition.shiftSliceAxis(getSliceAxis());
@@ -3864,6 +3868,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
 
       rect->setMinCorner(x0, y0);
       rect->setMaxCorner(x1, y1);
+      */
+      rect->setEndCorner(currentWidgetPos.x(), currentWidgetPos.y());
       buddyDocument()->bufferObjectModified(rect);
       buddyDocument()->processObjectModified();
 //      buddyDocument()->processObjectModified(rect);

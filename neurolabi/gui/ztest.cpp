@@ -31665,7 +31665,7 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = new ZStack;
   stack->load("/Users/zhaot/Work/neutu/neurolabi/data/_system/emstack2.tif");
   ZStackFrame *frame = ZStackFrame::Make(NULL);
-  frame->view()->setSliceAxis(neutu::EAxis::Z);
+  frame->view()->setSliceAxis(neutu::EAxis::Y);
   frame->loadStack(stack);
 //  ZStackBall *ball = new ZStackBall(125, 125, 125, 10);
 //  ball->setColor(255, 0, 0);
@@ -31734,10 +31734,20 @@ void ZTest::test(MainWindow *host)
   obj->setColor(255, 0, 0);
   */
 
+  /*
   ZStroke2d *obj = new ZStroke2d;
   obj->append(125, 125, 125);
   obj->append(150, 150);
   obj->setColor(Qt::red);
+  */
+
+  ZRect2d *obj = new ZRect2d;
+  obj->setSliceAxis(frame->view()->getSliceAxis());
+  obj->set(10, 10, 30, 40);
+//  obj->setZ(125);
+  obj->setColor(255, 0, 0, 128);
+//  obj->setZSpan(5);
+
 //  obj->addSegment(125, 125, 100, 125);
 //  obj->addSegment(125, 124, 100, 125);
 

@@ -294,6 +294,8 @@ public:
   std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth,
       bool ignoringZero = true);
+  std::set<uint64_t> readBodyId(
+      const ZAffineRect &rect, bool ignoringZero = true);
   std::set<uint64_t> readBodyId(const ZIntPoint &firstCorner,
                                 const ZIntPoint &lastCorner,
                                 bool ignoringZero = true);
@@ -381,15 +383,14 @@ public:
   /*!
    * (\a x0, \a y0, \a z0) is the retrieval center.
    */
-  ZArray *readLabels64Lowtis(int x0, int y0, int z0, double vx1, double vy1, double vz1,
+  ZArray* readLabels64Lowtis(int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
       int width, int height, int zoom, int cx, int cy, bool centerCut) const;
-  ZArray *readLabels64Lowtis(
+  ZArray* readLabels64Lowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
       int width, int height, int zoom, int cx, int cy, bool centerCut) const;
-  ZArray *readLabels64Lowtis(
+  ZArray* readLabels64Lowtis(
       const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
-
 
   //Read grayscale data
   ZStack *readGrayScaleLowtis(int x0, int y0, int z0,

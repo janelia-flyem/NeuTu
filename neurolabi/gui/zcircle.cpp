@@ -177,7 +177,7 @@ void ZCircle::displayHelper(
   }
 
   if (visible) {
-    if (!hasVisualEffect(neutu::display::Sphere::VE_NO_CIRCLE)) {
+    if (!hasVisualEffect(neutu::display::Sphere::VE_NO_BORDER)) {
       //qDebug() << painter->brush().color();
       QColor color = painter->getPenColor();
       color.setAlphaF(alpha);

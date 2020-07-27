@@ -157,9 +157,12 @@ void FlyEmTodoEnsemble::deselectSub()
 
 void FlyEmTodoEnsemble::setDvidTarget(const ZDvidTarget &target)
 {
+  _setDvidTarget<FlyEmTodoDvidSource>(target);
+  /*
   FlyEmTodoDvidSource *source = new FlyEmTodoDvidSource;
   source->setDvidTarget(target);
   m_blockGrid->setSource(std::shared_ptr<FlyEmTodoSource>(source));
+  */
 }
 
 #if 0

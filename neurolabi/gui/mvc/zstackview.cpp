@@ -2868,6 +2868,20 @@ void ZStackView::zoomTo(const ZIntPoint &pt)
 void ZStackView::zoomTo(int x, int y, int z, int w)
 {
   imageWidget()->zoomTo(ZPoint(x, y, z), w, w, neutu::data3d::ESpace::MODEL);
+  buddyDocument()->activateLocationHint(x, y, z);
+}
+
+void ZStackView::zoomTo(const ZIntPoint &pt, int w)
+{
+  zoomTo(pt.getX(), pt.getY(), pt.getZ(), w);
+}
+
+void ZStackView::zoomTo(const ZPoint &pt, int w, bool showingHint)
+{
+  imageWidget()->zoomTo(pt, w, w, neutu::data3d::ESpace::MODEL);
+  if (showingHint) {
+    buddyDocument()->activateLocationHint(pt);
+  }
 }
 
 void ZStackView::zoomTo(int x, int y, int z)

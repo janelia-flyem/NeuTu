@@ -112,27 +112,6 @@ public:
   using EDisplaySliceMode = neutu::data3d::EDisplaySliceMode;
   using DisplayConfig = neutu::data3d::DisplayConfig;
   using ViewSpaceAlignedDisplayConfig = neutu::data3d::ViewSpaceAlignedDisplayConfig;
-  /*
-  enum class EDisplayStyle {
-    NORMAL, SOLID, BOUNDARY, SKELETON
-  };
-  */
-
-  /*
-  enum class ETarget {
-    NONE,
-    STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS,
-    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D, WIDGET_CANVAS,
-    ACTIVE_DECORATION_CANVAS
-  };
-  */
-
-  /*
-  enum class EDisplaySliceMode {
-    PROJECTION, //Display Z-projection of the object
-    SINGLE      //Display a cross section of the object
-  };
-  */
 
   enum class EHitProtocol {
     HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
@@ -152,7 +131,11 @@ public:
 //  virtual const std::string& className() const = 0;
 
   enum class ESelection {
-    SELECT_SINGLE, SELECT_MULTIPLE, SELECT_TOGGLE, DESELECT,
+    SELECT_SINGLE,
+    SELECT_MULTIPLE,
+    SELECT_TOGGLE,
+    SELECT_TOGGLE_SINGLE, //toggle selection and deselect other objects
+    DESELECT,
   };
 
   virtual void processHit(ESelection s);
@@ -276,6 +259,8 @@ public:
   virtual bool isSliceVisible(
       const DisplayConfig &config, int canvasWidth, int canvasHeight) const;
 
+  void setHittable(bool on);
+
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
   virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
@@ -285,7 +270,7 @@ public:
 
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
-  void setHitFunc(std::function<bool(double,double,double)> f);
+  void setHitFunc(std::function<bool(const ZStackObject*,double,double,double)> f);
 
   /*!
    * \brief Get bound box of the object.
@@ -493,8 +478,8 @@ protected:
   };
   void setPrevZ(int z) const;
 
-  mutable std::function<bool(double,double,double)>
-  _hit = [](double,double,double) {
+  mutable std::function<bool(const ZStackObject*, double,double,double)>
+  _hit = [](const ZStackObject*, double,double,double) {
     return false;
   };
 
@@ -507,6 +492,7 @@ protected:
   QColor m_color;
   neutu::data3d::ETarget m_target = neutu::data3d::ETarget::HD_OBJECT_CANVAS;
   EType m_type = EType::UNIDENTIFIED;
+  neutu::data3d::ESpace m_coordSpace = neutu::data3d::ESpace::MODEL;
   double m_basePenWidth;
 
   double m_zScale = 1.0;
@@ -531,6 +517,7 @@ protected:
 
   bool m_selected = false;
   bool m_isSelectable = true;
+  bool m_hittable = true;
   bool m_isVisible = true;
   bool m_projectionVisible = true;
   bool m_usingCosmeticPen = false;

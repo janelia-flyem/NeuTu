@@ -299,6 +299,8 @@ public:
   void zoomTo(const ZIntPoint &pt);
 
   void zoomTo(int x, int y, int z, int w);
+  void zoomTo(const ZIntPoint &pt, int w);
+  void zoomTo(const ZPoint &pt, int w, bool showingHint);
 
   void rotateView(double da, double db);
 

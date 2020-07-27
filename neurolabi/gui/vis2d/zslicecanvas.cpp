@@ -138,6 +138,10 @@ bool ZSliceCanvas::paintTo(
 bool ZSliceCanvas::paintTo(
     QPaintDevice *device, const ZSliceViewTransform &painterTransform) const
 {
+  if (!isVisible()) {
+    return false;
+  }
+
   bool paintable = painterTransform.hasSamePlane(m_transform);
 
   if (paintable) {
@@ -172,6 +176,10 @@ bool ZSliceCanvas::paintTo(
 bool ZSliceCanvas::paintTo(
     QPainter *painter, const ZSliceViewTransform &painterTransform) const
 {
+  if (!isVisible()) {
+    return false;
+  }
+
   bool paintable = true;
   if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
     paintable = false;

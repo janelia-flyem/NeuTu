@@ -3074,20 +3074,6 @@ QList<ZSwcTree*> ZStackDoc::getSwcList() const
 {
   ZOUT(LTRACE(), 5) << "Select swc list";
   return m_objectGroup.getObjectList<ZSwcTree>();
-  /*
-  QList<ZSwcTree*> treeList;
-  for (ZStackObjectGroup::const_iterator iter = m_objectGroup.begin();
-       iter != m_objectGroup.end(); ++iter) {
-    ZStackObject *obj = const_cast<ZStackObject*>(*iter);
-    if (obj->getType() == ZStackObject::EType::TYPE_SWC) {
-      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
-      TZ_ASSERT(tree != NULL, "Null pointer.");
-      treeList.append(tree);
-    }
-  }
-
-  return treeList;
-  */
 }
 
 DEFINE_GET_OBJECT_LIST(getObj3dList, ZObject3d, TYPE_OBJ3D)
@@ -3770,56 +3756,44 @@ bool ZStackDoc::selectSwcTreeBranch(int x, int y, int z)
   return false;
 }
 
-#if 0
-void ZStackDoc::removeLastObject(bool deleteObject)
+void ZStackDoc::activateLocationHint(const ZPoint &pt)
 {
-  if (!m_objectList.isEmpty()) {
-    ZStackObject *obj = m_objectList.takeLast();
+  activateLocationHint(pt.getX(), pt.getY(), pt.getZ());
+}
 
-    if (!m_chainList.isEmpty()) {
-      if (static_cast<ZStackObject*>(m_chainList.last()) == obj) {
-        m_chainList.removeLast();
-      }
-    }
+void ZStackDoc::activateLocationHint(double x, double y, double z)
+{
+  std::string source = ZStackObjectSourceFactory::MakePositionHintSource();
+  ZStackBall *obj = getObject<ZStackBall>(source);
+  if (obj == nullptr) {
+    obj = new ZStackBall;
+    obj->useCosmeticPen(true);
+    obj->setRadius(10);
+    obj->setColor(255, 255, 255, 128);
+    obj->setCenter(x, y, z);
+    obj->addVisualEffect(neutu::display::Sphere::VE_FORCE_FILL |
+                         neutu::display::Sphere::VE_NO_BORDER);
+    obj->setHittable(false);
+    obj->setSource(source);
+    addObject(obj);
+  } else {
+    obj->setCenter(x, y, z);
+    obj->setVisible(true);
+    processObjectModified(obj);
+  }
 
-    if (!m_swcList.isEmpty()) {
-      if (static_cast<ZStackObject*>(m_swcList.last()) == obj) {
-        m_swcList.removeLast();
-      }
-    }
+  QTimer::singleShot(2000, [=](){ hideLocationObject(obj, x, y, z); } );
+}
 
-    if (!m_punctaList.isEmpty()) {
-      if (static_cast<ZStackObject*>(m_punctaList.last()) == obj) {
-        m_punctaList.removeLast();
-      }
-    }
-
-    if (!m_obj3dList.isEmpty()) {
-      if (static_cast<ZStackObject*>(m_obj3dList.last()) == obj) {
-        m_obj3dList.removeLast();
-      }
-    }
-
-    if (!m_strokeList.isEmpty()) {
-      if (static_cast<ZStackObject*>(m_strokeList.last()) == obj) {
-        m_strokeList.removeLast();
-      }
-    }
-
-    if (!m_objectList.isEmpty()) {
-      if (static_cast<ZStackObject*>(m_objectList.last()) == obj) {
-        m_objectList.removeLast();
-      }
-    }
-
-    m_playerList.removePlayer(obj);
-
-    if (deleteObject == true) {
-      delete obj;
+void ZStackDoc::hideLocationObject(ZStackBall *obj, double x, double y, double z)
+{
+  if (obj) {
+    if (obj->getCenter() == ZPoint(x, y, z)) {
+      obj->setVisible(false);
+      processObjectModified(obj);
     }
   }
 }
-#endif
 
 void ZStackDoc::removeAllObject(bool deleteObject)
 {
@@ -6267,12 +6241,12 @@ void ZStackDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
     switch (type) {
     case ZStackObject::EType::SWC:
       notifySwcModified();;
+      if (infoSet.hasDataModified(type)) {
+        setSaved(type, false);
+      }
       break;
     default:
       break;
-    }
-    if (infoSet.hasDataModified(type)) {
-      setSaved(type, false);
     }
   }
 
@@ -10604,19 +10578,22 @@ ZCuboid ZStackDoc::getSelectedBoundBox() const
   return box;
 }
 
-ZRect2d ZStackDoc::getRect2dRoi() const
+ZAffineRect ZStackDoc::getRectRoi() const
 {
-  ZRect2d rect;
+  ZRect2d *rect = getRect2dRoi();
+  if (rect) {
+    return rect->getAffineRect();
+  }
 
-  ZRect2d *rectObj = dynamic_cast<ZRect2d*>(
+  return ZAffineRect();
+}
+
+ZRect2d* ZStackDoc::getRect2dRoi() const
+{
+  return dynamic_cast<ZRect2d*>(
         getObjectGroup().findFirstSameSource(
           ZStackObject::EType::RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource()));
-  if (rectObj != NULL) {
-    rect = *rectObj;
-  }
-
-  return rect;
 }
 
 void ZStackDoc::setKeyProcessor(ZStackDocKeyProcessor *processor)
@@ -10667,6 +10644,8 @@ ZIntCuboid ZStackDoc::getCuboidRoi() const
           ZStackObject::EType::RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource()));
   if (rectObj != NULL) {
+    box = rectObj->getIntBoundBox();
+    /*
     box.setMinCorner(
           rectObj->getMinX(), rectObj->getMinY(), rectObj->getZ());
     box.setMaxCorner(
@@ -10675,6 +10654,7 @@ ZIntCuboid ZStackDoc::getCuboidRoi() const
       box.setMinZ(box.getMinCorner().getZ() - rectObj->getZSpan());
       box.setMaxZ(box.getMaxCorner().getZ() + rectObj->getZSpan());
     }
+    */
   } else {
     ZIntCuboidObj *obj = dynamic_cast<ZIntCuboidObj*>(
           getObjectGroup().findFirstSameSource(

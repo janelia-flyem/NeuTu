@@ -51,8 +51,14 @@ void DrawCircle(
 void DrawRect(
     QPainter &painter, double x0, double y0, double x1, double y1,
     const PixelCentered &p = true);
+void DrawIntRect(
+    QPainter &painter, int x0, int y0, int x1, int y1,
+    const PixelCentered &p = true);
 void DrawLine(
     QPainter &painter, double x0, double y0, double x1, double y1,
+    const PixelCentered &p = true);
+void DrawLine(
+    QPainter &painter, const QPoint &v0, const QPoint &v1,
     const PixelCentered &p = true);
 void DrawLines(
     QPainter &painter, const std::vector<QLineF> &lines,

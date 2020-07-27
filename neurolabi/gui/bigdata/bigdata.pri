@@ -1,17 +1,19 @@
 include($$PWD/tests/tests.pri)
 
 HEADERS += $$PWD/zdvidblockgrid.h \
-    $$PWD/zchunkdatasource.hpp \
+    $$PWD/zdatachunk.h \
     $$PWD/zintpointannotationblockgrid.hpp \
     $$PWD/zintpointannotationchunk.h \
     $$PWD/zintpointannotationsource.hpp \
     $$PWD/zitemchunk.hpp \
+    $$PWD/zitemdatasource.hpp \
     $$PWD/zmockitemchunk.h \
     $$PWD/zstackblockgrid.h \
     $$PWD/zblockgrid.h \
     $$PWD/zblockgridfactory.h
 
 SOURCES += $$PWD/zdvidblockgrid.cpp \
+   $$PWD/zdatachunk.cpp \
    $$PWD/zintpointannotationsource.cpp \
    $$PWD/zintpointannotationchunk.cpp \
    $$PWD/zitemchunk.cpp \

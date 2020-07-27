@@ -4,8 +4,10 @@
 #include <unordered_map>
 #include <vector>
 
-template <typename T, typename TKey>
-class ZItemChunk
+#include "zdatachunk.h"
+
+template <typename TItem, typename TKey>
+class ZItemChunk : public ZDataChunk
 {
 public:
   ZItemChunk() {}
@@ -14,24 +16,6 @@ public:
   using KeyType = TKey;
 
 public:
-  void setReady(bool ready)
-  {
-    m_isReady = ready;
-  };
-  bool isReady() const
-  {
-    return m_isReady;
-  }
-
-  bool isValid() const
-  {
-    return m_isValid;
-  }
-  void invalidate()
-  {
-    m_isValid = false;
-  }
-
   bool isEmpty() const
   {
     return m_itemMap.size() == 0;
@@ -42,7 +26,7 @@ public:
     return m_itemMap.size();
   }
 
-  T& getItemRef(const KeyType &key)
+  TItem& getItemRef(const KeyType &key)
   {
     if (m_itemMap.count(key) > 0) {
       return m_itemMap.at(key);
@@ -51,9 +35,9 @@ public:
     return m_invalidItem;
   }
 
-  T getItem(const KeyType &key) const
+  TItem getItem(const KeyType &key) const
   {
-    return const_cast<ZItemChunk<T, KeyType>&>(*this).getItemRef(key);
+    return const_cast<ZItemChunk<TItem, KeyType>&>(*this).getItemRef(key);
   }
 
   bool removeItem(const KeyType &key)
@@ -66,9 +50,9 @@ public:
     return m_itemMap.count(key) > 0;
   }
 
-  std::vector<T> getItemList() const
+  std::vector<TItem> getItemList() const
   {
-    std::vector<T> itemList;
+    std::vector<TItem> itemList;
     for (auto item : m_itemMap) {
       itemList.push_back(item.second);
     }
@@ -77,28 +61,28 @@ public:
   }
 
   void forEachItem(
-      std::function<void (const T &)> f) const
+      std::function<void (const TItem &)> f) const
   {
     for (const auto &item : m_itemMap) {
       f(item.second);
     }
   }
 
-  void addItem(const T &item)
+  void addItem(const TItem &item)
   {
     if (item.isValid()) {
       m_itemMap[getKey(item)] = item;
     }
   }
 
-  void addItem(const std::vector<T> &itemList)
+  void addItem(const std::vector<TItem> &itemList)
   {
     for (const auto &item : itemList) {
       addItem(item);
     }
   }
 
-  void update(const std::vector<T> &itemList)
+  void update(const std::vector<TItem> &itemList)
   {
     m_itemMap.clear();
     addItem(itemList);
@@ -106,13 +90,11 @@ public:
   }
 
 protected:
-  virtual KeyType getKey(const T &item) const = 0;
+  virtual KeyType getKey(const TItem &item) const = 0;
 
 protected:
-  bool m_isReady = false;
-  bool m_isValid = true;
-  std::unordered_map<KeyType, T> m_itemMap;
-  T m_invalidItem;
+  std::unordered_map<KeyType, TItem> m_itemMap;
+  TItem m_invalidItem;
 };
 
 #endif // ZITEMCHUNK_H

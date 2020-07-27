@@ -100,7 +100,7 @@ ZIntCuboid ZDvidBodyHelper::getAdjustedRange() const
 
     int s = zgeom::GetZoomScale(m_zoom);
     range.scaleDown(s);
-    range.scale(s);
+    range.scaleUp(s);
 
     range.set(
           ZIntPoint(AdjustMinCorner(range.getMinCorner().getX(), scale.getX()),

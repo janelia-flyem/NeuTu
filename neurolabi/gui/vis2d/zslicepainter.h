@@ -18,7 +18,6 @@ class QPoint;
 class QPointF;
 class ZLineSegment;
 class ZPoint;
-//class ZCuboid;
 
 /*!
  * \brief The class painting a 2d primitive on a slice
@@ -118,6 +117,8 @@ public:
       QPainter *painter, double cx, double cy, double cz, double r);
   void drawCrossProjection(
       QPainter *painter, double cx, double cy, double cz, double r);
+  void drawRectProjection(
+      QPainter *painter, double x0, double y0, double x1, double y1, double z);
 
   /*!
    * \brief Set cut plane
@@ -138,6 +139,11 @@ public:
   std::function<bool(double,double,double)>
   getBallHitFunc(
       double cx, double cy, double cz, double r, double depthScale) const;
+
+  static bool BallHitTest(
+      double x, double y, double z,
+      double cx, double cy, double cz, double r,
+      const ZModelViewTransform &transform, double depthScale);
 
 private:
   ZSlice2dPainter m_painterHelper;

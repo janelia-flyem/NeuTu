@@ -337,6 +337,26 @@ int zgeom::GetZoomLevel(int scale)
   return zoom;
 }
 
+ZPlane zgeom::GetPlane(neutu::EAxis axis)
+{
+  ZPlane plane;
+  switch (axis) {
+  case neutu::EAxis::X:
+    plane.set(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
+    break;
+  case neutu::EAxis::Y:
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
+    break;
+  case neutu::EAxis::Z:
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    break;
+  default:
+    break;
+  }
+
+  return plane;
+}
+
 void zgeom::CopyToArray(const ZIntPoint &pt, int v[])
 {
   v[0] = pt.getX();

@@ -1,10 +1,10 @@
 #ifndef ZINTPOINTANNOTATIONSOURCE_H
 #define ZINTPOINTANNOTATIONSOURCE_H
 
-#include "zchunkdatasource.hpp"
+#include "zitemdatasource.hpp"
 
 template <typename T>
-class ZIntPointAnnotationSource : public ZChunkDataSource<T, ZIntPoint>
+class ZIntPointAnnotationSource : public ZItemDataSource<T, ZIntPoint>
 {
 public:
   virtual void updatePartner(T */*item*/) const {}

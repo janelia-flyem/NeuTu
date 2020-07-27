@@ -7,7 +7,9 @@
 #include <QtConcurrent>
 #endif
 
+#include "common/utilities.h"
 #include "common/math.h"
+
 #include "geometry/zintcuboid.h"
 #include "geometry/zaffinerect.h"
 
@@ -109,7 +111,9 @@ bool ZDvidLabelSlice::display(
     painter->setOpacity(m_opacity);
     //Todo: consider a better design for avoiding const_cast
     const_cast<ZDvidLabelSlice&>(*this).updateCanvas();
-    painted = m_imageCanvas.paintTo(painter, config.getTransform());
+    if (m_imageCanvas.isVisible()) {
+      painted = m_imageCanvas.paintTo(painter, config.getTransform());
+    }
     painter->restore();
   }
 
@@ -276,13 +280,15 @@ int ZDvidLabelSlice::getZoomLevel(const ZStackViewParam &viewParam) const
 }
 #endif
 
+std::shared_ptr<ZFlyEmBodyColorScheme> ZDvidLabelSlice::getColorScheme() const
+{
+   return m_customColorScheme ? m_customColorScheme : m_defaultColorSheme;
+ }
+
 void ZDvidLabelSlice::updateRgbTable()
 {
   if (m_rgbTable.empty()) {
     ZFlyEmBodyColorScheme *colorScheme = getColorScheme().get();
-    if (m_customColorScheme) {
-      colorScheme = m_customColorScheme.get();
-    }
 
     //  const QVector<QColor>& colorTable = colorScheme->getColorTable();
     //  m_rgbTable.resize(colorTable.size());
@@ -321,17 +327,12 @@ void ZDvidLabelSlice::paintBufferUnsync()
       }
 
       if (labelArray != NULL) {
-        /*
-        if (getSliceAxis() == neutu::EAxis::X) {
-          m_paintBuffer->drawLabelFieldTranspose(
-                labelArray, m_rgbTable, 0, 0xFFFFFFFF);
-        } else {
-        */
-          m_paintBuffer->drawLabelField(labelArray, m_rgbTable, 0, 0xFFFFFFFF);
-//        }
+        m_paintBuffer->drawLabelField(labelArray, m_rgbTable, 0, 0xFFFFFFFF);
       }
     }
   }
+
+  m_isPaintBufferValid = true;
 }
 
 void ZDvidLabelSlice::paintBuffer()
@@ -375,8 +376,9 @@ bool ZDvidLabelSlice::hasValidPaintBuffer() const
 
 void ZDvidLabelSlice::invalidatePaintBuffer()
 {
-  delete m_paintBuffer;
-  m_paintBuffer = nullptr;
+  m_isPaintBufferValid = false;
+//  delete m_paintBuffer;
+//  m_paintBuffer = nullptr;
 }
 
 int ZDvidLabelSlice::getFirstZoom(const ZStackViewParam &viewParam) const
@@ -429,18 +431,6 @@ void ZDvidLabelSlice::forceUpdate(
       getHelper()->setActualQuality(
             getHelper()->getZoom(), getHelper()->getCenterCutWidth(),
             getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
-
-
-//      int zoom = getFirstZoom(viewParam);
-//      forceUpdate(viewParam.toArbSliceViewParam(), zoom);
-      /*
-      if (m_sliceAxis == neutu::EAxis::ARB) {
-        forceUpdate(viewParam.toArbSliceViewParam(), zoom);
-      } else {
-        QRect viewPort = viewParam.getViewPort();
-        forceUpdate(viewPort, viewParam.getZ(), zoom);
-      }
-      */
     }
   }
 
@@ -448,17 +438,22 @@ void ZDvidLabelSlice::forceUpdate(
   if (getHelper()->getUpdatePolicy() == neutu::EDataSliceUpdatePolicy::HIDDEN) {
     getHelper()->closeViewPort();
   }
-  updatePaintBuffer();
-  m_imageCanvas.fromImage(*m_paintBuffer);
+//  updatePaintBuffer();
+//  m_imageCanvas.fromImage(*m_paintBuffer);
+  int width = rect.getWidth() / getHelper()->getScale();
+  int height = rect.getHeight() / getHelper()->getScale();
   ZSliceViewTransform t = getHelper()->getCanvasTransform(
-        rect.getAffinePlane(), m_paintBuffer->width(), m_paintBuffer->height());
+        rect.getAffinePlane(), width, height /*m_labelArray->getDim(0), m_labelArray->getDim(1)*/);
   m_imageCanvas.setTransform(t);
+
+  invalidatePaintBuffer();
 #ifdef _DEBUG_2
   std::cout << "Saving label canvas ..." << std::endl;
   saveCanvas(GET_TEST_DATA_DIR + "/_test.png");
 #endif
 }
 
+/*
 void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
 {
   if (getSliceAxis() != neutu::EAxis::ARB) {
@@ -493,7 +488,9 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
     }
   }
 }
+*/
 
+/*
 void ZDvidLabelSlice::forceUpdate(
     const ZArbSliceViewParam &viewParam, int zoom)
 {
@@ -511,6 +508,7 @@ void ZDvidLabelSlice::forceUpdate(
     }
   }
 }
+*/
 
 bool ZDvidLabelSlice::isPaintBufferAllocNeeded(int width, int height) const
 {
@@ -519,6 +517,16 @@ bool ZDvidLabelSlice::isPaintBufferAllocNeeded(int width, int height) const
   }
 
   return m_paintBuffer->width() !=  width || m_paintBuffer->height() != height;
+}
+
+bool ZDvidLabelSlice::isPaintBufferUpdateNeeded() const
+{
+  return !isPaintBufferValid();
+}
+
+bool ZDvidLabelSlice::isPaintBufferValid() const
+{
+  return m_paintBuffer && m_isPaintBufferValid;
 }
 
 void ZDvidLabelSlice::updatePaintBuffer()
@@ -542,10 +550,16 @@ void ZDvidLabelSlice::updatePaintBuffer()
 
 void ZDvidLabelSlice::updateCanvas()
 {
-  if (m_paintBuffer == nullptr) {
+  if (isPaintBufferUpdateNeeded()) {
     updatePaintBuffer();
-    if (m_paintBuffer) {
+  }
+
+  if (isPaintBufferValid()) {
+    if (m_paintBuffer->isVisible()) {
       m_imageCanvas.fromImage(*m_paintBuffer);
+      m_imageCanvas.setVisible(true);
+    } else {
+      m_imageCanvas.setVisible(false);
     }
   }
 }
@@ -656,13 +670,14 @@ bool ZDvidLabelSlice::consume(
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       clearLabelData();
       m_labelArray = array;
-      updatePaintBuffer();
-      m_imageCanvas.fromImage(*m_paintBuffer);
+//      updatePaintBuffer();
+//      m_imageCanvas.fromImage(*m_paintBuffer);
       ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
       ZSliceViewTransform t = getHelper()->getCanvasTransform(
             rect.getAffinePlane(),
-            m_paintBuffer->width(), m_paintBuffer->height(), zoom);
+            m_labelArray->dim(0),  m_labelArray->dim(1), zoom);
       m_imageCanvas.setTransform(t);
+      invalidatePaintBuffer();
       succ = true;
     } else {
       delete array;
@@ -894,11 +909,11 @@ void remap_id(
   } else {
     auto voxel_map = [&](uint64_t *dst, const uint64_t *src) {
       if (selectedSet.count(*src) > 0) {
-        if (bodyMap.count(*src) > 0) {
-          *dst = scheme->getBodyColorIndex(bodyMap[*src]);
-        } else {
+//        if (bodyMap.count(*src) > 0) {
+//          *dst = scheme->getBodyColorIndex(bodyMap[*src]);
+//        } else {
           *dst = neutu::LABEL_ID_SELECTION;
-        }
+//        }
       } else { //not selected
         if (bodyMap.count(*src) > 0) {
           *dst = scheme->getBodyColorIndex(bodyMap[*src]);
@@ -916,31 +931,13 @@ void remap_id(
 void ZDvidLabelSlice::remapId(
     uint64_t *array, const uint64_t *originalArray, uint64_t v)
 {
-  if (m_customColorScheme.get() != NULL) {
-
-//    QHash<uint64_t, int> idMap;
-
-//    idMap = m_customColorScheme->getColorIndexMap();
-
+  if (m_customColorScheme) {
     if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
         array[i] = 0;
       }
     } else {
       remap_id(m_customColorScheme.get(), array, originalArray, v);
-#if 0
-      for (size_t i = 0; i < v; ++i) {
-        array[i] = m_customColorScheme->getBodyColorIndex(originalArray[i]);
-        /*
-        array[i] = originalArray[i];
-        if (idMap.contains(array[i])) {
-          array[i] = idMap[array[i]];
-        } else {
-          array[i] = 0;
-        }
-        */
-      }
-#endif
     }
   }
 }
@@ -950,24 +947,11 @@ void ZDvidLabelSlice::remapId(
     uint64_t *array, const uint64_t *originalArray, uint64_t v,
     std::set<uint64_t> &selected)
 {
-  if (m_customColorScheme.get() != NULL) {
-
-//    QHash<uint64_t, int> idMap;
-
-//    idMap = m_customColorScheme->getColorIndexMap();
-
+  if (m_customColorScheme.get()) {
     if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
         if (selected.count(originalArray[i]) > 0) {
           array[i] = m_customColorScheme->getBodyColorIndex(originalArray[i]);
-          /*
-          array[i] = originalArray[i];
-          if (idMap.contains(array[i])) {
-            array[i] = idMap[array[i]];
-          } else {
-            array[i] = 0;
-          }
-          */
         } else {
           array[i] = 0;
         }
@@ -1019,36 +1003,10 @@ void ZDvidLabelSlice::remapId(
 {
 
   if (m_customColorScheme.get() != NULL) {
-//    QHash<uint64_t, int> idMap;
-
-//    idMap = m_customColorScheme->getColorIndexMap();
-
-    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
-      m_paintBuffer->setVisible(false);
-    } else {
-      remap_id(m_customColorScheme.get(), array, originalArray, v, bodyMap);
-#if 0
-      for (size_t i = 0; i < v; ++i) {
-        if (bodyMap.contains(originalArray[i])) {
-          array[i] = bodyMap[originalArray[i]];
-        } else {
-          array[i] = originalArray[i];
-        }
-        array[i] = m_customColorScheme->getBodyColorIndex(array[i]);
-        /*
-        if (idMap.contains(array[i])) {
-          array[i] = idMap[array[i]];
-        } else {
-          array[i] = 0;
-        }
-        */
-      }
-#endif
-    }
+    remap_id(m_customColorScheme.get(), array, originalArray, v, bodyMap);
   } else {
-    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
-      m_paintBuffer->setVisible(false);
-    } else {
+    remap_id(m_defaultColorSheme.get(), array, originalArray, v, bodyMap);
+      /*
       for (size_t i = 0; i < v; ++i) {
         if (bodyMap.contains(originalArray[i])) {
           array[i] = bodyMap[originalArray[i]];
@@ -1056,7 +1014,7 @@ void ZDvidLabelSlice::remapId(
           array[i] = originalArray[i];
         }
       }
-    }
+      */
   }
 }
 
@@ -1064,68 +1022,18 @@ void ZDvidLabelSlice::remapId(
     uint64_t *array, const uint64_t *originalArray, uint64_t v,
     std::set<uint64_t> &selected, const ZFlyEmBodyMerger::TLabelMap &bodyMap)
 {
-  if (m_customColorScheme.get() != NULL) {
-//    QHash<uint64_t, int> idMap;
-
-
-//    idMap = m_customColorScheme->getColorIndexMap();
-
-    std::set<uint64_t> selectedSet = selected;
-
+  const std::set<uint64_t> &selectedSet = selected;
+  if (m_customColorScheme) {
     remap_id(
           m_customColorScheme.get(), array, originalArray, v,
           selectedSet,  bodyMap,
           hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED));
-#if 0
-    if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
-      for (size_t i = 0; i < v; ++i) {
-        if (selectedSet.count(originalArray[i]) > 0) {
-          if (bodyMap.count(originalArray[i]) > 0) {
-            array[i] = bodyMap[originalArray[i]];
-          } else {
-            array[i] = originalArray[i];
-          }
-          array[i] = m_customColorScheme->getBodyColorIndex(array[i]);
-          /*
-          if (idMap.contains(array[i])) {
-            array[i] = idMap[array[i]];
-          } else {
-            array[i] = 0;
-          }
-          */
-        } else {
-          array[i] = 0;
-        }
-      }
-    } else {
-      for (size_t i = 0; i < v; ++i) {
-        if (selectedSet.count(originalArray[i]) > 0) {
-          array[i] = neutu::LABEL_ID_SELECTION;
-        } else if (bodyMap.count(originalArray[i]) > 0) {
-          /*
-          array[i] = bodyMap[originalArray[i]];
-          if (idMap.contains(array[i])) {
-            array[i] = idMap[array[i]];
-          } else {
-            array[i] = 0;
-          }*/
-          array[i] = m_customColorScheme->getBodyColorIndex(
-                bodyMap[originalArray[i]]);
-        } else {
-          /*
-          array[i] = originalArray[i];
-          if (idMap.contains(array[i])) {
-            array[i] = idMap[array[i]];
-          } else {
-            array[i] = 0;
-          }
-          */
-          array[i] = m_customColorScheme->getBodyColorIndex(originalArray[i]);
-        }
-      }
-    }
-#endif
+
   } else {
+    remap_id(m_defaultColorSheme.get(), array, originalArray, v,
+             selectedSet,  bodyMap,
+             hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED));
+    /*
     std::set<uint64_t> selectedSet = selected;
 
     if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
@@ -1151,12 +1059,13 @@ void ZDvidLabelSlice::remapId(
         }
       }
     }
+    */
   }
 }
 
 void ZDvidLabelSlice::remapId(ZArray *label)
 {
-  if (m_paintBuffer != NULL) {
+  if (m_paintBuffer) {
     m_paintBuffer->setVisible(true);
   }
 
@@ -1165,7 +1074,12 @@ void ZDvidLabelSlice::remapId(ZArray *label)
     uint64_t *array = label->getDataPointer<uint64_t>();
     const uint64_t *originalArray = m_labelArray->getDataPointer<uint64_t>();
     size_t v = label->getElementNumber();
-    if (!bodyMap.empty() || !m_selectedOriginal.empty()) {
+    if (m_selectedOriginal.empty() &&
+        hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+      if (m_paintBuffer) {
+        m_paintBuffer->setVisible(false);
+      }
+    } else if (!bodyMap.empty() || !m_selectedOriginal.empty()) {
       if (bodyMap.empty()) {
         remapId(array, originalArray, v, m_selectedOriginal);
       } else if (m_selectedOriginal.empty()) {
@@ -1174,13 +1088,8 @@ void ZDvidLabelSlice::remapId(ZArray *label)
         remapId(array, originalArray, v, m_selectedOriginal, bodyMap);
       }
     } else {
-      if (m_customColorScheme.get() != NULL) {
+      if (m_customColorScheme) {
         remapId(array, originalArray, v);
-      }
-      if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
-        if (m_paintBuffer != NULL) {
-          m_paintBuffer->setVisible(false);
-        }
       }
     }
   }
@@ -1245,7 +1154,26 @@ uint64_t ZDvidLabelSlice::getHitLabel() const
 
 void ZDvidLabelSlice::processHit(ESelection s)
 {
+  switch (s) {
+  case ESelection::SELECT_SINGLE:
+    selectHit(false);
+    break;
+  case ESelection::SELECT_MULTIPLE:
+    selectHit(true);
+    break;
+  case ESelection::SELECT_TOGGLE_SINGLE:
+    clearSelectionWithExclusion(getOriginalLabelSet(m_hitLabel));
+    xorSelection(m_hitLabel, neutu::ELabelSource::MAPPED);
+    break;
+  case ESelection::SELECT_TOGGLE:
+    xorSelection(m_hitLabel, neutu::ELabelSource::MAPPED);
+    break;
+  case ESelection::DESELECT:
+    clearSelection();
+    break;
+  }
 
+  m_hitLabel = 0;
 }
 
 void ZDvidLabelSlice::selectHit(bool appending)
@@ -1414,6 +1342,13 @@ void ZDvidLabelSlice::toggleHitSelection(bool appending)
 void ZDvidLabelSlice::clearSelection()
 {
   m_selectedOriginal.clear();
+  invalidatePaintBuffer();
+}
+
+void ZDvidLabelSlice::clearSelectionWithExclusion(
+    const std::set<uint64_t> excluded)
+{
+  m_selectedOriginal = neutu::intersect(m_selectedOriginal, excluded);
   invalidatePaintBuffer();
 }
 

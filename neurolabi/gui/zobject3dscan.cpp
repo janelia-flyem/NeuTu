@@ -4683,7 +4683,7 @@ ZObject3dScan* ZObject3dScan::subobject(
   ConstSegmentIterator iter(this);
   while (iter.hasNext()) {
     const ZObject3dScan::Segment &seg = iter.next();
-    if (box.containYZ(seg.getY(), seg.getZ())) {
+    if (box.containsYZ(seg.getY(), seg.getZ())) {
       int x0 = imax2(seg.getStart(), box.getMinCorner().getX());
       int x1 = imin2(seg.getEnd(), box.getMaxCorner().getX());
       if (x0 <= x1) {

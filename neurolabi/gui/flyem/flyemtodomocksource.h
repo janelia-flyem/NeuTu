@@ -18,7 +18,7 @@ public:
   void removeItem(const ZIntPoint &pos) override;
   void updatePartner(ZFlyEmToDoItem *item) const override;
   ZFlyEmToDoItem getItem(const ZIntPoint &pos) const override;
-  void moveItem(const ZIntPoint &from, const ZIntPoint &to);
+  void moveItem(const ZIntPoint &from, const ZIntPoint &to) override;
 
 private:
   std::unordered_map<ZIntPoint, ZFlyEmToDoItem> m_data;

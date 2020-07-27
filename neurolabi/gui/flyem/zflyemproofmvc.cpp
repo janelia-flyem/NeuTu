@@ -3029,11 +3029,13 @@ void ZFlyEmProofMvc::highlightSelectedObject(
       } else {
         labelSlice->addVisualEffect(
               neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
+        labelSlice->invalidatePaintBuffer();
         doc->processObjectModified(labelSlice);
       }
     } else {
       labelSlice->removeVisualEffect(
             neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
+      labelSlice->invalidatePaintBuffer();
       if (usingSparseVol) {
         doc->notifyActiveViewModified();
       } else {
@@ -3041,22 +3043,23 @@ void ZFlyEmProofMvc::highlightSelectedObject(
       }
     }
 
-    labelSlice->invalidatePaintBuffer();
-
     doc->endObjectModifiedMode();
     doc->processObjectModified();
-
   }
 }
 
 void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 {
   ZFlyEmProofDoc *doc = getCompleteDocument();
-  neutu::EAxis axis = getView()->getSliceAxis();
+//  neutu::EAxis axis = getView()->getSliceAxis();
 
-  ZDvidLabelSlice *labelSlice = doc->getActiveLabelSlice(axis);
+  auto sliceList = doc->getFrontDvidLabelSliceList();
+  for (auto labelSlice : sliceList) {
+    highlightSelectedObject(labelSlice, hl);
+  }
+//  ZDvidLabelSlice *labelSlice = doc->getActiveLabelSlice(axis);
 
-  highlightSelectedObject(labelSlice, hl);
+//  highlightSelectedObject(labelSlice, hl);
 
 //  emit highlightModeEnabled(hl);
 }
@@ -3208,19 +3211,16 @@ void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
     if (!isHidden()) {
-      getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getActiveLabelSlice(
             getView()->getSliceAxis());
       if (tmpSlice != NULL) {
         if (getCompletePresenter()->isHighlight()) {
           highlightSelectedObject(tmpSlice, true);
         } else {
-          tmpSlice->paintBuffer();
+          tmpSlice->invalidatePaintBuffer();
         }
-        getCompleteDocument()->processObjectModified(tmpSlice, true);
+        getCompleteDocument()->bufferObjectModified(tmpSlice);
       }
-
-      getCompleteDocument()->endObjectModifiedMode();
       getCompleteDocument()->processObjectModified();
     }
     processLabelSliceSelectionChange();

@@ -5,6 +5,7 @@
 
 class QRect;
 class QRectF;
+class ZAffineRect;
 
 class ZRect2d : public ZStackObject
 {
@@ -24,10 +25,12 @@ public:
   inline int getWidth() const { return m_width; }
   inline int getHeight() const { return m_height; }
 
+  bool isEmpty() const;
+
   ZIntPoint getCenter() const;
 
-  bool hit(double x, double y, neutu::EAxis axis) override;
-  bool hit(double x, double y, double z) override;
+//  bool hit(double x, double y, neutu::EAxis axis) override;
+//  bool hit(double x, double y, double z) override;
 
   bool contains(double x, double y) const;
 
@@ -55,6 +58,9 @@ public:
     return m_zSpan;
   }
 
+  void updateZSpanWithRadius();
+  void updateZSpanWithMinSide();
+
   bool isValid() const;
 
   /*!
@@ -72,6 +78,9 @@ public:
    */
   void setMaxCorner(int x, int y);
   void setMinCorner(int x, int y);
+
+  void setStartCorner(int x, int y);
+  void setEndCorner(int x, int y);
 
   /*!
     * \brief Set size by fixing the first corner.
@@ -98,18 +107,26 @@ public:
   ZCuboid getBoundBox() const override;
   ZIntCuboid getIntBoundBox() const;
 
+  ZAffineRect getAffineRect() const;
+
 private:
   void init(int x0, int y0, int width, int height);
   void preparePen(QPen &pen) const;
 
 private:
-  int m_x0;
-  int m_y0;
-  int m_width;
-  int m_height;
-  int m_z;
-  int m_zSpan;
-  bool m_isPenetrating;
+  int m_x0 = 0;
+  int m_y0 = 0;
+  int m_width = 0;
+  int m_height = 0;
+  int m_z = 0;
+  int m_zSpan = 0;
+  bool m_isPenetrating = false;
+
+  int m_sx0 = 0;
+  int m_sy0 = 0;
+
+  mutable std::function<ZCuboid(const ZRect2d &rect)> _getBoundBox;
+  mutable std::function<ZAffineRect(const ZRect2d &rect)> _getAffineRect;
 //  NeuTube::EAxis m_sliceAxis;
 };
 

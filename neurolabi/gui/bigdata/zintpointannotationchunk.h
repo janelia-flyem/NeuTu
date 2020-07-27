@@ -6,8 +6,8 @@
 #include "geometry/zintpoint.h"
 #include "zitemchunk.hpp"
 
-template<typename T>
-class ZIntPointAnnotationChunk : public ZItemChunk<T, ZIntPoint>
+template<typename TItem>
+class ZIntPointAnnotationChunk : public ZItemChunk<TItem, ZIntPoint>
 {
 public:
   ZIntPointAnnotationChunk() {
@@ -20,16 +20,16 @@ public:
    * When there are multiple items within the given range, whichever checked
    * first will be returned.
    */
-  T pickItem(double x, double y, double z, double r);
+  TItem pickItem(double x, double y, double z, double r);
 
   /*!
    * \brief Pick the closest item within a range.
    */
-  T pickClosestItem(double x, double y, double z, double r);
-  T hitClosestItem(double x, double y, double z, double r);
+  TItem pickClosestItem(double x, double y, double z, double r);
+  TItem hitClosestItem(double x, double y, double z, double r);
 
 protected:
-  ZIntPoint getKey(const T &item) const override
+  ZIntPoint getKey(const TItem &item) const override
   {
     return getKey(item.getPosition());
   }
