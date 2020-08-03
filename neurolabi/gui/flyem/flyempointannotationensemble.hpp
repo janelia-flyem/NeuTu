@@ -13,7 +13,11 @@ template<typename TItem, typename TChunk>
 class FlyEmPointAnnotationEnsemble : public ZStackObject
 {
 public:
-  bool display(
+  FlyEmPointAnnotationEnsemble() {
+    m_usingCosmeticPen = true;
+  };
+
+  bool displayFunc(
       QPainter *painter, const DisplayConfig &config) const override;
 
   void addItem(const TItem &item);
@@ -66,7 +70,7 @@ protected:
 };
 
 template<typename T, typename TChunk>
-bool FlyEmPointAnnotationEnsemble<T, TChunk>::display(
+bool FlyEmPointAnnotationEnsemble<T, TChunk>::displayFunc(
     QPainter *painter, const DisplayConfig &config) const
 {
   bool painted = false;
@@ -82,6 +86,9 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display(
     });
   }, 1.5);
 
+#ifdef _DEBUG_0
+  std::cout << "FlyEmPointAnnotationEnsemble<T, TChunk>::display: " << painted << std::endl;
+#endif
   return painted;
 }
 
@@ -177,6 +184,15 @@ void FlyEmPointAnnotationEnsemble<T, TChunk>::processHit(ESelection s)
   case ESelection::SELECT_TOGGLE:
     if (m_hitItem.isValid()) {
       setSelectionAt(pos, !m_selector.isInSelectedSet(pos));
+    }
+    break;
+  case ESelection::SELECT_TOGGLE_SINGLE:
+    if (m_hitItem.isValid()) {
+      bool selected = m_selector.isInSelectedSet(pos);
+      deselectSub();
+      if (!selected) {
+        setSelectionAt(pos, true);
+      }
     }
     break;
   case ESelection::DESELECT:

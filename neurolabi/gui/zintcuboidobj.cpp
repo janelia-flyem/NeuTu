@@ -66,8 +66,8 @@ int ZIntCuboidObj::getDepth() const
 
 bool ZIntCuboidObj::isOnSlice(int z, neutu::EAxis sliceAxis) const
 {
-  return z >= getFirstCorner().getSliceCoord(sliceAxis) &&
-      z <= getLastCorner().getSliceCoord(sliceAxis);
+  return z >= getFirstCorner().getCoord(sliceAxis) &&
+      z <= getLastCorner().getCoord(sliceAxis);
 }
 
 void ZIntCuboidObj::setGridInterval(int intv)

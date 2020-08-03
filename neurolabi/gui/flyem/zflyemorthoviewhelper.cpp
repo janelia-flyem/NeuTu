@@ -104,8 +104,8 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
 //    ZPoint crossCenter = getMasterDoc()->getCrossHair()->getCenter();
     ZPoint mappedCrossCenter = getCrossCenter();
 //    mappedCrossCenter.shiftSliceAxisInverse(getMasterMvc);
-    mvc->getView()->setZ(
-          mappedCrossCenter.getSliceCoord(mvc->getView()->getSliceAxis()));
+    mvc->getView()->setDepth(
+          mappedCrossCenter.getValue(mvc->getView()->getSliceAxis()));
     mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 
 #if 0

@@ -176,8 +176,8 @@ private:
 
   QSlider *m_segSlider;
 
-  QToolBar *m_toolBar;
-  QToolBar *m_synapseToolbar;
+  QToolBar *m_mainToolBar;
+  QToolBar *m_verticalToolbar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;

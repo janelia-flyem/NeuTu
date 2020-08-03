@@ -80,6 +80,8 @@ Swc_Tree_Node* MakePointer(const ZPoint &center, double radius);
 Swc_Tree_Node* MakePointer(
     const ZPoint &center, double radius, Swc_Tree_Node *parent);
 
+Swc_Tree_Node* MakeChild(Swc_Tree_Node *parent);
+
 /*!
  * \brief Make a virtual node
  * \return Return the pointer of a virual Swc_Tree_Node

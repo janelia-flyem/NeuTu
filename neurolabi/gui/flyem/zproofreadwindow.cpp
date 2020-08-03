@@ -598,71 +598,71 @@ void ZProofreadWindow::enableTargetAction(bool on)
 
 void ZProofreadWindow::addSynapseActionToToolbar()
 {
-  m_synapseToolbar = new QToolBar(this);
-  m_synapseToolbar->setIconSize(QSize(24, 24));
-  m_synapseToolbar->addSeparator();
-  m_synapseToolbar->addWidget(new QLabel("Synapse"));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar = new QToolBar(this);
+  m_verticalToolbar->setIconSize(QSize(24, 24));
+  m_verticalToolbar->addSeparator();
+  m_verticalToolbar->addWidget(new QLabel("Synapse"));
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_ADD_PRE));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_ADD_POST));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_DELETE));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_MOVE));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_LINK));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_UNLINK));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_HLPSD));
 
-  m_synapseToolbar->addSeparator();
-  m_synapseToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+  m_verticalToolbar->addSeparator();
+  m_verticalToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
                                 ZActionFactory::ACTION_ENTER_RECT_ROI_MODE));
 
-  addToolBar(Qt::LeftToolBarArea, m_synapseToolbar);
+  addToolBar(Qt::LeftToolBarArea, m_verticalToolbar);
 }
 
 void ZProofreadWindow::createToolbar()
 {
-  m_toolBar = new QToolBar(this);
-  m_toolBar->setObjectName(QString::fromUtf8("toolBar"));
-  m_toolBar->setIconSize(QSize(24, 24));
-  addToolBar(Qt::TopToolBarArea, m_toolBar);
+  m_mainToolBar = new QToolBar(this);
+  m_mainToolBar->setObjectName(QString::fromUtf8("toolBar"));
+  m_mainToolBar->setIconSize(QSize(24, 24));
+  addToolBar(Qt::TopToolBarArea, m_mainToolBar);
 
-  m_toolBar->addAction(m_importBookmarkAction);
+  m_mainToolBar->addAction(m_importBookmarkAction);
 
-  m_toolBar->addSeparator();
-  m_toolBar->addAction(m_viewSynapseAction);
-  m_toolBar->addAction(m_viewBookmarkAction);
-  m_toolBar->addAction(m_viewTodoAction);
-  m_toolBar->addAction(m_viewRoiAction);
+  m_mainToolBar->addSeparator();
+  m_mainToolBar->addAction(m_viewSynapseAction);
+  m_mainToolBar->addAction(m_viewBookmarkAction);
+  m_mainToolBar->addAction(m_viewTodoAction);
+  m_mainToolBar->addAction(m_viewRoiAction);
 
-  m_toolBar->addSeparator();
-  m_toolBar->addAction(m_viewSegmentationAction);
+  m_mainToolBar->addSeparator();
+  m_mainToolBar->addAction(m_viewSegmentationAction);
   QAction *svAction = m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW);
-  m_toolBar->addAction(svAction);
+  m_mainToolBar->addAction(svAction);
   svAction->setVisible(false);
 
   m_segSlider = new QSlider(Qt::Horizontal, this);
   m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
   m_segSlider->setRange(0, 255);
   m_segSlider->setValue(77);
-  m_toolBar->addWidget(m_segSlider);
+  m_mainToolBar->addWidget(m_segSlider);
 
-  m_toolBar->addSeparator();
-  m_toolBar->addAction(m_contrastAction);
-  m_toolBar->addAction(m_smoothAction);
-  m_toolBar->addSeparator();
+  m_mainToolBar->addSeparator();
+  m_mainToolBar->addAction(m_contrastAction);
+  m_mainToolBar->addAction(m_smoothAction);
+  m_mainToolBar->addSeparator();
 
   QActionGroup *viewAxisGroup = new QActionGroup(this);
   auto addViewAction = [&](neutu::EAxis axis) {
@@ -690,7 +690,7 @@ void ZProofreadWindow::createToolbar()
     if (action) {
       action->setChecked(m_mainMvc->getSliceAxis() == axis);
       viewAxisGroup->addAction(action);
-      m_toolBar->addAction(action);
+      m_mainToolBar->addAction(action);
     }
   };
   addViewAction(neutu::EAxis::X);
@@ -698,24 +698,24 @@ void ZProofreadWindow::createToolbar()
   addViewAction(neutu::EAxis::Z);
   addViewAction(neutu::EAxis::ARB);
 
-  m_toolBar->addSeparator();
+  m_mainToolBar->addSeparator();
 
   if (m_openSequencerAction != NULL) {
-     m_toolBar->addAction(m_openSequencerAction);
+     m_mainToolBar->addAction(m_openSequencerAction);
   }
 
-  m_toolBar->addAction(m_neuprintAction);
+  m_mainToolBar->addAction(m_neuprintAction);
 
-  m_toolBar->addAction(m_openTodoAction);
-  m_toolBar->addAction(m_openProtocolsAction);
-  m_toolBar->addAction(m_roiToolAction);
-  m_toolBar->addAction(m_openAuthDialogAction);
-  m_toolBar->addAction(m_openProtocolAssignmentDialogAction);
+  m_mainToolBar->addAction(m_openTodoAction);
+  m_mainToolBar->addAction(m_openProtocolsAction);
+  m_mainToolBar->addAction(m_roiToolAction);
+  m_mainToolBar->addAction(m_openAuthDialogAction);
+  m_mainToolBar->addAction(m_openProtocolAssignmentDialogAction);
 
-  m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+  m_mainToolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_VIEW_SCREENSHOT));
 
-  m_toolBar->addAction(
+  m_mainToolBar->addAction(
         m_actionLibrary->getAction(ZActionFactory::ACTION_USER_FEEDBACK));
 
   addSynapseActionToToolbar();

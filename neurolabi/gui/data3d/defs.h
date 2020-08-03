@@ -23,8 +23,8 @@ enum class ETarget {
   DYNAMIC_OBJECT_CANVAS,
   PIXEL_OBJECT_CANVAS,
   HD_OBJECT_CANVAS,
-  ROAMING_OBJECT_CANVAS,
   NONBLOCKING_OBJECT_CANVAS,
+  ROAMING_OBJECT_CANVAS,
   WIDGET,
   CANVAS_3D,
   ONLY_3D,
@@ -33,8 +33,8 @@ enum class ETarget {
 
 const static int TARGET_COUNT = int(ETarget::TARGET_NONE);
 
-}
+} //namespace data3d
 
-}
+} //namespace neutu
 
 #endif // DATA3D_DEFS_H

@@ -79,6 +79,11 @@ Swc_Tree_Node* SwcTreeNode::MakePointer(
   return MakePointer(pos.x(), pos.y(), pos.z(), radius, parent);
 }
 
+Swc_Tree_Node* SwcTreeNode::MakeChild(Swc_Tree_Node *parent)
+{
+  return MakePointer(0, 0, 0, 1.0, parent);
+}
+
 Swc_Tree_Node* SwcTreeNode::makeVirtualNode()
 {
   return Make_Virtual_Swc_Tree_Node();

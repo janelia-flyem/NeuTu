@@ -293,7 +293,7 @@ bool ZStackBall::isCuttingPlane(double z, double r, double n, double zScale)
 bool ZStackBall::isCuttingPlane(
     double n, double zScale, neutu::EAxis sliceAxis) const
 {
-  double z = m_center.getSliceCoord(sliceAxis);
+  double z = m_center.getValue(sliceAxis);
 
   return isCuttingPlane(z, m_r, n, zScale);
 }

@@ -557,8 +557,10 @@ bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
 
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
-    QPen pen(getColor());
+    QPen pen = painter->pen();
+    pen.setColor(getColor());
     pen.setCosmetic(m_usingCosmeticPen);
+    pen.setWidthF(getPenWidth());
     painter->setPen(pen);
 
     const double depthScale = 2.0;
@@ -601,7 +603,7 @@ bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
     painted = s3Painter.getPaintedHint();
   }
 
-  return false;
+  return painted;
 }
 
 std::ostream& operator<< (std::ostream &stream, const ZDvidSynapse &synapse)

@@ -1190,6 +1190,8 @@ void ZStackDoc::selectHitSwcTreeNodeFloodFilling(ZSwcTree *tree)
   std::set<Swc_Tree_Node*> oldSelected = tree->getSelectedNode();
 
   tree->selectHitNodeFloodFilling();
+  bufferObjectSelectionChanged(tree);
+  processObjectModified();
 
   const std::set<Swc_Tree_Node*> &newSelected = tree->getSelectedNode();
 
@@ -1592,7 +1594,9 @@ void ZStackDoc::selectConnectedNode()
        iter != swcList.end(); ++iter) {
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
     tree->selectConnectedNode();
+    bufferObjectSelectionChanged(tree);
   }
+  processObjectModified();
 
   notifySelectionAdded(oldSet, getSelectedSwcNodeSet());
 
@@ -4578,7 +4582,9 @@ void ZStackDoc::deselectAllSwcTreeNodes()
           tree->getSelectedNode().begin(), tree->getSelectedNode().end());
           */
     tree->deselectAllNode();
+    bufferObjectSelectionChanged(tree);
   }
+  processObjectModified();
 
 //  for (std::set<Swc_Tree_Node*>::iterator it = nodeSet.begin();
 //       it != nodeSet.end(); it++) {
@@ -5629,6 +5635,7 @@ void ZStackDoc::selectSwcTreeNode(
     selected.append(tn);
 
     tree->selectNode(tn, append);
+    processObjectModified(tree);
 
     notifySelectionChanged(selected, deselected);
   }
@@ -5641,6 +5648,8 @@ void ZStackDoc::deselectSwcTreeNode(
     tree->deselectNode(selected);
     QList<Swc_Tree_Node*> nodeSet;
     nodeSet.append(selected);
+    bufferObjectSelectionChanged(tree);
+    processObjectModified();
     notifyDeselected(nodeSet);
   }
 }
@@ -5659,6 +5668,8 @@ void ZStackDoc::selectHitSwcTreeNode(ZSwcTree *tree, bool append)
 {
   if (tree != NULL) {
     tree->selectHitNode(append);
+    bufferObjectSelectionChanged(tree);
+    processObjectModified();
   }
 }
 
@@ -5670,6 +5681,8 @@ void ZStackDoc::deselectHitSwcTreeNode(ZSwcTree *tree)
     if (tn != NULL) {
       deselected.append(tn);
     }
+    bufferObjectSelectionChanged(tree);
+    processObjectModified();
   }
   notifyDeselected(deselected);
 }
@@ -5735,6 +5748,7 @@ Swc_Tree_Node *ZStackDoc::selectSwcTreeNode(int x, int y, int z, bool append)
   }
 
   hitTree->selectHitNode(append);
+  processObjectModified(hitTree);
 
   emit swcTreeNodeSelectionChanged(selected, deselected);
 
@@ -6038,6 +6052,12 @@ void ZStackDoc::bufferObjectVisibilityChanged(
     const ZStackObject *obj, bool sync)
 {
   bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED, sync);
+}
+
+void ZStackDoc::bufferObjectSelectionChanged(
+    const ZStackObject *obj, bool sync)
+{
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, sync);
 }
 
 void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
@@ -9646,7 +9666,7 @@ ZIntPoint ZStackDoc::getStackOffset() const
 
 int ZStackDoc::getStackOffset(neutu::EAxis axis) const
 {
-  return getStackOffset().getSliceCoord(axis);
+  return getStackOffset().getCoord(axis);
 }
 
 ZIntPoint ZStackDoc::getStackSize() const
@@ -10863,7 +10883,8 @@ void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
   processObjectModified();
 }
 
-void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool visible)
+void ZStackDoc::setVisible(
+    ZStackObject::EType type, std::string source, bool visible)
 {
   ZOUT(LTRACE(), 5) << "Set visible";
   TStackObjectList &objList = getObjectList(type);

@@ -24,8 +24,7 @@ ZSlider::ZSlider(bool useArrow, QWidget *parent) : QWidget(parent)
   m_label->setText(QString("100 / 100"));
   m_label->setMinimumSize(m_label->sizeHint());
 
-  m_label->setText(QString("%1 / %2").arg(m_slider->value()).
-                   arg(m_slider->maximum()));
+  setText();
   m_label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
   connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(notifyValueChanged(int)));
@@ -107,8 +106,9 @@ void ZSlider::setText()
 
 void ZSlider::setText(int value)
 {
-  m_label->setText(QString("%1 / %2").arg(value, 3, 10, QChar(' ')).
-                   arg(m_slider->maximum()));
+  m_label->setText(QString("%1 / %2")
+                   .arg(value - m_slider->minimum() + 1, 3, 10, QChar(' '))
+                   .arg(m_slider->maximum() - m_slider->minimum() + 1));
   m_label->setTextFormat(Qt::PlainText);
 }
 

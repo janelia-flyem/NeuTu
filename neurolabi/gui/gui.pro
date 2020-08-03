@@ -530,21 +530,6 @@ HEADERS += mainwindow.h \
     dvid/zdvidannotation.h \
     zroiwidget.h \
     zstackdocselector.h \
-    protocols/protocolswitcher.h \
-    protocols/protocolchooser.h \
-    protocols/protocolmetadata.h \
-    protocols/protocoldialog.h \
-    protocols/doNthingsprotocol.h \
-    protocols/synapsepredictionprotocol.h \
-    protocols/synapsepredictioninputdialog.h \
-    protocols/synapsepredictionbodyinputdialog.h \
-    protocols/synapsereviewprotocol.h \
-    protocols/synapsereviewinputdialog.h \
-    protocols/connectionvalidationprotocol.h \ 
-    protocols/todoreviewprotocol.h \
-    protocols/todoreviewinputdialog.h \
-    protocols/orphanlinkprotocol.h \
-    protocols/todosearcher.h \
     zactionlibrary.h \
     zmenufactory.h \
     zcrosshair.h \
@@ -609,7 +594,6 @@ HEADERS += mainwindow.h \
     dvid/zdviddataslicehelper.h \
     zstackdocnullmenufactory.h \
     zmenuconfig.h \
-    protocols/taskbodymerge.h \
     zobjsmodelmanager.h \
     zobjsmodelfactory.h \
     concurrent/zworkthread.h \
@@ -620,6 +604,22 @@ HEADERS += mainwindow.h \
     zstackblockfactory.h \
     dvid/zdvidstackblockfactory.h \
     zstackblocksource.h \
+    protocols/protocolswitcher.h \
+    protocols/protocolchooser.h \
+    protocols/protocolmetadata.h \
+    protocols/protocoldialog.h \
+    protocols/doNthingsprotocol.h \
+    protocols/synapsepredictionprotocol.h \
+    protocols/synapsepredictioninputdialog.h \
+    protocols/synapsepredictionbodyinputdialog.h \
+    protocols/synapsereviewprotocol.h \
+    protocols/synapsereviewinputdialog.h \
+    protocols/connectionvalidationprotocol.h \
+    protocols/todoreviewprotocol.h \
+    protocols/todoreviewinputdialog.h \
+    protocols/orphanlinkprotocol.h \
+    protocols/todosearcher.h \
+    protocols/taskbodymerge.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
     protocols/tasktesttask.h \
@@ -641,11 +641,11 @@ HEADERS += mainwindow.h \
 
 FORMS += mainwindow.ui \
     flyemdataform.ui \
-    protocols/protocolassignmentdialog.ui \
-    protocols/protocolchooseassignmentdialog.ui \
     tilemanager.ui \
     newprojectmainwindow.ui \
     zflyemcontrolform.ui \
+    protocols/protocolassignmentdialog.ui \
+    protocols/protocolchooseassignmentdialog.ui \
     protocols/protocolchooser.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
@@ -665,13 +665,6 @@ SOURCES += main.cpp \
     dvid/zdvidglobal.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
-    protocols/protocolassignment.cpp \
-    protocols/protocolassignmentdialog.cpp \
-    protocols/protocolassignmentclient.cpp \
-    protocols/protocolassignmenttask.cpp \
-    protocols/protocolassignmenturl.cpp \
-    protocols/protocolchooseassignmentdialog.cpp \
-    protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
     plotsettings.cpp \
@@ -816,16 +809,16 @@ SOURCES += main.cpp \
     zmainwindowmessageprocessor.cpp \
     zstackdocloader.cpp \
     zstackwidget.cpp \
-    dvid/zdvidversiondag.cpp \
-    dvid/zdvidversion.cpp \
-    dvid/zdvidversionnode.cpp \
     zbodysplitbutton.cpp \
     zmessagefactory.cpp \
     zmessagemanagermodel.cpp \
     zflyemcontrolform.cpp \
+    zpixmap.cpp \
+    dvid/zdvidversiondag.cpp \
+    dvid/zdvidversion.cpp \
+    dvid/zdvidversionnode.cpp \
     dvid/zdvidtileensemble.cpp \
     dvid/zdvidlabelslice.cpp \
-    zpixmap.cpp \
     dvid/zdvidgrayslice.cpp \
     dvid/zdvidsparsestack.cpp \
     zwidgetmessage.cpp \
@@ -934,6 +927,13 @@ SOURCES += main.cpp \
     z3dwindowcontroller.cpp \
     zstackblockfactory.cpp \    
     zstackblocksource.cpp \
+    protocols/protocolassignment.cpp \
+    protocols/protocolassignmentdialog.cpp \
+    protocols/protocolassignmentclient.cpp \
+    protocols/protocolassignmenttask.cpp \
+    protocols/protocolassignmenturl.cpp \
+    protocols/protocolchooseassignmentdialog.cpp \
+    protocols/taskprotocolmocktask.cpp \
     protocols/protocoltaskfactory.cpp \
     protocols/protocoltaskconfig.cpp \
     protocols/taskfalsesplitreview.cpp \

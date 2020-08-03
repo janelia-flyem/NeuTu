@@ -81,6 +81,7 @@ public:
   void setTodoDelegate(std::unique_ptr<ZFlyEmToDoDelegate> &&delegate);
 
   bool allowingBlinkingSegmentation() const;
+  bool allowingBodySplit() const;
 //  void setLabelAlpha(int alpha) {
 //    m_labelAlpha = alpha;
 //  }
@@ -181,6 +182,8 @@ public slots:
   void toggleSupervoxelView(bool on);
   void takeScreenshot();
 
+  void updateActions();
+
 protected:
   virtual void tryAddTodoItem(
       int x, int y, int z, bool checked, neutu::EToDoAction action,
@@ -196,19 +199,19 @@ protected:
 private:
 //  void connectAction();
   void tryAddBookmarkMode();
-  void tryAddBookmarkMode(double x, double y);
-  void tryAddTodoItemMode(double x, double y);
+//  void tryAddBookmarkMode(double x, double y);
+//  void tryAddTodoItemMode(double x, double y);
   void addActiveDecorationAsBookmark();
   void init();
   void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
                      bool tryingLink);
   void tryAddSynapse(const ZIntPoint &pt, bool tryingLink);
   void tryMoveSynapse(const ZIntPoint &pt);
-  void tryTodoItemMode();
-  bool updateActiveObjectForSynapseMove();
-  bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
-  void updateActiveObjectForSynapseAdd();
-  void updateActiveObjectForSynapseAdd(const ZPoint &currentDataPos);
+//  void tryTodoItemMode();
+//  bool updateActiveObjectForSynapseMove();
+//  bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
+//  void updateActiveObjectForSynapseAdd();
+//  void updateActiveObjectForSynapseAdd(const ZPoint &currentDataPos);
 
   ZPoint getLastMouseReleasePosition(Qt::MouseButtons buttons) const;
 

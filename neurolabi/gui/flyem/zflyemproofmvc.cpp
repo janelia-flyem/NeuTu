@@ -607,13 +607,16 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(suppressObjectVisible()));
   connect(getView(), SIGNAL(sliceSliderReleased()),
           this, SLOT(recoverObjectVisible()));
+  connect(getView(), SIGNAL(sliceAxisChanged()), this, SLOT(processStateUpdate()));
 //  connect(this, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
           m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
   connect(getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
           m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
+//  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+//          this, SLOT(syncBodySelectionToOrthoWindow()));
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
-          this, SLOT(syncBodySelectionToOrthoWindow()));
+          this, SLOT(updateBodySelection()));
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
           this, SLOT(processMergeUploaded()));
 
@@ -627,6 +630,66 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, &ZFlyEmProofMvc::updateMeshWindowDeep);
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateBookmarkTable()));
+  connect(getPresenter(), SIGNAL(bodySplitTriggered()),
+          this, SLOT(notifySplitTriggered()));
+  connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
+          this, SLOT(annotateSelectedBody()));
+  connect(getPresenter(), &ZStackPresenter::bodyExpertStatusTriggered,
+          this, &ZFlyEmProofMvc::setExpertBodyStatus);
+  connect(getPresenter(), SIGNAL(bodyConnectionTriggered()),
+          this, SLOT(showBodyConnection()));
+  connect(getPresenter(), SIGNAL(bodyProfileTriggered()),
+          this, SLOT(showBodyProfile()));
+  connect(getPresenter(), SIGNAL(bodyCheckinTriggered(neutu::EBodySplitMode)),
+          this, SLOT(checkInSelectedBody(neutu::EBodySplitMode)));
+  connect(getPresenter(), SIGNAL(bodyForceCheckinTriggered()),
+          this, SLOT(checkInSelectedBodyAdmin()));
+  connect(getPresenter(), SIGNAL(bodyCheckoutTriggered(neutu::EBodySplitMode)),
+          this, SLOT(checkOutBody(neutu::EBodySplitMode)));
+  connect(getCompletePresenter(), SIGNAL(goingToTBar()),
+          this, SLOT(goToTBar()));
+  connect(getCompletePresenter(), SIGNAL(goingToBody()),
+          this, SLOT(goToBody()));
+  connect(getCompletePresenter(), SIGNAL(goingToBodyBottom()),
+          this, SLOT(goToBodyBottom()));
+  connect(getCompletePresenter(), SIGNAL(goingToBodyTop()),
+          this, SLOT(goToBodyTop()));
+  connect(getCompletePresenter(), SIGNAL(selectingBody()),
+          this, SLOT(selectBody()));
+  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
+          this, SLOT(selectBodyInRoi(bool)));
+  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi()),
+          this, SLOT(selectBodyInRoi()));
+  connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
+          this, SLOT(decomposeBody()));
+  connect(getCompletePresenter(), SIGNAL(bodyCropTriggered()),
+          this, SLOT(cropBody()));
+  connect(getCompletePresenter(), SIGNAL(bodyChopTriggered()),
+            this, SLOT(chopBody()));
+  connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
+          this, SLOT(mergeSelected()));
+  connect(getCompletePresenter(), SIGNAL(bodyUnmergeTriggered()),
+          this, SLOT(unmergeSelected()));
+  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
+          this, SLOT(updateCoarseBodyWindowColor()));
+  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
+          this, SLOT(updateCoarseBodyWindowColor()));
+  connect(getCompleteDocument(), SIGNAL(bodyMergeEdited()),
+          this, SLOT(notifyBodyMergeEdited()));
+  connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
+          this, SLOT(updateUserBookmarkTable()));
+  connect(getCompleteDocument(), SIGNAL(assignedBookmarkModified()),
+          this, SLOT(updateAssignedBookmarkTable()));
+
+  connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
+          this, SLOT(checkInBodyWithMessage(uint64_t)));
+  connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
+          this, SLOT(checkBodyWithMessage(uint64_t,bool)));
+  connect(getDocument().get(),
+          SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
+          this, SLOT(processSelectionChange(ZStackObjectSelector)));
+  connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
+          this, SLOT(highlightSelectedObject(bool)));
 }
 
 void ZFlyEmProofMvc::applySettings()
@@ -2488,8 +2551,13 @@ void ZFlyEmProofMvc::endMergeProfile()
 void ZFlyEmProofMvc::diagnose()
 {
   emit messageGenerated(
-        ZWidgetMessage("Start diagnosing...", neutu::EMessageType::INFORMATION));
+        ZWidgetMessage(
+          "Start diagnosing...", neutu::EMessageType::INFORMATION,
+          ZWidgetMessage::TARGET_TEXT));
 
+  emit messageGenerated(
+        ZWidgetMessage(
+          (std::ostringstream() << getView()->getSliceViewTransform()).str()));
   emit messageGenerated(
         ZWidgetMessage(getDvidTarget().toJsonObject().dumpString(2),
                        neutu::EMessageType::INFORMATION));
@@ -2601,98 +2669,8 @@ void ZFlyEmProofMvc::createPresenter()
 
 void ZFlyEmProofMvc::customInit()
 {
-  connect(getPresenter(), SIGNAL(bodySplitTriggered()),
-          this, SLOT(notifySplitTriggered()));
-  connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
-          this, SLOT(annotateSelectedBody()));
-  connect(getPresenter(), &ZStackPresenter::bodyExpertStatusTriggered,
-          this, &ZFlyEmProofMvc::setExpertBodyStatus);
-  connect(getPresenter(), SIGNAL(bodyConnectionTriggered()),
-          this, SLOT(showBodyConnection()));
-  connect(getPresenter(), SIGNAL(bodyProfileTriggered()),
-          this, SLOT(showBodyProfile()));
-  connect(getPresenter(), SIGNAL(bodyCheckinTriggered(neutu::EBodySplitMode)),
-          this, SLOT(checkInSelectedBody(neutu::EBodySplitMode)));
-  connect(getPresenter(), SIGNAL(bodyForceCheckinTriggered()),
-          this, SLOT(checkInSelectedBodyAdmin()));
-  connect(getPresenter(), SIGNAL(bodyCheckoutTriggered(neutu::EBodySplitMode)),
-          this, SLOT(checkOutBody(neutu::EBodySplitMode)));
-//  connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
-//          this, SLOT(processViewChange()));
-  connect(getCompletePresenter(), SIGNAL(goingToTBar()),
-          this, SLOT(goToTBar()));
-  connect(getCompletePresenter(), SIGNAL(goingToBody()),
-          this, SLOT(goToBody()));
-  connect(getCompletePresenter(), SIGNAL(goingToBodyBottom()),
-          this, SLOT(goToBodyBottom()));
-  connect(getCompletePresenter(), SIGNAL(goingToBodyTop()),
-          this, SLOT(goToBodyTop()));
-  connect(getCompletePresenter(), SIGNAL(selectingBody()),
-          this, SLOT(selectBody()));
-  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi(bool)),
-          this, SLOT(selectBodyInRoi(bool)));
-  connect(getCompletePresenter(), SIGNAL(selectingBodyInRoi()),
-          this, SLOT(selectBodyInRoi()));
-  connect(getCompletePresenter(), SIGNAL(bodyDecomposeTriggered()),
-          this, SLOT(decomposeBody()));
-  connect(getCompletePresenter(), SIGNAL(bodyCropTriggered()),
-          this, SLOT(cropBody()));
-//  connect(getCompletePresenter(), SIGNAL(bodyChopTriggered()),
-//          this, SLOT(chopBodyZ()));
-  connect(getCompletePresenter(), SIGNAL(bodyChopTriggered()),
-            this, SLOT(chopBody()));
-  connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
-          this, SLOT(mergeSelected()));
-  connect(getCompletePresenter(), SIGNAL(bodyUnmergeTriggered()),
-          this, SLOT(unmergeSelected()));
-  //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
-//          this, SLOT(processLabelSliceSelectionChange()));
-
-//  connect(getDocument().get(), SIGNAL(activeViewModified()),
-//          this, SLOT(updateActiveViewData()));
-//  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-//          getView(), SLOT(paintObject()));
-//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-//          getView(), SLOT(paintObject()));
-//  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-//          &m_mergeProject, SLOT(update3DBodyViewDeep()));
-//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-//          &m_mergeProject, SLOT(update3DBodyViewDeep()));
-
-  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-          this, SLOT(updateCoarseBodyWindowColor()));
-  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-          this, SLOT(updateCoarseBodyWindowColor()));
-  connect(getCompleteDocument(), SIGNAL(bodyMergeEdited()),
-          this, SLOT(notifyBodyMergeEdited()));
-
-//  connect(getCompleteDocument(), SIGNAL(bodyMerged()),
-//          getCompleteDocument(), SLOT(saveMergeOperation()));
-//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-//          getCompleteDocument(), SLOT(saveMergeOperation()));
-
-  connect(getCompleteDocument(), SIGNAL(userBookmarkModified()),
-          this, SLOT(updateUserBookmarkTable()));
-  connect(getCompleteDocument(), SIGNAL(assignedBookmarkModified()),
-          this, SLOT(updateAssignedBookmarkTable()));
-
-  connect(getCompleteDocument(), SIGNAL(bodyIsolated(uint64_t)),
-          this, SLOT(checkInBodyWithMessage(uint64_t)));
-  connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
-          this, SLOT(checkBodyWithMessage(uint64_t,bool)));
 //  m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
-
-
-//  connect(getCompleteDocument(), SIGNAL(bodyUnmerged()),
-//          getView(), SLOT(paintObject()));
-  connect(getDocument().get(),
-          SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
-          this, SLOT(processSelectionChange(ZStackObjectSelector)));
-  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
-          this, SLOT(updateBodySelection()));
-
-
   m_splitProject.setDocument(getDocument());
   connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
           this, SLOT(zoomTo(int,int,int,int)));
@@ -2700,22 +2678,6 @@ void ZFlyEmProofMvc::customInit()
 //          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
           this, SLOT(updateSplitBody()));
-  /*
-  connect(this, SIGNAL(splitBodyLoaded(uint64_t,neutu::EBodySplitMode)),
-          &m_splitProject, SLOT(start()));
-          */
-  /*
-  connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
-          this, SIGNAL(messageGenerated(QString, bool)));
-          */
-
-//  m_mergeProject.setDocument(getDocument());
-  connect(getPresenter(), SIGNAL(labelSliceSelectionChanged()),
-          this, SLOT(updateBodySelection()));
-  connect(getCompletePresenter(), SIGNAL(highlightingSelected(bool)),
-          this, SLOT(highlightSelectedObject(bool)));
-//          &m_mergeProject, SLOT(highlightSelectedObject(bool)));
-
 
   ZWidgetMessage::ConnectMessagePipe(&m_splitProject, this, false);
 //  ZWidgetMessage::ConnectMessagePipe(&m_mergeProject, this, false);
@@ -3099,7 +3061,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
   }
 
   ZDvidLabelSlice *labelSlice =
-      getCompleteDocument()->getActiveLabelSlice(neutu::EAxis::Z);
+      getCompleteDocument()->getActiveLabelSlice(getView()->getSliceAxis());
   if (labelSlice != NULL){
     if (labelSlice->isSupervoxel()) {
       std::vector<uint64_t> selected =
@@ -3108,17 +3070,18 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
         updateSupervoxelMessge(selected.front());
       }
     } else {
-      std::vector<uint64_t> selected =
-          labelSlice->getSelector().getSelectedList();
-      if (selected.size() > 0) {
+      std::set<uint64_t> selected =
+          labelSlice->getRecentSelected(neutu::ELabelSource::ORIGINAL);
+//          labelSlice->getSelector().getSelectedList();
+      if (!selected.empty()) {
         ZFlyEmBodyAnnotation finalAnnotation =
             getCompleteDocument()->getFinalAnnotation(selected);
 
-        updateBodyMessage(selected.front(), finalAnnotation);
+        updateBodyMessage(*(selected.begin()), finalAnnotation);
       }
 
-      std::vector<uint64_t> deselected =
-          labelSlice->getSelector().getDeselectedList();
+      std::set<uint64_t> deselected =
+          labelSlice->getRecentDeselected(neutu::ELabelSource::ORIGINAL);
 
       getCompleteDocument()->removeSelectedAnnotation(
             deselected.begin(), deselected.end());
@@ -3209,22 +3172,8 @@ void ZFlyEmProofMvc::runSplit()
 
 void ZFlyEmProofMvc::updateBodySelection()
 {
-  if (getCompleteDocument() != NULL) {
-    if (!isHidden()) {
-      ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getActiveLabelSlice(
-            getView()->getSliceAxis());
-      if (tmpSlice != NULL) {
-        if (getCompletePresenter()->isHighlight()) {
-          highlightSelectedObject(tmpSlice, true);
-        } else {
-          tmpSlice->invalidatePaintBuffer();
-        }
-        getCompleteDocument()->bufferObjectModified(tmpSlice);
-      }
-      getCompleteDocument()->processObjectModified();
-    }
-    processLabelSliceSelectionChange();
-  }
+  processLabelSliceSelectionChange();
+  syncBodySelectionToOrthoWindow();
 }
 
 uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
@@ -3256,9 +3205,20 @@ uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
   return bodyId;
 }
 
-void ZFlyEmProofMvc::notifyStateUpdate()
+void ZFlyEmProofMvc::updateActions()
 {
+  getCompletePresenter()->updateActions();
+}
+
+void ZFlyEmProofMvc::processStateUpdate()
+{
+  updateActions();
   emit stateUpdated(this);
+}
+
+bool ZFlyEmProofMvc::allowingBodySplit() const
+{
+  return getCompletePresenter()->allowingBodySplit();
 }
 
 bool ZFlyEmProofMvc::hasSequencer()
@@ -4686,6 +4646,7 @@ void ZFlyEmProofMvc::presentBodySplit(
   updateAssignedBookmarkTable();
   updateUserBookmarkTable();
   updateViewButton();
+  processStateUpdate();
 
 //  emit bookmarkUpdated(&m_splitProject);
 //  getView()->redrawObject();
@@ -4804,6 +4765,7 @@ void ZFlyEmProofMvc::exitSplit()
     updateAssignedBookmarkTable();
     updateUserBookmarkTable();
     updateViewButton();
+    processStateUpdate();
   }
 }
 
@@ -5222,7 +5184,7 @@ void ZFlyEmProofMvc::chopBodyZ()
       QFuture<void> future =
           QtConcurrent::run(
             &m_splitProject, &ZFlyEmBodySplitProject::chopBodyZ,
-            getView()->getCurrentZ(), dlg);
+            getView()->getCurrentDepth(), dlg);
       m_futureMap[threadId] = future;
     }
   }
@@ -5490,7 +5452,7 @@ void ZFlyEmProofMvc::goToNearestRoi()
   if (project != NULL) {
     dlg->updateRoi();
     if (project->hasRoi()) {
-      int z = project->getNearestRoiZ(getView()->getCurrentZ());
+      int z = project->getNearestRoiZ(getView()->getCurrentDepth());
       goToSlice(z);
     }
   }
@@ -5503,7 +5465,7 @@ void ZFlyEmProofMvc::estimateRoi()
   if (project != NULL) {
     dlg->updateRoi();
     if (project->hasRoi()) {
-      int z = getView()->getCurrentZ();
+      int z = getView()->getCurrentDepth();
       ZClosedCurve *roi = new ZClosedCurve;
       project->estimateRoi(z, roi);
       project->setRoi(roi, z);
@@ -5516,7 +5478,7 @@ void ZFlyEmProofMvc::movePlaneRoi(double dx, double dy)
 {
   QList<ZSwcTree*> treeList =
       getDocument()->getSwcList(ZStackObjectRole::ROLE_ROI);
-  int z = getView()->getCurrentZ();
+  int z = getView()->getCurrentDepth();
   std::vector<Swc_Tree_Node*> nodeList;
   foreach (ZSwcTree *tree, treeList) {
     std::vector<Swc_Tree_Node*> subNodeList =  tree->getNodeOnPlane(z);
@@ -5527,29 +5489,31 @@ void ZFlyEmProofMvc::movePlaneRoi(double dx, double dy)
 
 void ZFlyEmProofMvc::rotatePlaneRoi(double theta)
 {
-  int z = getView()->getCurrentZ();
+  int z = getView()->getCurrentDepth();
   getCompleteDocument()->executeRotateRoiPlaneCommand(z, theta);
 }
 
 void ZFlyEmProofMvc::scalePlaneRoi(double sx, double sy)
 {
-  int z = getView()->getCurrentZ();
+  int z = getView()->getCurrentDepth();
   getCompleteDocument()->executeScaleRoiPlaneCommand(z, sx, sy);
 }
 
 void ZFlyEmProofMvc::loadRoiProject()
 {
   updateRoiGlyph();
+  /*
   getPresenter()->setActiveObjectSize(
         ZStackPresenter::ROLE_SWC,
         flyem::GetFlyEmRoiMarkerRadius(getDocument()->getStackWidth(),
                                        getDocument()->getStackHeight()));
+                                       */
 }
 
 void ZFlyEmProofMvc::closeRoiProject()
 {
   updateRoiGlyph();
-  getPresenter()->setDefaultActiveObjectSize(ZStackPresenter::ROLE_SWC);
+//  getPresenter()->setDefaultActiveObjectSize(ZStackPresenter::ROLE_SWC);
   close3DWindow(m_roiWindow);
 }
 
@@ -5629,6 +5593,9 @@ void ZFlyEmProofMvc::goToTBar()
 
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
+  getDocument()->setVisible(
+        ZStackObject::EType::FLYEM_SYNAPSE_ENSEMBLE, visible);
+  /*
   ZDvidSynapseEnsemble *se =
       getCompleteDocument()->getDvidSynapseEnsemble(neutu::EAxis::Z);
   if (se != NULL) {
@@ -5639,11 +5606,13 @@ void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
     getCompleteDocument()->processObjectModified(se);
     getCompleteDocument()->processObjectModified();
   }
+  */
 }
 
 void ZFlyEmProofMvc::showBookmark(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::EType::FLYEM_BOOKMARK, visible);
+  getCompleteDocument()->setVisible(
+        ZStackObject::EType::FLYEM_BOOKMARK, visible);
 //  m_splitProject.setBookmarkVisible(visible);
 //  m_mergeProject.setBookmarkVisible(visible);
 }
@@ -5722,7 +5691,8 @@ void ZFlyEmProofMvc::toggleData()
 
 void ZFlyEmProofMvc::showTodo(bool visible)
 {
-  getCompleteDocument()->setVisible(ZStackObject::EType::FLYEM_TODO_LIST, visible);
+  getDocument()->setVisible(
+        ZStackObject::EType::FLYEM_TODO_ENSEMBLE, visible);
 }
 
 /*
@@ -6284,7 +6254,7 @@ void ZFlyEmProofMvc::annotateTodo()
 void ZFlyEmProofMvc::selectBodyInRoi(bool appending)
 {
   getCompleteDocument()->selectBodyInRoi(
-        getView()->getCurrentZ(), appending, true);
+        getView()->getCurrentDepth(), appending, true);
 }
 
 void ZFlyEmProofMvc::sortAssignedBookmarkTable()

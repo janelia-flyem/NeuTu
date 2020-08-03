@@ -180,8 +180,8 @@ double ZModelViewTransform::getCutDepth(const ZPoint &startPlane) const
   if (getSliceAxis() == neutu::EAxis::ARB) {
     d = (getCutCenter() - startPlane).dot(getCutPlaneNormal());
   } else {
-    d = getCutCenter().getSliceCoord(getSliceAxis()) -
-        startPlane.getSliceCoord(getSliceAxis());
+    d = getCutCenter().getValue(getSliceAxis()) -
+        startPlane.getValue(getSliceAxis());
   }
 
   return d;
@@ -194,7 +194,7 @@ void ZModelViewTransform::setCutDepth(const ZPoint &startPlane, double d)
   if (getSliceAxis() == neutu::EAxis::ARB) {
     d0 = (startPlane - getCutCenter()).dot(getCutPlaneNormal());
   } else {
-    d0 = (getCutCenter() - startPlane).getSliceCoord(getSliceAxis());
+    d0 = (getCutCenter() - startPlane).getValue(getSliceAxis());
   }
 
   moveCutDepth(d - d0);
@@ -210,6 +210,12 @@ void ZModelViewTransform::setCutPlane(
     const ZPoint &center, const ZPoint &v1, const ZPoint &v2)
 {
   setCutPlane(ZAffinePlane(center, v1, v2));
+}
+
+void ZModelViewTransform::setCutPlane(const ZPoint &v1, const ZPoint &v2)
+{
+  m_cutPlane.setPlane(v1, v2);
+  m_sliceAxis = neutu::EAxis::ARB;
 }
 
 void ZModelViewTransform::setCutCenter(const ZPoint &pt)

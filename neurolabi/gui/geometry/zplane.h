@@ -16,12 +16,13 @@ public:
   ZPlane(const ZPoint &v1, const ZPoint &v2);
 
   bool isValid() const;
+  void invalidate();
 
-  inline ZPoint getV1() const {
+  inline const ZPoint& getV1() const {
     return m_v1;
   }
 
-  inline ZPoint getV2() const {
+  inline const ZPoint& getV2() const {
     return m_v2;
   }
 
@@ -53,6 +54,8 @@ public:
    * \return Transformed point.
    */
   ZPoint align(const ZPoint &pt) const;
+
+  ZPoint mapAligned(double u, double v) const;
 
   friend std::ostream& operator<<(std::ostream& stream, const ZPlane &p);
 

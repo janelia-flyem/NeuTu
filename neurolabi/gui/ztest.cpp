@@ -31510,7 +31510,7 @@ void ZTest::test(MainWindow *host)
   pixmap.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
 
-#if 0
+#if 1
   ZStack *stack = ZStackFactory::MakeZeroStack(32, 16, 1);
   for (int j = 0; j < stack->height(); j++) {
     for (int i = 0; i < stack->width(); i++) {
@@ -31552,10 +31552,12 @@ void ZTest::test(MainWindow *host)
   pen.setWidth(3);
   painter.setPen(pen);
 
-  s3Painter.drawLineProjection(
-        &painter, ZLineSegment(ZPoint(1, 1, -10), ZPoint(10, 10, -100)));
-  s3Painter.drawBallProjection(&painter, 5, 10, -15, 8);
-  s3Painter.drawCrossProjection(&painter, 5, 10, -15, 8);
+//  s3Painter.drawLineProjection(
+//        &painter, ZLineSegment(ZPoint(1, 1, -10), ZPoint(10, 10, -100)));
+//  s3Painter.drawBallProjection(&painter, 5, 10, -15, 8);
+//  s3Painter.drawCrossProjection(&painter, 5, 10, -15, 8);
+  s3Painter.drawLine(
+        &painter, ZLineSegment(ZPoint(1, 1, -0.1), ZPoint(10, 10, -10)));
 
   pixmap.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
@@ -31616,7 +31618,7 @@ void ZTest::test(MainWindow *host)
 
   neutu::DrawCircle(painter, 3, 3, 2, neutu::PixelCentered(true));
 
-  neutu::DrawLine(painter, 3, 3, 4, 4, neutu::PixelCentered(true));
+  neutu::DrawLine(painter, 3, 3, 20, 10, neutu::PixelCentered(true));
 
   /*
   tic();
@@ -31661,11 +31663,11 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStack *stack = new ZStack;
   stack->load("/Users/zhaot/Work/neutu/neurolabi/data/_system/emstack2.tif");
   ZStackFrame *frame = ZStackFrame::Make(NULL);
-  frame->view()->setSliceAxis(neutu::EAxis::Y);
+  frame->view()->setSliceAxis(neutu::EAxis::Z);
   frame->loadStack(stack);
 //  ZStackBall *ball = new ZStackBall(125, 125, 125, 10);
 //  ball->setColor(255, 0, 0);
@@ -31741,15 +31743,42 @@ void ZTest::test(MainWindow *host)
   obj->setColor(Qt::red);
   */
 
+  /*
   ZRect2d *obj = new ZRect2d;
   obj->setSliceAxis(frame->view()->getSliceAxis());
   obj->set(10, 10, 30, 40);
 //  obj->setZ(125);
   obj->setColor(255, 0, 0, 128);
+  */
 //  obj->setZSpan(5);
 
 //  obj->addSegment(125, 125, 100, 125);
 //  obj->addSegment(125, 124, 100, 125);
+
+  ZSwcTree *obj = new ZSwcTree;
+
+  obj->loadFromBuffer(
+        "1 2 125 125 125 3 -1\n"
+        "2 2 120 120 125 3 1\n"
+        "3 2 130 130 125 3 1\n"
+        "4 2 135 145 123 5 3\n"
+        "5 2 115 140 125 5 3\n"
+        );
+
+  /*
+  obj->loadFromBuffer(
+        "1 2 125 125 125 3 -1\n"
+        "2 2 120 120 125 0 1\n"
+        );
+  obj->print();
+  */
+
+  /*
+  Swc_Tree_Node *tn = SwcTreeNode::MakePointer(125, 125, 125, 3.0);
+  obj->addRegularRoot(tn);
+  SwcTreeNode::MakePointer(125, 110, 122, 5.0, tn);
+  tn = SwcTreeNode::MakePointer(135, 110, 124, 5.0, tn);
+  */
 
   frame->document()->addObject(obj);
 

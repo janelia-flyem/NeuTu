@@ -72,24 +72,22 @@ public:
   void setCanvasVisible(neutu::data3d::ETarget target, bool visible);
 
   void setImage(ZImage *image);
-//  void setObjectCanvas(ZPixmap *canvas);
-//  ZSliceCanvas* getObjectCanvas() { return &m_objectCanvas; }
-//  ZSliceCanvas* getTileCanvas() { return &m_tileCanvas; }
-//  ZSliceCanvas* getDynamicObjectCanvas() { return &m_dynamicObjectCanvas; }
   void setMask(ZImage *mask, int channel);
-//  void setTileCanvas(ZPixmap *canvas);
-//  void setDynamicObjectCanvas(ZPixmap *canvas);
-//  void setActiveDecorationCanvas(ZPixmap *canvas);
-//  void removeCanvas(ZPixmap *canvas);
-  void removeCanvas(ZImage *canvas);
+
+//  void removeCanvas(ZImage *canvas);
 
   QSizeF getViewportSize() const;
+
+  double getCutDepth() const;
+  int getMinCutDepth() const;
+  int getMaxCutDepth() const;
 
   const ZSliceViewTransform& getSliceViewTransform() const;
   ZPoint transform(
       const ZPoint &pt, neutu::data3d::ESpace src, neutu::data3d::ESpace dst) const;
   void setSliceViewTransform(const ZSliceViewTransform &t);
   void setCutPlane(neutu::EAxis axis);
+  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
 
   void setCutCenter(double x, double y, double z);
   void setCutCenter(const ZPoint &center);
@@ -122,9 +120,9 @@ public:
   ZAffineRect getViewPort() const;
 
 //  void setViewPort(const QRect &rect);
-  void setProjRegion(const QRectF &rect);
-  void setView(double zoomRatio, const QPoint &zoomOffset);
-  void setView(const QRect &viewPort, const QRectF &projRegion);
+//  void setProjRegion(const QRectF &rect);
+//  void setView(double zoomRatio, const QPoint &zoomOffset);
+//  void setView(const QRect &viewPort, const QRectF &projRegion);
 
   /*!
    * \brief Set view port offset
@@ -210,29 +208,6 @@ public:
   QMenu* leftMenu();
   QMenu* rightMenu();
 
-  ///{
-  /// The actual ration and offset are calculated from the current view port
-  /// and project region.
-  ///
-  //Formula: x0' = x0 * ratio + offset
-  /*!
-   * \brief Get the actual zoom ratio along X (horizontal)
-   */
-//  double getAcutalZoomRatioX() const;
-  /*!
-   * \brief Get the actual offset along X (horizontal)
-   */
-  double getActualOffsetX() const;
-  /*!
-   * \brief Get the actual zoom ratio along Y (vertical)
-   */
-//  double getAcutalZoomRatioY() const;
-  /*!
-   * \brief Get the actual offset along Y (vertical)
-   */
-  double getActualOffsetY() const;
-  ///}
-
   inline void setViewHintVisible(bool visible) {
     m_isViewHintVisible = visible;
   }
@@ -275,10 +250,6 @@ public:
   void adjustTransformWithResize();
   void adjustMinScale();
 
-  int getCutDepth() const;
-  int getMinCutDepth() const;
-  int getMaxCutDepth() const;
-
   void resetView();
   void setReady(bool ready);
 
@@ -311,6 +282,7 @@ signals:
   void messageGenerated(const ZWidgetMessage&);
   void transformChanged();
   void transformControlSyncNeeded();
+  void sliceAxisChanged();
 
 protected:
 //  int getMaxZoomRatio() const;
@@ -382,6 +354,7 @@ private:
   ZSliceViewTransform m_prevSliceViewTransform;
   double m_viewAnchorX = 0.5; //anchor point (defined as window size ratio)
   double m_viewAnchorY = 0.5;
+  ZPlane m_defaultArbPlane;
 
   neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
 //  QSize m_canvasSize;

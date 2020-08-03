@@ -217,8 +217,6 @@ public:
 //  uint64_t getLabel() const;
 
 public:
-  bool display(
-        QPainter *painter, const DisplayConfig &config) const override;
 #if 0
   virtual void display(
       ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
@@ -850,6 +848,9 @@ public: //static functions
 
   static neutu::data3d::ETarget GetDefaultTarget();
 
+protected:
+  bool displayFunc(
+        QPainter *painter, const DisplayConfig &config) const override;
 
 private:
   void init();
@@ -861,10 +862,10 @@ private:
   void displaySelectedNode(ZPainter &painter, int slice, neutu::EAxis axis)
   const;
 #endif
-  static void computeLineSegment(const Swc_Tree_Node *lowerTn,
-                                 const Swc_Tree_Node *upperTn,
-                                 QPointF &lineStart, QPointF &lineEnd,
-                                 bool &visible, int dataFocus, bool isProj);
+//  static void computeLineSegment(const Swc_Tree_Node *lowerTn,
+//                                 const Swc_Tree_Node *upperTn,
+//                                 QPointF &lineStart, QPointF &lineEnd,
+//                                 bool &visible, int dataFocus, bool isProj);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;

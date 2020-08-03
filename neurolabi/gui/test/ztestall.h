@@ -111,6 +111,9 @@
 #include "data3d/tests/zsliceviewtransformtest.h"
 
 #include "mvc/tests/zstackobjectpaintsortertest.h"
+#include "mvc/tests/zmousecursorglyphtest.h"
+
+#include "widgets/tests/zimagewidgettest.h"
 
 #include "flyem/tests/zflyemmisctest.h"
 #include "flyem/tests/flyemtodoblockgridtest.h"

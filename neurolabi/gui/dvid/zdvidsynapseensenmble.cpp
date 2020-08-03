@@ -36,7 +36,7 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
-  m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+  m_startZ = m_dvidInfo.getStartCoordinates().getCoord(m_sliceAxis);
 }
 
 void ZDvidSynapseEnsemble::init()

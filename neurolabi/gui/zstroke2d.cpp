@@ -769,7 +769,8 @@ ZPoint ZStroke2d::getLastPoint() const
 
 void ZStroke2d::print() const
 {
-  std::cout << "Stroke points (z=" << getZ() << ")" << std::endl;
+  std::cout << "Stroke points (z=" << getZ() << ", w=" << getWidth() << ")"
+            << std::endl;
   foreach (QPointF point, m_pointArray) {
     std::cout << "  " << point.x() << " " << point.y() << std::endl;
   }

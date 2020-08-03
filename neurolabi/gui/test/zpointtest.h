@@ -31,6 +31,17 @@ TEST(ZIntPoint, Basic)
     ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
     ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
   }
+
+  {
+    ZIntPoint pt;
+    pt.setValue(1, neutu::EAxis::X);
+    pt.setValue(2, neutu::EAxis::Y);
+    pt.setValue(3, neutu::EAxis::Z);
+    ASSERT_EQ(ZIntPoint(1, 2, 3), pt);
+
+    pt.setValue(4, neutu::EAxis::ARB);
+    ASSERT_EQ(ZIntPoint(4, 4, 4), pt);
+  }
 }
 
 TEST(ZIntPoint, ToPoint)
@@ -63,6 +74,16 @@ TEST(ZPoint, Basic)
 
   pt.normalize();
   ASSERT_TRUE(pt.isUnitVector());
+
+  {
+    ZPoint pt;
+    pt.setValue(1, neutu::EAxis::X);
+    pt.setValue(2, neutu::EAxis::Y);
+    pt.setValue(3, neutu::EAxis::Z);
+    ASSERT_EQ(ZPoint(1, 2, 3), pt);
+    pt.setValue(4, neutu::EAxis::ARB);
+    ASSERT_EQ(ZPoint(4, 4, 4), pt);
+  }
 }
 
 TEST(ZPoint, Relation)

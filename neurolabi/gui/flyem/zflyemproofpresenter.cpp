@@ -21,6 +21,7 @@
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zinteractionevent.h"
 #include "zstackdocselector.h"
+#include "mvc/zstackdochelper.h"
 #include "neutubeconfig.h"
 //#include "dvid/zdvidlabelslice.h"
 #include "zflyemtododelegate.h"
@@ -28,6 +29,7 @@
 #include "neuroglancer/zneuroglancerpathfactory.h"
 #include "neuroglancer/zneuroglancerlayerspecfactory.h"
 #include "neuroglancer/zneuroglancerannotationlayerspec.h"
+#include "mvc/zmousecursorglyph.h"
 
 
 #ifdef _WIN32
@@ -65,6 +67,28 @@ void ZFlyEmProofPresenter::init()
   m_synapseContextMenu = NULL;
 
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
+
+  m_mouseCursorGlyph->setPrepareFunc(
+        ZMouseCursorGlyph::ROLE_SYNAPSE, [this](ZStackObject *obj) {
+    ZStackBall *ball = dynamic_cast<ZStackBall*>(obj);
+    if (ball) {
+      ZDvidSynapse::EKind kind  = ZDvidSynapse::EKind::KIND_UNKNOWN;
+      switch (interactiveContext().synapseEditMode()) {
+      case ZInteractiveContext::SYNAPSE_ADD_PRE:
+        kind = ZDvidSynapse::EKind::KIND_PRE_SYN;
+        break;
+      case ZInteractiveContext::SYNAPSE_ADD_POST:
+        kind = ZDvidSynapse::EKind::KIND_POST_SYN;
+        break;
+      default:
+        break;
+      }
+      QColor color = ZDvidSynapse::GetDefaultColor(kind);
+      color.setAlpha(200);
+      ball->setColor(color);
+      ball->setRadius(ZDvidSynapse::GetDefaultRadius(kind));
+    }
+  });
 
 //  m_labelAlpha = 128;
 //  connectAction();
@@ -240,9 +264,17 @@ void ZFlyEmProofPresenter::refreshData()
   emit refreshingData();
 }
 
+void ZFlyEmProofPresenter::updateActions()
+{
+  bool splitting = isSplitOn();
+  getAction(ZActionFactory::ACTION_VIEW_AXIS_X)->setEnabled(!splitting);
+  getAction(ZActionFactory::ACTION_VIEW_AXIS_Y)->setEnabled(!splitting);
+  getAction(ZActionFactory::ACTION_VIEW_AXIS_ARB)->setEnabled(!splitting);
+}
+
 void ZFlyEmProofPresenter::selectBodyInRoi()
 {
-  getCompleteDocument()->selectBodyInRoi(buddyView()->getCurrentZ(), true, true);
+  getCompleteDocument()->selectBodyInRoi(buddyView()->getCurrentDepth(), true, true);
 }
 
 void ZFlyEmProofPresenter::zoomInRectRoi()
@@ -597,7 +629,7 @@ void ZFlyEmProofPresenter::tryAddSynapseMode(ZDvidSynapse::EKind kind)
   exitEdit();
 
   if (ZFlyEmProofDocUtil::HasWrittableSynapse(getCompleteDocument())) {
-    turnOnActiveObject(ROLE_SYNAPSE, false);
+//    turnOnActiveObject(ROLE_SYNAPSE, false);
     switch (kind) {
     case ZDvidSynapse::EKind::KIND_PRE_SYN:
       m_interactiveContext.setSynapseEditMode(
@@ -612,8 +644,36 @@ void ZFlyEmProofPresenter::tryAddSynapseMode(ZDvidSynapse::EKind kind)
             ZInteractiveContext::SYNAPSE_ADD_PRE);
       break;
     }
-    updateActiveObjectForSynapseAdd();
-    buddyView()->paintActiveDecoration();
+
+    m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_SYNAPSE);
+    updateMouseCursorGlyphPos();
+
+    /*
+    turnOnActiveObject(ROLE_SYNAPSE, [this](ZStackObject *obj) {
+      ZStackBall *ball = dynamic_cast<ZStackBall*>(obj);
+      if (ball) {
+        ZDvidSynapse::EKind kind  = ZDvidSynapse::EKind::KIND_UNKNOWN;
+        switch (interactiveContext().synapseEditMode()) {
+        case ZInteractiveContext::SYNAPSE_ADD_PRE:
+          kind = ZDvidSynapse::EKind::KIND_PRE_SYN;
+          break;
+        case ZInteractiveContext::SYNAPSE_ADD_POST:
+          kind = ZDvidSynapse::EKind::KIND_POST_SYN;
+          break;
+        default:
+          break;
+        }
+        QColor color = ZDvidSynapse::GetDefaultColor(kind);
+        color.setAlpha(200);
+        ball->setColor(color);
+        ball->setRadius(ZDvidSynapse::GetDefaultRadius(kind));
+      }
+    });
+    */
+
+//    updateActiveObjectForSynapseAdd();
+
+//    buddyView()->paintActiveDecoration();
 
     updateCursor();
   } else {
@@ -625,11 +685,28 @@ void ZFlyEmProofPresenter::tryAddSynapseMode(ZDvidSynapse::EKind kind)
 
 void ZFlyEmProofPresenter::tryMoveSynapseMode()
 {
+  ZDvidSynapse synapse = getCompleteDocument()->getSingleSelectedSynapse();
+  if (synapse.isValid()) {
+    m_mouseCursorGlyph->activate(
+          ZMouseCursorGlyph::ERole::ROLE_SYNAPSE, [&](ZStackObject *obj) {
+      ZStackBall *ball = dynamic_cast<ZStackBall*>(obj);
+      ball->setColor(synapse.getColor());
+      ball->setRadius(synapse.getRadius());
+      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+      ball->setCenter(event.getDataPosition());
+    });
+    m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_MOVE);
+    updateMouseCursorGlyphPos();
+    updateCursor();
+  }
+
+  /*
   if (updateActiveObjectForSynapseMove()) {
     turnOnActiveObject(ROLE_SYNAPSE);
     m_interactiveContext.setSynapseEditMode(ZInteractiveContext::SYNAPSE_MOVE);
     updateCursor();
   }
+  */
 }
 
 QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
@@ -708,12 +785,16 @@ void ZFlyEmProofPresenter::setSplitEnabled(bool s)
 
 void ZFlyEmProofPresenter::tryAddBookmarkMode()
 {
-  exitStrokeEdit();
-  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
-//  QPointF pos = mapFromGlobalToStack(QCursor::pos());
-  tryAddBookmarkMode(pos.x(), pos.y());
+  exitEdit();
+
+  interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
+  m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_BOOKMARK);
+  updateMouseCursorGlyphPos();
+  //buddyView()->paintActiveDecoration();
+  updateCursor();
 }
 
+/*
 void ZFlyEmProofPresenter::tryTodoItemMode()
 {
   exitStrokeEdit();
@@ -721,6 +802,7 @@ void ZFlyEmProofPresenter::tryTodoItemMode()
 //  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   tryAddTodoItemMode(pos.x(), pos.y());
 }
+*/
 
 void ZFlyEmProofPresenter::tryAddSynapse(const ZIntPoint &pt, bool tryingLink)
 {
@@ -971,9 +1053,13 @@ void ZFlyEmProofPresenter::tryMoveSynapse(const ZIntPoint &pt)
   updateCursor();
 }
 
+/*
 void ZFlyEmProofPresenter::tryAddTodoItemMode(double x, double y)
 {
   interactiveContext().setTodoEditMode(ZInteractiveContext::TODO_ADD_ITEM);
+
+  m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_TODO_ITEM);
+  m_mouseCursorGlyph->update
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_TODO_ITEM);
 
   buddyDocument()->mapToDataCoord(&x, &y, NULL);
@@ -982,7 +1068,9 @@ void ZFlyEmProofPresenter::tryAddTodoItemMode(double x, double y)
   turnOnActiveObject(ROLE_TODO_ITEM);
   updateCursor();
 }
+*/
 
+#if 0
 void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
 {
   exitEdit();
@@ -1003,6 +1091,7 @@ void ZFlyEmProofPresenter::tryAddBookmarkMode(double x, double y)
   //buddyView()->paintActiveDecoration();
   updateCursor();
 }
+#endif
 
 void ZFlyEmProofPresenter::runTipDetection() {
     const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
@@ -1040,14 +1129,15 @@ ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
 
 void ZFlyEmProofPresenter::addActiveDecorationAsBookmark()
 {
-  ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_BOOKMARK);
-  if (ball) {
+  ZWeightedPoint pt = m_mouseCursorGlyph->getActiveGlyphGeometry();
+//  ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_BOOKMARK);
+  if (pt.isValid()) {
 //    stroke->getLastPoint(&x, &y);
 //    double radius = ball->getRadius();
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-    bookmark->setLocation(ball->getCenter().toIntPoint());
-    bookmark->setRadius(ball->getRadius());
+    bookmark->setLocation(pt.toIntPoint());
+    bookmark->setRadius(pt.weight());
     bookmark->setCustom(true);
     bookmark->setUser(neutu::GetCurrentUserName());
     bookmark->addUserTag();
@@ -1092,6 +1182,12 @@ void ZFlyEmProofPresenter::allowBlinkingSegmentation(bool on)
   getCompleteDocument()->allowDvidLabelSliceBlinking(on);
 }
 
+bool ZFlyEmProofPresenter::allowingBodySplit() const
+{
+  return (getSliceAxis() == neutu::EAxis::Z) &&
+      ZStackDocHelper::AllowingBodySplit(buddyDocument());
+}
+
 void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
 {
   getCompleteDocument()->setSupervoxelMode(on, buddyView()->getViewParameter());
@@ -1132,7 +1228,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     tryAddBookmarkMode();
     break;
   case ZStackOperator::OP_FLYEM_TOD_ENTER_ADD_MODE:
-    tryTodoItemMode();
+//    tryTodoItemMode();
     break;
   case ZStackOperator::OP_BOOKMARK_ADD_NEW:
     addActiveDecorationAsBookmark();
@@ -1246,6 +1342,8 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     tryMoveSynapse(currentDataPos.roundToIntPoint());
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
+    updateMouseCursorGlyphPos();
+    /*
     if (m_interactiveContext.synapseEditMode() !=
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {
       ZStackBall *ball = getActiveObject<ZStackBall>(ROLE_SYNAPSE);
@@ -1260,18 +1358,24 @@ bool ZFlyEmProofPresenter::processCustomOperator(
         updateActiveObjectForSynapseMove(currentDataPos);
       }
       ball->setCenter(currentDataPos);
+      */
       /*
       ZPoint pos = currentStackPos;
 //      pos.shiftSliceAxis(buddyView()->getSliceAxis());
       stroke->setLast(pos.x(), pos.y());
       */
+    /*
       if (e != NULL) {
         e->setEvent(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
       }
     }
+    */
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_SINGLE:
+    getCompleteDocument()->processLabelSliceHit(
+          op.getHitObject(), ZStackObject::ESelection::SELECT_SINGLE);
+    /*
   {
     ZStackObject *obj = op.getHitObject();
 //    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -1280,6 +1384,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       getCompleteDocument()->notifyBodySelectionChanged();
     }
   }
+  */
     /*
   {
 //    buddyDocument()->deselectAllObject(false);
@@ -1297,6 +1402,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   */
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
+    getCompleteDocument()->processLabelSliceHit(
+          op.getHitObject(), ZStackObject::ESelection::SELECT_TOGGLE);
+    /*
   {
     ZStackObject *labelSlice = op.getHitObject();
 //    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -1305,6 +1413,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       getCompleteDocument()->notifyBodySelectionChanged();
     }
   }
+  */
     /*
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
@@ -1329,6 +1438,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   */
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
+    getCompleteDocument()->processLabelSliceHit(
+          op.getHitObject(), ZStackObject::ESelection::SELECT_TOGGLE_SINGLE);
+    /*
   {
     ZStackObject *labelSlice = op.getHitObject();
 //    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -1337,6 +1449,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       getCompleteDocument()->notifyBodySelectionChanged();
     }
   }
+  */
 #if 0
   { //Deselect all other bodies. Select the hit body if it is not selected.
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
@@ -1360,6 +1473,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 #endif
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
+    getCompleteDocument()->processLabelSliceHit(
+          op.getHitObject(), ZStackObject::ESelection::SELECT_MULTIPLE);
+    /*
   {
     ZStackObject *labelSlice = op.getHitObject();
 //    ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -1368,6 +1484,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       getCompleteDocument()->notifyBodySelectionChanged();
     }
   }
+  */
     /*
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
@@ -1521,6 +1638,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
   }
 }
 
+#if 0
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
@@ -1579,7 +1697,9 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
   return false;
 #endif
 }
+#endif
 
+#if 0
 void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
@@ -1651,3 +1771,4 @@ void ZFlyEmProofPresenter::createBodyContextMenu()
   }
 }
 */
+#endif

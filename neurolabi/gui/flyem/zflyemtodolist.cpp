@@ -35,14 +35,14 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
     m_writer.open(target);
     m_dvidInfo = ZDvidGlobal::Memo::ReadGrayscaleInfo(m_reader.getDvidTarget());
 //    m_dvidInfo = m_reader.readGrayScaleInfo();
-    m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+    m_startZ = m_dvidInfo.getStartCoordinates().getCoord(m_sliceAxis);
   }
 }
 
 void ZFlyEmToDoList::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
-  m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+  m_startZ = m_dvidInfo.getStartCoordinates().getCoord(m_sliceAxis);
 }
 
 void ZFlyEmToDoList::init()

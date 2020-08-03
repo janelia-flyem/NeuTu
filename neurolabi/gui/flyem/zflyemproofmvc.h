@@ -178,9 +178,9 @@ public:
 
   bool hasProfileTask() const;
 
-  void notifyStateUpdate();
-
   void configure();
+
+  bool allowingBodySplit() const;
 
 //  bool hasNeuPrint() const;
   neutu::EServerStatus getNeuPrintStatus() const;
@@ -240,8 +240,7 @@ signals:
   void stateUpdated(ZFlyEmProofMvc *mvc);
 
 public slots:
-//  void undo();
-//  void redo();
+  void processStateUpdate();
 
   void setDvidTarget();
 
@@ -539,6 +538,7 @@ private:
   void init();
   void initBodyWindow();
 
+  void updateActions();
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
 
   void launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode);

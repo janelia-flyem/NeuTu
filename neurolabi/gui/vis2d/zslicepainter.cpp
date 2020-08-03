@@ -591,41 +591,44 @@ void ZSlice3dPainter::drawLine(QPainter *painter, const ZLineSegment &line)
 {
   ZAffinePlane plane = m_worldViewTransform.getCutPlane();
 
-  ZPoint v0 = plane.align(line.getStartPoint());
-  ZPoint v1 = plane.align(line.getEndPoint());
+  ZPoint vs = plane.align(line.getStartPoint());
+  ZPoint vd = plane.align(line.getEndPoint());
 
-  if (std::fabs(v0.getZ()) <= 0.5 && std::fabs(v1.getZ()) <= 0.5) {
+  if (std::fabs(vs.getZ()) <= 0.5 && std::fabs(vd.getZ()) <= 0.5) {
     m_painterHelper.drawLine(
-          painter, v0.getX(), v0.getY(), v1.getX(), v1.getY());
+          painter, vs.getX(), vs.getY(), vd.getX(), vd.getY());
   } else {
-    ZAffinePlane upperPlane = plane;
-    upperPlane.translateDepth(-0.5);
+    ZAffinePlane shallowPlane = plane;
+    shallowPlane.translateDepth(-0.5);
 
-    ZAffinePlane lowerPlane = plane;
-    lowerPlane.translateDepth(0.5);
+    ZAffinePlane deepPlane = plane;
+    deepPlane.translateDepth(0.5);
 
-    double lambda1 = zgeom::ComputeIntersection(upperPlane, line);
-    double lambda2 = zgeom::ComputeIntersection(lowerPlane, line);
+    double slambda = zgeom::ComputeIntersection(shallowPlane, line);
+    double dlambda = zgeom::ComputeIntersection(deepPlane, line);
 
-    if (!((lambda1 < 0.0 && lambda2 < 0.0) || (lambda1 > 1.0 && lambda2 > 1.0))) {
-      lambda1 = neulib::ClipValue(lambda1, 0.0, 1.0);
-      lambda2 = neulib::ClipValue(lambda2, 0.0, 1.0);
+    if (!((slambda < 0.0 && dlambda < 0.0) || (slambda > 1.0 && dlambda > 1.0))) {
+      slambda = neulib::ClipValue(slambda, 0.0, 1.0);
+      dlambda = neulib::ClipValue(dlambda, 0.0, 1.0);
 
-      ZLineSegment alignedSeg(v0, v1);
-      if (v0.getZ() > v1.getZ()) {
-        std::swap(v0, v1);
-        std::swap(lambda1, lambda2);
+      ZLineSegment alignedSeg(vs, vd);
+      ZPoint fvs = alignedSeg.getIntercept(slambda);
+      ZPoint fvd = alignedSeg.getIntercept(dlambda);
+
+      if (vs.getZ() > vd.getZ()) {
+        std::swap(vs, vd);
+        slambda = 1.0 - slambda;
+        dlambda = 1.0 - dlambda;
+//        std::swap(lambda1, lambda2);
       }
-      ZPoint fv0 = v0;
-      ZPoint fv1 = v1;
 
-      double length = std::sqrt(v0.getX() * v0.getX() + v1.getY() * v1.getY());
-      double upperLength = length * lambda1;
-      double lowerLength = length * (1.0 - lambda2);
+      double length = std::sqrt(vs.getX() * vs.getX() + vd.getY() * vd.getY());
+      double shallowLength = length * slambda;
+      double deepLength = length * (1.0 - dlambda);
 
       neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
-
+      /*
       if (upperLength >= 1.0) {
         fv0 = alignedSeg.getIntercept(lambda1);
       }
@@ -633,25 +636,52 @@ void ZSlice3dPainter::drawLine(QPainter *painter, const ZLineSegment &line)
       if (lowerLength >= 1.0) {
         fv1 = alignedSeg.getIntercept(lambda2);
       }
+      */
 
       m_painterHelper.drawLine(
-            painter, fv0.getX(), fv0.getY(), fv1.getX(), fv1.getY());
+            painter, fvs.getX(), fvs.getY(), fvd.getX(), fvd.getY());
 
-      if (lowerLength > 1.0 || upperLength >1.0) {
-        neutu::ScalePenAlpha(painter, 0.5);
-
-        if (upperLength > 1.0) {
+      if (deepLength > 1.0 || shallowLength >1.0) {
+        neutu::ScalePenAlpha(painter, 0.3);
+        if (shallowLength > 1.0) {
           m_painterHelper.drawLine(
-                painter, v0.getX(), v0.getY(), fv0.getX(), fv0.getY());
+                painter, vs.getX(), vs.getY(), fvs.getX(), fvs.getY());
         }
-        if (lowerLength > 1.0) {
+
+        if (deepLength > 1.0) {
+          neutu::ScalePenAlpha(painter, 2.0);
           neutu::RevisePen(painter, [&](QPen &pen) {
             pen.setStyle(Qt::DashLine);
           });
           m_painterHelper.drawLine(
-                painter, fv1.getX(), fv1.getY(), v1.getX(), v1.getY());
+                painter, fvd.getX(), fvd.getY(), vd.getX(), vd.getY());
         }
       }
+    }
+  }
+}
+
+void ZSlice3dPainter::drawLine(
+    QPainter *painter, const ZLineSegment &line, double r0, double r1)
+{
+  ZAffinePlane plane = m_worldViewTransform.getCutPlane();
+
+  ZPoint v0 = plane.align(line.getStartPoint());
+  ZPoint v1 = plane.align(line.getEndPoint());
+
+  if ((v0.getZ() * v1.getZ() <= 0.0) ||
+      ((std::fabs(v0.getZ()) < 0.5 || std::fabs(v1.getZ()) < 0.5))) {
+    drawLine(painter, line);
+  } else {
+    if (std::fabs(v0.getZ()) < r0 || std::fabs(v1.getZ()) < r1) {
+      neutu::ScalePenAlpha(painter, 0.5);
+      if (v0.getZ() > 0.0) {
+        neutu::RevisePen(painter, [&](QPen &pen) {
+          pen.setStyle(Qt::DashLine);
+        });
+      }
+      m_painterHelper.drawLine(
+            painter, v0.getX(), v0.getY(), v1.getX(), v1.getY());
     }
   }
 }

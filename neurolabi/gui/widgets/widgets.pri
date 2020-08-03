@@ -1,3 +1,5 @@
+include(tests/tests.pri)
+
 FORMS += \
     $$PWD/flyembodyinfowidget.ui \
     $$PWD/taskprotocolwindow.ui \

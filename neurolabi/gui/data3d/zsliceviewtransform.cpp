@@ -37,6 +37,11 @@ ZAffinePlane ZSliceViewTransform::getCutPlane() const
   return m_modelViewTransform.getCutPlane();
 }
 
+ZPlane ZSliceViewTransform::getCutOrientation() const
+{
+  return m_modelViewTransform.getCutPlane().getPlane();
+}
+
 double ZSliceViewTransform::getScale() const
 {
   return getViewCanvasTransform().getScale();
@@ -327,8 +332,9 @@ void ZSliceViewTransform::fitModelRange(
       srcHeight = srcWidth = modelRange.getDiagonalLength();
     }*/
 
-    ZCuboid viewBox;
+    ZCuboid viewBox = getViewBox(modelRange);
 
+    /*
     ZCuboid box = ZCuboid::FromIntCuboid(modelRange);
     for (int i = 0; i < 8; ++i) {
       ZPoint corner = box.getCorner(i);
@@ -340,6 +346,7 @@ void ZSliceViewTransform::fitModelRange(
         viewBox.join(pc);
       }
     }
+    */
 
     /*
     ZPoint dims = m_modelViewTransform.transformBoxSize(
@@ -356,34 +363,6 @@ void ZSliceViewTransform::fitModelRange(
           viewCenter.getX(), viewCenter.getY());
 //    translateModelViewTransform(center, dstWidth / 2.0, dstHeight / 2.0);
   }
-
-  /*
-  switch (m_modelViewTransform.getSliceAxis()) {
-  case neutu::EAxis::ARB:
-  {
-    m_modelViewTransform.setCutCenter(
-          (modelRange.getMinCorner().toPoint() +
-           modelRange.getMaxCorner().toPoint()) / 2.0);
-    double srcWidth = modelRange.getDiagonalLength();
-    double srcHeight = srcWidth;
-    m_viewCanvasTransform.centerFit(
-          0, 0, srcWidth, srcHeight, dstWidth, dstHeight);
-  }
-    break;
-  case neutu::EAxis::X:
-    m_viewCanvasTransform.centerFit(
-          modelRange.getDepth(), modelRange.getHeight(), dstWidth, dstHeight);
-    break;
-  case neutu::EAxis::Y:
-    m_viewCanvasTransform.centerFit(
-          modelRange.getWidth(), modelRange.getDepth(), dstWidth, dstHeight);
-    break;
-  case neutu::EAxis::Z:
-    m_viewCanvasTransform.centerFit(
-          modelRange.getWidth(), modelRange.getHeight(), dstWidth, dstHeight);
-    break;
-  }
-  */
 }
 
 void ZSliceViewTransform::canvasAdjust(
@@ -544,6 +523,11 @@ void ZSliceViewTransform::setCutPlane(
     const ZPoint &center, const ZPoint &v1, const ZPoint &v2)
 {
   m_modelViewTransform.setCutPlane(center, v1, v2);
+}
+
+void ZSliceViewTransform::setCutPlane(const ZPoint &v1, const ZPoint &v2)
+{
+  m_modelViewTransform.setCutPlane(v1, v2);
 }
 
 void ZSliceViewTransform::setCutPlane(const ZAffinePlane &plane)

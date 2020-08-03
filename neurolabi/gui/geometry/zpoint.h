@@ -168,7 +168,8 @@ public:
   void shiftSliceAxis(neutu::EAxis axis);
   void shiftSliceAxisInverse(neutu::EAxis axis);
 
-  double getSliceCoord(neutu::EAxis axis) const;
+  double getValue(neutu::EAxis axis) const;
+  void setValue(double v, neutu::EAxis axis);
 
   void invalidate();
   bool isValid() const;

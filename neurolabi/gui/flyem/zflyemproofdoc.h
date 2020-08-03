@@ -254,8 +254,9 @@ public:
 
   void verifyBodyAnnotationMap();
 
+  template<template<class...> class Container>
   ZFlyEmBodyAnnotation getFinalAnnotation(
-      const std::vector<uint64_t> &bodyList);
+      const Container<uint64_t> &bodyList);
 
   /*!
    * \brief Remove unselected bodies from annotation map.
@@ -499,6 +500,9 @@ public:
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
   void updateBodyColor(
       ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating);
+
+  void syncBodySelection(ZStackObject *host);
+  void processLabelSliceHit(ZStackObject *host, ZStackObject::ESelection option);
 
   ZJsonArray getMergeOperation() const;
 
@@ -901,6 +905,13 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
   }
 }
 
+extern template
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::vector>(
+    const std::vector<uint64_t> &bodyList);
+
+extern template
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::set>(
+    const std::set<uint64_t> &bodyList);
 
 
 #endif // ZFLYEMPROOFDOC_H

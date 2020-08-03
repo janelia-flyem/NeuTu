@@ -623,7 +623,7 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 
 void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 {
-  bool depthChanged = (pt.getZ() == getView()->getCurrentZ());
+  bool depthChanged = (pt.getZ() == getView()->getCurrentDepth());
 
   getPresenter()->blockSignals(true);
   getPresenter()->setZoomRatio(zoomRatio);
@@ -678,7 +678,7 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt)
 
 void ZStackMvc::goToSlice(int z)
 {
-  getView()->setZ(z);
+  getView()->setDepth(z);
 }
 
 void ZStackMvc::stepSlice(int dz)

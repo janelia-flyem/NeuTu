@@ -41,6 +41,7 @@ class ZKeyOperationConfig;
 class ZStackDocMenuFactory;
 class ZStackObjectInfoSet;
 class ZMenuConfig;
+class ZMouseCursorGlyph;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -69,9 +70,11 @@ public:
     MOUSE_COMMAND_EXECUTED, MOUSE_EVENT_CAPTURED
   };
 
+  /*
   enum EObjectRole {
     ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK, ROLE_TODO_ITEM
   };
+  */
 
   /*
   enum EActionItem {
@@ -105,14 +108,14 @@ public:
   //inline int zoomRatio() const { return m_zoomRatio; }
   //int zoomRatio() const;
   inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
-  inline const QList<ZStackObject*>& getActiveDecorationList() const {
-    return m_activeDecorationList;
-  }
+  QList<ZStackObject*> getActiveDecorationList() const;
 
+  /*
   QList<ZStackObject*> getActiveDecorationList(
       std::function<bool(const ZStackObject*)> pred) const;
+      */
 
-  void updateActiveDecoration();
+  void updateMouseCursorGlyphPos();
 
   inline const QList<ZStackObject*>& getHighlightDecorationList() const {
     return m_highlightDecorationList;
@@ -243,10 +246,12 @@ public:
 
   void updateCursor();
 
-  ZStackObject* getFirstOnActiveObject() const;
+//  ZStackObject* getFirstOnActiveObject() const;
+  /*
   ZStackObject* getActiveObject(EObjectRole role) const;
   template<typename T>
   T* getActiveObject(EObjectRole role) const;
+  */
 //  inline const ZStroke2d* getStroke() const { return m_stroke; }
 
   void setZoomRatio(double ratio);
@@ -349,7 +354,7 @@ public slots:
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
   void enterSwcMoveMode();
-  void enterSwcAddNodeMode(double x, double y);
+//  void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
   void enterEraseStrokeMode(double x, double y);
@@ -366,7 +371,7 @@ public slots:
   void selectAllSwcTreeNode();
   void toggleSwcSkeleton(bool state);
 
-  void trySwcAddNodeMode(double x, double y);
+//  void trySwcAddNodeMode(double x, double y);
   void trySwcAddNodeMode();
   void tryPaintStrokeMode();
   void tryEraseStrokeMode();
@@ -415,24 +420,29 @@ public slots:
 
   void notifyUser(const QString &msg);
 
+#if 0
   /*!
    * \brief Turn on the active stroke
    */
 //  void turnOnStroke();
-  void turnOnActiveObject(EObjectRole role, bool refreshing = true);
+  void turnOnActiveObject(EObjectRole role);
+  void turnOnActiveObject(
+      EObjectRole role, std::function<void(ZStackObject*)> prepare);
+  void turnOnActiveObject(
+      EObjectRole role, std::function<void(ZStackObject*, EObjectRole)> prepare);
 
   void setActiveObjectSize(EObjectRole role, double radius);
   void setDefaultActiveObjectSize(EObjectRole role);
-
+#endif
   /*!
    * \brief Turn off the active stroke
    */
 //  void turnOffStroke();
   void turnOffActiveObject();
-  void turnOffActiveObject(EObjectRole role);
+//  void turnOffActiveObject(EObjectRole role);
 
-  bool isActiveObjectOn(EObjectRole role) const;
-  bool isActiveObjectOn() const;
+//  bool isActiveObjectOn(EObjectRole role) const;
+//  bool isActiveObjectOn() const;
 
   /*
   inline bool isStrokeOn() const; { return m_stroke.isVisible(); }
@@ -441,11 +451,12 @@ public slots:
 
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
-  void updateSwcExtensionHint();
+//  void updateSwcExtensionHint();
 
   void processObjectModified(const ZStackObjectInfoSet &objSet);
 
   void setSliceViewTransform(const ZSliceViewTransform &transform);
+  ZSliceViewTransform getSliceViewTransform() const;
 
 signals:
   void mousePositionCaptured(double x, double y, double z);
@@ -457,7 +468,7 @@ signals:
   void bodyCheckinTriggered(neutu::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
   void bodyCheckoutTriggered(neutu::EBodySplitMode mode);
-  void labelSliceSelectionChanged();
+//  void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
 //  void exitingRectEdit();
 //  void acceptingRectRoi();
@@ -476,7 +487,9 @@ signals:
 
 protected:
   void init();
-  void initActiveObject();
+//  void initActiveObject();
+//  void prepareActiveDecoration(ZStackObject *obj, EObjectRole role);
+  void prepareSwcGlyph(ZStackObject *obj);
 
   EMouseEventProcessStatus processMouseReleaseForPuncta(
       QMouseEvent *event, const ZPoint &positionInStack);
@@ -499,7 +512,7 @@ protected:
 //  QPointF mapFromWidgetToStack(const QPoint &pos);
 //  QPointF mapFromGlobalToStack(const QPoint &pos);
 
-  bool estimateActiveStrokeWidth();
+//  bool estimateActiveStrokeWidth();
 
   bool process(ZStackOperator &op);
   bool process(ZStackOperator::EOperation op);
@@ -509,18 +522,29 @@ protected:
   void acceptRectRoi(bool appending);
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
 
-  void addActiveObject(EObjectRole role, ZStackObject *obj);
+//  void addActiveObject(EObjectRole role, ZStackObject *obj);
 
   ZPoint getMousePositionInStack(
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
 
   virtual void copyLink(const QString &option) const;
 
+  bool addActiveDecorationAsSwc();
+  ZStackBall getActiveDecorationForSwc() const;
+  void addActiveMouseGlyphSize(double dr);
+
+  void moveSwcNode(double du, double dv);
+
+  template<typename T>
+  void startSwcEdit(T option);
+
 protected:
   //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;
-  QList<ZStackObject*> m_activeDecorationList;
+//  QList<ZStackObject*> m_activeDecorationList;
   QList<ZStackObject*> m_highlightDecorationList;
+
+  std::shared_ptr<ZMouseCursorGlyph> m_mouseCursorGlyph;
 
   bool m_showObject;
   bool m_oldShowObject;
@@ -555,7 +579,8 @@ protected:
 //  QPointF m_grabPosition;
 //  ZPoint m_lastMouseDataCoord;
 
-  QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
+//  QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
+//  QMap<EObjectRole, double> m_defaultDecorationSize;
 //  ZStroke2d m_stroke;
 //  ZStroke2d m_swcStroke;
 //  bool m_isStrokeOn;
@@ -593,11 +618,12 @@ signals:
   void viewModeChanged();
 };
 
-
+/*
 template<typename T>
 T* ZStackPresenter::getActiveObject(EObjectRole role) const
 {
   return dynamic_cast<T*>(getActiveObject(role));
 }
+*/
 
 #endif

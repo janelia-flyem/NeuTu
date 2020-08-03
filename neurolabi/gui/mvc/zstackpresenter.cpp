@@ -4,10 +4,12 @@
 #include <QtConcurrentRun>
 #endif
 
+#include "tz_geo3d_utils.h"
+//#include "tz_rastergeom.h"
+
 #include "zstackpresenter.h"
 #include "zstackframe.h"
 #include "zstackview.h"
-#include "tz_rastergeom.h"
 #include "zlocalneuroseg.h"
 #include "zlocsegchain.h"
 #include "zstack.hxx"
@@ -19,7 +21,6 @@
 #include "neutubeconfig.h"
 #include "zcursorstore.h"
 #include "zstroke2d.h"
-#include "tz_geo3d_utils.h"
 #include "zstackdocmenufactory.h"
 #include "zinteractionevent.h"
 #include "zellipse.h"
@@ -40,6 +41,7 @@
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
 #include "zpunctum.h"
+#include "zmousecursorglyph.h"
 
 ZStackPresenter::ZStackPresenter(QWidget *parent) : QObject(parent)
 {
@@ -50,12 +52,14 @@ ZStackPresenter::~ZStackPresenter()
 {
   clearData();
 
+  /*
   for (QMap<EObjectRole, ZStackObject*>::iterator iter =
        m_activeObjectMap.begin(); iter != m_activeObjectMap.end(); ++iter) {
     delete iter.value();
   }
   m_activeObjectMap.clear();
   m_activeDecorationList.clear();
+  */
 
   delete m_swcNodeContextMenu;
   delete m_strokePaintContextMenu;
@@ -73,40 +77,45 @@ ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
   return presenter;
 }
 
+#if 0
 void ZStackPresenter::initActiveObject()
 {
-  ZStroke2d *stroke = new ZStroke2d;
-  stroke->setVisible(false);
-  stroke->setFilled(true);
-  stroke->setPenetrating(true);
-  stroke->useCosmeticPen(false);
-  stroke->hideStart(false);
-  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
-  addActiveObject(ROLE_STROKE, stroke);
+  m_defaultDecorationSize[ROLE_STROKE] = 3.0;
+  m_defaultDecorationSize[ROLE_SWC] = 5.0;
+  m_defaultDecorationSize[ROLE_SYNAPSE] = 5.0;
+  m_defaultDecorationSize[ROLE_BOOKMARK] = 5.0;
+  m_defaultDecorationSize[ROLE_TODO_ITEM] = 5.0;
 
-  stroke = new ZStroke2d;
-  stroke->setVisible(false);
-  stroke->setFilled(false);
-  stroke->setPenetrating(true);
-  stroke->hideStart(true);
-  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
-  addActiveObject(ROLE_SWC, stroke);
+  {
+    ZStroke2d *stroke = new ZStroke2d;
+    stroke->setVisible(false);
+    stroke->setFilled(true);
+    stroke->setPenetrating(true);
+    stroke->useCosmeticPen(false);
+    stroke->hideStart(false);
+    stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
+    addActiveObject(ROLE_STROKE, stroke);
+  }
 
-  /*
-  stroke = new ZStroke2d;
-  stroke->setVisible(false);
-  stroke->setFilled(false);
-  stroke->setPenetrating(true);
-  stroke->hideStart(true);
-  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
-  addActiveObject(ROLE_SYNAPSE, stroke);
-  */
+  {
+    ZSwcTree *obj = new ZSwcTree;
+    obj->setVisible(false);
+    obj->useCosmeticPen(true);
+    Swc_Tree_Node *tn = SwcTreeNode::MakePointer(
+          0, 0, 0, m_defaultDecorationSize[ROLE_SWC]);
+    obj->forceVirtualRoot();
+    obj->addRegularRoot(tn);
+    obj->setColor(0, 0, 255);
+    obj->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
+    addActiveObject(ROLE_SWC, obj);
+  }
+
 
   {
     ZStackBall *obj = new ZStackBall;
     obj->setVisible(false);
     obj->useCosmeticPen(true);
-    obj->setRadius(5.0);
+    obj->setRadius(m_defaultDecorationSize[ROLE_SYNAPSE]);
     obj->setColor(0, 255, 0);
     obj->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
     addActiveObject(ROLE_SYNAPSE, obj);
@@ -116,34 +125,158 @@ void ZStackPresenter::initActiveObject()
     ZStackBall *obj = new ZStackBall;
     obj->setVisible(false);
     obj->useCosmeticPen(true);
-    obj->setRadius(5.0);
+    obj->setRadius(m_defaultDecorationSize[ROLE_BOOKMARK]);
     obj->setColor(255, 0, 0);
     obj->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
     addActiveObject(ROLE_BOOKMARK, obj);
   }
-  /*
-  stroke = new ZStroke2d;
-  stroke->setVisible(false);
-  stroke->setFilled(false);
-  stroke->setPenetrating(true);
-  stroke->useCosmeticPen(true);
-  stroke->hideStart(true);
-  stroke->setWidth(10.0);
-  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
-  addActiveObject(ROLE_BOOKMARK, stroke);
-  */
 
-  stroke = new ZStroke2d;
-  stroke->setVisible(false);
-  stroke->setFilled(false);
-  stroke->setPenetrating(true);
-  stroke->useCosmeticPen(true);
-  stroke->hideStart(true);
-  stroke->setWidth(10.0);
-  stroke->setColor(QColor(200, 128, 200));
-  stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
-  addActiveObject(ROLE_TODO_ITEM, stroke);
+  {
+    ZStackBall *obj = new ZStackBall;
+    obj->setVisible(false);
+    obj->useCosmeticPen(true);
+    obj->setRadius(m_defaultDecorationSize[ROLE_TODO_ITEM]);
+    obj->setColor(255, 0, 0);
+    obj->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
+    addActiveObject(ROLE_TODO_ITEM, obj);
+    /*
+    ZStroke2d *stroke = new ZStroke2d;
+    stroke->setVisible(false);
+    stroke->setFilled(false);
+    stroke->setPenetrating(true);
+    stroke->useCosmeticPen(true);
+    stroke->hideStart(true);
+    stroke->setWidth(10.0);
+    stroke->setColor(QColor(200, 128, 200));
+    stroke->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
+    addActiveObject(ROLE_TODO_ITEM, stroke);
+    */
+  }
 }
+#endif
+
+namespace {
+
+void set_single_node_mode(ZSwcTree *tree)
+{
+  if (tree) {
+    Swc_Tree_Node *vtn = tree->root();
+    Swc_Tree_Node *tn = tree->firstRegularRoot();
+    if (SwcTreeNode::hasChild(tn)) {
+      SwcTreeNode::setRadius(tn, vtn->node.d);
+      Swc_Tree_Node *child = tn->first_child;
+      while (child) {
+        Swc_Tree_Node *nextChild = child->next_sibling;
+        SwcTreeNode::killSubtree(child);
+        child = nextChild;
+      }
+      tree->deprecate(ZSwcTree::ALL_COMPONENT);
+    }
+  }
+}
+
+void set_double_node_mode(
+    ZSwcTree *tree, const ZPoint &startCenter, double endRadius)
+{
+  if (tree) {
+    Swc_Tree_Node *tn = tree->firstRegularRoot();
+    SwcTreeNode::setCenter(tn, startCenter);
+    if (!SwcTreeNode::hasChild(tn)) {
+      SwcTreeNode::setRadius(tree->root(), SwcTreeNode::radius(tn));
+      SwcTreeNode::setRadius(tn, 0);
+      tn = SwcTreeNode::MakeChild(tn);
+    } else {
+      tn = SwcTreeNode::firstChild(tn);
+    }
+    SwcTreeNode::setCenter(tn, startCenter);
+    SwcTreeNode::setRadius(tn, endRadius);
+    tree->deprecate(ZSwcTree::ALL_COMPONENT);
+  }
+}
+
+void set_double_node_mode(
+    ZSwcTree *tree, const Swc_Tree_Node *refNode)
+{
+  if (tree && refNode) {
+    set_double_node_mode(
+          tree, SwcTreeNode::center(refNode), SwcTreeNode::radius(refNode));
+  }
+}
+
+}
+
+void ZStackPresenter::prepareSwcGlyph(ZStackObject *obj)
+{
+  ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+  if (tree) {
+    switch (interactiveContext().swcEditMode()) {
+    case ZInteractiveContext::SWC_EDIT_ADD_NODE:
+      set_single_node_mode(tree);
+      break;
+    case ZInteractiveContext::SWC_EDIT_EXTEND:
+    case ZInteractiveContext::SWC_EDIT_SMART_EXTEND:
+      set_double_node_mode(tree, getSelectedSwcNode());
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+#if 0
+void ZStackPresenter::prepareActiveDecoration(ZStackObject *obj)
+{
+  if (obj->getType() == ZStackObject::EType::SWC) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+    switch (interactiveContext().swcEditMode()) {
+    case ZInteractiveContext::SWC_EDIT_ADD_NODE:
+      set_single_node_mode(tree);
+      break;
+    case ZInteractiveContext::SWC_EDIT_EXTEND:
+    case ZInteractiveContext::SWC_EDIT_SMART_EXTEND:
+      set_double_node_mode(tree, getSelectedSwcNode());
+      break;
+    default:
+      break;
+    }
+  }
+#if 0
+  switch(obj->getType()) {
+  case ZStackObject::EType::SWC:
+  if (role == ROLE_SWC) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+    switch (interactiveContext().swcEditMode()) {
+    case ZInteractiveContext::SWC_EDIT_ADD_NODE:
+      set_single_node_mode(tree);
+      break;
+    case ZInteractiveContext::SWC_EDIT_EXTEND:
+    case ZInteractiveContext::SWC_EDIT_SMART_EXTEND:
+      set_double_node_mode(tree, getSelectedSwcNode());
+      break;
+    default:
+      break;
+    }
+
+/*
+    if (tree) {
+      Swc_Tree_Node *tn = tree->firstRegularRoot();
+      if (tn) {
+        if (SwcTreeNode::hasChild(tn)) {
+          tn = SwcTreeNode::firstChild(tn);
+        }
+        tree->deprecate(ZSwcTree::BOUND_BOX);
+      }
+    }
+    */
+  }
+    break;
+  default:
+    obj = nullptr;
+    break;
+  }
+#endif
+}
+#endif
 
 void ZStackPresenter::init()
 {
@@ -177,7 +310,13 @@ void ZStackPresenter::init()
   }
 
   m_cursorRadius = 10;
-  initActiveObject();
+//  initActiveObject();
+  m_mouseCursorGlyph =
+      std::shared_ptr<ZMouseCursorGlyph>(new ZMouseCursorGlyph);
+  m_mouseCursorGlyph->setPrepareFunc(
+        ZMouseCursorGlyph::ROLE_SWC,
+        std::bind(
+          &ZStackPresenter::prepareSwcGlyph, this, std::placeholders::_1));
 
   m_highlightDecoration.setRadius(5.0);
   m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
@@ -205,6 +344,7 @@ void ZStackPresenter::init()
                                 ZStackDocSelector::SELECT_RECURSIVE);
 }
 
+/*
 void ZStackPresenter::addActiveObject(EObjectRole role, ZStackObject *obj)
 {
   if (m_activeObjectMap.contains(role)) {
@@ -215,6 +355,7 @@ void ZStackPresenter::addActiveObject(EObjectRole role, ZStackObject *obj)
   m_activeObjectMap[role] = obj;
   m_activeDecorationList.append(obj);
 }
+*/
 
 ZKeyOperationConfig* ZStackPresenter::getKeyConfig()
 {
@@ -521,10 +662,20 @@ bool ZStackPresenter::paintingStroke() const
   return op.getOperation() == ZStackOperator::OP_PAINT_STROKE;
 }
 
-void ZStackPresenter::updateActiveDecoration()
+void ZStackPresenter::updateMouseCursorGlyphPos()
 {
   ZPoint dataPos =
       buddyView()->getCurrentMousePosition(neutu::data3d::ESpace::MODEL);
+  auto postProc = [=](ZStackObject *obj) {
+    buddyDocument()->processObjectModified(obj);
+  };
+  if (paintingStroke()) {
+    m_mouseCursorGlyph->appendActiveGlyphPosition(dataPos, postProc);
+  } else {
+    m_mouseCursorGlyph->setActiveGlyphPosition(dataPos, postProc);
+  }
+
+#if 0
   foreach(ZStackObject *obj, m_activeDecorationList) {
     if (obj->isVisible() && !paintingStroke()) {
       switch (obj->getType()) {
@@ -549,6 +700,24 @@ void ZStackPresenter::updateActiveDecoration()
         }
       }
         break;
+      case ZStackObject::EType::SWC:
+      {
+        ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+        if (tree) {
+          Swc_Tree_Node *tn = tree->firstRegularRoot();
+          if (tn) {
+            if (SwcTreeNode::hasChild(tn)) {
+              tn = SwcTreeNode::firstChild(tn);
+            }
+            SwcTreeNode::setCenter(tn, dataPos);
+            tree->deprecate(ZSwcTree::BOUND_BOX);
+          }
+#ifdef _DEBUG_2
+        tree->print();
+#endif
+        }
+      }
+        break;
       default:
         obj = nullptr;
         break;
@@ -557,6 +726,7 @@ void ZStackPresenter::updateActiveDecoration()
     }
   }
   buddyDocument()->processObjectModified();
+#endif
 }
 
 void ZStackPresenter::clearData()
@@ -1047,6 +1217,7 @@ QMenu* ZStackPresenter::getContextMenu()
   return getStackContextMenu();
 }
 
+/*
 ZStackObject* ZStackPresenter::getFirstOnActiveObject() const
 {
   for (QMap<EObjectRole, ZStackObject*>::const_iterator iter =
@@ -1058,7 +1229,14 @@ ZStackObject* ZStackPresenter::getFirstOnActiveObject() const
 
   return NULL;
 }
+*/
 
+QList<ZStackObject*> ZStackPresenter::getActiveDecorationList() const
+{
+  return m_mouseCursorGlyph->getGlyphList();
+}
+
+/*
 QList<ZStackObject*> ZStackPresenter::getActiveDecorationList(
     std::function<bool(const ZStackObject*)> pred) const
 {
@@ -1071,7 +1249,9 @@ QList<ZStackObject*> ZStackPresenter::getActiveDecorationList(
 
   return objList;
 }
+*/
 
+#if 0
 void ZStackPresenter::setActiveObjectSize(EObjectRole role, double radius)
 {
   ZStackObject *obj = getActiveObject(role);
@@ -1088,38 +1268,37 @@ void ZStackPresenter::setDefaultActiveObjectSize(EObjectRole role)
   }
 }
 
-void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
+void ZStackPresenter::turnOnActiveObject(
+    EObjectRole role, std::function<void(ZStackObject*)> prepare)
 {
   turnOffActiveObject();
   ZStackObject *obj = getActiveObject(role);
   if (obj) {
     obj->setVisible(true);
-    updateActiveDecoration();
-
-    switch (role) {
-    case ROLE_SWC:
-      if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI) {
-        obj->useCosmeticPen(true);
-      } else {
-        obj->useCosmeticPen(false);
-      }
-      break;
-    default:
-      break;
-    }
-
-    buddyDocument()->bufferObjectModified(
-          obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
-    if (refreshing) {
-      buddyDocument()->processObjectModified();
-    }
-    /*
-    if (refreshing) {
-      buddyView()->paintActiveDecoration();
-    }
-    */
+    prepare(obj);
+    updateActiveDecorationPos();
+    buddyDocument()->processObjectModified(obj);
   }
 }
+
+
+void ZStackPresenter::turnOnActiveObject(
+    EObjectRole role, std::function<void(ZStackObject*, EObjectRole)> prepare)
+{
+  turnOnActiveObject(role, [&](ZStackObject *obj) {
+    prepare(obj, role);
+  });
+}
+
+void ZStackPresenter::turnOnActiveObject(EObjectRole role)
+{
+  turnOnActiveObject(
+        role, std::bind(
+          &ZStackPresenter::prepareActiveDecoration, this,
+          std::placeholders::_1, std::placeholders::_2));
+}
+#endif
+
 /*
 void ZStackPresenter::turnOnStroke()
 {
@@ -1136,12 +1315,35 @@ void ZStackPresenter::turnOnStroke()
 
 void ZStackPresenter::turnOffActiveObject()
 {
+  m_mouseCursorGlyph->deactivate();
+  m_mouseCursorGlyph->processActiveChange([this](ZStackObject *obj) {
+    buddyDocument()->processObjectModified(obj);
+  });
+#if 0
   for (QMap<EObjectRole, ZStackObject*>::iterator iter =
        m_activeObjectMap.begin(); iter != m_activeObjectMap.end(); ++iter) {
     iter.value()->setVisible(false);
+    /*
+    if (iter.value()->getType() == ZStackObject::EType::SWC) {
+      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(iter.value());
+      if (tree) {
+        Swc_Tree_Node *tn = tree->firstRegularRoot();
+        SwcTreeNode::setRadius(tn, m_defaultDecorationSize[ROLE_SWC]);
+        Swc_Tree_Node *child = tn->first_child;
+        while (child) {
+          Swc_Tree_Node *nextChild = child->next_sibling;
+          SwcTreeNode::killSubtree(child);
+          child = nextChild;
+        }
+        tree->deprecate(ZSwcTree::ALL_COMPONENT);
+      }
+    }
+    */
   }
+#endif
 }
 
+/*
 void ZStackPresenter::turnOffActiveObject(EObjectRole role)
 {
   ZStackObject *obj = getActiveObject(role);
@@ -1150,6 +1352,7 @@ void ZStackPresenter::turnOffActiveObject(EObjectRole role)
     buddyView()->paintActiveDecoration();
   }
 }
+*/
 
 /*
 void ZStackPresenter::turnOffStroke()
@@ -1528,7 +1731,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
             << std::endl;
 #endif
 
-  updateActiveDecoration();
+  updateMouseCursorGlyphPos();
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
         event, ZMouseEvent::EAction::MOVE);
@@ -1668,7 +1871,7 @@ bool ZStackPresenter::processKeyPressEventForActiveStroke(QKeyEvent *event)
 {
   bool taken = false;
 
-  if (isActiveObjectOn()) {
+  if (m_mouseCursorGlyph->isActivated(ZMouseCursorGlyph::ERole::ROLE_STROKE)) {
     ZStackOperator::EOperation opId =
         m_activeStrokeOperationMap.getOperation(
           event->key(), event->modifiers());
@@ -1763,18 +1966,32 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
 #endif
     if (m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
-      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
+      m_mouseCursorGlyph->updateActiveGlyph([&](ZStackObject *obj) {
+        obj->setLabel(event->key() - Qt::Key_0);
+        buddyDocument()->processObjectModified(obj);
+      });
+      /*
+      ZStroke2d *stroke = m_mouseCursorGlyph->getGlyph<ZStroke2d>(
+            ZMouseCursorGlyph::ERole::ROLE_STROKE);
       stroke->setLabel(event->key() - Qt::Key_0);
-      buddyView()->paintActiveDecoration();
+      buddyDocument()->processObjectModified(stroke);
+      */
       taken = true;
     }
     break;
   case Qt::Key_QuoteLeft:
     if (m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW) {
-      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-      stroke->setLabel(255);
-      buddyView()->paintActiveDecoration();
+      m_mouseCursorGlyph->updateActiveGlyph([&](ZStackObject *obj) {
+        obj->setLabel(255);
+        buddyDocument()->processObjectModified(obj);
+      });
+
+//      ZStroke2d *stroke = m_mouseCursorGlyph->getGlyph<ZStroke2d>(
+//            ZMouseCursorGlyph::ERole::ROLE_STROKE);
+//      stroke->setLabel(255);
+//      buddyView()->paintActiveDecoration();
+//      buddyDocument()->processObjectModified(stroke);
       taken = true;
     }
     break;
@@ -1802,6 +2019,7 @@ void ZStackPresenter::setZoomRatio(double ratio)
   buddyView()->imageWidget()->setZoomRatio(ratio);
 }
 
+#if 0
 bool ZStackPresenter::estimateActiveStrokeWidth()
 {
   //Automatic adjustment
@@ -1836,6 +2054,7 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
 
   return succ;
 }
+#endif
 
 bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 {
@@ -1973,6 +2192,15 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     processed = true;
     break;
   case Qt::Key_Comma:
+    m_mouseCursorGlyph->addActiveGlyphSize(
+          -1.0, [&](ZStackObject *obj) {
+      if (obj) {
+        buddyDocument()->processObjectModified(obj);
+        processed = true;
+      }
+    });
+
+    /*
     if (isActiveObjectOn()) {
       ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
       if (stroke != NULL) {
@@ -1981,21 +2209,33 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
       buddyView()->paintActiveDecoration();
       processed = true;
     }
+    */
     break;
   case Qt::Key_Period:
-    if (isActiveObjectOn()) {
+    if (m_mouseCursorGlyph->isActivated()) {
       if (event->modifiers() == Qt::NoModifier) {
+        m_mouseCursorGlyph->addActiveGlyphSize(
+              1.0, [&](ZStackObject *obj) {
+          if (obj) {
+            buddyDocument()->processObjectModified(obj);
+            processed = true;
+          }
+        });
+        /*
         ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
         if (stroke != NULL) {
           stroke->addWidth(1.0);
         }
         buddyView()->paintActiveDecoration();
         processed = true;
+        */
       } else if (event->modifiers() == Qt::ShiftModifier) {
+        /*
         if (estimateActiveStrokeWidth()) {
           buddyView()->paintActiveDecoration();
           processed = true;
         }
+        */
       }
     }
     break;
@@ -2436,11 +2676,34 @@ void ZStackPresenter::enterSwcConnectMode()
   }
 }
 
+#if 0
 void ZStackPresenter::updateSwcExtensionHint()
 {
   if (isActiveObjectOn(ROLE_SWC)) {
-    const Swc_Tree_Node *tn = getSelectedSwcNode();
-    if (tn != NULL) {
+    const Swc_Tree_Node *selected = getSelectedSwcNode();
+    if (selected) {
+      ZSwcTree *tree = getActiveObject<ZSwcTree>(ROLE_SWC);
+      set_double_node_mode(tree, selected);
+#if 0
+      if (tree) {
+        Swc_Tree_Node *tn = tree->firstRegularRoot();
+        SwcTreeNode::setCenter(tn, SwcTreeNode::center(selected));
+        SwcTreeNode::setRadius(tn, 0);
+        if (!SwcTreeNode::hasChild(tn)) {
+          tn = SwcTreeNode::MakeChild(tn);
+        } else {
+          tn = SwcTreeNode::firstChild(tn);
+        }
+        const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+        SwcTreeNode::setCenter(tn, event.getDataPosition());
+        SwcTreeNode::setRadius(tn, SwcTreeNode::radius(selected));
+        tree->deprecate(ZSwcTree::ALL_COMPONENT);
+#ifdef _DEBUG_2
+        tree->print();
+#endif
+      }
+#endif
+      /*
       ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
       stroke->set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
       stroke->setWidth(SwcTreeNode::radius(tn) * 2.0);
@@ -2448,9 +2711,11 @@ void ZStackPresenter::updateSwcExtensionHint()
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
       ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
       stroke->append(currentStackPos.getX(), currentStackPos.getY());
+      */
     }
   }
 }
+#endif
 
 void ZStackPresenter::processObjectModified(const ZStackObjectInfoSet &objSet)
 {
@@ -2458,6 +2723,11 @@ void ZStackPresenter::processObjectModified(const ZStackObjectInfoSet &objSet)
     buddyView()->invalidateObjectSorter();
   }
   buddyView()->paintObject(objSet.getTarget());
+}
+
+ZSliceViewTransform ZStackPresenter::getSliceViewTransform() const
+{
+  return buddyView()->getSliceViewTransform();
 }
 
 void ZStackPresenter::setSliceViewTransform(
@@ -2468,7 +2738,7 @@ void ZStackPresenter::setSliceViewTransform(
     setSliceAxis(transform.getSliceAxis());
   }
   m_interactiveContext.setSliceViewTransform(transform);
-  updateActiveDecoration();
+  updateMouseCursorGlyphPos();
 }
 
 void ZStackPresenter::notifyUser(const QString &msg)
@@ -2487,26 +2757,34 @@ bool ZStackPresenter::enterSwcExtendMode()
       notifyUser("Left click to extend. Path calculation is off when '"
                  CTRL_KEY_NAME "' is pressed."
                  "Right click to exit extending mode.");
+      startSwcEdit(ZInteractiveContext::SWC_EDIT_EXTEND);
+#if 0
+      interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
+      m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_SWC);
+      updateMouseCursorGlyphPos();
 
 //      m_stroke.setFilled(false);
 //      QPointF pos = mapFromGlobalToStack(QCursor::pos());
 
-      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
-      stroke->set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
+//      turnOnActiveObject(ROLE_SWC);
+//      updateSwcExtensionHint();
+      /*
+      ZSwcTree *obj = getActiveObject<ZStackBall>(ROLE_SWC);
+      ball->setCenter(SwcTreeNode::center(tn));
 
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
       ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
-      stroke->append(currentStackPos.getX(), currentStackPos.getY());
+      ball->append(currentStackPos.getX(), currentStackPos.getY());
 
 //      stroke->append(pos.x(), pos.y());
       //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
-      stroke->setWidth(SwcTreeNode::radius(tn) * 2.0);
-
-      turnOnActiveObject(ROLE_SWC);
+      ball->setWidth(SwcTreeNode::radius(tn) * 2.0);
+      */
 //      turnOnStroke();
 //      m_stroke.setTarget(neutu::data3d::ETarget::TARGET_WIDGET);
-      interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_EXTEND);
+
       updateCursor();
+#endif
       succ = true;
     }
   }
@@ -2536,20 +2814,19 @@ void ZStackPresenter::enterSwcMoveMode()
   }
 }
 
+#if 0
 void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
+  exitEdit();
+
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_ADD_NODE);
-  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+
+  turnOnActiveObject(ROLE_SWC);
+  updateCursor();
+
 #if 0
-  if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
-    stroke->setWidth(
-          20.0 + imax2(buddyDocument()->getStack()->width(),
-                       buddyDocument()->getStack()->height()) / 200);
-  } else {
-    stroke->setWidth(6.0);
-  }
-#endif
-//  buddyDocument()->mapToDataCoord(&x, &y, NULL);
+  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+
   stroke->set(x, y);
 
   turnOnActiveObject(ROLE_SWC);
@@ -2559,21 +2836,96 @@ void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 //  turnOnStroke();
   //buddyView()->paintActiveDecoration();
   updateCursor();
+#endif
 }
-
+#endif
 
 void ZStackPresenter::toggleSwcSkeleton(bool state)
 {
   buddyDocument()->showSwcFullSkeleton(state);
 }
 
+template<typename T>
+void ZStackPresenter::startSwcEdit(T option)
+{
+  exitEdit();
+
+  interactiveContext().setSwcEditMode(option);
+
+  m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_SWC);
+  updateMouseCursorGlyphPos();
+  updateCursor();
+}
+
 void ZStackPresenter::trySwcAddNodeMode()
 {
+  if (interactiveContext().strokeEditMode() !=
+      ZInteractiveContext::STROKE_DRAW) {
+    startSwcEdit(ZInteractiveContext::SWC_EDIT_ADD_NODE);
+  }
+  /*
   ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
 //  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   trySwcAddNodeMode(pos.x(), pos.y());
+  */
 }
 
+ZStackBall ZStackPresenter::getActiveDecorationForSwc() const
+{
+  ZStackBall ball;
+
+  m_mouseCursorGlyph->useActiveGlyph([&](const ZPoint &center, double r) {
+    ball.set(center, r);
+  });
+
+  return ball;
+}
+
+bool ZStackPresenter::addActiveDecorationAsSwc()
+{
+  bool succ = false;
+  ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
+  if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI ||
+      paintingRoi()) {
+    role = ZStackObjectRole::ROLE_ROI;
+  }
+  m_mouseCursorGlyph->useActiveGlyph([&](const ZPoint &center, double r) {
+    if (buddyDocument()->executeAddSwcNodeCommand(
+          center, r, role)) {
+      if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI) {
+        buddyDocument()->selectSwcTreeNode(center, false);
+        enterSwcExtendMode();
+      }
+      succ = true;
+    }
+  });
+
+  /*
+  ZSwcTree *tree = m_mouseCursorGlyph->getActiveGlyph<ZSwcTree>(
+        ZMouseCursorGlyph::ERole::ROLE_SWC);
+//  ZSwcTree *tree = getActiveObject<ZSwcTree>(ROLE_SWC);
+  if (tree) {
+    ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
+    if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI ||
+        paintingRoi()) {
+      role = ZStackObjectRole::ROLE_ROI;
+    }
+    Swc_Tree_Node *tn = tree->firstRegularRoot();
+    if (buddyDocument()->executeAddSwcNodeCommand(
+          SwcTreeNode::center(tn), SwcTreeNode::radius(tn), role)) {
+      if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI) {
+        buddyDocument()->selectSwcTreeNode(SwcTreeNode::center(tn), false);
+        enterSwcExtendMode();
+      }
+      return true;
+    }
+  }
+
+  return false;
+  */
+}
+
+/*
 void ZStackPresenter::trySwcAddNodeMode(double x, double y)
 {
   if (interactiveContext().strokeEditMode() !=
@@ -2581,6 +2933,7 @@ void ZStackPresenter::trySwcAddNodeMode(double x, double y)
     enterSwcAddNodeMode(x, y);
   }
 }
+*/
 
 void ZStackPresenter::tryPaintStrokeMode()
 {
@@ -2649,15 +3002,19 @@ void ZStackPresenter::enterDrawStrokeMode(double x, double y)
 {
 //  buddyDocument()->mapToDataCoord(&x, &y, NULL);
 
-  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-  stroke->set(x, y);
-  stroke->setEraser(false);
-  turnOnActiveObject(ROLE_STROKE);
+  interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
+  m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_STROKE);
+  updateMouseCursorGlyphPos();
+
+//  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
+//  stroke->set(x, y);
+//  stroke->setEraser(false);
+//  turnOnActiveObject(ROLE_STROKE);
 //  m_stroke.setFilled(true);
 //  m_stroke.setTarget(neutu::data3d::ETarget::TARGET_OBJECT_CANVAS);
 //  turnOnStroke();
   //buddyView()->paintActiveDecoration();
-  interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
+
   updateCursor();
 }
 
@@ -2670,14 +3027,24 @@ void ZStackPresenter::enterDrawRectMode(double /*x*/, double /*y*/)
 
 void ZStackPresenter::enterEraseStrokeMode(double x, double y)
 {
+  m_mouseCursorGlyph->activate(
+        ZMouseCursorGlyph::ERole::ROLE_STROKE, [=](ZStackObject *obj) {
+    ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+    if (stroke) {
+      stroke->set(x, y);
+      stroke->setEraser(true);
+      buddyDocument()->processObjectModified(stroke);
+    }
+  });
+
 //  buddyDocument()->mapToDataCoord(&x, &y, NULL);
-  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-  stroke->set(x, y);
+//  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
+//  stroke->set(x, y);
 //  m_stroke.setFilled(true);
-  stroke->setEraser(true);
+//  stroke->setEraser(true);
 //  m_stroke.setTarget(neutu::data3d::ETarget::TARGET_OBJECT_CANVAS);
 //  turnOnStroke();
-  turnOnActiveObject(ROLE_STROKE);
+//  turnOnActiveObject(ROLE_STROKE);
   //buddyView()->paintActiveDecoration();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
   updateCursor();
@@ -2703,7 +3070,7 @@ void ZStackPresenter::exitEdit()
 
 void ZStackPresenter::exitStrokeEdit()
 {
-  turnOffActiveObject(ROLE_STROKE);
+  turnOffActiveObject();
 //  turnOffStroke();
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
   updateCursor();
@@ -2735,7 +3102,7 @@ void ZStackPresenter::exitRectEdit()
 
 void ZStackPresenter::exitBookmarkEdit()
 {
-  turnOffActiveObject(ROLE_BOOKMARK);
+  turnOffActiveObject();
   interactiveContext().setBookmarkEditMode(ZInteractiveContext::BOOKMARK_EDIT_OFF);
   updateCursor();
   m_interactiveContext.setExitingEdit(true);
@@ -2743,7 +3110,7 @@ void ZStackPresenter::exitBookmarkEdit()
 
 void ZStackPresenter::exitTodoEdit()
 {
-  turnOffActiveObject(ROLE_TODO_ITEM);
+  turnOffActiveObject();
   interactiveContext().setTodoEditMode(ZInteractiveContext::TODO_EDIT_OFF);
   updateCursor();
   m_interactiveContext.setExitingEdit(true);
@@ -2751,7 +3118,7 @@ void ZStackPresenter::exitTodoEdit()
 
 void ZStackPresenter::exitSynapseEdit()
 {
-  turnOffActiveObject(ROLE_SYNAPSE);
+  turnOffActiveObject();
   interactiveContext().setSynapseEditMode(ZInteractiveContext::SYNAPSE_EDIT_OFF);
   updateCursor();
   m_interactiveContext.setExitingEdit(true);
@@ -2822,7 +3189,7 @@ void ZStackPresenter::enterSwcSelectMode()
     notifyUser("Use mouse to select nodes");
   }
 
-  turnOffActiveObject(ROLE_SWC);
+  turnOffActiveObject();
   m_interactiveContext.setSwcEditMode(ZInteractiveContext::SWC_EDIT_OFF);
   updateCursor();
 }
@@ -3096,6 +3463,16 @@ void ZStackPresenter::acceptRectRoi(bool appending)
 //  exitRectEdit();
 }
 
+void ZStackPresenter::addActiveMouseGlyphSize(double dr)
+{
+  m_mouseCursorGlyph->addActiveGlyphSize(
+        dr, [this](ZStackObject *obj) {
+    if (obj) {
+      buddyDocument()->processObjectModified(obj);
+    }
+  });
+}
+
 void ZStackPresenter::processEvent(ZInteractionEvent &event)
 {
   switch (event.getEvent()) {
@@ -3103,7 +3480,9 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
     if (buddyDocument()->getSelectedSwcNodeNumber() != 1) {
       exitSwcExtendMode();
     }
+        /*
     buddyView()->redrawObject();
+    */
     break;
   case ZInteractionEvent::EVENT_VIEW_PROJECTION:
   case ZInteractionEvent::EVENT_VIEW_SLICE:
@@ -3121,10 +3500,12 @@ void ZStackPresenter::processEvent(ZInteractionEvent &event)
   case ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE:
 //    buddyView()->redrawObject();
     buddyDocument()->notifySelectorChanged();
+    /*
     if (event.getEvent() ==
         ZInteractionEvent::EVENT_OBJECT3D_SCAN_SELECTED_IN_LABEL_SLICE) {
       emit labelSliceSelectionChanged();
     }
+    */
     break;
   default:
     break;
@@ -3180,6 +3561,13 @@ static void SyncDvidLabelSliceSelection(
   }
 }
 
+void ZStackPresenter::moveSwcNode(double du, double dv)
+{
+  ZAffinePlane plane = getSliceViewTransform().getCutPlane();
+  ZPoint dp = plane.getV1() * du + plane.getV2() * dv;
+  buddyDocument()->executeMoveSwcNodeCommand(dp.getX(), dp.getY(), dp.getZ());
+}
+
 bool ZStackPresenter::process(ZStackOperator::EOperation op)
 {
   ZStackOperator opr(op);
@@ -3194,7 +3582,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
   ZIntPoint widgetPos = event.getWidgetPosition();
   QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
-  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
+//  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
   ZPoint currentModelPos = event.getPosition(neutu::data3d::ESpace::MODEL);
 //  ZPoint currentRawStackPos = event.getPosition(neutu::ECoordinateSystem::RAW_STACK);
 
@@ -3256,7 +3644,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
   {
 //    QPointF pos = mapFromGlobalToStack(QCursor::pos());
-    trySwcAddNodeMode(currentStackPos.x(), currentStackPos.y());
+    trySwcAddNodeMode();
   }
     break;
   case ZStackOperator::OP_SWC_ENTER_EXTEND_NODE:
@@ -3274,6 +3662,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     buddyDocument()->deselectAllSwcTreeNodes();
     buddyDocument()->selectHitSwcTreeNode(op.getHitObject<ZSwcTree>());
     buddyDocument()->notifySwcTreeNodeSelectionChanged();
+    buddyDocument()->processObjectModified(op.getHitObject<ZSwcTree>());
 
     if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
       if (buddyDocument()->getTag() != neutu::Document::ETag::BIOCYTIN_PROJECTION) {
@@ -3346,31 +3735,48 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_SWC_EXTEND:
   {
-    ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+    ZStackBall ball = getActiveDecorationForSwc();
     if (buddyDocument()->executeSwcNodeExtendCommand(
-          m_mouseEventProcessor.getLatestStackPosition(),
-          stroke->getWidth() / 2.0)) {
+          ball.getCenter(), ball.getRadius())) {
+      m_mouseCursorGlyph->updateActiveGlyph([&](ZStackObject *obj) {
+        ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+        set_double_node_mode(tree, getSelectedSwcNode());
+      });
       interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
     }
   }
     break;
   case ZStackOperator::OP_SWC_SMART_EXTEND:
+  {
+    ZStackBall ball = getActiveDecorationForSwc();
+
     if (buddyDocument()->hasStackData()) {
-      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+
       if (buddyDocument()->executeSwcNodeSmartExtendCommand(
-            m_mouseEventProcessor.getLatestStackPosition(),
-            stroke->getWidth() / 2.0)) {
+            ball.getCenter(), ball.getRadius())) {
+        m_mouseCursorGlyph->updateActiveGlyph([&](ZStackObject *obj) {
+          ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+          set_double_node_mode(tree, getSelectedSwcNode());
+        });
+        updateMouseCursorGlyphPos();
+//        updateSwcExtensionHint();
         //status = MOUSE_COMMAND_EXECUTED;
-        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+//        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
       }
     } else {
-      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+//      ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
       if (buddyDocument()->executeSwcNodeExtendCommand(
-            m_mouseEventProcessor.getLatestStackPosition(),
-            stroke->getWidth() / 2.0)) {
-        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
+            ball.getCenter(), ball.getRadius())) {
+        m_mouseCursorGlyph->updateActiveGlyph([&](ZStackObject *obj) {
+          ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+          set_double_node_mode(tree, getSelectedSwcNode());
+        });
+        updateMouseCursorGlyphPos();
+//        updateSwcExtensionHint();
+//        interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_EXTENDED);
       }
     }
+  }
     break;
   case ZStackOperator::OP_SWC_CONNECT_NODE_SMART:
     if (buddyDocument()->hasStackData()) {
@@ -3383,25 +3789,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     buddyDocument()->executeSetRootCommand();
     break;
   case ZStackOperator::OP_SWC_ADD_NODE:
-  {
-    ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
-    ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
-    if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI ||
-        paintingRoi()) {
-      role = ZStackObjectRole::ROLE_ROI;
-    }
-    if (buddyDocument()->executeAddSwcNodeCommand(
-          m_mouseEventProcessor.getLatestStackPosition(),
-          stroke->getWidth() / 2.0, role)) {
-      //status = MOUSE_COMMAND_EXECUTED;
-      if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI) {
-        buddyDocument()->selectSwcTreeNode(
-              m_mouseEventProcessor.getLatestStackPosition(), false);
-        enterSwcExtendMode();
-      }
+    if (addActiveDecorationAsSwc()) {
       interactionEvent.setEvent(ZInteractionEvent::EVENT_SWC_NODE_ADDED);
     }
-  }
     break;
   case ZStackOperator::OP_SWC_ZOOM_TO_SELECTED_NODE:
     buddyDocument()->notifyZoomingToSelectedSwcNode();
@@ -3412,28 +3802,35 @@ bool ZStackPresenter::process(ZStackOperator &op)
     */
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_UP:
-    buddyDocument()->executeMoveSwcNodeCommand(0, -1.0, 0);
+    moveSwcNode(0, -1.0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_UP_FAST:
-    buddyDocument()->executeMoveSwcNodeCommand(0, -10.0, 0);
+    moveSwcNode(0, -10.0);
+//    buddyDocument()->executeMoveSwcNodeCommand(0, -10.0, 0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_LEFT:
-    buddyDocument()->executeMoveSwcNodeCommand(-1.0, 0, 0);
+    moveSwcNode(-1.0, 0);
+//    buddyDocument()->executeMoveSwcNodeCommand(-1.0, 0, 0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_LEFT_FAST:
-    buddyDocument()->executeMoveSwcNodeCommand(-10.0, 0, 0);
+    moveSwcNode(-10.0, 0);
+//    buddyDocument()->executeMoveSwcNodeCommand(-10.0, 0, 0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_DOWN:
-    buddyDocument()->executeMoveSwcNodeCommand(0, 1.0, 0);
+    moveSwcNode(0, 1.0);
+//    buddyDocument()->executeMoveSwcNodeCommand(0, 1.0, 0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_DOWN_FAST:
-    buddyDocument()->executeMoveSwcNodeCommand(0, 10.0, 0);
+    moveSwcNode(0, 10.0);
+//    buddyDocument()->executeMoveSwcNodeCommand(0, 10.0, 0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT:
-    buddyDocument()->executeMoveSwcNodeCommand(1.0, 0, 0);
+    moveSwcNode(1.0, 0);
+//    buddyDocument()->executeMoveSwcNodeCommand(1.0, 0, 0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE_RIGHT_FAST:
-    buddyDocument()->executeMoveSwcNodeCommand(10.0, 0, 0);
+    moveSwcNode(10.0, 0);
+//    buddyDocument()->executeMoveSwcNodeCommand(10.0, 0, 0);
     break;
   case ZStackOperator::OP_SWC_MOVE_NODE:
     enterSwcMoveMode();
@@ -3728,8 +4125,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_STROKE_START_PAINT:
   {
     LINFO() << "Start painting mask";
-    ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-    stroke->set(currentModelPos);
+    updateMouseCursorGlyphPos();
+//    ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
+//    stroke->set(currentModelPos);
 //    stroke->set(currentStackPos.x(), currentStackPos.y());
           //m_mouseEventProcessor.getLatestStackPosition().x(),
             //    m_mouseEventProcessor.getLatestStackPosition().y());
@@ -3737,10 +4135,14 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_MOVE_OBJECT:
   {
-    ZPoint offset = op.getMouseEventRecorder()->
-        getPositionOffset(neutu::ECoordinateSystem::STACK);
+    ZPoint dp = op.getMouseEventRecorder()->
+        getPositionOffset(neutu::ECoordinateSystem::WIDGET);
+    dp /= getSliceViewTransform().getScale();
+    ZPoint offset = getSliceViewTransform().getCutOrientation().mapAligned(
+          dp.getX(), dp.getY());
 
-    buddyDocument()->executeMoveObjectCommand(offset.x(), offset.y(), 0, glm::mat4(1.f), glm::mat4(1.f));
+    buddyDocument()->executeMoveObjectCommand(
+          offset.x(), offset.y(), offset.z(), glm::mat4(1.f), glm::mat4(1.f));
   }
     break;
   case ZStackOperator::OP_MOVE_IMAGE:
@@ -3809,15 +4211,16 @@ bool ZStackPresenter::process(ZStackOperator &op)
     buddyView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
     break;
   case ZStackOperator::OP_PAINT_STROKE:
-  {
+    updateMouseCursorGlyphPos();
+    /*
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
 #ifdef _DEBUG_
     std::cout << "Appending stroke: " << currentModelPos << std::endl;
 #endif
     stroke->append(currentModelPos);
     buddyDocument()->processObjectModified(stroke);
+    */
 //    buddyView()->paintActiveDecoration();
-  }
     break;
   case ZStackOperator::OP_RECT_ROI_INIT:
   {
@@ -3825,7 +4228,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     rect->setStartCorner(currentWidgetPos.x(), currentWidgetPos.y());
     rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);
-    rect->setZ(buddyView()->getCurrentZ());
+    rect->setZ(buddyView()->getCurrentDepth());
     rect->setColor(255, 128, 128);
 
 #ifdef _DEBUG_
@@ -4023,6 +4426,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_ACTIVE_STROKE_DECREASE_SIZE:
+    addActiveMouseGlyphSize(-1.0);
+    /*
   {
     ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
     if (stroke->isVisible()) {
@@ -4030,8 +4435,11 @@ bool ZStackPresenter::process(ZStackOperator &op)
       buddyView()->paintActiveDecoration();
     }
   }
+  */
     break;
   case ZStackOperator::OP_ACTIVE_STROKE_INCREASE_SIZE:
+    addActiveMouseGlyphSize(1.0);
+    /*
   {
     ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
     if (stroke->isVisible()) {
@@ -4039,8 +4447,11 @@ bool ZStackPresenter::process(ZStackOperator &op)
       buddyView()->paintActiveDecoration();
     }
   }
+  */
     break;
   case ZStackOperator::OP_ACTIVE_STROKE_ESTIMATE_SIZE:
+    //Todo: recover size estimation for new mouse glyph data structure
+    /*
     if (buddyDocument()->hasStackData()) {
       ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(getFirstOnActiveObject());
       if (stroke->isVisible()) {
@@ -4049,6 +4460,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
         }
       }
     }
+    */
     break;
   case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
     if (!buddyDocument()->getSelected(ZStackObject::EType::FLYEM_BOOKMARK).isEmpty()) {
@@ -4075,126 +4487,134 @@ bool ZStackPresenter::process(ZStackOperator &op)
 
 void ZStackPresenter::acceptActiveStroke()
 {
-  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-  ZStroke2d *newStroke = dynamic_cast<ZStroke2d*>(stroke->clone());
-  if (!newStroke->isEraser()) {
-    if (newStroke->getPointNumber() == 1 &&
-        m_mouseEventProcessor.getLatestMouseEvent().getModifiers() ==
-        Qt::ShiftModifier &&
-        buddyDocument()->getTag() != neutu::Document::ETag::FLYEM_SPLIT &&
-        buddyDocument()->getTag() != neutu::Document::ETag::FLYEM_PROOFREAD) {
-      if (!buddyDocument()->getStrokeList().empty()) {
-        LINFO() << "Compute stroke path";
-        ZPoint start;
-        ZPoint end;
-        buddyDocument()->getLastStrokePoint(start.xRef(), start.yRef());
-        newStroke->getLastPoint(end.xRef(), end.yRef());
-        buddyDocument()->mapToStackCoord(&start);
-        buddyDocument()->mapToStackCoord(&end);
+//  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
+//  ZStroke2d *newStroke = dynamic_cast<ZStroke2d*>(stroke->clone());
+  ZStroke2d *newStroke = m_mouseCursorGlyph->makeStrokeFromActiveGlyph();
+  if (newStroke) {
+    if (!newStroke->isEraser()) {
+      if (newStroke->getPointNumber() == 1 &&
+          m_mouseEventProcessor.getLatestMouseEvent().getModifiers() ==
+          Qt::ShiftModifier &&
+          buddyDocument()->getTag() != neutu::Document::ETag::FLYEM_SPLIT &&
+          buddyDocument()->getTag() != neutu::Document::ETag::FLYEM_PROOFREAD) {
+        if (!buddyDocument()->getStrokeList().empty()) {
+          LINFO() << "Compute stroke path";
+          ZPoint start;
+          ZPoint end;
+          buddyDocument()->getLastStrokePoint(start.xRef(), start.yRef());
+          newStroke->getLastPoint(end.xRef(), end.yRef());
+          buddyDocument()->mapToStackCoord(&start);
+          buddyDocument()->mapToStackCoord(&end);
 
-        int z0 = buddyView()->getZ(neutu::ECoordinateSystem::STACK);
-//        int z0 = buddyView()->sliceIndex();
-//        int z1 = z0;
-        start.setZ(0);
-        end.setZ(0);
+          int z0 = buddyView()->getZ(neutu::ECoordinateSystem::STACK);
+          //        int z0 = buddyView()->sliceIndex();
+          //        int z1 = z0;
+          start.setZ(0);
+          end.setZ(0);
 
-        int source[3] = {0, 0, 0};
-        int target[3] = {0, 0, 0};
-        for (int i = 0; i < 3; ++i) {
-          source[i] = neutu::iround(start[i]);
-          target[i] = neutu::iround(end[i]);
-        }
+          int source[3] = {0, 0, 0};
+          int target[3] = {0, 0, 0};
+          for (int i = 0; i < 3; ++i) {
+            source[i] = neutu::iround(start[i]);
+            target[i] = neutu::iround(end[i]);
+          }
 
-        ZStack *signal = ZStackFactory::makeSlice(
-              *buddyDocument()->getStack(), z0);
+          ZStack *signal = ZStackFactory::makeSlice(
+                *buddyDocument()->getStack(), z0);
 
-        Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
-        if (buddyDocument()->getStackBackground() ==
-            neutu::EImageBackground::BRIGHT) {
-          sgw->wf = Stack_Voxel_Weight;
-        } else {
-          sgw->wf = Stack_Voxel_Weight_I;
-        }
+          Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
+          if (buddyDocument()->getStackBackground() ==
+              neutu::EImageBackground::BRIGHT) {
+            sgw->wf = Stack_Voxel_Weight;
+          } else {
+            sgw->wf = Stack_Voxel_Weight_I;
+          }
 
-        double pointDistance = Geo3d_Dist(start.x(), start.y(), 0,
-            end.x(), end.y(), 0) / 2;
-        double cx = (start.x() + end.x()) / 2;
-        double cy = (start.y() + end.y()) / 2;
-        //double cz = ((double) (start[2] + end[2])) / 2;
-        int x0 = (int) (cx - pointDistance) - 2; //expand by 2 to deal with rouding error
-        int x1 = (int) (cx + pointDistance) + 2;
-        int y0 = (int) (cy - pointDistance) - 2;
-        int y1 = (int) (cy + pointDistance) + 2;
-        //int z0 = (int) (cz - pointDistance);
-        //int z1 = (int) (cz + pointDistance);
+          double pointDistance = Geo3d_Dist(start.x(), start.y(), 0,
+                                            end.x(), end.y(), 0) / 2;
+          double cx = (start.x() + end.x()) / 2;
+          double cy = (start.y() + end.y()) / 2;
+          //double cz = ((double) (start[2] + end[2])) / 2;
+          int x0 = (int) (cx - pointDistance) - 2; //expand by 2 to deal with rouding error
+          int x1 = (int) (cx + pointDistance) + 2;
+          int y0 = (int) (cy - pointDistance) - 2;
+          int y1 = (int) (cy + pointDistance) + 2;
+          //int z0 = (int) (cz - pointDistance);
+          //int z1 = (int) (cz + pointDistance);
 
 
-        Stack_Graph_Workspace_Set_Range(sgw, x0, x1, y0, y1, 0, 0);
-        Stack_Graph_Workspace_Validate_Range(
-              sgw, signal->width(), signal->height(), 1);
+          Stack_Graph_Workspace_Set_Range(sgw, x0, x1, y0, y1, 0, 0);
+          Stack_Graph_Workspace_Validate_Range(
+                sgw, signal->width(), signal->height(), 1);
 
-        //sgw->wf = Stack_Voxel_Weight;
+          //sgw->wf = Stack_Voxel_Weight;
 
-        int channel = 0;
-        if (buddyDocument()->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION &&
-            signal->channelNumber() > 1) {
-          channel = 1;
-        }
+          int channel = 0;
+          if (buddyDocument()->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION &&
+              signal->channelNumber() > 1) {
+            channel = 1;
+          }
 
-//        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
-        sgw->greyFactor = m_grayScale[channel];
-        sgw->greyOffset = m_grayOffset[channel];
+          //        Stack *stack = buddyDocument()->getStack()->c_stack(channel);
+          sgw->greyFactor = m_grayScale[channel];
+          sgw->greyOffset = m_grayOffset[channel];
 
-        Stack *signalData = signal->c_stack(channel);
-        Int_Arraylist *path = Stack_Route(signalData, source, target, sgw);
+          Stack *signalData = signal->c_stack(channel);
+          Int_Arraylist *path = Stack_Route(signalData, source, target, sgw);
 
-        newStroke->clear();
+          newStroke->clear();
 #ifdef _DEBUG_2
-        std::cout << "Creating new stroke ..." << std::endl;
+          std::cout << "Creating new stroke ..." << std::endl;
 #endif
-        for (int i = 0; i < path->length; ++i) {
-          int x, y, z;
-          C_Stack::indexToCoord(path->array[i], buddyDocument()->getStack()->width(),
-                                buddyDocument()->getStack()->height(),
-                                &x, &y, &z);
+          for (int i = 0; i < path->length; ++i) {
+            int x, y, z;
+            C_Stack::indexToCoord(path->array[i], buddyDocument()->getStack()->width(),
+                                  buddyDocument()->getStack()->height(),
+                                  &x, &y, &z);
 #ifdef _DEBUG_2
-          std::cout << x << " " << y << std::endl;
+            std::cout << x << " " << y << std::endl;
 #endif
-          newStroke->append(x + buddyDocument()->getStackOffset().getX(),
-                            y + buddyDocument()->getStackOffset().getY());
-        }
+            newStroke->append(x + buddyDocument()->getStackOffset().getX(),
+                              y + buddyDocument()->getStackOffset().getY());
+          }
 #ifdef _DEBUG_2
-        std::cout << "New stroke created" << std::endl;
-        newStroke->print();
+          std::cout << "New stroke created" << std::endl;
+          newStroke->print();
 #endif
 
-        delete signal;
+          delete signal;
+        }
       }
+    } else {
+      newStroke->setColor(QColor(0, 0, 0, 0));
     }
-  } else {
-    newStroke->setColor(QColor(0, 0, 0, 0));
+
+    //  newStroke->setZ(buddyView()->sliceIndex() +
+    //                  buddyDocument()->getStackOffset().getZ());
+    newStroke->setPenetrating(false);
+
+    ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
+    //  if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+    if (GET_APPLICATION_NAME == "FlyEM") {
+      role = ZStackObjectRole::ROLE_SEED |
+          ZStackObjectRole::ROLE_3DGRAPH_DECORATOR;
+    }
+
+    newStroke->setZOrder(m_zOrder++);
+    newStroke->setRole(role);
+    if (buddyDocument()->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
+      newStroke->setPenetrating(true);
+    }
+    buddyDocument()->executeAddObjectCommand(newStroke);
+
+    //buddyDocument()->executeAddStrokeCommand(newStroke);
+
+    m_mouseCursorGlyph->updateActiveGlyph([](ZStackObject *obj) {
+      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+      stroke->clear();
+    });
+//    stroke->clear();
   }
-
-//  newStroke->setZ(buddyView()->sliceIndex() +
-//                  buddyDocument()->getStackOffset().getZ());
-  newStroke->setPenetrating(false);
-
-  ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
-//  if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_SPLIT) {
-  if (GET_APPLICATION_NAME == "FlyEM") {
-    role = ZStackObjectRole::ROLE_SEED |
-        ZStackObjectRole::ROLE_3DGRAPH_DECORATOR;
-  }
-
-  newStroke->setZOrder(m_zOrder++);
-  newStroke->setRole(role);
-  if (buddyDocument()->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
-    newStroke->setPenetrating(true);
-  }
-  buddyDocument()->executeAddObjectCommand(newStroke);
-  //buddyDocument()->executeAddStrokeCommand(newStroke);
-
-  stroke->clear();
 //  buddyView()->paintActiveDecoration();
 }
 
@@ -4222,7 +4642,8 @@ void ZStackPresenter::testBiocytinProjectionMask()
 {
   interactiveContext().setStrokeEditMode(
         ZInteractiveContext::STROKE_DRAW);
-  ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
+  ZStroke2d *stroke =
+      dynamic_cast<ZStroke2d*>(m_mouseCursorGlyph->_getActiveGlyph());
   stroke->set(23, 21);
   acceptActiveStroke();
   stroke->set(126, 139);
@@ -4258,6 +4679,7 @@ void ZStackPresenter::testBiocytinProjectionMask()
   delete stack;
 }
 
+#if 0
 bool ZStackPresenter::isActiveObjectOn(EObjectRole role) const
 {
   if (getActiveObject(role) == NULL) {
@@ -4269,6 +4691,8 @@ bool ZStackPresenter::isActiveObjectOn(EObjectRole role) const
 
 bool ZStackPresenter::isActiveObjectOn() const
 {
+  return m_mouseCursorGlyph->getActiveGlyph();
+  /*
   for (QMap<EObjectRole, ZStackObject*>::const_iterator iter =
        m_activeObjectMap.begin(); iter != m_activeObjectMap.end(); ++iter) {
     if (iter.value()->isVisible()) {
@@ -4277,23 +4701,25 @@ bool ZStackPresenter::isActiveObjectOn() const
   }
 
   return false;
+  */
 }
+#endif
 
+#if 0
 ZStackObject* ZStackPresenter::getActiveObject(EObjectRole role) const
 {
+  return m_mouseCursorGlyph->getGlyph(role);
+  /*
   if (!m_activeObjectMap.contains(role)) {
     return NULL;
   }
 
   return m_activeObjectMap[role];
+  */
 }
+#endif
 
 void ZStackPresenter::setSliceAxis(neutu::EAxis axis)
 {
-//  m_interactiveContext.setSliceAxis(axis);
-  for (QList<ZStackObject*>::iterator iter = m_activeDecorationList.begin();
-       iter != m_activeDecorationList.end(); ++iter) {
-    ZStackObject *obj = *iter;
-    obj->setSliceAxis(axis);
-  }
+  m_mouseCursorGlyph->setSliceAxis(axis);
 }

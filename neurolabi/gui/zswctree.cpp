@@ -1,6 +1,4 @@
-#if defined(_QT_GUI_USED_)
-#include <QPointF>
-#endif
+#include "zswctree.h"
 
 #include <algorithm>
 #include <sstream>
@@ -13,8 +11,6 @@
 #include <stdexcept>
 #include <cassert>
 
-#include "common/math.h"
-#include "zswctree.h"
 #include "tz_voxel_graphics.h"
 #include "tz_apo.h"
 #include "tz_geo3d_utils.h"
@@ -23,9 +19,13 @@
 #include "zstackball.h"
 #include "zswcforest.h"
 #include "zswcbranch.h"
-#include "zfilelist.h"
 #include "tz_random.h"
 #include "tz_geoangle_utils.h"
+
+#include "common/math.h"
+#include "common/utilities.h"
+
+#include "zfilelist.h"
 #include "zrandomgenerator.h"
 #include "swctreenode.h"
 #include "zswctrunkanalyzer.h"
@@ -45,8 +45,11 @@
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
 #include "QsLog/QsLog.h"
+#include "vis2d/zslicepainter.h"
+#include "vis2d/utilities.h"
 #endif
 #include "zstackfactory.h"
+#include "data3d/displayconfig.h"
 
 using namespace std;
 
@@ -73,6 +76,7 @@ void ZSwcTree::init()
   setColorScheme(COLOR_NORMAL);
   m_type = GetType();
   addVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON);
+  m_usingCosmeticPen = true;
   setTarget(GetDefaultTarget());
 
   m_label = 0;
@@ -562,6 +566,7 @@ ZSwcTree::extractCurveTerminal() const
   return nodePair;
 }
 
+#if 0
 void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
                                   const Swc_Tree_Node *upperTn,
                                   QPointF &lineStart, QPointF &lineEnd,
@@ -616,6 +621,7 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
   UNUSED_PARAMETER(dataFocus);
 #endif
 }
+#endif
 
 #ifdef _QT_GUI_USED_
 const QColor& ZSwcTree::getNodeColor(const Swc_Tree_Node *tn, bool focused) const
@@ -900,8 +906,56 @@ void ZSwcTree::display(ZPainter &painter, int slice,
 }
 #endif
 
-bool ZSwcTree::display(QPainter *painter, const DisplayConfig &config) const
+bool ZSwcTree::displayFunc(QPainter *painter, const DisplayConfig &config) const
 {
+#ifdef _QT_GUI_USED_
+  if (!isEmpty()) {
+    ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+
+    const double depthScale = 1.0;
+    const double fadingFactor = 1.0;
+
+    QPen pen;
+    pen.setCosmetic(m_usingCosmeticPen);
+    pen.setWidthF(getPenWidth());
+
+#ifdef _DEBUG_
+    std::cout << "ZSwcTree::displayFunc" << std::endl;
+    print();
+#endif
+
+    const std::vector<Swc_Tree_Node *> &nodeArray = getSwcTreeNodeArray();
+    for (const Swc_Tree_Node *tn : nodeArray) {
+      if (SwcTreeNode::isRegular(tn)) {
+        pen.setColor(getNodeColor(tn, true));
+        painter->setPen(pen);
+
+        ZPoint center = SwcTreeNode::center(tn);
+        double radius = SwcTreeNode::radius(tn);
+
+        if (config.getStyle() != EDisplayStyle::SKELETON) {
+          s3Painter.drawBall(painter, center, radius, depthScale, fadingFactor);
+        }
+
+        const Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+        if (SwcTreeNode::isRegular(parent)) {
+          ZLineSegment line(SwcTreeNode::center(parent), center);
+          s3Painter.drawLine(
+                painter, line,
+                SwcTreeNode::radius(parent), SwcTreeNode::radius(tn));
+        }
+
+        if (isNodeSelected(tn)) {
+          neutu::SetPenColor(painter, Qt::yellow);
+          s3Painter.drawBoundBox(painter, center, radius, depthScale);
+        }
+      }
+    }
+
+    return true;
+  }
+#endif
+
   return false;
 }
 
@@ -4347,5 +4401,5 @@ Swc_Tree_Node* ZSwcTree::DownstreamIterator::next()
 ////////////////////////////////////////////////
 neutu::data3d::ETarget ZSwcTree::GetDefaultTarget()
 {
-  return neutu::data3d::ETarget::WIDGET;
+  return neutu::data3d::ETarget::HD_OBJECT_CANVAS;
 }

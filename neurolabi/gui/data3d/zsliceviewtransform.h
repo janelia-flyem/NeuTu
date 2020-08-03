@@ -46,6 +46,7 @@ public:
       int width, int height, neutu::data3d::ESpace sizeSpace);
 
   ZAffinePlane getCutPlane() const;
+  ZPlane getCutOrientation() const;
 
   void setScale(double s);
   void incScale();
@@ -58,6 +59,7 @@ public:
 
   void setCutCenter(const ZPoint &pt);
   void setCutCenter(double x, double y, double z);
+  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
   void setCutPlane(const ZPoint &center, const ZPoint &v1, const ZPoint &v2);
   void setCutPlane(const ZAffinePlane &plane);
   void setCutPlane(neutu::EAxis sliceAxis, const ZPoint &cutCenter);

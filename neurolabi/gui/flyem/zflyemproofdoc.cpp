@@ -173,14 +173,14 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) cons
   return ZFlyEmBodyAnnotation();
 }
 
+template<template<class...> class Container>
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
-    const std::vector<uint64_t> &bodyList)
+    const Container<uint64_t> &bodyList)
 {
   ZFlyEmBodyAnnotation finalAnnotation;
   if (getDvidReader().isReady()) {
-    for (std::vector<uint64_t>::const_iterator iter = bodyList.begin();
-         iter != bodyList.end(); ++iter) {
-      uint64_t bodyId = *iter;
+    for (uint64_t bodyId : bodyList) {
+//      uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation =
           FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
       recordAnnotation(bodyId, annotation);
@@ -200,6 +200,14 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
 
   return finalAnnotation;
 }
+
+template
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::vector>(
+    const std::vector<uint64_t> &bodyList);
+
+template
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::set>(
+    const std::set<uint64_t> &bodyList);
 
 QList<QString> ZFlyEmProofDoc::getAdminBodyStatusList() const
 {
@@ -5348,6 +5356,31 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
   }
 }
 #endif
+
+void ZFlyEmProofDoc::syncBodySelection(ZStackObject *host)
+{
+  ZDvidLabelSlice *hostSlice = dynamic_cast<ZDvidLabelSlice*>(host);
+  if (hostSlice) {
+    auto sliceList = getFrontDvidLabelSliceList();
+    for (auto slice : sliceList) {
+      if (slice != hostSlice) {
+        slice->setSelection(
+              hostSlice->getSelectedOriginal(), neutu::ELabelSource::ORIGINAL);
+      }
+    }
+  }
+}
+
+void ZFlyEmProofDoc::processLabelSliceHit(
+    ZStackObject *host, ZStackObject::ESelection option)
+{
+  if (host) {
+    host->processHit(option);
+    processObjectModified(host);
+    syncBodySelection(host);
+    notifyBodySelectionChanged();
+  }
+}
 
 void ZFlyEmProofDoc::updateBodyColor(
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating)

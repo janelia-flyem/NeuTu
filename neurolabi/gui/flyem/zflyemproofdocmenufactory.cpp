@@ -153,7 +153,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
             }
 
             config.appendSeparator();
-            if (ZStackDocHelper::AllowingBodySplit(doc)) {
+//            if (ZStackDocHelper::AllowingBodySplit(doc)) {
+            if (presenter->allowingBodySplit()) {
               config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
             }
           }

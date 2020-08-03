@@ -188,7 +188,7 @@ public:
    * \return The current Z position, which is defined as the slice index plus
    * the Z coordinate of the stack offset.
    */
-  int getCurrentZ() const;
+  int getCurrentDepth() const;
 
   //int threshold();
 
@@ -460,23 +460,6 @@ protected:
 //  bool reloadObjectCanvas(bool repaint = false);
   void reloadCanvas();
 
-//  virtual void updateImageCanvas();
-//  void updateMaskCanvas();
-//  void clearObjectCanvas();
-//  void clearTileCanvas();
-//  void updateObjectCanvas();
-//  void updateTileCanvas();
-//  void updateDynamicObjectCanvas();
-//  void updateActiveDecorationCanvas();
-//  void updatePaintBundle(bool requestingWidgetCanvasUpdate = true);
-//  void updateCanvas(neutu::data3d::ETarget target);
-
-//  ZPainter* getTileCanvasPainter();
-//  ZPainter* getObjectCanvasPainter();
-
-//  ZPixmap* updateProjCanvas(ZPixmap *canvas, ZPainter *painter);
-//  ZPixmap* updateViewPortCanvas(ZPixmap *canvas);
-
   ZSliceCanvas* updateCanvas(ZSliceCanvas *canvas);
 
   void connectSignalSlot();
@@ -568,8 +551,8 @@ public slots:
   void setStackInfo(const QString &info);
   void autoThreshold();
   void setThreshold(int thre);
-  void setZ(int z);
-  void setZQuitely(int z);
+  void setDepth(int z);
+//  void setZQuitely(int z);
 
   void displayActiveDecoration(bool display = true);
   void request3DVis();
@@ -620,6 +603,7 @@ signals:
   void autoTracing();
   void widgetCanvasUpdated(ZPixmap *canvas);
   void canvasUpdated(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
+  void sliceAxisChanged();
 //  void widgetCanvasUpdated(ZImage *canvas);
 
 private:
@@ -712,22 +696,10 @@ protected:
   ZImage *m_image = NULL;
 //  ZPainter m_imagePainter;
   ZImage *m_imageMask = NULL;
-//  ZPixmap *m_objectCanvas;
 
-//  ZSliceCanvas *m_dynamicObjectCanvas = NULL;
-//  double m_dynamicObjectOpacity;
-
-//  ZSliceCanvas *m_objectCanvas = NULL;
-//  ZPainter m_objectCanvasPainter;
-
-//  neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
-
-//  ZPainter m_tileCanvasPainter;
-//  ZSliceCanvas *m_activeDecorationCanvas = NULL;
-//  ZMultiscalePixmap m_tileCanvas;
   ZSliceCanvas *m_tileCanvas = NULL;
   ZImageWidget *m_imageWidget;
-  ZLabeledSpinBoxWidget *m_zSpinBox;
+  ZLabeledSpinBoxWidget *m_depthSpinBox;
 
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;
@@ -767,7 +739,7 @@ protected:
 //  ZStackViewParam m_oldViewParam;
   bool m_viewParamRecorded = false;
   bool m_viewParamRecordOnce = false;
-  ZArbSliceViewParam m_sliceViewParam;
+//  ZArbSliceViewParam m_sliceViewParam;
 //  ZSliceViewTranform m_mainTransform;
 //  ZSliceViewTranform m_prevMainTransform;
   int m_maxViewPort = 0;

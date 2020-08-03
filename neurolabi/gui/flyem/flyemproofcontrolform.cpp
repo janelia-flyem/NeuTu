@@ -485,6 +485,7 @@ void FlyEmProofControlForm::updateWidget(ZFlyEmProofMvc *mvc)
   ui->bodyViewPushButton->setEnabled(mvc->is3DEnabled());
   ui->skeletonViewPushButton->setEnabled(mvc->is3DEnabled());
   ui->meshPushButton->setEnabled(mvc->is3DEnabled());
+  ui->splitPushButton->setEnabled(mvc->allowingBodySplit());
 }
 
 void FlyEmProofControlForm::setInfo(const QString &info)

@@ -1154,6 +1154,7 @@ uint64_t ZDvidLabelSlice::getHitLabel() const
 
 void ZDvidLabelSlice::processHit(ESelection s)
 {
+  startSelection();
   switch (s) {
   case ESelection::SELECT_SINGLE:
     selectHit(false);
@@ -1172,6 +1173,7 @@ void ZDvidLabelSlice::processHit(ESelection s)
     clearSelection();
     break;
   }
+  endSelection();
 
   m_hitLabel = 0;
 }
@@ -1439,6 +1441,28 @@ std::set<uint64_t> ZDvidLabelSlice::getSelected(
 void ZDvidLabelSlice::mapSelection()
 {
   m_selectedOriginal = getSelected(neutu::ELabelSource::MAPPED);
+}
+
+std::set<uint64_t> ZDvidLabelSlice::getRecentSelected(
+    neutu::ELabelSource labelType) const
+{
+  std::set<uint64_t> bodySet = getSelector().getSelectedSet();
+  if (labelType == neutu::ELabelSource::MAPPED) {
+    bodySet = m_bodyMerger->getFinalLabel(bodySet);
+  }
+
+  return bodySet;
+}
+
+std::set<uint64_t> ZDvidLabelSlice::getRecentDeselected(
+    neutu::ELabelSource labelType) const
+{
+  std::set<uint64_t> bodySet = getSelector().getDeselectedSet();
+  if (labelType == neutu::ELabelSource::MAPPED) {
+    bodySet = m_bodyMerger->getFinalLabel(bodySet);
+  }
+
+  return bodySet;
 }
 
 void ZDvidLabelSlice::startSelection()

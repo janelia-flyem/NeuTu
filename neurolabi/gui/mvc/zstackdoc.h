@@ -966,6 +966,7 @@ public:
       const ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
   void bufferObjectModified(const ZStackObject *obj, bool sync = true);
   void bufferObjectVisibilityChanged(const ZStackObject *obj, bool sync = true);
+  void bufferObjectSelectionChanged(const ZStackObject *obj, bool sync = true);
   void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
   void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void bufferObjectModified(

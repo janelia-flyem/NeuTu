@@ -105,6 +105,8 @@ public:
       QPainter *painter, const ZPoint &center, double r, double depthScale);
   void drawLine(QPainter *painter, const ZLineSegment &line);
   void drawLines(QPainter *painter, const std::vector<ZLineSegment> &lines);
+  void drawLine(
+      QPainter *painter, const ZLineSegment &line, double r0, double r1);
   void drawPoint(QPainter *painter, double x, double y, double z);
   void drawPoints(QPainter *painter, const std::vector<ZPoint> &points) const;
 

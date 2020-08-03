@@ -40,6 +40,7 @@ public:
   inline void setZ(int z) { m_z = z; }
 
   int getValue(neutu::EAxis axis) const;
+  void setValue(int v, neutu::EAxis axis);
 
   const int& operator[] (int index) const;
   int& operator[] (int index);
@@ -131,7 +132,7 @@ public:
 
   void shiftSliceAxis(neutu::EAxis axis);
   void shiftSliceAxisInverse(neutu::EAxis axis);
-  int getSliceCoord(neutu::EAxis axis) const;
+  int getCoord(neutu::EAxis axis) const;
 
   void invalidate();
   bool isValid() const;

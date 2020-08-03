@@ -279,7 +279,7 @@ public slots:
   void startProgress(const QString &title);
 
 private slots:
-  void updateSwcExtensionHint();
+//  void updateSwcExtensionHint();
   void testSlot();
 
 signals:

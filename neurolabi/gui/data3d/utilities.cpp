@@ -29,6 +29,8 @@ std::string neutu::ToString(neutu::data3d::ETarget target)
     return "widget canvas";
   case neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS:
     return "active decoration canvas";
+  case neutu::data3d::ETarget::NONBLOCKING_OBJECT_CANVAS:
+    return "non-blocking canvas";
   }
 
   return std::to_string(neutu::EnumValue(target));

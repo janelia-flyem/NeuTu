@@ -64,6 +64,12 @@ ZPoint ZPlane::getNormal() const
   return getV1().cross(getV2());
 }
 
+void ZPlane::invalidate()
+{
+  m_v1.set(0, 0, 0);
+  m_v2.set(0, 0, 0);
+}
+
 bool ZPlane::isValid() const
 {
   return m_v1.isUnitVector() && m_v2.isUnitVector() && m_v1.isPendicularTo(m_v2);
@@ -84,6 +90,11 @@ bool ZPlane::onSamePlane(const ZPlane &p) const
 ZPoint ZPlane::align(const ZPoint &pt) const
 {
   return ZPoint(pt.dot(m_v1), pt.dot(m_v2), pt.dot(getNormal()));
+}
+
+ZPoint ZPlane::mapAligned(double u, double v) const
+{
+  return m_v1 * u + m_v2 * v;
 }
 
 bool ZPlane::contains(const ZPoint &pt) const

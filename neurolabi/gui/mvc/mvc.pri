@@ -3,6 +3,7 @@ include($$PWD/tests/tests.pri)
 HEADERS += \
     $$PWD/logging.h \
     $$PWD/utilities.h \
+    $$PWD/zmousecursorglyph.h \
     $$PWD/zpositionmapper.h \
     $$PWD/zstackdocobjectupdate.h \
     $$PWD/zstackobjectpaintsorter.h \
@@ -22,6 +23,7 @@ HEADERS += \
 SOURCES += \
     $$PWD/logging.cpp \
     $$PWD/utilities.cpp \
+    $$PWD/zmousecursorglyph.cpp \
     $$PWD/zpositionmapper.cpp \
     $$PWD/zstackdocobjectupdate.cpp \
     $$PWD/zstackobjectpaintsorter.cpp \

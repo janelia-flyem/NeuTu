@@ -225,10 +225,10 @@ public:
    * is actually painted.
    */
   virtual bool display(
-      QPainter *painter, const DisplayConfig &config) const = 0;
+      QPainter *painter, const DisplayConfig &config) const;
 
   bool isVisible(const DisplayConfig &/*config*/) const {
-    return true;
+    return isVisible();
   }
 
 //  virtual void viewSpaceAlignedDisplay(
@@ -482,6 +482,8 @@ protected:
   _hit = [](const ZStackObject*, double,double,double) {
     return false;
   };
+
+  virtual bool displayFunc(QPainter *painter, const DisplayConfig &config) const;
 
 protected:
   static double m_defaultPenWidth;

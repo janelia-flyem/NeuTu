@@ -402,7 +402,7 @@ void ZIntPoint::shiftSliceAxisInverse(neutu::EAxis axis)
   zgeom::ShiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
-int ZIntPoint::getSliceCoord(neutu::EAxis axis) const
+int ZIntPoint::getCoord(neutu::EAxis axis) const
 {
   switch (axis) {
   case neutu::EAxis::X:
@@ -416,6 +416,24 @@ int ZIntPoint::getSliceCoord(neutu::EAxis axis) const
   }
 
   return m_z;
+}
+
+void ZIntPoint::setValue(int v, neutu::EAxis axis)
+{
+  switch (axis) {
+  case neutu::EAxis::X:
+    m_x = v;
+    break;
+  case neutu::EAxis::Y:
+    m_y = v;
+    break;
+  case neutu::EAxis::Z:
+    m_z = v;
+    break;
+  case neutu::EAxis::ARB:
+    set(v, v, v);
+    break;
+  }
 }
 
 void ZIntPoint::invalidate()

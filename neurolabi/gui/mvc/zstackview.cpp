@@ -6,7 +6,8 @@
 #include <QImageWriter>
 #include <QJsonObject>
 
-#include "common/math.h"
+#include "neulib/math/utilities.h"
+//#include "common/math.h"
 #include "logging/zlog.h"
 #include "logging/zbenchtimer.h"
 #include "qt/core/qthelper.h"
@@ -98,9 +99,9 @@ void ZStackView::init()
   m_depthControl = new ZSlider(true, this);
   m_depthControl->setFocusPolicy(Qt::NoFocus);
 
-  m_zSpinBox = new ZLabeledSpinBoxWidget(this);
-  m_zSpinBox->setLabel("Z:");
-  m_zSpinBox->setFocusPolicy(Qt::ClickFocus);
+  m_depthSpinBox = new ZLabeledSpinBoxWidget(this);
+  m_depthSpinBox->setLabel("Depth:");
+  m_depthSpinBox->setFocusPolicy(Qt::ClickFocus);
 
   m_imageWidget = new ZImageWidget(this);
   m_imageWidget->setSizePolicy(QSizePolicy::Expanding,
@@ -116,6 +117,8 @@ void ZStackView::init()
 //          this, SLOT(updateDataInfo()));
   connect(m_imageWidget, SIGNAL(transformControlSyncNeeded()),
           this, SLOT(syncTransformControl()));
+  connect(m_imageWidget, SIGNAL(sliceAxisChanged()),
+          this, SIGNAL(sliceAxisChanged()));
 
   setSliceAxis(neutu::EAxis::Z);
 
@@ -170,7 +173,7 @@ void ZStackView::init()
 
   m_zControlLayout = new QHBoxLayout;
   m_zControlLayout->addWidget(m_depthControl);
-  m_zControlLayout->addWidget(m_zSpinBox);
+  m_zControlLayout->addWidget(m_depthSpinBox);
 
   m_layout->addLayout(m_zControlLayout);
 
@@ -472,8 +475,8 @@ void ZStackView::connectSignalSlot()
           this, SIGNAL(sliceSliderPressed()));
   connect(m_depthControl, SIGNAL(sliderReleased()),
           this, SIGNAL(sliceSliderReleased()));
-  connect(m_zSpinBox, SIGNAL(valueChanged(int)),
-          this, SLOT(setZ(int)));
+  connect(m_depthSpinBox, SIGNAL(valueChanged(int)),
+          this, SLOT(setDepth(int)));
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SLOT(updateZSpinBoxValue()));
 
@@ -516,7 +519,7 @@ void ZStackView::updateZSpinBoxValue()
 #endif
 #endif
 
-  m_zSpinBox->setValue(getCurrentZ());
+  m_depthSpinBox->setValue(getCurrentDepth());
 }
 
 /*
@@ -602,7 +605,7 @@ ZAffinePlane ZStackView::getAffinePlane() const
 void ZStackView::setSliceRange(int minSlice, int maxSlice)
 {
   m_depthControl->setRangeQuietly(minSlice, maxSlice);
-  m_zSpinBox->setRange(minSlice, maxSlice);
+  m_depthSpinBox->setRange(minSlice, maxSlice);
   m_sliceStrategy->setRange(minSlice, maxSlice);
 }
 
@@ -625,19 +628,17 @@ void ZStackView::processTransformChange()
 void ZStackView::setDepthRangeQuietly(int minZ, int maxZ)
 {
   m_depthControl->setRangeQuietly(minZ, maxZ);
-   m_zSpinBox->setRangeQuietly(minZ, maxZ);
+  m_depthSpinBox->setRangeQuietly(minZ, maxZ);
 }
 
 void ZStackView::syncTransformControl()
 {
-  int depth = neutu::iround(
-        imageWidget()->getSliceViewTransform().getCutCenter().
-        getSliceCoord(getSliceAxis()));
+  int depth = neulib::iround(imageWidget()->getCutDepth());
 
- setDepthRangeQuietly(
+  setDepthRangeQuietly(
         imageWidget()->getMinCutDepth(), imageWidget()->getMaxCutDepth());
   m_depthControl->setValueQuietly(depth);
-  m_zSpinBox->setValueQuietly(depth);
+  m_depthSpinBox->setValueQuietly(depth);
 }
 
 #if 0
@@ -738,7 +739,7 @@ void ZStackView::updateSlider()
     m_sliceStrategy->setRange(
           m_depthControl->minimum(), m_depthControl->maximum());
 
-    m_zSpinBox->setRange(box.getMinCorner().getZ(),
+    m_depthSpinBox->setRange(box.getMinCorner().getZ(),
                          box.getMaxCorner().getZ());
   }
 }
@@ -787,11 +788,11 @@ void ZStackView::updateChannelControl()
     delete child;
   }
   m_chVisibleState.clear();
-  m_zSpinBox->setVisible(false);
+  m_depthSpinBox->setVisible(false);
   ZStack *stack = stackData();
   if (stack != NULL) {
     if (getDepth() > 1 && getSliceAxis() != neutu::EAxis::ARB) {
-      m_zSpinBox->setVisible(true);
+      m_depthSpinBox->setVisible(true);
     }
 
     if (!stack->isVirtual()) {
@@ -881,22 +882,28 @@ ZIntPoint ZStackView::getStackOffset() const
         *buddyDocument(), getSliceAxis()).getMinCorner();
 }
 
-int ZStackView::getCurrentZ() const
+int ZStackView::getCurrentDepth() const
 {
-  return sliceIndex() + getZ0();
+  return sliceIndex();
+//  return sliceIndex() + getZ0();
 }
 
-void ZStackView::setZ(int z)
+void ZStackView::setDepth(int z)
 {
+  setSliceIndex(z);
+  /*
   if (z != getZ(neutu::ECoordinateSystem::STACK)) {
     setSliceIndex(z - getZ0());
   }
+  */
 }
 
+/*
 void ZStackView::setZQuitely(int z)
 {
   setSliceIndexQuietly(z - getZ0());
 }
+*/
 
 void ZStackView::setSliceIndex(int slice)
 {
@@ -919,16 +926,18 @@ void ZStackView::setSliceIndexQuietly(int slice)
 
     recordViewParam();
     m_depthControl->setValueQuietly(slice);
-    m_zSpinBox->setValueQuietly(slice);
+    m_depthSpinBox->setValueQuietly(slice);
 //    updateSliceViewParam();
   }
 }
 
 void ZStackView::stepSlice(int step)
 {
+  setSliceIndex(sliceIndex() + step);
+  /*
   int newIndex = sliceIndex() + step;
-  if (newIndex < 0) {
-    newIndex = 0;
+  if (newIndex < minSliceIndex()) {
+    newIndex = minSliceIndex();
   } else if (newIndex > maxSliceIndex()) {
     newIndex = maxSliceIndex();
   }
@@ -936,6 +945,7 @@ void ZStackView::stepSlice(int step)
   if (newIndex != sliceIndex()) {
     setSliceIndex(newIndex);
   }
+  */
 }
 
 int ZStackView::getIntensityThreshold()
@@ -2194,7 +2204,7 @@ ZPainter* ZStackView::getObjectCanvasPainter()
 void ZStackView::paintMultiresImageTest(int resLevel)
 {
   ZStackPatch *patch = new ZStackPatch(
-        ZStackFactory::makeSlice(*(buddyDocument()->getStack()), getCurrentZ()));
+        ZStackFactory::makeSlice(*(buddyDocument()->getStack()), getCurrentDepth()));
   patch->setSource(ZStackObjectSourceFactory::MakeCurrentMsTileSource(resLevel));
   if (resLevel > 0) {
     patch->getStack()->downsampleMax(resLevel, resLevel, 0);
@@ -2614,7 +2624,7 @@ ZStack* ZStackView::getStrokeMask(neutu::EColor color)
     bool isMask = true;
     if (!buddyPresenter()->interactiveContext().isObjectProjectView()) {
       if (!stroke->isPenetrating()) {
-        if (stroke->getZ() != getCurrentZ()) {
+        if (stroke->getZ() != getCurrentDepth()) {
           isMask = false;
         }
       }
@@ -2658,7 +2668,7 @@ ZStack* ZStackView::getStrokeMask(uint8_t maskValue)
     bool isMask = true;
     if (!buddyPresenter()->interactiveContext().isObjectProjectView()) {
       if (!stroke->isPenetrating()) {
-        if (stroke->getZ() != getCurrentZ()) {
+        if (stroke->getZ() != getCurrentDepth()) {
           isMask = false;
         }
       }
@@ -3444,11 +3454,11 @@ void ZStackView::processDepthSliderValueChange(int sliceIndex)
 {
   ZOUT(LTRACE(), 5)<< "ZStackView::processDepthSliderValueChange" << sliceIndex;
 
-  if (getSliceAxis() != neutu::EAxis::ARB) {
-    double prevDepth =
-        imageWidget()->getCutCenter().getSliceCoord(getSliceAxis());
+//  if (getSliceAxis() != neutu::EAxis::ARB) {
+    double prevDepth = imageWidget()->getCutDepth();
+//        imageWidget()->getCutCenter().getValue(getSliceAxis());
     imageWidget()->moveCutDepth(sliceIndex - prevDepth);
-  }
+//  }
 //  imageWidget()->setCutCenter(0, 0, sliceIndex);
   /*
   processViewChange(false, true);

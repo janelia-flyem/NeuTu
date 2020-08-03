@@ -7,8 +7,9 @@
 #include <QMouseEvent>
 #include <QElapsedTimer>
 
+#include "neulib/math/utilities.h"
 #include "common/utilities.h"
-#include "common/math.h"
+//#include "common/math.h"
 #include "tz_rastergeom.h"
 #include "misc/miscutility.h"
 #include "geometry/2d/rectangle.h"
@@ -51,6 +52,7 @@ void ZImageWidget::init()
   m_canvasList.resize(neutu::EnumValue(neutu::data3d::ETarget::WIDGET));
 
   m_sliceViewTransform.setMinScale(0.4);
+  m_defaultArbPlane.invalidate();
 }
 
 std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(
@@ -713,19 +715,31 @@ void ZImageWidget::updateSliceCanvas(
   }
 }
 
-int ZImageWidget::getCutDepth() const
+double ZImageWidget::getCutDepth() const
 {
-  return getSliceViewTransform().getCutCenter().getSliceCoord(getSliceAxis());
+  if (getSliceAxis() == neutu::EAxis::ARB) {
+    return getSliceViewTransform().getCutDepth(m_modelRange.getExactCenter());
+  } else {
+    return getSliceViewTransform().getCutCenter().getValue(getSliceAxis());
+  }
 }
 
 int ZImageWidget::getMinCutDepth() const
 {
-  return m_modelRange.getMinCorner().getSliceCoord(getSliceAxis());
+  if (getSliceAxis() == neutu::EAxis::ARB) {
+    return -m_modelRange.getDiagonalLength() * 0.5;
+  }
+
+  return m_modelRange.getMinCorner().getValue(getSliceAxis());
 }
 
 int ZImageWidget::getMaxCutDepth() const
 {
-  return m_modelRange.getMaxCorner().getSliceCoord(getSliceAxis());
+  if (getSliceAxis() == neutu::EAxis::ARB) {
+    return m_modelRange.getDiagonalLength() * 0.5;
+  }
+
+  return m_modelRange.getMaxCorner().getValue(getSliceAxis());
 }
 
 void ZImageWidget::adjustMinScale()
@@ -1462,6 +1476,7 @@ QSize ZImageWidget::getMaskSize() const
 }
 #endif
 
+/*
 void ZImageWidget::removeCanvas(ZImage *canvas)
 {
   if (m_image == canvas) {
@@ -1475,6 +1490,7 @@ void ZImageWidget::removeCanvas(ZImage *canvas)
     }
   }
 }
+*/
 
 /*
 void ZImageWidget::removeCanvas(ZPixmap *canvas)
@@ -1523,10 +1539,36 @@ void ZImageWidget::setSliceViewTransform(const ZSliceViewTransform &t)
 
 void ZImageWidget::setCutPlane(neutu::EAxis axis)
 {
-  if (m_sliceViewTransform.getSliceAxis() != axis) {
+  if (axis != m_sliceViewTransform.getSliceAxis()) {
+    if (m_sliceViewTransform.getSliceAxis() == neutu::EAxis::ARB) {
+      m_defaultArbPlane = m_sliceViewTransform.getCutPlane().getPlane();
+    }
+
+    if (axis != neutu::EAxis::ARB) {
+      int startSlice = m_modelRange.getMinCorner().getValue(axis);
+      int endSlice = m_modelRange.getMaxCorner().getValue(axis);
+
+      ZPoint center = m_sliceViewTransform.getCutCenter();
+      int slice = neulib::ClipValue(
+            neulib::iround(center.getValue(axis)), startSlice, endSlice);
+      center.setValue(slice, axis);
+      m_sliceViewTransform.setCutCenter(center);
+    }
+
     m_sliceViewTransform.setCutPlane(axis);
+    if (axis == neutu::EAxis::ARB && m_defaultArbPlane.isValid()) {
+      m_sliceViewTransform.setCutPlane(
+            m_defaultArbPlane.getV1(), m_defaultArbPlane.getV2());
+    }
     notifyTransformChanged();
+    emit sliceAxisChanged();
   }
+}
+
+void ZImageWidget::setCutPlane(const ZPoint &v1, const ZPoint &v2)
+{
+  m_sliceViewTransform.setCutPlane(v1, v2);
+  notifyTransformChanged();
 }
 
 void ZImageWidget::setCutCenter(double x, double y, double z)
@@ -1558,10 +1600,10 @@ void ZImageWidget::moveCutDepth(double dz)
     minZ = -m_modelRange.getDiagonalLength() / 2.0;
     maxZ = -minZ;
   } else {
-    minZ = m_modelRange.getMinCorner().getSliceCoord(getSliceAxis());
-    maxZ = m_modelRange.getMaxCorner().getSliceCoord(getSliceAxis());
+    minZ = m_modelRange.getMinCorner().getCoord(getSliceAxis());
+    maxZ = m_modelRange.getMaxCorner().getCoord(getSliceAxis());
     ZPoint currentCenter = m_sliceViewTransform.getCutCenter();
-    z = currentCenter.getSliceCoord(getSliceAxis());
+    z = currentCenter.getValue(getSliceAxis());
   }
 
   if (z + dz < minZ) {

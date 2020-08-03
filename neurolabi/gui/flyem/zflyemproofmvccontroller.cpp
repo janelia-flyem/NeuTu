@@ -54,7 +54,7 @@ void ZFlyEmProofMvcController::EnableHighlightMode(ZFlyEmProofMvc *mvc)
 void ZFlyEmProofMvcController::Disable3DVisualization(ZFlyEmProofMvc *mvc)
 {
   mvc->disable3D();
-  mvc->notifyStateUpdate();
+  mvc->processStateUpdate();
 }
 
 void ZFlyEmProofMvcController::DisableSequencer(ZFlyEmProofMvc *mvc)

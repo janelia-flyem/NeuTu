@@ -84,12 +84,12 @@ void ZDvidSparsevolSlice::forceUpdate(int z)
   m_currentViewParam.setCutDepth(ZPoint(0, 0, 0), z);
   if (m_externalReader != NULL) {
     m_externalReader->readBody(
-          getLabel(), m_currentViewParam.getCutCenter().getSliceCoord(
+          getLabel(), m_currentViewParam.getCutCenter().getValue(
             m_sliceAxis),
           m_sliceAxis, true, this);
   } else {
     m_reader.readBody(
-          getLabel(), m_currentViewParam.getCutCenter().getSliceCoord(
+          getLabel(), m_currentViewParam.getCutCenter().getValue(
             m_sliceAxis),
           m_sliceAxis, true, this);
   }
@@ -116,7 +116,7 @@ bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
       forceUpdate(newViewParam, true);
       m_isFullView = false;
     } else {
-      forceUpdate(newViewParam.getCutCenter().getSliceCoord(
+      forceUpdate(newViewParam.getCutCenter().getValue(
                     newViewParam.getSliceAxis()));
     }
 

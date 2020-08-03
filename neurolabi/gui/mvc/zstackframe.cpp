@@ -364,10 +364,12 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
 //                SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,
 //                                             QList<ZLocsegChain*>)),
 //                m_view, SLOT(paintObject()), Qt::AutoConnection);
+  /*
   connectAction(m_doc.get(), SIGNAL(
             swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,
                                         QList<Swc_Tree_Node*>)),
           this, SLOT(updateSwcExtensionHint()), Qt::AutoConnection);
+          */
 //  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
 //                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
 //          m_view, SLOT(paintObject()), Qt::AutoConnection);
@@ -498,12 +500,14 @@ void ZStackFrame::takeScreenshot(const QString &filename)
     m_view->takeScreenshot(filename);
 }
 
+/*
 void ZStackFrame::updateSwcExtensionHint()
 {
   if (m_presenter != NULL) {
     m_presenter->updateSwcExtensionHint();
   }
 }
+*/
 
 void ZStackFrame::clearData()
 {

@@ -136,6 +136,7 @@ void ZStackObject::processHit(ESelection s)
   case ESelection::SELECT_MULTIPLE:
     setSelected(true);
     break;
+  case ESelection::SELECT_TOGGLE_SINGLE:
   case ESelection::SELECT_TOGGLE:
     setSelected(!isSelected());
     break;
@@ -475,3 +476,20 @@ void ZStackObject::setPrevZ(int z) const
   m_displayTrace.isValid = true;
 }
 
+bool ZStackObject::display(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  if (isVisible(config)) {
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+    painter->setRenderHint(QPainter::Antialiasing, m_usingCosmeticPen);
+    return displayFunc(painter, config);
+  }
+
+  return false;
+}
+
+bool ZStackObject::displayFunc(
+    QPainter */*painter*/, const DisplayConfig &/*config*/) const
+{
+  return false;
+}
