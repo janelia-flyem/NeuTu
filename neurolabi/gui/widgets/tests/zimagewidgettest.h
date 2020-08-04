@@ -6,6 +6,8 @@
 #include <QDebug>
 
 #include "gtest/gtest.h"
+
+#include "geometry/zaffinerect.h"
 #include "widgets/zimagewidget.h"
 
 TEST(ZImageWidget, Basic)
@@ -73,7 +75,20 @@ TEST(ZImageWidget, Basic)
   ASSERT_EQ(ZPoint(3.5, 6, 5.5), widget.getCutCenter());
 
   qDebug() << widget.getAnchorPoint();
+}
 
+TEST(ZImageWidget, viewport)
+{
+  ZImageWidget widget(nullptr);
+  widget.setModelRange({1, 2, 3, 10, 20, 30});
+  widget.setCutCenter(5, 6, 7);
+
+  ZAffineRect rect = widget.getViewPort();
+  ASSERT_EQ(ZPoint(5, 6, 7), rect.getCenter());
+
+  widget.resetView(1.0);
+
+  std::cout << widget.getViewPort() << std::endl;
 }
 
 #endif

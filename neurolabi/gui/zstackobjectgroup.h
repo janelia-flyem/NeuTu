@@ -315,6 +315,7 @@ private:
   QList<ZStackObject*> m_objectList;
   TObjectListMap m_sortedGroup;
   TObjectSetMap m_selectedSet;
+//  TObjectSetMap m_prevSelectedSet;
   int m_currentZOrder;
 
   mutable QMutex m_mutex;

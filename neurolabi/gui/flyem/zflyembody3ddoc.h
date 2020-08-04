@@ -422,10 +422,10 @@ protected:
   bool _loadFile(const QString &filePath) override;
 
 private:
-  ZStackObject* retriveBodyObject(
+  ZStackObject* retrieveBodyObject(
       uint64_t bodyId, int zoom,
       flyem::EBodyType bodyType, ZStackObject::EType objType);
-  ZStackObject* retriveBodyObject(uint64_t bodyId, int zoom);
+  ZStackObject* retrieveBodyObject(uint64_t bodyId, int zoom);
   ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
   ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);

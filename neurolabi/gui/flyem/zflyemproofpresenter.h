@@ -82,6 +82,8 @@ public:
 
   bool allowingBlinkingSegmentation() const;
   bool allowingBodySplit() const;
+
+  void setBodyHittable(bool on);
 //  void setLabelAlpha(int alpha) {
 //    m_labelAlpha = alpha;
 //  }
@@ -91,8 +93,8 @@ public:
 //  }
 
 public:
-  std::function<double()> getSegmentationOpacity = []() {
-    return 0.3;
+  std::function<int()> getSegmentationAlpha = []() {
+    return 75;
   };
 
 signals:
@@ -223,6 +225,7 @@ private:
   bool m_smoothTransform;
   bool m_showingData;
   bool m_blinkingSegmenationAllowed = true;
+  bool m_isBodyHittable = true;
 
   std::unique_ptr<ZFlyEmToDoDelegate> m_todoDelegate;
 

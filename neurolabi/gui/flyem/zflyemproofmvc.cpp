@@ -2086,7 +2086,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
     }
     updateContrast();
     setLabelAlpha(
-          getCompletePresenter()->getSegmentationOpacity());
+          getCompletePresenter()->getSegmentationAlpha());
   }
 
 //  getView()->reset(false);

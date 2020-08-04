@@ -4761,6 +4761,14 @@ void ZFlyEmProofDoc::processAssignedInfo(int x, int y, int z)
   KINFO << msg;
 }
 
+void ZFlyEmProofDoc::setLabelSliceHittable(bool on)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  for (ZDvidLabelSlice *slice : sliceList) {
+    slice->setHittable(on);
+  }
+}
+
 /*
 void ZFlyEmProofDoc::setLabelSliceAlpha(int alpha)
 {
@@ -5864,7 +5872,7 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
     const ZDvidSynapse &synapse, bool tryingLink)
 {
   if (getDvidTarget().isSynapseEditable()) {
-    ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble(neutu::EAxis::Z);
+    FlyEmSynapseEnsemble *se = getSynapseEnsemble();
     if (se != NULL) {
       ZUndoCommand *command =
           new ZStackDocCommand::DvidSynapseEdit::CompositeCommand(this);
@@ -5872,13 +5880,11 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
             this, synapse, command);
       if (tryingLink) {
         if (synapse.getKind() == ZDvidAnnotation::EKind::KIND_POST_SYN) {
-          const std::set<ZIntPoint> &selected =
-              se->getSelector().getSelectedSet();
+          const std::set<ZIntPoint> &selected = se->getSelectedPos();
           std::vector<ZDvidSynapse> selectedPresyn;
           for (std::set<ZIntPoint>::const_iterator iter = selected.begin();
                iter != selected.end(); ++iter) {
-            ZDvidSynapse &synapse =
-                se->getSynapse(*iter, ZDvidSynapseEnsemble::EDataScope::GLOBAL);
+            ZDvidSynapse synapse = se->getItem(*iter);
             if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
               selectedPresyn.push_back(synapse);
             }

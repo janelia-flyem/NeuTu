@@ -906,7 +906,7 @@ void ZSwcTree::display(ZPainter &painter, int slice,
 }
 #endif
 
-bool ZSwcTree::displayFunc(QPainter *painter, const DisplayConfig &config) const
+bool ZSwcTree::display_inner(QPainter *painter, const DisplayConfig &config) const
 {
 #ifdef _QT_GUI_USED_
   if (!isEmpty()) {

@@ -203,6 +203,25 @@ Z3DGraph* Z3DGraphFactory::MakeQuadCross(const ZPoint &pt1, const ZPoint &pt2,
   return graph;
 }
 
+Z3DGraph* Z3DGraphFactory::MakeSliceViewGraph(const ZAffineRect &rect)
+{
+  Z3DGraph *graph = nullptr;
+  if (rect.isNonEmpty()) {
+    ZPoint center = rect.getCenter();
+    double rx = rect.getWidth() / 2;
+    double ry = rect.getHeight() / 2;
+    ZPoint pt1 = center - rect.getV1() * rx - rect.getV2() * ry;
+    ZPoint pt2 = center + rect.getV1() * rx - rect.getV2() * ry;
+    ZPoint pt3 = center + rect.getV1() * rx + rect.getV2() * ry;
+    ZPoint pt4 = center - rect.getV1() * rx + rect.getV2() * ry;
+
+    graph = Z3DGraphFactory::MakeQuadCross(pt1, pt2, pt3, pt4);
+//    graph->setSource(ZStackObjectSourceFactory::MakeSlicViewObjectSource());
+  }
+
+  return graph;
+}
+
 namespace {
 
 void add_box_edge(Z3DGraph *graph, Z3DGraphEdge edge, int startIndex)

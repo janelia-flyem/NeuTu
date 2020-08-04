@@ -313,6 +313,8 @@ public:
 
   void processAssignedInfo(int x, int y, int z);
 
+  void setLabelSliceHittable(bool on);
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();

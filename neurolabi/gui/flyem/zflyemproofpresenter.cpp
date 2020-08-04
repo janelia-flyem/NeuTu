@@ -1198,6 +1198,12 @@ void ZFlyEmProofPresenter::takeScreenshot()
   buddyView()->takeScreenshot();
 }
 
+void ZFlyEmProofPresenter::setBodyHittable(bool on)
+{
+  getCompleteDocument()->setLabelSliceHittable(on);
+  m_isBodyHittable = on;
+}
+
 bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
@@ -1211,7 +1217,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
-    if (isHighlight()) {
+    if (isHighlight() && m_isBodyHittable) {
 //      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
 //      ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
 //      ZIntPoint pos = currentStackPos.roundToIntPoint();

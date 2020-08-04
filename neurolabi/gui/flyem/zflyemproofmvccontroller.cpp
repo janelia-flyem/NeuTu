@@ -4,6 +4,7 @@
 #include "zflyemproofmvc.h"
 #include "geometry/zintpoint.h"
 #include "zflyemproofpresenter.h"
+//#include "zflyemproofdoc.h"
 #include "zstackdocaccessor.h"
 #include "zstackdocnullmenufactory.h"
 #include "flyem/zflyemtododelegate.h"
@@ -67,6 +68,11 @@ void ZFlyEmProofMvcController::DisableContextMenu(ZFlyEmProofMvc *mvc)
 {
   mvc->getPresenter()->setContextMenuFactory(
         std::unique_ptr<ZStackDocMenuFactory>(new ZStackDocNullMenuFactory));
+}
+
+void ZFlyEmProofMvcController::DisableBodyHit(ZFlyEmProofMvc *mvc)
+{
+  mvc->getCompletePresenter()->setBodyHittable(false);
 }
 
 void ZFlyEmProofMvcController::SetTodoDelegate(

@@ -54,8 +54,9 @@ public:
 
   void setSliceAxis(neutu::EAxis sliceAxis);
 
-  bool display(
+  bool display_inner(
       QPainter *painter, const DisplayConfig &config) const override;
+  bool isVisible_inner(const DisplayConfig &) const override;
   /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;

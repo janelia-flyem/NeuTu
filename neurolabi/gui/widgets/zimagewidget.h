@@ -76,6 +76,8 @@ public:
 
 //  void removeCanvas(ZImage *canvas);
 
+  void setInitialScale(double s);
+
   QSizeF getViewportSize() const;
 
   double getCutDepth() const;
@@ -88,6 +90,7 @@ public:
   void setSliceViewTransform(const ZSliceViewTransform &t);
   void setCutPlane(neutu::EAxis axis);
   void setCutPlane(const ZPoint &v1, const ZPoint &v2);
+  void setCutPlane(const ZAffinePlane &plane);
 
   void setCutCenter(double x, double y, double z);
   void setCutCenter(const ZPoint &center);
@@ -149,6 +152,7 @@ public:
    * Move \a src in the model space to a widget point \a dst.
    */
   void moveViewPort(const ZPoint &src, const QPointF &dst);
+  void moveViewPortToCenter(const ZPoint &src);
 
   void setZoomRatio(double zoomRatio);
   //inline int zoomRatio() const { return m_zoomRatio; }
@@ -250,7 +254,7 @@ public:
   void adjustTransformWithResize();
   void adjustMinScale();
 
-  void resetView();
+  void resetView(double defaultScale = 0.0);
   void setReady(bool ready);
 
 //  void paintWidgetObject();
@@ -281,6 +285,7 @@ signals:
   void mouseWheelRolled(QWheelEvent *event);
   void messageGenerated(const ZWidgetMessage&);
   void transformChanged();
+  void transformSyncNeeded();
   void transformControlSyncNeeded();
   void sliceAxisChanged();
 
@@ -331,6 +336,7 @@ private:
 
   bool isModelWithinWidget() const;
 
+  void blockTransformSyncSignal(bool blocking);
   void notifyTransformChanged();
 
 private:
@@ -355,6 +361,7 @@ private:
   double m_viewAnchorX = 0.5; //anchor point (defined as window size ratio)
   double m_viewAnchorY = 0.5;
   ZPlane m_defaultArbPlane;
+  double m_initScale = 0.0;
 
   neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
 //  QSize m_canvasSize;
@@ -366,6 +373,7 @@ private:
   bool m_showingZoomHint = true;
   bool m_isReady = false;
   bool m_offsetAdjustment = false;
+  bool m_signalingTransformSync = true;
   QPoint m_hairCenter;
 };
 

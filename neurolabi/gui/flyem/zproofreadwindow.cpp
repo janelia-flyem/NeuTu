@@ -189,7 +189,7 @@ void ZProofreadWindow::init()
   connect(m_segSlider, SIGNAL(valueChanged(int)),
           m_mainMvc, SLOT(setLabelAlpha(int)));
   m_mainMvc->setLabelAlpha(m_segSlider->value());
-  m_mainMvc->getCompletePresenter()->getSegmentationOpacity = [&]() {
+  m_mainMvc->getCompletePresenter()->getSegmentationAlpha = [&]() {
     return m_segSlider->value();
   };
 
@@ -380,7 +380,7 @@ void ZProofreadWindow::createMenu()
   m_viewSegmentationAction->setCheckable(true);
   m_viewSegmentationAction->setChecked(true);
   connect(m_viewSegmentationAction, SIGNAL(toggled(bool)),
-          m_mainMvc, SLOT(showSegmentation(bool)));
+          m_mainMvc, SLOT(setSegmentationVisible(bool)));
 
   m_viewTodoAction = new QAction("Todo", this);
   m_viewTodoAction->setIcon(QIcon(":/images/view_todo.png"));

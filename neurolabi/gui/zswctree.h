@@ -849,7 +849,7 @@ public: //static functions
   static neutu::data3d::ETarget GetDefaultTarget();
 
 protected:
-  bool displayFunc(
+  bool display_inner(
         QPainter *painter, const DisplayConfig &config) const override;
 
 private:

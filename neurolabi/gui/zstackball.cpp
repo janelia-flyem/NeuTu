@@ -104,38 +104,34 @@ bool ZStackBall::isSliceVisible(
   }
 }
 
-bool ZStackBall::display(QPainter *painter, const DisplayConfig &config) const
+bool ZStackBall::display_inner(QPainter *painter, const DisplayConfig &config) const
 {
 #if _QT_GUI_USED_
-  if (isVisible()) {
-    ZSlice3dPainter s3Painter;
-    s3Painter.setModelViewTransform(config.getWorldViewTransform());
-    s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
-    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+  ZSlice3dPainter s3Painter;
+  s3Painter.setModelViewTransform(config.getWorldViewTransform());
+  s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
+  neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
 
-    QPen pen(getColor());
-    pen.setCosmetic(true);
-    painter->setPen(pen);
+  QPen pen(getColor());
+  pen.setCosmetic(true);
+  painter->setPen(pen);
 
-    if (hasVisualEffect(neutu::display::Sphere::VE_FORCE_FILL)) {
-      painter->setBrush(getColor());
-    }
-
-    if (hasVisualEffect(neutu::display::Sphere::VE_NO_BORDER)) {
-      neutu::SetPenColor(painter, Qt::transparent);
-    }
-
-    double depthScale = 0.5;
-    s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
-
-    if (isSelected()) {
-      neutu::SetPenColor(painter, Qt::yellow);
-      s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
-    }
-    return s3Painter.getPaintedHint();
+  if (hasVisualEffect(neutu::display::Sphere::VE_FORCE_FILL)) {
+    painter->setBrush(getColor());
   }
 
-  return false;
+  if (hasVisualEffect(neutu::display::Sphere::VE_NO_BORDER)) {
+    neutu::SetPenColor(painter, Qt::transparent);
+  }
+
+  double depthScale = 0.5;
+  s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
+
+  if (isSelected()) {
+    neutu::SetPenColor(painter, Qt::yellow);
+    s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
+  }
+  return s3Painter.getPaintedHint();
 #else
   return false;
 

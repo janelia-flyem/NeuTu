@@ -482,13 +482,13 @@ bool ZStackObject::display(
   if (isVisible(config)) {
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
     painter->setRenderHint(QPainter::Antialiasing, m_usingCosmeticPen);
-    return displayFunc(painter, config);
+    return display_inner(painter, config);
   }
 
   return false;
 }
 
-bool ZStackObject::displayFunc(
+bool ZStackObject::display_inner(
     QPainter */*painter*/, const DisplayConfig &/*config*/) const
 {
   return false;

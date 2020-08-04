@@ -124,7 +124,7 @@ signals:
   void bodyDeselected(uint64_t bodyId);
   void closed();
   void dvidLoaded();
-  void updatingSliceWidget();
+//  void updatingSliceWidget();
 
 protected:
   virtual void keyPressEvent(QKeyEvent *event);
@@ -160,8 +160,8 @@ private slots:
   void exitSplit();
   void startSplit();
 
-//  void updateBrowser();
-//  void updateEmbeddedGrayscale();
+
+  void processSliceViewChange();
   void updateGrayscaleWidget();
   void updateSliceBrowser();
   void updateSliceBrowserSelection();
@@ -172,10 +172,12 @@ private slots:
   void processCameraRotation();
 //  void closeWebView();
 
+  void updateSliceViewGraph();
   void updateSliceViewGraph(const ZArbSliceViewParam &param);
   void removeSliceViewGraph();
 
   void updateSliceWidget();
+  void updateSliceWidgetPlane();
 
   void processSliceDockVisibility(bool on);
 
@@ -227,7 +229,7 @@ private:
 
   Z3DCanvas *m_sharedContext = nullptr;
   Z3DWindow *m_3dwin = nullptr;
-  ZFlyEmProofMvc *m_dataContainer = nullptr;
+//  ZFlyEmProofMvc *m_dataContainer = nullptr;
   QToolBar *m_toolBar = nullptr;
   ZBodyListWidget *m_bodyListWidget = nullptr;
   QDockWidget *m_bodyListDock = nullptr;
@@ -248,7 +250,7 @@ private:
 #if defined(_USE_WEBENGINE_)
   QWebEngineView *m_webView = nullptr;
 #endif
-  ZFlyEmArbMvc *m_sliceWidget = nullptr;
+  ZFlyEmProofMvc *m_sliceWidget = nullptr;
 
   ZPoint m_browsePos;
 

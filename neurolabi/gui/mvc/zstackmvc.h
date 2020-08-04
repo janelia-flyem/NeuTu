@@ -24,6 +24,8 @@ class ZPoint;
 class ZStressTestOptionDialog;
 class ZAffineRect;
 class ZStackObjectInfoSet;
+class ZPlane;
+class ZAffinePlane;
 
 /*!
  * \brief The MVC class for stack operation
@@ -84,11 +86,20 @@ public:
   void setDefaultViewPort(const QRect &rect);
   neutu::EAxis getSliceAxis() const;
 
+  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
+  void setCutPlane(const ZPlane &plane);
+  void setCutPlane(const ZAffinePlane &plane);
+  void setCutPlane(const ZPoint &center, const ZPoint &v1, const ZPoint &v2);
+  void setZoomScale(double s);
+  void setInitialScale(double s);
+
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);
 
   ERole getRole() const;
   void setRole(ERole role);
+
+  void blockViewChangeSignal(bool blocking);
 
 
 signals:
@@ -101,7 +112,7 @@ signals:
 public slots:
 //  void updateActiveViewData();
 //  void processViewChange(const ZStackViewParam &viewParam);
-//  void processViewChange();
+  void processViewChange();
 
   virtual void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
@@ -182,6 +193,8 @@ protected:
   ZProgressSignal *m_progressSignal;
   QTimer *m_testTimer;
   ERole m_role;
+
+  bool m_signalingViewChange = true;
 };
 
 #endif // ZSTACKMVC_H

@@ -158,13 +158,6 @@ public:
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
 
 
-  static void showAnnotations(bool show);
-  static bool showingAnnotations();
-
-  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
-
-  FlyEmBodyInfoDialog *getBodyInfoDlg();
-
   bool is3DEnabled() const {
     return m_3dEnabled;
   }
@@ -173,15 +166,20 @@ public:
     m_3dEnabled = false;
   }
 
-  bool hasSequencer();
-  void disableSequencer();
-
   bool hasProfileTask() const;
 
   void configure();
 
-  bool allowingBodySplit() const;
+public: //body-related functions
+  static void showAnnotations(bool show);
+  static bool showingAnnotations();
 
+  FlyEmBodyInfoDialog *getBodyInfoDlg();
+  bool allowingBodySplit() const;
+  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
+
+  bool hasSequencer();
+  void disableSequencer();
 //  bool hasNeuPrint() const;
   neutu::EServerStatus getNeuPrintStatus() const;
 

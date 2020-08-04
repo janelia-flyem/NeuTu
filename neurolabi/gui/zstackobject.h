@@ -227,8 +227,12 @@ public:
   virtual bool display(
       QPainter *painter, const DisplayConfig &config) const;
 
-  bool isVisible(const DisplayConfig &/*config*/) const {
+  virtual bool isVisible_inner(const DisplayConfig &/*config*/) const {
     return isVisible();
+  }
+
+  bool isVisible(const DisplayConfig &config) const {
+    return isVisible() && isVisible_inner(config);
   }
 
 //  virtual void viewSpaceAlignedDisplay(
@@ -483,7 +487,7 @@ protected:
     return false;
   };
 
-  virtual bool displayFunc(QPainter *painter, const DisplayConfig &config) const;
+  virtual bool display_inner(QPainter *painter, const DisplayConfig &config) const;
 
 protected:
   static double m_defaultPenWidth;

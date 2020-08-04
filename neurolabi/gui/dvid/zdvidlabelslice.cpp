@@ -70,6 +70,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutu::EAxis sliceAxis
 {
   setTarget(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
   m_type = GetType();
+  useCosmeticPen(false);
   m_defaultColorSheme = std::shared_ptr<ZFlyEmRandomBodyColorScheme>(
         new ZFlyEmRandomBodyColorScheme);
 //  m_defaultColorSheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
@@ -102,20 +103,29 @@ void ZDvidLabelSlice::setSliceAxis(neutu::EAxis sliceAxis)
   m_sliceAxis = sliceAxis;
 }
 
-bool ZDvidLabelSlice::display(
+bool ZDvidLabelSlice::isVisible_inner(const DisplayConfig &config) const
+{
+  return getSliceAxis() == config.getSliceAxis();
+}
+
+bool ZDvidLabelSlice::display_inner(
     QPainter *painter, const DisplayConfig &config) const
 {
   bool painted = false;
-  if (isVisible()) {
+//  if (isVisible(config)) {
     painter->save();
     painter->setOpacity(m_opacity);
     //Todo: consider a better design for avoiding const_cast
     const_cast<ZDvidLabelSlice&>(*this).updateCanvas();
     if (m_imageCanvas.isVisible()) {
       painted = m_imageCanvas.paintTo(painter, config.getTransform());
+#ifdef _DEBUG_0
+      std::cout << "ZDvidLabelSlice::display save" << std::endl;
+      m_imageCanvas.save(GET_TEST_DATA_DIR + "/_test2.png");
+#endif
     }
     painter->restore();
-  }
+//  }
 
   return painted;
 }
@@ -328,6 +338,10 @@ void ZDvidLabelSlice::paintBufferUnsync()
 
       if (labelArray != NULL) {
         m_paintBuffer->drawLabelField(labelArray, m_rgbTable, 0, 0xFFFFFFFF);
+#ifdef _DEBUG_0
+        std::cout << "Save label paint buffer:" << std::endl;
+        m_paintBuffer->save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
       }
     }
   }
@@ -1099,31 +1113,33 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
 {
   m_hitLabel = 0;
 
-  if (!m_objArray.empty()) {
-    for (ZObject3dScanArray::iterator iter = m_objArray.begin();
-         iter != m_objArray.end(); ++iter) {
-      ZObject3dScan &obj = **iter;
-      if (obj.hit(x, y, z)) {
-        //m_hitLabel = obj.getLabel();
-        m_hitLabel = getMappedLabel(obj);
-        return true;
+  if (m_hittable) {
+    if (!m_objArray.empty()) {
+      for (ZObject3dScanArray::iterator iter = m_objArray.begin();
+           iter != m_objArray.end(); ++iter) {
+        ZObject3dScan &obj = **iter;
+        if (obj.hit(x, y, z)) {
+          //m_hitLabel = obj.getLabel();
+          m_hitLabel = getMappedLabel(obj);
+          return true;
+        }
       }
-    }
-  } else {
-    bool withinRange = getHelper()->hit(x, y, z);
+    } else {
+      bool withinRange = getHelper()->hit(x, y, z);
 
-    if (withinRange) {
-      if (getHelper()->getDvidReader().isReady()) {
-        int nx = neutu::iround(x);
-        int ny = neutu::iround(y);
-        int nz = neutu::iround(z);
-//        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
-        m_hitLabel = getMappedLabel(
-              getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
-              neutu::ELabelSource::ORIGINAL);
+      if (withinRange) {
+        if (getHelper()->getDvidReader().isReady()) {
+          int nx = neutu::iround(x);
+          int ny = neutu::iround(y);
+          int nz = neutu::iround(z);
+          //        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
+          m_hitLabel = getMappedLabel(
+                getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
+                neutu::ELabelSource::ORIGINAL);
+        }
+
+        return m_hitLabel > 0;
       }
-
-      return m_hitLabel > 0;
     }
   }
 

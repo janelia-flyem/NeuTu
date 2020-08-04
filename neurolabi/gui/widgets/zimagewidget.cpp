@@ -160,7 +160,8 @@ ZPoint ZImageWidget::getAnchorPoint(neutu::data3d::ESpace space) const
 
 ZAffineRect ZImageWidget::getViewPort() const
 {
-  return m_sliceViewTransform.inverseTransformRect(0, 0, width(), height());
+  return m_sliceViewTransform.getCutRect(width(), height());
+//  return m_sliceViewTransform.inverseTransformRect(0, 0, width(), height());
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
@@ -461,9 +462,10 @@ void ZImageWidget::setViewPortCenterQuitely(int cx, int cy)
 void ZImageWidget::setZoomRatio(double zoomRatio)
 {
   m_sliceViewTransform.setScale(zoomRatio);
+  notifyTransformChanged();
 
 //  m_viewProj.setZoom(zoomRatio);
-  updateView();
+//  updateView();
 }
 /*
 QSizeF ZImageWidget::projectSize() const
@@ -555,6 +557,13 @@ void ZImageWidget::moveViewPort(int dx, int dy)
 void ZImageWidget::moveViewPort(const ZPoint &src, const QPointF &dst)
 {
   m_sliceViewTransform.translateModelViewTransform(src, dst.x(), dst.y());
+  notifyTransformChanged();
+}
+
+void ZImageWidget::moveViewPortToCenter(const ZPoint &src)
+{
+  m_sliceViewTransform.translateModelViewTransform(
+        src, width() * 0.5, height() * 0.5);
   notifyTransformChanged();
 }
 
@@ -1307,6 +1316,11 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
   emit mouseWheelRolled(event);
 }
 
+void ZImageWidget::setInitialScale(double s)
+{
+  m_initScale = s;
+}
+
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
   LDEBUG() << "ZImageWidget::resizeEvent" << size() << isVisible();
@@ -1320,7 +1334,7 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
     emit transformChanged();
   } else {
     m_isReady = true;
-    resetView();
+    resetView(m_initScale);
   }
 
 //  m_sliceViewTransform.canvasAdjust(
@@ -1336,12 +1350,16 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 //  setValidViewPort(m_viewPort);
 }
 
-void ZImageWidget::resetView()
+void ZImageWidget::resetView(double defaultScale)
 {
   if (width() > 0 && height() > 0) {
-    adjustMinScale();
+    adjustTransformWithResize();
     m_sliceViewTransform.setCutCenter(m_modelRange.getCenter().toPoint());
-    m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
+    if (defaultScale > 0.0) {
+      m_sliceViewTransform.setScale(defaultScale);
+    } else {
+      m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
+    }
     notifyTransformChanged();
   }
 }
@@ -1518,10 +1536,19 @@ const ZSliceViewTransform &ZImageWidget::getSliceViewTransform() const
   return m_sliceViewTransform;
 }
 
+void ZImageWidget::blockTransformSyncSignal(bool blocking)
+{
+  m_signalingTransformSync = !blocking;
+}
+
 void ZImageWidget::notifyTransformChanged()
 {
   if (m_isReady) {
     emit transformChanged();
+  }
+
+  if (m_signalingTransformSync) {
+    emit transformSyncNeeded();
   }
 
   emit transformControlSyncNeeded();
@@ -1568,6 +1595,12 @@ void ZImageWidget::setCutPlane(neutu::EAxis axis)
 void ZImageWidget::setCutPlane(const ZPoint &v1, const ZPoint &v2)
 {
   m_sliceViewTransform.setCutPlane(v1, v2);
+  notifyTransformChanged();
+}
+
+void ZImageWidget::setCutPlane(const ZAffinePlane &plane)
+{
+  m_sliceViewTransform.setCutPlane(plane);
   notifyTransformChanged();
 }
 

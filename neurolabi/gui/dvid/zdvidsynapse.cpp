@@ -583,7 +583,8 @@ bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
           neutu::SetPenColor(painter, QColor(255, 0, 255));
         }
         ZLineSegment line(getPosition().toPoint(), iter->toPoint());
-        s3Painter.drawLine(painter, line);
+        s3Painter.drawLine(
+              painter, line, getRadius() * depthScale, getRadius() * depthScale);
       }
     }
 

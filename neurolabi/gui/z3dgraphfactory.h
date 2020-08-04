@@ -9,6 +9,7 @@ class ZCuboid;
 class ZIntCuboid;
 class ZRect2d;
 class ZSwcTree;
+class ZAffineRect;
 
 class Z3DGraphFactory
 {
@@ -25,6 +26,8 @@ public:
       Z3DGraph *graph = nullptr);
   static Z3DGraph* MakeQuadCross(const ZPoint &pt1, const ZPoint &pt2,
                                  const ZPoint &pt3, const ZPoint &pt4);
+
+  static Z3DGraph* MakeSliceViewGraph(const ZAffineRect &rect);
 
   Z3DGraph* makeBox(const ZIntCuboid &box, Z3DGraph *graph = nullptr);
   Z3DGraph* makeBox(const ZCuboid &box, Z3DGraph *graph = nullptr);

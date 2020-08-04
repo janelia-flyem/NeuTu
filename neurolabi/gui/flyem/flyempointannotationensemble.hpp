@@ -17,7 +17,7 @@ public:
     m_usingCosmeticPen = true;
   };
 
-  bool displayFunc(
+  bool display_inner(
       QPainter *painter, const DisplayConfig &config) const override;
 
   void addItem(const TItem &item);
@@ -70,7 +70,7 @@ protected:
 };
 
 template<typename T, typename TChunk>
-bool FlyEmPointAnnotationEnsemble<T, TChunk>::displayFunc(
+bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
     QPainter *painter, const DisplayConfig &config) const
 {
   bool painted = false;

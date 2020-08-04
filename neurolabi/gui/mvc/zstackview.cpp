@@ -595,6 +595,27 @@ void ZStackView::setCutPlane(neutu::EAxis axis)
   imageWidget()->setCutPlane(axis);
 }
 
+void ZStackView::setCutPlane(const ZPoint &v1, const ZPoint &v2)
+{
+  imageWidget()->setCutPlane(v1, v2);
+}
+
+void ZStackView::setCutPlane(const ZAffinePlane &plane)
+{
+  imageWidget()->setCutPlane(plane.getV1(), plane.getV2());
+  imageWidget()->setCutCenter(plane.getOffset());
+}
+
+void ZStackView::setZoomScale(double s)
+{
+  imageWidget()->setZoomRatio(s);
+}
+
+void ZStackView::setInitialScale(double s)
+{
+  imageWidget()->setInitialScale(s);
+}
+
 /*
 ZAffinePlane ZStackView::getAffinePlane() const
 {
@@ -3620,7 +3641,7 @@ void ZStackView::notifyViewChanged(NeuTube::View::EExploreAction action)
 void ZStackView::notifyViewChanged()
 {
   if (!isViewChangeEventBlocked()) {
-    emit viewChanged(getSliceViewTransform());
+    emit viewChanged();
   }
 //  notifyViewChanged(getViewParameter(neutu::ECoordinateSystem::STACK));
 }

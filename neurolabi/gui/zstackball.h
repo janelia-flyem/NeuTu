@@ -59,7 +59,7 @@ public:
   bool display(QPainter *painter, int z, zstackobject::EDisplayStyle option,
                zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
                */
-  bool display(
+  bool display_inner(
       QPainter *painter, const DisplayConfig &config) const override;
   /*
   void viewSpaceAlignedDisplay(

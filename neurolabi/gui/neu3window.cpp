@@ -23,7 +23,7 @@
 #include "z3dcanvas.h"
 #include "neutubeconfig.h"
 #include "zwindowfactory.h"
-
+#include "z3dgraphfactory.h"
 
 
 #include "dialogs/flyembodyinfodialog.h"
@@ -114,31 +114,13 @@ Neu3Window::Neu3Window(QWidget *parent) :
   m_testTimer = new QTimer(this);
 //  m_testTimer->setInterval(1000);
   connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyChange()));
-  connect(this, &Neu3Window::updatingSliceWidget, this, &Neu3Window::updateSliceWidget,
-          Qt::QueuedConnection);
-//  initialize();
-
-  // Set up OpenTracing-style logging (via Kafka).
-
-//  std::string kafkaBrokers = "kafka.int.janelia.org:9092";
-//  if (const char* kafkaBrokersEnv = std::getenv("NEU3_KAFKA_BROKERS")) {
-
-//    // The list of brokers should be separated by commans, per this example:
-//    // https://www.npmjs.com/package/node-rdkafka
-
-//    kafkaBrokers = kafkaBrokersEnv;
-//  }
-
-//  auto config = neuopentracing::Config(kafkaBrokers);
-//  auto tracer = neuopentracing::Tracer::make("neu3", config);
-//  neuopentracing::Tracer::InitGlobal(tracer);
 }
 
 Neu3Window::~Neu3Window()
 {
-  if (m_dataContainer != NULL) {
-    m_dataContainer->setExiting(true);
-    m_dataContainer->recordEnd();
+  if (m_sliceWidget) {
+    m_sliceWidget->setExiting(true);
+    m_sliceWidget->recordEnd();
   }
 //  delete m_webView;
 
@@ -161,13 +143,7 @@ void Neu3Window::initialize()
   createMessageWidget(); //message widget needs to be created as early as
                          //possible to receive messages
 
-//  QWidget *widget = new QWidget(this);
-
-//  QHBoxLayout *layout = new QHBoxLayout(this);
-//  layout->setMargin(1);
-//  widget->setLayout(layout);
-
-  m_3dwin = m_dataContainer->makeNeu3Window();
+  m_3dwin = m_sliceWidget->makeNeu3Window();
 //  m_3dwin->menuBar()->hide();
   m_3dwin->configureMenuForNeu3();
   m_3dwin->getBodyEnv()->setWindowEnv(this);
@@ -215,25 +191,32 @@ QAction* Neu3Window::getAction(ZActionFactory::EAction key)
 
 void Neu3Window::initGrayscaleWidget()
 {
-  if (m_sliceWidget == NULL) {
+  if (m_sliceWidget) {
     LDEBUG() << "Init grayscale widget";
-    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidEnv());
+//    m_sliceWidget = ZFlyEmProofMvc::Make(neutu::EAxis::ARB);
+//    m_sliceWidget->setDvid(getDataDocument()->getDvidEnv());
+
 //    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
+    ZFlyEmProofMvcController::DisableBodyHit(m_sliceWidget);
 
-    connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
-            this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
+    connect(m_sliceWidget, &ZStackMvc::viewChanged,
+            this, &Neu3Window::processSliceViewChange);
+//    connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
+//            this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
     connect(m_sliceWidget, SIGNAL(locating(double, double, double)),
             this, SLOT(browse(double, double, double)));
 
-    m_sliceWidget->setDefaultViewPort(
-          getSliceViewParam(m_browsePos).getViewPort());
+//    m_sliceWidget->setDefaultViewPort(
+//          getSliceViewParam(m_browsePos).getViewPort());
+    m_sliceWidget->setInitialScale(1.0);
 
     updateSliceBrowserSelection();
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
-    ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
+
+//    ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
 
     applyBrowserColorScheme();
   }
@@ -250,9 +233,11 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(browse(int,int,int,int)));
 //  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
 //          this, SLOT(processKeyPressed(QKeyEvent*)));
-  connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
+  connect(getBodyDocument(),
+          SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
-  connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
+  connect(getBodyDocument(),
+          SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
           this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
 
   connect(getBodyDocument(), SIGNAL(interactionStateChanged()),
@@ -278,8 +263,8 @@ void Neu3Window::connectSignalSlot()
 //          this, &Neu3Window::syncBodyListModel);
 
 //  connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
-  connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
-          this, SLOT(updateBodyState()));
+//  connect(m_sliceWidget->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+//          this, SLOT(updateBodyState()));
 
   connect(m_3dwin, SIGNAL(cameraRotated()), this, SLOT(processCameraRotation()));
 //  connect(this, SIGNAL(closed()), this, SLOT(closeWebView()));
@@ -289,7 +274,7 @@ void Neu3Window::updateBodyState()
 {
 #ifdef _DEBUG_
   std::cout << "Update state: "
-            << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
+            << m_sliceWidget->getCompleteDocument()->getSelectedBodySet(
                  neutu::ELabelSource::ORIGINAL).size() << " bodies" << std::endl;
 #endif
 
@@ -349,16 +334,17 @@ bool Neu3Window::loadDvidTarget(const QString &name)
   }
 
   if (target.isValid()) {
-    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
-    m_dataContainer->getProgressSignal()->connectSlot(this);
-    connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
+    m_sliceWidget = ZFlyEmProofMvc::Make(neutu::EAxis::ARB);
+//    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
+    m_sliceWidget->getProgressSignal()->connectSlot(this);
+    connect(m_sliceWidget, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
-    ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
-    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvid,
+    ZWidgetMessage::ConnectMessagePipe(m_sliceWidget, this);
+    QtConcurrent::run(m_sliceWidget, &ZFlyEmProofMvc::setDvid,
                       ZDvidEnv(target));
 //    m_dataContainer->setDvid(ZDvidEnv(dlg->getDvidTarget()));
 
-    m_dataContainer->hide();
+    m_sliceWidget->hide();
     succ = true;
     QString windowTitle = QString("%1 [%2]").
         arg(target.getSourceString(false).c_str()).
@@ -552,7 +538,7 @@ void Neu3Window::createRoiWidget() {
 
 void Neu3Window::updateRoiWidget()
 {
-  m_dataContainer->updateRoiWidget(m_roiWidget, m_3dwin);
+  m_sliceWidget->updateRoiWidget(m_roiWidget, m_3dwin);
 }
 
 /*
@@ -572,6 +558,30 @@ void Neu3Window::processSliceDockVisibility(bool on)
 {
   if (on == false) {
     endBrowse();
+  }
+}
+
+void Neu3Window::processSliceViewChange()
+{
+  updateSliceViewGraph();
+}
+
+void Neu3Window::updateSliceViewGraph()
+{
+  ZAffineRect rect = m_sliceWidget->getViewPort();
+  Z3DGraph *graph = Z3DGraphFactory::MakeSliceViewGraph(rect);
+  std::string source = ZStackObjectSourceFactory::MakeSlicViewObjectSource();
+  if (graph) {
+     graph->setSource(source);
+     ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
+//     m_browsePos = rect.getCenter();
+
+#ifdef _DEBUG_
+    std::cout << "Browse pos: " << m_browsePos.toString() << std::endl;
+#endif
+  } else {
+    ZStackDocAccessor::RemoveObject(
+          getBodyDocument(), ZStackObject::EType::GRAPH_3D, source, true);
   }
 }
 
@@ -611,8 +621,8 @@ void Neu3Window::updateBrowseSize()
 void Neu3Window::processCameraRotation()
 {
   trackSliceViewPort();
-  updateBrowseSize();
-  updateSliceBrowser();
+//  updateBrowseSize();
+//  updateSliceBrowser();
 //  updateBrowser();
 //  updateEmbeddedGrayscale();
 //  updateGrayscaleWidget();
@@ -625,13 +635,22 @@ void Neu3Window::trackSliceViewPort() const
   }
 }
 
+void Neu3Window::updateSliceWidgetPlane()
+{
+  if (m_sliceWidget) {
+    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+    m_sliceWidget->setCutPlane(
+          m_browsePos, viewParam.getPlaneV1(), viewParam.getPlaneV2());
+  }
+}
+
 void Neu3Window::updateSliceWidget()
 {
   LDEBUG() << "Updating slice widget";
   if (m_sliceWidget != NULL) {
     ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
     m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
-    m_sliceWidget->resetViewParam(viewParam);
+//    m_sliceWidget->resetViewParam(viewParam);
 
     trackSliceViewPort();
   }
@@ -644,7 +663,7 @@ void Neu3Window::updateSliceBrowser()
     if (m_nativeSliceDock != NULL) {
       m_nativeSliceDock->show();
       LDEBUG() << "m_nativeSliceDock->show called";
-      updateSliceWidget();
+      updateSliceWidgetPlane();
 //      QTimer::singleShot(3000, this, &Neu3Window::updateSliceWidget);
     }
     break;
@@ -678,7 +697,7 @@ void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
 void Neu3Window::applyBrowserColorScheme()
 {
   if (m_browserColorScheme) {
-    ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
+    ZFlyEmProofDoc* doc = m_sliceWidget->getCompleteDocument();
     ZDvidLabelSlice* slice =
         ZFlyEmProofDocUtil::GetActiveLabelSlice(doc, neutu::EAxis::ARB);
     if (slice) {
@@ -831,7 +850,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
     ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
     bo->open(flyem::GetNeuroglancerPath(
-               m_dataContainer->getDvidTarget(), m_browsePos.roundToIntPoint(),
+               m_sliceWidget->getDvidTarget(), m_browsePos.roundToIntPoint(),
                rotation, m_bodyListWidget->getModel()->getBodySet()));
   }
     break;
@@ -954,8 +973,8 @@ ZFlyEmBody3dDoc* Neu3Window::getBodyDocument() const
 ZFlyEmProofDoc* Neu3Window::getDataDocument() const
 {
   ZFlyEmProofDoc *doc = NULL;
-  if (m_dataContainer != NULL) {
-    doc = m_dataContainer->getCompleteDocument();
+  if (m_sliceWidget != NULL) {
+    doc = m_sliceWidget->getCompleteDocument();
   }
 
   return doc;
@@ -977,12 +996,12 @@ private:
 
 void Neu3Window::loadBody(uint64_t bodyId)
 {
-  m_dataContainer->selectBody(bodyId, m_doingBulkUpdate);
+  m_sliceWidget->selectBody(bodyId, m_doingBulkUpdate);
 }
 
 void Neu3Window::unloadBody(uint64_t bodyId)
 {
-  m_dataContainer->deselectBody(bodyId, m_doingBulkUpdate);
+  m_sliceWidget->deselectBody(bodyId, m_doingBulkUpdate);
 }
 
 void Neu3Window::removeBody(uint64_t bodyId)
@@ -1038,7 +1057,7 @@ void Neu3Window::testBodyChange()
   } else {
     if (bodySet.size() < 10) {
       ZIntPoint pos;
-      uint64_t bodyId = m_dataContainer->getRandomBodyId(rand, &pos);
+      uint64_t bodyId = m_sliceWidget->getRandomBodyId(rand, &pos);
       if (!bodySet.contains(bodyId)) {
         m_bodyListWidget->addBody(bodyId);
       }
@@ -1294,7 +1313,7 @@ void Neu3Window::openNeuTu()
   ZProofreadWindow *window = ZProofreadWindow::Make();
   window->show();
 
-  ZDvidEnv env = m_dataContainer->getDvidEnv();
+  ZDvidEnv env = m_sliceWidget->getDvidEnv();
   env.setReadOnly(true);
 
   window->getMainMvc()->setDvid(env);

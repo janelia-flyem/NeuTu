@@ -197,6 +197,10 @@ public:
 //  ZAffinePlane getAffinePlane() const;
 
   void setCutPlane(neutu::EAxis axis);
+  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
+  void setCutPlane(const ZAffinePlane &plane);
+  void setZoomScale(double s);
+  void setInitialScale(double s);
 
   /*!
    * \brief Get stack data from the buddy document
@@ -593,7 +597,7 @@ public slots:
 signals:
 //  void currentSliceChanged(int);
   void viewChanged(ZStackViewParam param);
-  void viewChanged(const ZSliceViewTransform &transform);
+  void viewChanged();
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
   void changingSetting();

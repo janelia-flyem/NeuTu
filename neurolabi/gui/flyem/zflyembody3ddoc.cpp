@@ -3052,7 +3052,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
   KINFO << QString("Body removed: %1").arg(bodyId);
 }
 
-ZStackObject* ZFlyEmBody3dDoc::retriveBodyObject(
+ZStackObject* ZFlyEmBody3dDoc::retrieveBodyObject(
     uint64_t bodyId, int zoom, flyem::EBodyType bodyType,
     ZStackObject::EType objType)
 {
@@ -3064,16 +3064,16 @@ ZStackObject* ZFlyEmBody3dDoc::retriveBodyObject(
   return obj;
 }
 
-ZStackObject* ZFlyEmBody3dDoc::retriveBodyObject(uint64_t bodyId, int zoom)
+ZStackObject* ZFlyEmBody3dDoc::retrieveBodyObject(uint64_t bodyId, int zoom)
 {
-  return retriveBodyObject(bodyId, zoom, getBodyType(), getBodyObjectType());
+  return retrieveBodyObject(bodyId, zoom, getBodyType(), getBodyObjectType());
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(
     uint64_t bodyId, int zoom, flyem::EBodyType bodyType)
 {
   ZStackObject *obj =
-      retriveBodyObject(bodyId, zoom, bodyType, ZStackObject::EType::SWC);
+      retrieveBodyObject(bodyId, zoom, bodyType, ZStackObject::EType::SWC);
 
   ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
 
@@ -3082,7 +3082,7 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(
 
 ZMesh* ZFlyEmBody3dDoc::retrieveBodyMesh(uint64_t bodyId, int zoom)
 {
-  ZStackObject *obj = retriveBodyObject(bodyId, zoom);
+  ZStackObject *obj = retrieveBodyObject(bodyId, zoom);
 
   ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
 
@@ -5118,8 +5118,8 @@ void ZFlyEmBody3dDoc::configure(const ProtocolTaskConfig &config)
  *
  * Currently there are three types of body IDs: normal body ID, tar body ID
  * and supervoxel ID. Any added ID will be stored in the document as its decoded
- * format, and the only way to tell its type is through how its mapped in the
- * body manager. One limitation in the body manager is that it can not store both
+ * format, and the only way to tell its type is through how its mapped id the
+ * body manager. One limitation in the body manager is that it cannot store both
  * the normal form and the tar form of a body ID. Storing a supervoxel and a body
  * with the same decoded ID can also cause some confusion. So do NOT add different
  * encodings of the same ID together.
