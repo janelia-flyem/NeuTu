@@ -20,6 +20,7 @@
 
 #include "ui_mainwindow.h"
 
+#include "mylib/array.h"
 #include "logging/zlog.h"
 
 #include "mvc/zstackframe.h"
@@ -4935,6 +4936,7 @@ void MainWindow::on_actionDiagnosis_triggered()
   info << "Memory usage: " + flyem::GetMemoryUsage();
   info << QString("Stack usage: %1").arg(C_Stack::stackUsage());
   info << QString("Mc_Stack usage: %1").arg(C_Stack::McStackUsage());
+  info << QString("Array usage %1").arg(mylib::Array_Usage());
 #endif
 
   info.append(Z3DGpuInfo::instance().gpuInfo());

@@ -30976,6 +30976,23 @@ void ZTest::test(MainWindow *host)
   std::cout << bodySet.size() << std::endl;
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->updateMaxGrayscaleZoom();
+  int z = 1024;
+  for (int dz = 0; dz < 1000; ++dz) {
+    std::cout << z + dz << std::endl;
+//    ZStack *stack = ZStackFactory::MakeZeroStack(1024, 1024, 1);
+//        reader->readGrayScaleLowtis(0, 0, z, 1024, 1024, 0, 256, 256, false);
+//    delete stack;
+
+    int *array = new int[1024*1024];
+    delete []array;
+
+    std::cout << "Memory usage: " << flyem::GetMemoryUsage().toStdString() << std::endl;
+  }
+#endif
+
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("vnc");
   int z = 40896;
@@ -31218,7 +31235,7 @@ void ZTest::test(MainWindow *host)
             << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZDvidSynapse s = reader->readSynapse(
         ZIntPoint(1159, 1137, 1023), dvid::EAnnotationLoadMode::PARTNER_RELJSON);

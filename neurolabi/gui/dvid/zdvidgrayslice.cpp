@@ -470,6 +470,7 @@ bool ZDvidGraySlice::consume(
       getHelper()->setViewParam(viewParam);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       updateImage(stack);
+      delete stack;
       succ = true;
     } else {
       delete stack;
