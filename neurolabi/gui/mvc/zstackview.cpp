@@ -2322,7 +2322,9 @@ void ZStackView::paintObjectBuffer()
                       ZStackObject::ETarget::OBJECT_CANVAS);
   } else {
     m_objectCanvasPainter.setPainted(false);
-    m_objectCanvas->setVisible(false);
+    if (m_objectCanvas) {
+      m_objectCanvas->setVisible(false);
+    }
   }
 }
 
@@ -2710,13 +2712,13 @@ void ZStackView::notifyWidgetCanvasUpdate(ZImage *canvas)
 
 void ZStackView::addWidgetCanvasTask()
 {
-
   ZTask *task = new ZFunctionTask([this]() {
     ZImage *canvas = this->m_imageWidget->makeWidgetCanvas();
     canvas->fill(Qt::transparent);
     this->m_imageWidget->paintWidgetCanvas(canvas);
     ZPixmap *pixmap = new ZPixmap;
     pixmap->convertFromImage(*canvas);
+    delete canvas;
     pixmap->setTransform(canvas->getWorldTransform());
     pixmap->setProjTransform(canvas->getProjectionTransform());
     this->notifyWidgetCanvasUpdate(pixmap);

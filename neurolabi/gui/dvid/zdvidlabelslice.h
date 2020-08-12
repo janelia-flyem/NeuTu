@@ -172,6 +172,12 @@ public:
 
   void allowBlinking(bool on);
 
+public:
+  void _forceUpdate(
+      const ZStackViewParam &viewParam, bool ignoringHidden) {
+    forceUpdate(viewParam, ignoringHidden);
+  }
+
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
 
