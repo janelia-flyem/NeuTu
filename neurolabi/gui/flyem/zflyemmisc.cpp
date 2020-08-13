@@ -1130,7 +1130,7 @@ QString flyem::GetMemoryUsage()
   p.start(QString("ps v -p %1").arg(getpid()));
 #endif
 
-  if (p.waitForFinished(1000)) {
+  if (p.waitForFinished(5000)) {
     QString output = p.readAllStandardOutput();
     QStringList lines = output.split("\n", QString::SkipEmptyParts);
 //    qDebug() << lines;

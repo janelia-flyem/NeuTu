@@ -7,7 +7,8 @@ ZFlyEmBookmarkWidget::ZFlyEmBookmarkWidget(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  connect(ui->bookmarkTab, SIGNAL(currentChanged(int)), ui->bookmarkFilter, SLOT(onTabChanged(int)));
+  connect(ui->bookmarkTab, SIGNAL(currentChanged(int)),
+          ui->bookmarkFilter, SLOT(onTabChanged(int)));
 }
 
 ZFlyEmBookmarkWidget::~ZFlyEmBookmarkWidget()

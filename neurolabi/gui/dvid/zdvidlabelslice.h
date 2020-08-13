@@ -190,6 +190,12 @@ public:
   const ZDvidReader& getDvidReader() const;
   const ZDvidReader& getWorkDvidReader() const;
 
+public:
+  void _forceUpdate(
+      const ZStackViewParam &viewParam, bool ignoringHidden) {
+    forceUpdate(viewParam, ignoringHidden);
+  }
+
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
 

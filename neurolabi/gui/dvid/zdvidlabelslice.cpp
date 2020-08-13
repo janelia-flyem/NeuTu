@@ -178,17 +178,20 @@ ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
         && getHelper()->getViewDataSize() < maxSize) {
       //    task = new ZDvidLabelSliceHighresTask;
       task = m_taskFactory->makeTask();
-      ZStackViewParam viewParam = getHelper()->getViewParam();
-      viewParam.openViewPort();
-      task->setViewParam(viewParam);
-      task->setZoom(getHelper()->getZoom());
-      task->setCenterCut(
-            getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
-      task->useCenterCut(false);
-      task->setDelay(50);
-      task->setDoc(doc);
-      task->setSupervoxel(getDvidTarget().isSupervoxelView());
-      task->setName(this->getSource().c_str());
+
+      if (task) {
+        ZStackViewParam viewParam = getHelper()->getViewParam();
+        viewParam.openViewPort();
+        task->setViewParam(viewParam);
+        task->setZoom(getHelper()->getZoom());
+        task->setCenterCut(
+              getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
+        task->useCenterCut(false);
+        task->setDelay(50);
+        task->setDoc(doc);
+        task->setSupervoxel(getDvidTarget().isSupervoxelView());
+        task->setName(this->getSource().c_str());
+      }
     }
   }
 

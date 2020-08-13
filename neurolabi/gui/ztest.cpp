@@ -30988,6 +30988,41 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->updateMaxGrayscaleZoom();
+
+  ZDvidLabelSlice *slice = new ZDvidLabelSlice();
+  slice->setDvidTarget(reader->getDvidTarget());
+  int z = 1024;
+  ZStackViewParam param;
+  param.setViewPort(0, 0, 1024, 1024);
+  for (int dz = 0; dz < 1000; ++dz) {
+    std::cout << z + dz << std::endl;
+//    ZStack *stack = ZStackFactory::MakeZeroStack(1024, 1024, 1);
+//    ZStack *stack = new ZStack(GREY, 1024, 1024, 1, 1);
+//    stack->setZero();
+//    ZStack *stack = reader->readGrayScaleLowtis(0, 0, z, 1024, 1024, 0, 256, 256, false);
+//    delete stack;
+
+//    ZArray *array = reader->readLabels64Lowtis(0, 0, z, 1024, 1024, 0, 256, 256, false);
+//    delete array;
+    param.setZ(z + dz);
+//    slice->consume(array, param, 0, 256, 256, false);
+//    slice->paintBuffer();
+
+    slice->_forceUpdate(param, false);
+//    Mc_Stack *stack = C_Stack::make(GREY, 1024, 1024, 1, 1);
+//    C_Stack::kill(stack);
+
+//    int *array = new int[1024*1024];
+//    bzero(array, 1024*1024*sizeof(int));
+//    delete []array;
+
+    std::cout << "Memory usage: " << flyem::GetMemoryUsage().toStdString() << std::endl;
+  }
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("vnc");
   int z = 40896;
   for (int dz = 0; dz < 1000; ++dz) {

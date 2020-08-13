@@ -356,10 +356,12 @@ bool ZDvidGraySlice::consume(
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
       updateImage(stack, rect.getAffinePlane(), zoom);
+      delete stack;
 #ifdef _DEBUG_2
       std::cout << "Saving image canvas ..." << std::endl;
       m_imageCanvas.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
+
       succ = true;
     } else {
       delete stack;
