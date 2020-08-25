@@ -151,28 +151,6 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     CONFIG *= strict_c++ c++11
 }
 
-#CONFIG(c++11) {
-#  message(Using C++11)
-##  DEFINES += _CPP11_
-#  unix {
-#    QMAKE_CXXFLAGS += -std=c++11
-#    macx {
-#      QMAKE_CXXFLAGS += -stdlib=libc++
-#    }
-#  }
-#} else {
-#  CONFIG(c++14) {
-#    message(Using C++14)
-##    DEFINES += _CPP11_ #necessary for glm
-#    unix {
-#      QMAKE_CXXFLAGS += -std=c++14
-#      macx {
-#        QMAKE_CXXFLAGS += -stdlib=libc++
-#      }
-#    }
-#  }
-#}
-
 equals(SANITIZE_BUILD, "thread") {
   QMAKE_CXXFLAGS += -fsanitize=thread
   QMAKE_LFLAGS += -fsanitize=thread
@@ -187,7 +165,6 @@ equals(SANITIZE_BUILD, "address") {
 unix {
     QMAKE_CXXFLAGS += -Wno-deprecated
     macx {
-#        DEFINES += _NEUTUBE_MAC_
         LIBS += -framework AppKit -framework IOKit \
             -framework ApplicationServices \
             -framework CoreFoundation

@@ -18,7 +18,7 @@ ZFlyEmNameBodyColorScheme::ZFlyEmNameBodyColorScheme()
   m_colorMap["MB-DPM"] = QColor(140, 255, 0);
   m_isMapReady = false;
 
-  m_defaultColor = QColor(0, 0, 0, 0);
+  m_defaultColor = 0;
 
   buildColorTable();
 }
@@ -37,7 +37,7 @@ void ZFlyEmNameBodyColorScheme::buildColorTable()
   int index = 1;
   for (QHash<QString, QColor>::const_iterator iter = m_colorMap.begin();
        iter != m_colorMap.end(); ++iter, ++index) {
-    m_colorTable[index] = iter.value();
+    m_colorTable[index] = iter.value().rgba();
     m_nameIndexMap[iter.key()] = index;
   }
 
@@ -49,10 +49,12 @@ int ZFlyEmNameBodyColorScheme::getBodyColorIndex(uint64_t bodyId) const
   return m_indexMap[bodyId];
 }
 
+/*
 QColor ZFlyEmNameBodyColorScheme::getBodyColorFromIndex(int index) const
 {
   return m_colorTable[index];
 }
+*/
 
 QHash<uint64_t, int> ZFlyEmNameBodyColorScheme::getColorIndexMap() const
 {
@@ -74,6 +76,15 @@ QHash<uint64_t, int> ZFlyEmNameBodyColorScheme::getColorIndexMap() const
 
   return indexMap;
   */
+}
+
+bool ZFlyEmNameBodyColorScheme::hasExplicitColor(uint64_t bodyId) const
+{
+  if (m_indexMap.contains(bodyId)) {
+    return true;
+  }
+
+  return false;
 }
 
 QColor ZFlyEmNameBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotation)

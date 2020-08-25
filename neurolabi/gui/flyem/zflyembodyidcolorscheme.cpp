@@ -3,10 +3,10 @@
 ZFlyEmBodyIdColorScheme::ZFlyEmBodyIdColorScheme(
     const QHash<uint64_t, QColor> &colorMap) : m_colorMap(colorMap)
 {
-  m_colorTable.append(QColor(0, 0, 0, 0));
+  m_colorTable.append(0);
   for (auto it = colorMap.cbegin(); it != colorMap.cend(); ++it) {
     m_indexMap[it.key()] = m_colorTable.size();
-    m_colorTable.append(it.value());
+    m_colorTable.append(it.value().rgba());
   }
 }
 
@@ -22,6 +22,19 @@ int ZFlyEmBodyIdColorScheme::getColorNumber() const
   }
 
   return colorCount;
+}
+
+bool ZFlyEmBodyIdColorScheme::hasExplicitColor(uint64_t bodyId) const
+{
+  if (m_indexMap.contains(bodyId)) {
+    return true;
+  }
+
+  if (m_defaultColorScheme) {
+    return m_defaultColorScheme->hasExplicitColor(bodyId);
+  }
+
+  return false;
 }
 
 /*
@@ -48,6 +61,19 @@ void ZFlyEmBodyIdColorScheme::setDefaultColorScheme(
     std::shared_ptr<ZFlyEmBodyColorScheme> scheme)
 {
   m_defaultColorScheme = scheme;
+}
+
+uint32_t ZFlyEmBodyIdColorScheme::getBodyColorCode(uint64_t bodyId) const
+{
+  if (m_indexMap.contains(bodyId)) {
+    return m_colorTable[m_indexMap[bodyId]];
+  } else {
+    if (m_defaultColorScheme && m_defaultColorScheme->hasExplicitColor(bodyId)) {
+      return m_defaultColorScheme->getBodyColorCode(bodyId);
+    }
+  }
+
+  return m_defaultColor;
 }
 
 int ZFlyEmBodyIdColorScheme::getBodyColorIndex(uint64_t bodyId) const

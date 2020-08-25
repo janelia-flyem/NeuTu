@@ -69,10 +69,12 @@ HEADERS += \
     $$PWD/zflyembookmarklistmodel.h \
     $$PWD/zflyembookmarkpresenter.h \
     $$PWD/zflyembookmarkptrarray.h \
+    $$PWD/zflyemcompositebodycolorscheme.h \
     $$PWD/zflyemdatabundle.h \
     $$PWD/zflyemdataframe.h \
     $$PWD/zflyemdoc3dbodystateaccessor.h \
     $$PWD/zflyemexternalneurondoc.h \
+    $$PWD/zflyemgeneralbodycolorscheme.h \
     $$PWD/zflyemhackathonconfigdlg.h \
     $$PWD/zflyemkeyoperationconfig.h \
     $$PWD/zflyemmb6analyzer.h \
@@ -200,10 +202,12 @@ SOURCES += \
     $$PWD/zflyembookmarklistmodel.cpp \
     $$PWD/zflyembookmarkpresenter.cpp \
     $$PWD/zflyembookmarkptrarray.cpp \
+    $$PWD/zflyemcompositebodycolorscheme.cpp \
     $$PWD/zflyemdatabundle.cpp \
     $$PWD/zflyemdataframe.cpp \
     $$PWD/zflyemdoc3dbodystateaccessor.cpp \
     $$PWD/zflyemexternalneurondoc.cpp \
+    $$PWD/zflyemgeneralbodycolorscheme.cpp \
     $$PWD/zflyemhackathonconfigdlg.cpp \
     $$PWD/zflyemkeyoperationconfig.cpp \
     $$PWD/zflyemmb6analyzer.cpp \

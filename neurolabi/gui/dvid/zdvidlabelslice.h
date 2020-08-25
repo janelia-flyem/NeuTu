@@ -4,6 +4,8 @@
 #include <QCache>
 #include <QMutex>
 
+#include <unordered_set>
+
 #include "common/zsharedpointer.h"
 #include "zuncopyable.h"
 #include "neutube.h"
@@ -228,6 +230,8 @@ private:
 
   bool hasValidPaintBuffer() const;
 
+  void updateColorField();
+
 private:
   ZObject3dScanArray m_objArray;
 
@@ -243,6 +247,7 @@ private:
 
   ZArray *m_labelArray;
   ZArray *m_mappedLabelArray;
+  std::vector<uint32_t> m_colorField;
   QMutex m_updateMutex;
 
   std::set<uint64_t> m_prevSelectedOriginal;

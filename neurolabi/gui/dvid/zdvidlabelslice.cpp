@@ -26,6 +26,7 @@
 #include "misc/miscutility.h"
 #include "zdviddataslicetask.h"
 #include "zdviddataslicetaskfactory.h"
+#include "flyem/zflyemgeneralbodycolorscheme.h"
 
 //#include "flyem/zdvidlabelslicehighrestask.h"
 
@@ -895,8 +896,7 @@ void ZDvidLabelSlice::remapId(
 }
 
 
-void ZDvidLabelSlice::remapId(
-    uint64_t *array, const uint64_t *originalArray, uint64_t v,
+void ZDvidLabelSlice::remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
     std::set<uint64_t> &selected)
 {
   if (m_customColorScheme.get() != NULL) {
@@ -1011,7 +1011,8 @@ void ZDvidLabelSlice::remapId(
 
 void ZDvidLabelSlice::remapId(
     uint64_t *array, const uint64_t *originalArray, uint64_t v,
-    std::set<uint64_t> &selected, const ZFlyEmBodyMerger::TLabelMap &bodyMap)
+    std::set<uint64_t> &selected,
+    const ZFlyEmBodyMerger::TLabelMap &bodyMap)
 {
   if (m_customColorScheme.get() != NULL) {
 //    QHash<uint64_t, int> idMap;
@@ -1019,7 +1020,7 @@ void ZDvidLabelSlice::remapId(
 
 //    idMap = m_customColorScheme->getColorIndexMap();
 
-    std::set<uint64_t> selectedSet = selected;
+    auto selectedSet = selected;
 
     remap_id(
           m_customColorScheme.get(), array, originalArray, v,
@@ -1075,7 +1076,7 @@ void ZDvidLabelSlice::remapId(
     }
 #endif
   } else {
-    std::set<uint64_t> selectedSet = selected;
+    auto selectedSet = selected;
 
     if (hasVisualEffect(neutu::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
       for (size_t i = 0; i < v; ++i) {
@@ -1182,6 +1183,85 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
   }
 
   return false;
+}
+
+void ZDvidLabelSlice::updateColorField()
+{
+  if (m_labelArray == nullptr) {
+    m_colorField.clear();
+    return;
+  }
+
+  if (m_labelArray->isEmpty()) {
+    m_colorField.clear();
+    return;
+  }
+
+  if (m_colorField.size() != m_labelArray->getElementNumber()) {
+    m_colorField.resize(m_labelArray->getElementNumber());
+  }
+
+  ZFlyEmGeneralBodyColorScheme scheme;
+
+  std::shared_ptr<ZFlyEmBodyColorScheme> baseScheme =
+      m_customColorScheme ? m_customColorScheme : m_defaultColorSheme;
+
+  ZFlyEmBodyMerger::TLabelMap bodyMap = getLabelMap();
+  bool highlight = hasVisualEffect(
+        neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
+  if (highlight) {
+    if (m_selectedOriginal.empty()) {
+      scheme._getBodyColorCode = [&](uint64_t /*bodyId*/) {
+        return 0u;
+      };
+    } else if (bodyMap.isEmpty()) {
+      scheme._getBodyColorCode = [&](uint64_t bodyId) {
+        if (m_selectedOriginal.count(bodyId) > 0) {
+          return baseScheme->getBodyColorCode(bodyId);
+        }
+        return 0u;
+      };
+    } else {
+      scheme._getBodyColorCode = [&](uint64_t bodyId) {
+        if (m_selectedOriginal.count(bodyId) > 0) {
+          bodyId = bodyMap.value(bodyId, bodyId);
+          return baseScheme->getBodyColorCode(bodyId);
+        }
+
+        return 0u;
+      };
+    }
+  } else {
+    if (bodyMap.isEmpty() && m_selectedOriginal.empty()) {
+      scheme._getBodyColorCode = [&](uint64_t bodyId) {
+        return baseScheme->getBodyColorCode(bodyId);
+      };
+    } else if (bodyMap.isEmpty()) {
+      scheme._getBodyColorCode = [&](uint64_t bodyId) {
+        if (m_selectedOriginal.count(bodyId) > 0) {
+          return 0xFFFFFFFFu;
+        }
+        return baseScheme->getBodyColorCode(bodyId);
+      };
+    } else if (m_selectedOriginal.empty()) {
+      scheme._getBodyColorCode = [&](uint64_t bodyId) {
+        bodyId = bodyMap.value(bodyId, bodyId);
+        return baseScheme->getBodyColorCode(bodyId);
+      };
+    } else {
+      scheme._getBodyColorCode = [&](uint64_t bodyId) {
+        if (m_selectedOriginal.count(bodyId) > 0) {
+          return 0xFFFFFFFFu;
+        } else {
+          bodyId = bodyMap.value(bodyId, bodyId);
+        }
+        return baseScheme->getBodyColorCode(bodyId);
+      };
+    }
+  }
+  scheme.mapColor(
+        m_labelArray->getDataPointer<uint64_t>(),
+        m_colorField.data(), m_colorField.size());
 }
 
 std::set<uint64_t> ZDvidLabelSlice::getHitLabelSet() const

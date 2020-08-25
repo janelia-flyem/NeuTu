@@ -349,6 +349,7 @@
 #include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "flyem/zflyemarbdoc.h"
+#include "flyem/zflyemrandombodycolorscheme.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -30976,7 +30977,44 @@ void ZTest::test(MainWindow *host)
   std::cout << bodySet.size() << std::endl;
 #endif
 
+#if 0
+  QColor color(int(1));
+  std::cout << color.red() << " " <<color.green() << " "
+            << color.blue() << " " << color.alpha() << std::endl;
+#endif
+
 #if 1
+  QColor color(Qt::red);
+  uint32_t code = 0;
+  tic();
+  for (int i = 0; i < 100000; ++i) {
+    code += ZColorScheme::GetIntCode(255, 0 ,0, 255);
+  }
+  ptoc();
+  std::cout << code << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZFlyEmRandomBodyColorScheme scheme;
+  int width = 1024;
+  int height = 1024;
+  uint32_t *dst = new uint32_t[width * height];
+
+  ZArray *array = reader->readLabels64Lowtis(
+        100, 100, 1000, width, height, 0, 256, 256, false);
+
+  tic();
+  for (int i = 0; i < 1; ++i) {
+    scheme.mapColor(
+          array->getDataPointer<uint64_t>(), dst, array->getElementNumber());
+  }
+  ptoc();
+
+  delete []dst;
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   reader->updateMaxGrayscaleZoom();
 
