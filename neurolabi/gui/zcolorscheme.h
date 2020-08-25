@@ -18,6 +18,8 @@ public:
     LABEL_COLOR
   };
 
+  uint32_t getColorCode(int index) const;
+  uint32_t getColorCode(uint64_t index) const;
   QColor getColor(int index) const;
   QColor getColor(uint64_t index) const;
   virtual int getColorNumber() const { return m_colorTable.size(); }
@@ -34,6 +36,24 @@ public:
 
   void printColorTable() const;
 
+  static constexpr uint32_t GetIntCode(int r, int g, int b, int a) {
+    return (a << 24) + (r << 16) + (g << 8) + b;
+  }
+
+  static constexpr uint32_t GetIntCode(int r, int g, int b) {
+    return GetIntCode(r, g, b, 255);
+  }
+
+  static uint32_t GetIntCode(const QColor &color) {
+//    return color.rgba(); //might be faster, but not worth it in practice
+    return GetIntCode(color.red(), color.green(), color.blue(), color.alpha());
+  }
+
+  static QColor GetColorFromCode(uint32_t code) {
+    return QColor((code & 0x00FF0000) >> 16, (code & 0x0000FF00) >> 8,
+                  code & 0x000000FF, code >> 24);
+  }
+
 protected:
   void buildRandomColorTable(int n);
   void buildConvRandomColorTable(int n);
@@ -44,7 +64,7 @@ protected:
 
 protected:
   EColorScheme m_colorScheme;
-  QVector<QColor> m_colorTable;
+  QVector<uint32_t> m_colorTable;
   int m_startIndex = 0;
 };
 

@@ -29,10 +29,12 @@ public:
 
   QHash<uint64_t, int> getColorIndexMap() const override;
   int getBodyColorIndex(uint64_t bodyId) const override;
-  QColor getBodyColorFromIndex(int index) const override;
+//  QColor getBodyColorFromIndex(int index) const override;
 //  QVector<QColor> getColorList() const;
   void buildColorTable();
   void update() override;
+
+  bool hasExplicitColor(uint64_t bodyId) const override;
 
 private:
   QHash<QString, QColor> m_colorMap;
@@ -41,8 +43,7 @@ private:
   QHash<uint64_t, int> m_indexMap;
   ZDvidReader m_reader;
   bool m_isMapReady;
-  QColor m_defaultColor;
-
+  int m_defaultColor;
 };
 
 #endif // ZFLYEMNAMEBODYCOLORSCHEME_H

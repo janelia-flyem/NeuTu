@@ -15,6 +15,7 @@ void ZObjectColorScheme::setColorScheme(EColorScheme scheme)
     buildConvRandomColorTable(65535);
     break;
   default:
+    ZColorScheme::setColorScheme(scheme);
     break;
   }
 }

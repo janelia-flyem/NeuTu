@@ -19,8 +19,11 @@ public:
 //  QColor getBodyColor(uint64_t bodyId) const override;
   int getBodyColorIndex(uint64_t bodyId) const override;
   int getColorNumber() const override;
+  uint32_t getBodyColorCode(uint64_t bodyId) const override;
 
   void setDefaultColorScheme(std::shared_ptr<ZFlyEmBodyColorScheme> scheme);
+
+  bool hasExplicitColor(uint64_t bodyId) const override;
 
 private:
 //  void updateColorIndex();

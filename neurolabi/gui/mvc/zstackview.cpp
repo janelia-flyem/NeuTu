@@ -2865,9 +2865,9 @@ void ZStackView::addWidgetCanvasTask()
     this->m_imageWidget->paintWidgetCanvas(canvas);
     ZPixmap *pixmap = new ZPixmap;
     pixmap->convertFromImage(*canvas);
-    delete canvas;
     pixmap->setTransform(canvas->getWorldTransform());
     pixmap->setProjTransform(canvas->getProjectionTransform());
+    delete canvas;
     this->notifyWidgetCanvasUpdate(pixmap);
   });
   task->setName("ZStackView::addWidgetCanvasTask");

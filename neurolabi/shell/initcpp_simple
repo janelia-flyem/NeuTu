@@ -1,0 +1,32 @@
+#!/bin/bash
+
+
+if [[ $# -lt 2 ]]
+then
+  echo "Usage: $0 <dst_dir> <project>"
+  exit 1
+fi
+
+dstdir=$1
+project=$2
+projectDir="$dstdir/$project"
+
+mkdir "$projectDir"
+if [[ $? -eq 0 ]]
+then
+  set -e 
+  cd "$projectDir"
+  echo 'cmake_minimum_required(VERSION 3.5)' > CMakeLists.txt
+  echo "" >> CMakeLists.txt
+  echo "set(CMAKE_CXX_STANDARD 11)" >> CMakeLists.txt
+  echo "set(CMAKE_CXX_STANDARD_REQUIRED ON)" >> CMakeLists.txt
+  echo "set(CMAKE_CXX_EXTENSIONS OFF)" >> CMakeLists.txt
+  echo "" >> CMakeLists.txt
+  echo "project($project)" >> CMakeLists.txt
+  echo "" >> CMakeLists.txt
+  echo "add_executable($project main.cpp)" >> CMakeLists.txt
+else
+  echo "Failed to ceate a new project directory: $projectDir."
+fi
+
+ 

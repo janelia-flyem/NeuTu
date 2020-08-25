@@ -13,6 +13,8 @@ public:
   int getBodyColorIndex(uint64_t bodyId) const override;
 
   void update() override;
+
+  bool hasExplicitColor(uint64_t bodyId) const override;
 };
 
 #endif // ZFLYEMRANDOMBODYCOLORSCHEME_H

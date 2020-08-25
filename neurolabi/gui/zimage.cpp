@@ -852,6 +852,18 @@ void ZImage::setCData(const uint8_t *data, uint8_t alpha)
   }
 }
 
+void ZImage::drawColorField(const uint32_t *data)
+{
+  int h = height();
+  int w = width();
+  for (int j = 0; j < h; j++) {
+    uint32_t *line = (uint32_t*) scanLine(j);
+    for (int i = 0; i < w; i++) {
+      *line++ = *data++;
+    }
+  }
+}
+
 void ZImage::drawLabelField(uint64_t *data, const std::vector<int> &colorTable, int bgColor, int selColor)
 {
   int colorCount = colorTable.size();
@@ -882,6 +894,22 @@ void ZImage::drawLabelField(uint64_t *data, const std::vector<int> &colorTable, 
           *line++ = bgColor;
         }
       }
+    }
+  }
+}
+
+void ZImage::drawColorFileTranspose(const uint32_t *data)
+{
+  int h = height();
+  int w = width();
+
+  const uint32_t *dataLine = data;
+  for (int j = 0; j < h; j++) {
+    int *line = (int*) scanLine(j);
+    dataLine = data + j;
+    for (int i = 0; i < w; i++) {
+      *line++ = *data;
+      dataLine += h;
     }
   }
 }

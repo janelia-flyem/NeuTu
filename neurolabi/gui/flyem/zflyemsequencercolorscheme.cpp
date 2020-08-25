@@ -24,6 +24,19 @@ QColor ZFlyEmSequencerColorScheme::getBodyColor(uint64_t bodyId) const {
 
 */
 
+uint32_t ZFlyEmSequencerColorScheme::getBodyColorCode(uint64_t bodyId) const
+{
+  if (m_indexMap.contains(bodyId)) {
+    return m_colorTable[m_indexMap[bodyId]];
+  }
+
+  if (m_defaultColorScheme && m_defaultColorScheme->hasExplicitColor(bodyId)) {
+    return m_defaultColorScheme->getBodyColorCode(bodyId);
+  }
+
+  return m_defaultColor;
+}
+
 QColor ZFlyEmSequencerColorScheme::getBodyColorFromIndex(int index) const
 {
   if (index < m_colorTable.size()) {
@@ -52,19 +65,19 @@ int ZFlyEmSequencerColorScheme::getBodyColorIndex(uint64_t bodyId) const
 void ZFlyEmSequencerColorScheme::setDefaultColor(QColor color) {
 //  m_defaultColor = color;
   if (m_colorTable.isEmpty()) {
-    m_colorTable.append(color);
+    m_colorTable.append(color.rgba());
   } else {
-    m_colorTable[0] = color;
+    m_colorTable[0] = color.rgba();
   }
 }
 
 void ZFlyEmSequencerColorScheme::setBodyColor(uint64_t bodyId, QColor color)
 {
   if (m_colorMap.contains(bodyId)) {
-    m_colorTable[getBodyColorIndex(bodyId)] = color;
+    m_colorTable[getBodyColorIndex(bodyId)] = color.rgba();
   } else {
     m_indexMap[bodyId] = m_colorTable.size();
-    m_colorTable.append(color);
+    m_colorTable.append(color.rgba());
   }
 
   m_colorMap[bodyId] = color;
@@ -127,6 +140,19 @@ QHash<uint64_t, int> ZFlyEmSequencerColorScheme::getColorIndexMap() const
 
   return indexMap;
   */
+}
+
+bool ZFlyEmSequencerColorScheme::hasExplicitColor(uint64_t bodyId) const
+{
+  if (m_indexMap.contains(bodyId)) {
+    return true;
+  }
+
+  if (m_defaultColorScheme) {
+    return m_defaultColorScheme->hasExplicitColor(bodyId);
+  }
+
+  return false;
 }
 
 /*
