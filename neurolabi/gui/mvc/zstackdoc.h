@@ -922,8 +922,8 @@ public:
 
 public:
   void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg) const;
-  void emitMessage(const QString &msg, neutu::EMessageType type) const;
+  void emitWarning(const QString &msg);
+  void emitMessage(const QString &msg, neutu::EMessageType type);
 
 public:
   ZNeuronTracer& getNeuronTracer();
@@ -1325,9 +1325,9 @@ public slots:
 signals:
   void updatingStack(ZStack *stack);
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
-  void messageGenerated(const QString &message, bool appending = true) const;
+  void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
-  void messageGenerated(const ZWidgetMessage&) const;
+  void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);

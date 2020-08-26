@@ -8,6 +8,7 @@
 class ZFlyEmBodyIdColorScheme : public ZFlyEmBodyColorScheme
 {
 public:
+  ZFlyEmBodyIdColorScheme() {}
   // The colorMap maps from each body ID to its color.
   ZFlyEmBodyIdColorScheme(const QHash<uint64_t, QColor> &colorMap);
 
@@ -24,13 +25,21 @@ public:
   void setDefaultColorScheme(std::shared_ptr<ZFlyEmBodyColorScheme> scheme);
 
   bool hasExplicitColor(uint64_t bodyId) const override;
+  bool hasOwnColor(uint64_t bodyId) const;
+
+  bool setColor(uint64_t bodyId, uint32_t color);
+  bool setColor(uint64_t bodyId, const QColor &color);
+  bool removeBody(uint64_t bodyId);
+
+  static int COLOR_CAPACITY;
 
 private:
 //  void updateColorIndex();
 
 private:
-  QHash<uint64_t, QColor> m_colorMap;
-  QHash<uint64_t, int> m_indexMap;
+//  QHash<uint64_t, QColor> m_colorMap;
+  QHash<uint64_t, int> m_bodyToIndex;
+  QHash<uint32_t, int> m_colorToIndex;
   std::shared_ptr<ZFlyEmBodyColorScheme> m_defaultColorScheme;
 };
 

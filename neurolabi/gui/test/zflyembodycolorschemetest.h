@@ -196,49 +196,94 @@ TEST(ZFlyEmRandomBodyColorScheme, Basic)
 
 TEST(ZFlyEmBodyIdColorScheme, Basic)
 {
-  QHash<uint64_t, QColor> colorMap;
-  colorMap[1] = Qt::red;
-  colorMap[3] = Qt::green;
-  colorMap[5] = Qt::blue;
+  {
+    QHash<uint64_t, QColor> colorMap;
+    colorMap[0] = Qt::transparent;
+    colorMap[1] = Qt::red;
+    colorMap[3] = Qt::green;
+    colorMap[5] = Qt::blue;
 
-  ZFlyEmBodyIdColorScheme scheme(colorMap);
-//  colorScheme.printColorTable();
-  ASSERT_EQ(4, scheme.getColorNumber());
+    ZFlyEmBodyIdColorScheme scheme(colorMap);
+    //  colorScheme.printColorTable();
+    ASSERT_EQ(4, scheme.getColorNumber());
 
-  ASSERT_EQ(QColor(255, 0, 0).name().toStdString(),
-            scheme.getBodyColor(1).name().toStdString());
-  ASSERT_EQ(QColor(0, 255, 0).name().toStdString(),
-            scheme.getBodyColor(3).name().toStdString());
-  ASSERT_EQ(QColor(0, 0, 255), scheme.getBodyColor(5));
-  ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(2));
-  ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
+    ASSERT_EQ(QColor(255, 0, 0).name().toStdString(),
+              scheme.getBodyColor(1).name().toStdString());
+    ASSERT_EQ(QColor(0, 255, 0).name().toStdString(),
+              scheme.getBodyColor(3).name().toStdString());
+    ASSERT_EQ(QColor(0, 0, 255), scheme.getBodyColor(5));
+    ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(2));
+    ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
 
-  auto defaultScheme = std::shared_ptr<ZFlyEmBodyColorScheme>(
-        new ZFlyEmRandomBodyColorScheme());
-  scheme.setDefaultColorScheme(defaultScheme);
+    auto defaultScheme = std::shared_ptr<ZFlyEmBodyColorScheme>(
+          new ZFlyEmRandomBodyColorScheme());
+    scheme.setDefaultColorScheme(defaultScheme);
 
-  ASSERT_EQ(QColor(255, 0, 0).name().toStdString(),
-            scheme.getBodyColor(1).name().toStdString());
-  ASSERT_EQ(QColor(0, 255, 0).name().toStdString(),
-            scheme.getBodyColor(3).name().toStdString());
-  ASSERT_EQ(QColor(0, 0, 255), scheme.getBodyColor(5));
-  ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
-  ASSERT_EQ(65535 + 4, scheme.getColorNumber());
-  ASSERT_EQ(6, scheme.getBodyColorIndex(2));
+    ASSERT_EQ(QColor(255, 0, 0).name().toStdString(),
+              scheme.getBodyColor(1).name().toStdString());
+    ASSERT_EQ(QColor(0, 255, 0).name().toStdString(),
+              scheme.getBodyColor(3).name().toStdString());
+    ASSERT_EQ(QColor(0, 0, 255), scheme.getBodyColor(5));
+    ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
+    ASSERT_EQ(65535 + 4, scheme.getColorNumber());
+    ASSERT_EQ(6, scheme.getBodyColorIndex(2));
 
-  ASSERT_EQ(defaultScheme->getBodyColorCode(2), scheme.getBodyColorCode(2));
-  ASSERT_EQ(defaultScheme->getBodyColor(2), scheme.getBodyColor(2));
+    ASSERT_EQ(defaultScheme->getBodyColorCode(2), scheme.getBodyColorCode(2));
+    ASSERT_EQ(defaultScheme->getBodyColor(2), scheme.getBodyColor(2));
 
-  scheme.setDefaultColorScheme(nullptr);
-  ASSERT_EQ(4, scheme.getColorNumber());
+    scheme.setDefaultColorScheme(nullptr);
+    ASSERT_EQ(4, scheme.getColorNumber());
 
-  ASSERT_EQ(QColor(255, 0, 0).name().toStdString(),
-            scheme.getBodyColor(1).name().toStdString());
-  ASSERT_EQ(QColor(0, 255, 0).name().toStdString(),
-            scheme.getBodyColor(3).name().toStdString());
-  ASSERT_EQ(QColor(0, 0, 255), scheme.getBodyColor(5));
-  ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(2));
-  ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
+    ASSERT_EQ(QColor(255, 0, 0).name().toStdString(),
+              scheme.getBodyColor(1).name().toStdString());
+    ASSERT_EQ(QColor(0, 255, 0).name().toStdString(),
+              scheme.getBodyColor(3).name().toStdString());
+    ASSERT_EQ(QColor(0, 0, 255), scheme.getBodyColor(5));
+    ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(2));
+    ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
+
+    ASSERT_EQ(0, scheme.getBodyColorCode(100));
+    scheme.setColor(100, 101);
+    ASSERT_EQ(5, scheme.getColorNumber());
+    ASSERT_EQ(101, scheme.getBodyColorCode(100));
+    scheme.setColor(100, 102);
+    ASSERT_EQ(6, scheme.getColorNumber());
+    ASSERT_EQ(102, scheme.getBodyColorCode(100));
+    scheme.setColor(1000, 101);
+    ASSERT_EQ(6, scheme.getColorNumber());
+    ASSERT_EQ(101, scheme.getBodyColorCode(1000));
+  }
+
+  {
+    ZFlyEmBodyIdColorScheme scheme;
+    for (int i = 0; i < ZFlyEmBodyIdColorScheme::COLOR_CAPACITY; ++i) {
+      scheme.setColor(1, i);
+    }
+    ASSERT_EQ(ZFlyEmBodyIdColorScheme::COLOR_CAPACITY, scheme.getColorNumber());
+    scheme.setColor(2, 100);
+    ASSERT_EQ(ZFlyEmBodyIdColorScheme::COLOR_CAPACITY, scheme.getColorNumber());
+    scheme.setColor(2, ZFlyEmBodyIdColorScheme::COLOR_CAPACITY);
+    ASSERT_EQ(2, scheme.getColorNumber());
+    scheme.setColor(3, 100);
+    ASSERT_EQ(3, scheme.getColorNumber());
+    ASSERT_EQ(ZFlyEmBodyIdColorScheme::COLOR_CAPACITY, scheme.getBodyColorCode(2));
+    ASSERT_EQ(100, scheme.getBodyColorCode(3));
+  }
+
+  {
+    ZFlyEmBodyIdColorScheme scheme;
+    ASSERT_TRUE(scheme.setColor(1, 100));
+    ASSERT_TRUE(scheme.hasOwnColor(1));
+    ASSERT_FALSE(scheme.hasOwnColor(0));
+    ASSERT_FALSE(scheme.setColor(1, 100));
+    ASSERT_TRUE(scheme.setColor(1, 200));
+    ASSERT_TRUE(scheme.setColor(2, 100));
+    ASSERT_TRUE(scheme.hasOwnColor(2));
+    ASSERT_TRUE(scheme.removeBody(1));
+    ASSERT_FALSE(scheme.hasOwnColor(1));
+    ASSERT_FALSE(scheme.removeBody(1));
+    ASSERT_TRUE(scheme.removeBody(2));
+  }
 }
 
 TEST(ZFlyEmNameBodyColorScheme, Basic)

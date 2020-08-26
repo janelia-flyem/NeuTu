@@ -175,12 +175,20 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
 {
   ZFlyEmBodyAnnotation finalAnnotation;
   if (getDvidReader().isReady()) {
+    std::pair<std::vector<uint64_t>, std::vector<QColor>> coloringList;
     for (std::vector<uint64_t>::const_iterator iter = bodyList.begin();
          iter != bodyList.end(); ++iter) {
       uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation =
           FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
-      recordAnnotation(bodyId, annotation);
+      recordBodyAnnotation(bodyId, annotation);
+
+      std::string color = getBodyStatusProtocol().getColorCode(
+            annotation.getStatus());
+      if (color.empty() == false) {
+        coloringList.first.push_back(bodyId);
+        coloringList.second.push_back(QColor(color.c_str()));
+      }
 
       if (!annotation.isEmpty()) {  
         if (finalAnnotation.isEmpty()) {
@@ -193,6 +201,7 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
         }
       }
     }
+    setBodyColor(coloringList.first, coloringList.second);
   }
 
   return finalAnnotation;
@@ -548,7 +557,7 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(uint64_t bodyId)
   m_annotationMap.remove(bodyId);
 }
 
-void ZFlyEmProofDoc::recordAnnotation(
+void ZFlyEmProofDoc::recordBodyAnnotation(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &anno)
 {
   m_annotationMap[bodyId] = anno;
@@ -880,7 +889,11 @@ void ZFlyEmProofDoc::annotateBody(
   }
   if (writer.getStatusCode() == 200) {
     if (getSelectedBodySet(neutu::ELabelSource::ORIGINAL).count(bodyId) > 0) {
-      m_annotationMap[bodyId] = annotation;
+      recordBodyAnnotation(bodyId, annotation);
+      std::string color = getBodyStatusProtocol().getColorCode(
+            annotation.getStatus());
+      setBodyColor(bodyId, color);
+//      m_annotationMap[bodyId] = annotation;
     }
     emit messageGenerated(
           ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
@@ -5125,6 +5138,99 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
   }
 }
 #endif
+
+template<template<class...> class Container>
+void ZFlyEmProofDoc::setBodyColor(
+    const Container<uint64_t> &bodyList, const QColor &color)
+{
+  if (!bodyList.empty()) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+    for (auto slice : sliceList) {
+      for (uint64_t body : bodyList) {
+        slice->setLabelColor(body, color);
+      }
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+template<template<class...> class C1, template<class...> class C2>
+void ZFlyEmProofDoc::setBodyColor(
+    const C1<uint64_t> &bodyList, const C2<QColor> &colorList)
+{
+  if (bodyList.size() == colorList.size() && !bodyList.empty()) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+    for (auto slice : sliceList) {
+      for (size_t i = 0; i < bodyList.size(); ++i) {
+        slice->setLabelColor(bodyList[i], colorList[i]);
+      }
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+template<template<class...> class C1, template<class...> class C2>
+void ZFlyEmProofDoc::setBodyColor(
+    const C1<uint64_t> &bodyList, const C2<std::string> &colorList)
+{
+  if (bodyList.size() == colorList.size() && !bodyList.empty()) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+    for (auto slice : sliceList) {
+      bool changed = false;
+      for (size_t i = 0; i < bodyList.size(); ++i) {
+        changed = slice->setLabelColor(bodyList[i], colorList[i]);
+      }
+      if (changed) {
+        slice->paintBuffer();
+        processObjectModified(slice);
+      }
+    }
+  }
+}
+
+void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const std::string &colorCode)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    if (slice->setLabelColor(bodyId, QString::fromStdString(colorCode))) {
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const QColor &color)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    if (slice->setLabelColor(bodyId, color)) {
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::setSelectedBodyColor(const QColor &color)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    slice->setSelectedLabelColor(color);
+    slice->paintBuffer();
+    processObjectModified(slice);
+  }
+}
+
+void ZFlyEmProofDoc::resetSelectedBodyColor()
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    slice->resetSelectedLabelColor();
+    slice->paintBuffer();
+    processObjectModified(slice);
+  }
+}
 
 void ZFlyEmProofDoc::updateBodyColor(
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating)

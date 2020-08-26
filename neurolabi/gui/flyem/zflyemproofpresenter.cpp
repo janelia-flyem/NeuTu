@@ -2,6 +2,7 @@
 
 #include <QKeyEvent>
 #include <QAction>
+#include <QColorDialog>
 
 #include "logging/zlog.h"
 #include "qt/gui/loghelper.h"
@@ -198,6 +199,12 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_RUN_TIP_DETECTION:
       connect(action, SIGNAL(triggered()), this, SLOT(runTipDetection()));
       break;
+    case ZActionFactory::ACTION_BODY_CHANGE_COLOR:
+      connect(action, SIGNAL(triggered()), this, SLOT(setBodyColor()));
+      break;
+    case ZActionFactory::ACTION_BODY_RESET_COLOR:
+      connect(action, SIGNAL(triggered()), this, SLOT(resetBodyColor()));
+      break;
     default:
       connected = false;
       break;
@@ -226,6 +233,22 @@ void ZFlyEmProofPresenter::refreshData()
   */
 
   emit refreshingData();
+}
+
+void ZFlyEmProofPresenter::setBodyColor()
+{
+//  QColor color = QColorDialog::getColor(Qt::white, buddyView());
+
+  QColorDialog dlg;
+  dlg.setOption(QColorDialog::ShowAlphaChannel, true);
+  if (dlg.exec()) {
+    getCompleteDocument()->setSelectedBodyColor(dlg.currentColor());
+  }
+}
+
+void ZFlyEmProofPresenter::resetBodyColor()
+{
+  getCompleteDocument()->resetSelectedBodyColor();
 }
 
 void ZFlyEmProofPresenter::selectBodyInRoi()

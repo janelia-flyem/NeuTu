@@ -163,6 +163,12 @@ bool ZFlyEmBodyAnnotationProtocal::preservingId(const std::string &status) const
   return getBodyStatus(status).presevingId();
 }
 
+std::string ZFlyEmBodyAnnotationProtocal::getColorCode(
+    const std::string &status) const
+{
+  return getBodyStatus(status).getColorCode();
+}
+
 std::vector<std::vector<uint64_t>> ZFlyEmBodyAnnotationProtocal::getConflictBody(
     const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
 {

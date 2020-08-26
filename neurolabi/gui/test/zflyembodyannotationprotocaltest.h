@@ -62,6 +62,15 @@ const char *json_data =
     "    },"
     "    {"
     "      \"protection\": 0,"
+    "      \"priority\": 52,"
+    "      \"name\": \"Quarantine\","
+    "      \"expert\": false,"
+    "      \"final\": false,"
+    "      \"mergable\": false,"
+    "      \"color\": \"#FF00FF00\""
+    "    },"
+    "    {"
+    "      \"protection\": 0,"
     "      \"priority\": 55,"
     "      \"name\": \"Unimportant\","
     "      \"expert\": false,"
@@ -140,7 +149,7 @@ TEST(ZFlyEmBodyAnnotationProtocal, Basic)
   ZJsonObject obj;
   obj.decode(json_data, true);
   protocol.loadJsonObject(obj);
-  ASSERT_EQ(15, int(protocol.getStatusList().size()));
+  ASSERT_EQ(16, int(protocol.getStatusList().size()));
   ASSERT_FALSE(protocol.isEmpty());
   ASSERT_TRUE(protocol.preservingId("Leaves"));
   ASSERT_FALSE(protocol.preservingId("Orphan"));
@@ -151,6 +160,8 @@ TEST(ZFlyEmBodyAnnotationProtocal, Basic)
   ASSERT_EQ(120, protocol.getStatusRank("Orphan"));
   ASSERT_EQ(9999, protocol.getStatusRank(""));
   ASSERT_EQ("Orphan", protocol.getBodyStatus("Orphan").getName());
+  ASSERT_TRUE(protocol.getColorCode("Orphan").empty());
+  ASSERT_EQ("#FF00FF00", protocol.getColorCode("Quarantine"));
 
   QMap<uint64_t, ZFlyEmBodyAnnotation> annotMap;
 
