@@ -5126,6 +5126,26 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 }
 #endif
 
+void ZFlyEmProofDoc::setSelectedBodyColor(const QColor &color)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    slice->setSelectedLabelColor(color);
+    slice->paintBuffer();
+    processObjectModified(slice);
+  }
+}
+
+void ZFlyEmProofDoc::resetSelectedBodyColor()
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    slice->resetSelectedLabelColor();
+    slice->paintBuffer();
+    processObjectModified(slice);
+  }
+}
+
 void ZFlyEmProofDoc::updateBodyColor(
     ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating)
 {

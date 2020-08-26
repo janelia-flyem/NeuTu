@@ -489,6 +489,8 @@ public:
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
   void updateBodyColor(
       ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating);
+  void setSelectedBodyColor(const QColor &color);
+  void resetSelectedBodyColor();
 
   ZJsonArray getMergeOperation() const;
 

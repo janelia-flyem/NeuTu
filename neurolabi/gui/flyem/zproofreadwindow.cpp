@@ -654,7 +654,7 @@ void ZProofreadWindow::createToolbar()
   m_segSlider = new QSlider(Qt::Horizontal, this);
   m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
   m_segSlider->setRange(0, 255);
-  m_segSlider->setValue(128);
+  m_segSlider->setValue(85);
   m_toolBar->addWidget(m_segSlider);
 
   m_toolBar->addSeparator();

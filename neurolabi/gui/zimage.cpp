@@ -894,7 +894,7 @@ void ZImage::drawLabelField(
   }
 }
 
-void ZImage::drawColorFileTranspose(const uint32_t *data)
+void ZImage::drawColorFieldTranspose(const uint32_t *data)
 {
   int h = height();
   int w = width();

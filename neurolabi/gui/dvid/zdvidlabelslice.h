@@ -28,6 +28,7 @@ class ZArbSliceViewParam;
 class ZTask;
 class ZStackDoc;
 class ZDvidDataSliceTaskFactory;
+class ZFlyEmBodyIdColorScheme;
 
 class ZDvidLabelSlice : public ZStackObject, ZUncopyable
 {
@@ -116,12 +117,18 @@ public:
   QColor getLabelColor(uint64_t label, neutu::ELabelSource labelType) const;
   QColor getLabelColor(int64_t label, neutu::ELabelSource labelType) const;
 
+  void setLabelColor(uint64_t label, const QColor &color);
+  void removeLabelColor(uint64_t label);
+
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
   uint64_t getMappedLabel(uint64_t label) const;
   uint64_t getMappedLabel(
       uint64_t label, neutu::ELabelSource labelType) const;
 
   std::set<uint64_t> getOriginalLabelSet(uint64_t mappedLabel) const;
+
+  void setSelectedLabelColor(const QColor &color);
+  void resetSelectedLabelColor();
 
   uint64_t getHitLabel() const;
   std::set<uint64_t> getHitLabelSet() const;
@@ -230,12 +237,14 @@ private:
 
   bool hasValidPaintBuffer() const;
 
+  std::shared_ptr<ZFlyEmBodyColorScheme> getBaseColorScheme() const;
   void updateColorField();
 
 private:
   ZObject3dScanArray m_objArray;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_defaultColorSheme;
+  ZSharedPointer<ZFlyEmBodyIdColorScheme> m_individualColorScheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
 
   QVector<int> m_rgbTable;

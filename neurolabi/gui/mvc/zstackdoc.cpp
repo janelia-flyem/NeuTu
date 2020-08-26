@@ -10288,7 +10288,7 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
   }
 
   if (signalStack->kind() != GREY) {
-    emitWarning("Only GREY kind is supported.");
+//    emitWarning("Only GREY kind is supported.");
     return nullptr;
   }
 //  TZ_ASSERT(signalStack->kind() == GREY, "Only GREY kind is supported.");
@@ -10952,7 +10952,7 @@ void ZStackDoc::removeRect2dRoi()
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
 
-void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type) const
+void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
 {
   emit messageGenerated(ZWidgetMessage(msg, type,
                                        ZWidgetMessage::TARGET_TEXT_APPENDING |
@@ -10965,7 +10965,7 @@ void ZStackDoc::emitInfo(const QString &msg)
   emitMessage(msg, neutu::EMessageType::INFORMATION);
 }
 
-void ZStackDoc::emitWarning(const QString &msg) const
+void ZStackDoc::emitWarning(const QString &msg)
 {
   emitMessage(msg, neutu::EMessageType::WARNING);
 }

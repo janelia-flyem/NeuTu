@@ -340,6 +340,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_SPLIT_START:
     action = new QAction("Launch Split", parent);
     break;
+  case ACTION_BODY_CHANGE_COLOR:
+    action = new QAction("Change Body Color", parent);
+    break;
+  case ACTION_BODY_RESET_COLOR:
+    action = new QAction("Reset Body Color", parent);
+    break;
   case ACTION_BODY_ANNOTATION:
     action = new QAction("Annotate", parent);
     break;
