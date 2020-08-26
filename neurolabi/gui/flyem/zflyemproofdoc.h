@@ -502,6 +502,8 @@ public:
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
   void updateBodyColor(
       ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating);
+  void setSelectedBodyColor(const QColor &color);
+  void resetSelectedBodyColor();
 
   void syncBodySelection(ZStackObject *host);
   void processLabelSliceHit(ZStackObject *host, ZStackObject::ESelection option);

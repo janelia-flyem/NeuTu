@@ -2592,10 +2592,9 @@ void ZFlyEmProofMvc::diagnose()
   {
     QList<QString> bodyStatusList = getCompleteDocument()->getBodyStatusList();
     emit messageGenerated("Body statuses:");
-    for (const QString &status : bodyStatusList) {
+    for (const QString &status : qAsConst(bodyStatusList)) {
       emit messageGenerated(QString("%1: %2").
-                            arg(status).
-                            arg(getCompleteDocument()->getMergeProject()->
+                            arg(status, getCompleteDocument()->getMergeProject()->
                                 getStatusRank(status.toStdString())));
       if (!getCompleteDocument()->getMergeProject()->isMergableStatus(
             status.toStdString())) {
@@ -3085,6 +3084,13 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
       getCompleteDocument()->removeSelectedAnnotation(
             deselected.begin(), deselected.end());
+
+      //for testing
+      /*
+      for (uint64_t bodyId : selected) {
+        labelSlice->setLabelColor(bodyId, Qt::black);
+      }
+      */
     }
 
     updateViewButton();

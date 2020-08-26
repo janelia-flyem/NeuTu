@@ -33,6 +33,8 @@
 #include "flyem/zflyembodymerger.h"
 #include "flyem/zflyemrandombodycolorscheme.h"
 #include "flyem/zflyemgeneralbodycolorscheme.h"
+#include "flyem/zflyemcompositebodycolorscheme.h"
+#include "flyem/zflyembodyidcolorscheme.h"
 
 //#include "flyem/zdvidlabelslicehighrestask.h"
 
@@ -321,6 +323,14 @@ void ZDvidLabelSlice::paintBufferUnsync()
   if (m_labelArray != NULL && m_paintBuffer != NULL) {
     if ((int) m_labelArray->getElementNumber() ==
         m_paintBuffer->width() * m_paintBuffer->height()) {
+      updateColorField();
+      if (getSliceAxis() == neutu::EAxis::X) {
+        m_paintBuffer->drawColorFieldTranspose(m_colorField.data());
+      } else {
+        m_paintBuffer->drawColorField(m_colorField.data());
+      }
+
+#if 0
       updateRgbTable();
 
       // TODO: Consider a way to use m_customColorScheme without remapId(), because remapId()
@@ -347,6 +357,7 @@ void ZDvidLabelSlice::paintBufferUnsync()
         m_paintBuffer->save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
       }
+#endif
     }
   }
 
@@ -735,9 +746,33 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
   */
 }
 
+std::shared_ptr<ZFlyEmBodyColorScheme>
+ZDvidLabelSlice::getBaseColorScheme() const
+{
+  std::shared_ptr<ZFlyEmBodyColorScheme> baseScheme =
+      m_customColorScheme ? m_customColorScheme : m_defaultColorSheme;
+
+  if (baseScheme == m_defaultColorSheme) {
+    if (m_individualColorScheme) {
+      auto newBaseScheme = std::shared_ptr<ZFlyEmCompositeBodyColorScheme>(
+            new ZFlyEmCompositeBodyColorScheme);
+      newBaseScheme->appendScheme(
+            std::dynamic_pointer_cast<ZFlyEmBodyColorScheme>(
+              m_individualColorScheme));
+      newBaseScheme->appendScheme(baseScheme);
+      baseScheme =
+          std::dynamic_pointer_cast<ZFlyEmBodyColorScheme>(newBaseScheme);
+    }
+  }
+
+  return baseScheme;
+}
+
 QColor ZDvidLabelSlice::getLabelColor(
     uint64_t label, neutu::ELabelSource labelType) const
 {
+  return getBaseColorScheme()->getBodyColor(getMappedLabel(label, labelType));
+  /*
   QColor color;
   if (hasCustomColorMap()) {
     color = getCustomColor(getMappedLabel(label, labelType));
@@ -751,12 +786,29 @@ QColor ZDvidLabelSlice::getLabelColor(
   }
 
   return color;
+  */
 }
 
 QColor ZDvidLabelSlice::getLabelColor(
     int64_t label, neutu::ELabelSource labelType) const
 {
   return getLabelColor((uint64_t) label, labelType);
+}
+
+void ZDvidLabelSlice::setLabelColor(uint64_t label, const QColor &color)
+{
+  if (!m_individualColorScheme) {
+    m_individualColorScheme = std::shared_ptr<ZFlyEmBodyIdColorScheme>(
+          new ZFlyEmBodyIdColorScheme);
+  }
+  m_individualColorScheme->setColor(label, color);
+}
+
+void ZDvidLabelSlice::removeLabelColor(uint64_t label)
+{
+  if (m_individualColorScheme) {
+    m_individualColorScheme->removeBody(label);
+  }
 }
 
 void ZDvidLabelSlice::setCustomColorMap(
@@ -1168,8 +1220,7 @@ void ZDvidLabelSlice::updateColorField()
 
   ZFlyEmGeneralBodyColorScheme scheme;
 
-  std::shared_ptr<ZFlyEmBodyColorScheme> baseScheme =
-      m_customColorScheme ? m_customColorScheme : m_defaultColorSheme;
+  std::shared_ptr<ZFlyEmBodyColorScheme> baseScheme = getBaseColorScheme();
 
   ZFlyEmBodyMerger::TLabelMap bodyMap = getLabelMap();
   bool highlight = hasVisualEffect(
@@ -1180,13 +1231,18 @@ void ZDvidLabelSlice::updateColorField()
         return 0u;
       };
     } else if (bodyMap.isEmpty()) {
+      scheme._hasExplicitColor = [&](uint64_t bodyId) {
+        return m_selectedOriginal.count(bodyId) > 0;
+      };
+
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
-        if (m_selectedOriginal.count(bodyId) > 0) {
-          return baseScheme->getBodyColorCode(bodyId);
-        }
-        return 0u;
+        return baseScheme->getBodyColorCode(bodyId);
       };
     } else {
+      scheme._hasExplicitColor = [](uint64_t) {
+        return true;
+      };
+
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
         if (m_selectedOriginal.count(bodyId) > 0) {
           bodyId = bodyMap.value(bodyId, bodyId);
@@ -1197,6 +1253,10 @@ void ZDvidLabelSlice::updateColorField()
       };
     }
   } else {
+    scheme._hasExplicitColor = [](uint64_t) {
+      return true;
+    };
+
     if (bodyMap.isEmpty() && m_selectedOriginal.empty()) {
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
         return baseScheme->getBodyColorCode(bodyId);
@@ -1480,6 +1540,22 @@ void ZDvidLabelSlice::setMaxSize(
 //    m_currentDataRect.setSize(QSize(0, 0));
 
     update(viewParam);
+  }
+}
+
+void ZDvidLabelSlice::resetSelectedLabelColor()
+{
+  auto bodySet = getSelected(neutu::ELabelSource::MAPPED);
+  for (auto body : bodySet) {
+    removeLabelColor(body);
+  }
+}
+
+void ZDvidLabelSlice::setSelectedLabelColor(const QColor &color)
+{
+  auto bodySet = getSelected(neutu::ELabelSource::MAPPED);
+  for (auto body : bodySet) {
+    setLabelColor(body, color);
   }
 }
 

@@ -2,6 +2,7 @@
 
 #include <QKeyEvent>
 #include <QAction>
+#include <QColorDialog>
 
 #include "logging/zlog.h"
 #include "qt/gui/loghelper.h"
@@ -234,6 +235,12 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_VIEW_AXIS_ARB:
       connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneArb()));
       break;
+    case ZActionFactory::ACTION_BODY_CHANGE_COLOR:
+      connect(action, SIGNAL(triggered()), this, SLOT(setBodyColor()));
+      break;
+    case ZActionFactory::ACTION_BODY_RESET_COLOR:
+      connect(action, SIGNAL(triggered()), this, SLOT(resetBodyColor()));
+      break;
     default:
       connected = false;
       break;
@@ -270,6 +277,22 @@ void ZFlyEmProofPresenter::updateActions()
   getAction(ZActionFactory::ACTION_VIEW_AXIS_X)->setEnabled(!splitting);
   getAction(ZActionFactory::ACTION_VIEW_AXIS_Y)->setEnabled(!splitting);
   getAction(ZActionFactory::ACTION_VIEW_AXIS_ARB)->setEnabled(!splitting);
+}
+
+void ZFlyEmProofPresenter::setBodyColor()
+{
+//  QColor color = QColorDialog::getColor(Qt::white, buddyView());
+
+  QColorDialog dlg;
+  dlg.setOption(QColorDialog::ShowAlphaChannel, true);
+  if (dlg.exec()) {
+    getCompleteDocument()->setSelectedBodyColor(dlg.currentColor());
+  }
+}
+
+void ZFlyEmProofPresenter::resetBodyColor()
+{
+  getCompleteDocument()->resetSelectedBodyColor();
 }
 
 void ZFlyEmProofPresenter::selectBodyInRoi()

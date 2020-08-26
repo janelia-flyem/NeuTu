@@ -142,6 +142,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           doc->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 
       if (!selectedOriginal.empty()) {
+        config.append(ZActionFactory::ACTION_BODY_CHANGE_COLOR);
+        config.append(ZActionFactory::ACTION_BODY_RESET_COLOR);
         if (!doc->getDvidTarget().readOnly()) {
           if (selectedOriginal.size() == 1) {
 

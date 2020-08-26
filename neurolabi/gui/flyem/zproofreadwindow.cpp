@@ -658,7 +658,6 @@ void ZProofreadWindow::createToolbar()
   m_segSlider->setRange(0, 255);
   m_segSlider->setValue(77);
   m_mainToolBar->addWidget(m_segSlider);
-
   m_mainToolBar->addSeparator();
   m_mainToolBar->addAction(m_contrastAction);
   m_mainToolBar->addAction(m_smoothAction);

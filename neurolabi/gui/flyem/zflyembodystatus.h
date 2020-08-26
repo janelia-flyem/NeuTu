@@ -5,7 +5,7 @@
 
 class ZJsonObject;
 
-class   ZFlyEmBodyStatus
+class ZFlyEmBodyStatus
 {
 public:
   ZFlyEmBodyStatus(const std::string &status = "");
