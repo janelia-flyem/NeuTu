@@ -95,18 +95,49 @@ public:
   void addSelection(const InputIterator &begin, const InputIterator &end,
                     neutu::ELabelSource labelType);
 
+  template<template<class...> class Container>
+  void addSelection(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
+
   template <typename InputIterator>
   void setSelection(const InputIterator &begin, const InputIterator &end,
                     neutu::ELabelSource labelType);
+  template<template<class...> class Container>
+  void setSelection(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
 
-
+  /*! xor selection on a group of bodies
+   *
+   * Note that when \a labelType is ORIGINAL, the labels will be mapped to the
+   * final labels and then apply xor selection on the mapped labels in the
+   * MAPPED mode in order to avoid partial selection of a merged body.
+   */
   template <typename InputIterator>
   void xorSelection(const InputIterator &begin, const InputIterator &end,
                     neutu::ELabelSource labelType);
 
+  template<template<class...> class Container>
+  void xorSelection(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
+
   template <typename InputIterator>
   void xorSelectionGroup(const InputIterator &begin, const InputIterator &end,
                          neutu::ELabelSource labelType);
+
+  // The difference between xorSelection and xorSelectionGroup is that
+  // xorSelection updates selection on the input group of bodies one by one
+  // independently, while xorSelectionGroup treat them as whole. In
+  // xorSelectionGroup, if any body in the input is not selected, then the whole
+  // group is treated as unselected, meaning that xor leads to seleting all
+  // the bodies in the group. Only when all the bodies are selected in the group,
+  // xorSelectionGroup deselects all of them. Another difference between them
+  // is how they treat original labels. xorSelection will map every original
+  // label to its final label and operate on the final label to keep the integrity
+  // of body merges, while xorSelectionGroup treats a original label as it is.
+  template<template<class...> class Container>
+  void xorSelectionGroup(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
+
 
   inline const std::set<uint64_t>& getSelectedOriginal() const {
     return m_selectedOriginal;
@@ -313,6 +344,13 @@ void ZDvidLabelSlice::xorSelection(
   }
 }
 
+template<template<class...> class Container>
+void ZDvidLabelSlice::xorSelection(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  xorSelection(bodyList.begin(), bodyList.end(), labelType);
+}
+
 template <typename InputIterator>
 void ZDvidLabelSlice::addSelection(
     const InputIterator &begin, const InputIterator &end,
@@ -330,6 +368,13 @@ void ZDvidLabelSlice::addSelection(
   }
 }
 
+template<template<class...> class Container>
+void ZDvidLabelSlice::addSelection(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  addSelection(bodyList.begin(), bodyList.end(), labelType);
+}
+
 template <typename InputIterator>
 void ZDvidLabelSlice::setSelection(
     const InputIterator &begin, const InputIterator &end,
@@ -338,6 +383,13 @@ void ZDvidLabelSlice::setSelection(
   clearSelection();
   addSelection(begin, end, labelType);
   paintBuffer();
+}
+
+template<template<class...> class Container>
+void ZDvidLabelSlice::setSelection(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  setSelection(bodyList.begin(), bodyList.end(), labelType);
 }
 
 template <typename InputIterator>
@@ -386,5 +438,11 @@ void ZDvidLabelSlice::xorSelectionGroup(
   }
 }
 
+template<template<class...> class Container>
+void ZDvidLabelSlice::xorSelectionGroup(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  xorSelectionGroup(bodyList.begin(), bodyList.end(), labelType);
+}
 
 #endif // ZDVIDLABELSLICE_H

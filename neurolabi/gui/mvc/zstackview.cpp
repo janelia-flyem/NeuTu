@@ -12,6 +12,7 @@
 #include "logging/zbenchtimer.h"
 #include "qt/core/qthelper.h"
 #include "data3d/displayconfig.h"
+#include "geometry/zgeometry.h"
 
 #include "widgets/zimagewidget.h"
 //#include "z3dwindow.h"
@@ -41,7 +42,7 @@
 #include "zpixmap.h"
 #include "zlabeledspinboxwidget.h"
 #include "zstackobjectpainter.h"
-#include "dvid/zdvidlabelslice.h"
+//#include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
 #include "zscrollslicestrategy.h"
 #include "zarbsliceviewparam.h"

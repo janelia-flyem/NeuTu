@@ -102,6 +102,7 @@
 #include "test/zdvidurltest.h"
 #include "test/zflyembodycolorschemetest.h"
 #include "test/zcolorschemetest.h"
+#include "test/zdvidlabelslicetest.h"
 
 #include "bigdata/tests/zitemchunktest.h"
 #include "bigdata/tests/zdatachunktest.h"
