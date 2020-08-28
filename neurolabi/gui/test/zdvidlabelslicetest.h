@@ -135,6 +135,12 @@ TEST(ZDvidLabelSlice, Selection)
 
 TEST(ZDvidLabelSlice, ColorScheme)
 {
+  ZDvidLabelSlice slice;
+
+  ASSERT_NE(0, slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL));
+  ASSERT_EQ(0, slice.getLabelColor(uint64_t(0), neutu::ELabelSource::ORIGINAL));
+
+
 }
 
 #endif
