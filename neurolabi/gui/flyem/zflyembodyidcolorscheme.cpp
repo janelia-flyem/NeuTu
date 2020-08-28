@@ -31,6 +31,11 @@ int ZFlyEmBodyIdColorScheme::getColorNumber() const
   return colorCount;
 }
 
+bool ZFlyEmBodyIdColorScheme::hasOwnColor(uint64_t bodyId) const
+{
+  return m_bodyToIndex.contains(bodyId);
+}
+
 bool ZFlyEmBodyIdColorScheme::hasExplicitColor(uint64_t bodyId) const
 {
   if (m_bodyToIndex.contains(bodyId)) {
@@ -44,18 +49,33 @@ bool ZFlyEmBodyIdColorScheme::hasExplicitColor(uint64_t bodyId) const
   return false;
 }
 
-void ZFlyEmBodyIdColorScheme::removeBody(uint64_t bodyId)
+bool ZFlyEmBodyIdColorScheme::removeBody(uint64_t bodyId)
 {
-  m_bodyToIndex.remove(bodyId);
+  if (m_bodyToIndex.contains(bodyId)) {
+    m_bodyToIndex.remove(bodyId);
+    return true;
+  }
+
+  return false;
 }
 
-void ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, const QColor &color)
+bool ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, const QColor &color)
 {
+  if (hasOwnColor(bodyId) && getBodyColor(bodyId) == color) {
+    return  false;
+  }
+
   setColor(bodyId, GetIntCode(color));
+
+  return true;
 }
 
-void ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, uint32_t color)
+bool ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, uint32_t color)
 {
+  if (hasOwnColor(bodyId) && getBodyColorCode(bodyId) == color) {
+    return  false;
+  }
+
   int index = m_colorToIndex.value(color, m_colorTable.size());
 
   /*
@@ -104,6 +124,8 @@ void ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, uint32_t color)
       }
     }
   }
+
+  return true;
 }
 
 /*

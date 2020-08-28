@@ -245,7 +245,7 @@ public:
 
   void downloadSynapseFunc();
 
-  void recordAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+  void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
   void removeSelectedAnnotation(uint64_t bodyId);
   template <typename InputIterator>
   void removeSelectedAnnotation(
@@ -507,6 +507,17 @@ public:
 
   void syncBodySelection(ZStackObject *host);
   void processLabelSliceHit(ZStackObject *host, ZStackObject::ESelection option);
+
+  void setBodyColor(uint64_t bodyId, const std::string &colorCode);
+  void setBodyColor(uint64_t bodyId, const QColor &color);
+  template<template<class...> class Container>
+  void setBodyColor(const Container<uint64_t> &bodyList, const QColor &color);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColor(
+      const C1<uint64_t> &bodyList, const C2<QColor> &colorList);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColor(
+      const C1<uint64_t> &bodyList, const C2<std::string> &colorList);
 
   ZJsonArray getMergeOperation() const;
 

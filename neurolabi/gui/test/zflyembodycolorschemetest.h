@@ -269,6 +269,21 @@ TEST(ZFlyEmBodyIdColorScheme, Basic)
     ASSERT_EQ(ZFlyEmBodyIdColorScheme::COLOR_CAPACITY, scheme.getBodyColorCode(2));
     ASSERT_EQ(100, scheme.getBodyColorCode(3));
   }
+
+  {
+    ZFlyEmBodyIdColorScheme scheme;
+    ASSERT_TRUE(scheme.setColor(1, 100));
+    ASSERT_TRUE(scheme.hasOwnColor(1));
+    ASSERT_FALSE(scheme.hasOwnColor(0));
+    ASSERT_FALSE(scheme.setColor(1, 100));
+    ASSERT_TRUE(scheme.setColor(1, 200));
+    ASSERT_TRUE(scheme.setColor(2, 100));
+    ASSERT_TRUE(scheme.hasOwnColor(2));
+    ASSERT_TRUE(scheme.removeBody(1));
+    ASSERT_FALSE(scheme.hasOwnColor(1));
+    ASSERT_FALSE(scheme.removeBody(1));
+    ASSERT_TRUE(scheme.removeBody(2));
+  }
 }
 
 TEST(ZFlyEmNameBodyColorScheme, Basic)

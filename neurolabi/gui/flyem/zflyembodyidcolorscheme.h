@@ -25,10 +25,11 @@ public:
   void setDefaultColorScheme(std::shared_ptr<ZFlyEmBodyColorScheme> scheme);
 
   bool hasExplicitColor(uint64_t bodyId) const override;
+  bool hasOwnColor(uint64_t bodyId) const;
 
-  void setColor(uint64_t bodyId, uint32_t color);
-  void setColor(uint64_t bodyId, const QColor &color);
-  void removeBody(uint64_t bodyId);
+  bool setColor(uint64_t bodyId, uint32_t color);
+  bool setColor(uint64_t bodyId, const QColor &color);
+  bool removeBody(uint64_t bodyId);
 
   static int COLOR_CAPACITY;
 

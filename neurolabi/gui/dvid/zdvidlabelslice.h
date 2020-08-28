@@ -124,8 +124,9 @@ public:
   QColor getLabelColor(uint64_t label, neutu::ELabelSource labelType) const;
   QColor getLabelColor(int64_t label, neutu::ELabelSource labelType) const;
 
-  void setLabelColor(uint64_t label, const QColor &color);
-  void removeLabelColor(uint64_t label);
+  bool setLabelColor(uint64_t label, const QColor &color);
+  bool setLabelColor(uint64_t label, const QString &colorCode);
+  bool removeLabelColor(uint64_t label);
 
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
   uint64_t getMappedLabel(uint64_t label) const;
@@ -134,8 +135,8 @@ public:
 
   std::set<uint64_t> getOriginalLabelSet(uint64_t mappedLabel) const;
 
-  void setSelectedLabelColor(const QColor &color);
-  void resetSelectedLabelColor();
+  bool setSelectedLabelColor(const QColor &color);
+  bool resetSelectedLabelColor();
 
   uint64_t getHitLabel() const;
   std::set<uint64_t> getHitLabelSet() const;

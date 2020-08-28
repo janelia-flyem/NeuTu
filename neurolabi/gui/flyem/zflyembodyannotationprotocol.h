@@ -37,6 +37,7 @@ public:
   bool isAdminAccessible(const std::string &status) const;
   bool isExpertStatus(const std::string &status) const;
   bool preservingId(const std::string &status) const;
+  std::string getColorCode(const std::string &status) const;
 //  bool hasConflict(const std::string &s1, const std::string &s2) const;
 
   std::vector<std::vector<uint64_t>> getConflictBody(

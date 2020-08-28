@@ -172,15 +172,14 @@ public slots:
   void tryAddDiagnosticItem(const ZIntPoint &pt);
   void tryAddSegmentationDiagnosticItem(const ZIntPoint &pt);
   void runTipDetection();
+  void setBodyColor();
+  void resetBodyColor();
 
   void setCutPlaneAlongX();
   void setCutPlaneAlongY();
   void setCutPlaneAlongZ();
   //for testing
   void setCutPlaneArb();
-
-  void setBodyColor();
-  void resetBodyColor();
 
   void showSupervoxelList();
 

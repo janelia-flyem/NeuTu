@@ -795,20 +795,33 @@ QColor ZDvidLabelSlice::getLabelColor(
   return getLabelColor((uint64_t) label, labelType);
 }
 
-void ZDvidLabelSlice::setLabelColor(uint64_t label, const QColor &color)
+bool ZDvidLabelSlice::setLabelColor(uint64_t label, const QColor &color)
 {
   if (!m_individualColorScheme) {
     m_individualColorScheme = std::shared_ptr<ZFlyEmBodyIdColorScheme>(
           new ZFlyEmBodyIdColorScheme);
   }
-  m_individualColorScheme->setColor(label, color);
+
+  return m_individualColorScheme->setColor(label, color);
 }
 
-void ZDvidLabelSlice::removeLabelColor(uint64_t label)
+bool ZDvidLabelSlice::setLabelColor(uint64_t label, const QString &colorCode)
 {
-  if (m_individualColorScheme) {
-    m_individualColorScheme->removeBody(label);
+  if (colorCode.isEmpty()) {
+    return removeLabelColor(label);
+  } else {
+    return setLabelColor(label, QColor(colorCode));
   }
+}
+
+bool ZDvidLabelSlice::removeLabelColor(uint64_t label)
+{
+  if (m_individualColorScheme &&
+      m_individualColorScheme->hasOwnColor(label)) {
+    return m_individualColorScheme->removeBody(label);
+  }
+
+  return false;
 }
 
 void ZDvidLabelSlice::setCustomColorMap(
@@ -1543,20 +1556,32 @@ void ZDvidLabelSlice::setMaxSize(
   }
 }
 
-void ZDvidLabelSlice::resetSelectedLabelColor()
+bool ZDvidLabelSlice::resetSelectedLabelColor()
 {
+  bool changed = false;
+
   auto bodySet = getSelected(neutu::ELabelSource::MAPPED);
   for (auto body : bodySet) {
-    removeLabelColor(body);
+    if (removeLabelColor(body)) {
+      changed = true;
+    }
   }
+
+  return changed;
 }
 
-void ZDvidLabelSlice::setSelectedLabelColor(const QColor &color)
+bool ZDvidLabelSlice::setSelectedLabelColor(const QColor &color)
 {
+  bool changed = false;
+
   auto bodySet = getSelected(neutu::ELabelSource::MAPPED);
   for (auto body : bodySet) {
-    setLabelColor(body, color);
+    if (setLabelColor(body, color)) {
+      changed = true;
+    }
   }
+
+  return changed;
 }
 
 std::set<uint64_t> ZDvidLabelSlice::getOriginalLabelSet(
