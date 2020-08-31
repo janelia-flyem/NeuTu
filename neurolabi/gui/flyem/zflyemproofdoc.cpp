@@ -175,7 +175,8 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) cons
 
 template<template<class...> class Container>
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
-    const Container<uint64_t> &bodyList)
+    const Container<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation)
 {
   ZFlyEmBodyAnnotation finalAnnotation;
   if (getDvidReader().isReady()) {
@@ -185,12 +186,17 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
           FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
       recordBodyAnnotation(bodyId, annotation);
 
+      if (processAnnotation) {
+        processAnnotation(bodyId, annotation);
+      }
+      /*
       std::string color = getBodyStatusProtocol().getColorCode(
             annotation.getStatus());
       if (color.empty() == false) {
         coloringList.first.push_back(bodyId);
         coloringList.second.push_back(QColor(color.c_str()));
       }
+      */
 
       if (!annotation.isEmpty()) {  
         if (finalAnnotation.isEmpty()) {
@@ -203,7 +209,7 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
         }
       }
     }
-    setBodyColor(coloringList.first, coloringList.second);
+//    setBodyColor(coloringList.first, coloringList.second);
   }
 
   return finalAnnotation;
@@ -211,11 +217,13 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
 
 template
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::vector>(
-    const std::vector<uint64_t> &bodyList);
+    const std::vector<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
 template
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::set>(
-    const std::set<uint64_t> &bodyList);
+    const std::set<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
 QList<QString> ZFlyEmProofDoc::getAdminBodyStatusList() const
 {
@@ -900,11 +908,13 @@ void ZFlyEmProofDoc::annotateBody(
   if (writer.getStatusCode() == 200) {
     if (getSelectedBodySet(neutu::ELabelSource::ORIGINAL).count(bodyId) > 0) {
       recordBodyAnnotation(bodyId, annotation);
-      std::string color = getBodyStatusProtocol().getColorCode(
-            annotation.getStatus());
-      setBodyColor(bodyId, color);
 //      m_annotationMap[bodyId] = annotation;
     }
+
+    std::string color = getBodyStatusProtocol().getColorCode(
+          annotation.getStatus());
+    setBodyColorFromStatus(bodyId, color);
+
     emit messageGenerated(
           ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
   } else {
@@ -1579,6 +1589,11 @@ void ZFlyEmProofDoc::uploadUserDataConfig()
 const ZFlyEmBodyAnnotationProtocal& ZFlyEmProofDoc::getBodyStatusProtocol() const
 {
   return m_dataConfig.getBodyStatusProtocol();
+}
+
+bool ZFlyEmProofDoc::isMergable(const ZFlyEmBodyAnnotation &annot) const
+{
+  return getBodyStatusProtocol().getBodyStatus(annot.getStatus()).isMergable();
 }
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
@@ -5393,14 +5408,14 @@ void ZFlyEmProofDoc::syncBodySelection(ZStackObject *host)
 }
 
 template<template<class...> class Container>
-void ZFlyEmProofDoc::setBodyColor(
-    const Container<uint64_t> &bodyList, const QColor &color)
+void ZFlyEmProofDoc::setBodyColorT(
+    const Container<uint64_t> &bodyList, const QColor &color, size_t rank)
 {
   if (!bodyList.empty()) {
     QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
     for (auto slice : sliceList) {
       for (uint64_t body : bodyList) {
-        slice->setLabelColor(body, color);
+        slice->setLabelColor(body, color, rank);
       }
       slice->paintBuffer();
       processObjectModified(slice);
@@ -5420,14 +5435,14 @@ void ZFlyEmProofDoc::processLabelSliceHit(
 }
 
 template<template<class...> class C1, template<class...> class C2>
-void ZFlyEmProofDoc::setBodyColor(
-    const C1<uint64_t> &bodyList, const C2<QColor> &colorList)
+void ZFlyEmProofDoc::setBodyColorT(
+    const C1<uint64_t> &bodyList, const C2<QColor> &colorList, size_t rank)
 {
   if (bodyList.size() == colorList.size() && !bodyList.empty()) {
     QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
     for (auto slice : sliceList) {
       for (size_t i = 0; i < bodyList.size(); ++i) {
-        slice->setLabelColor(bodyList[i], colorList[i]);
+        slice->setLabelColor(bodyList[i], colorList[i], rank);
       }
       slice->paintBuffer();
       processObjectModified(slice);
@@ -5436,15 +5451,15 @@ void ZFlyEmProofDoc::setBodyColor(
 }
 
 template<template<class...> class C1, template<class...> class C2>
-void ZFlyEmProofDoc::setBodyColor(
-    const C1<uint64_t> &bodyList, const C2<std::string> &colorList)
+void ZFlyEmProofDoc::setBodyColorT(
+    const C1<uint64_t> &bodyList, const C2<std::string> &colorList, size_t rank)
 {
   if (bodyList.size() == colorList.size() && !bodyList.empty()) {
     QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
     for (auto slice : sliceList) {
       bool changed = false;
       for (size_t i = 0; i < bodyList.size(); ++i) {
-        changed = slice->setLabelColor(bodyList[i], colorList[i]);
+        changed = slice->setLabelColor(bodyList[i], colorList[i], rank);
       }
       if (changed) {
         slice->paintBuffer();
@@ -5454,22 +5469,48 @@ void ZFlyEmProofDoc::setBodyColor(
   }
 }
 
-void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const std::string &colorCode)
+void ZFlyEmProofDoc::setBodyColor(
+  const std::vector<uint64_t> &bodyList,
+  const std::vector<std::string> &colorList)
+{
+  setBodyColorT<std::vector, std::vector>(bodyList, colorList, 0);
+}
+
+void ZFlyEmProofDoc::setBodyColorFromStatus(
+  const std::vector<uint64_t> &bodyList,
+  const std::vector<std::string> &colorList)
+{
+  setBodyColorT<std::vector, std::vector>(bodyList, colorList, 1);
+}
+
+void ZFlyEmProofDoc::setBodyColorR(
+    uint64_t bodyId, const std::string &colorCode, size_t rank)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   for (auto slice : sliceList) {
-    if (slice->setLabelColor(bodyId, QString::fromStdString(colorCode))) {
+    if (slice->setLabelColor(bodyId, QString::fromStdString(colorCode), rank)) {
       slice->paintBuffer();
       processObjectModified(slice);
     }
   }
 }
 
+void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const std::string &colorCode)
+{
+  setBodyColorR(bodyId, colorCode, 0);
+}
+
+void ZFlyEmProofDoc::setBodyColorFromStatus(
+    uint64_t bodyId, const std::string &colorCode)
+{
+  setBodyColorR(bodyId, colorCode, 1);
+}
+
 void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const QColor &color)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   for (auto slice : sliceList) {
-    if (slice->setLabelColor(bodyId, color)) {
+    if (slice->setLabelColor(bodyId, color, 0)) {
       slice->paintBuffer();
       processObjectModified(slice);
     }

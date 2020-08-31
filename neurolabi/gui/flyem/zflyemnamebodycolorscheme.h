@@ -43,7 +43,7 @@ private:
   QHash<uint64_t, int> m_indexMap;
   ZDvidReader m_reader;
   bool m_isMapReady;
-  int m_defaultColor;
+//  int m_defaultColor;
 };
 
 #endif // ZFLYEMNAMEBODYCOLORSCHEME_H

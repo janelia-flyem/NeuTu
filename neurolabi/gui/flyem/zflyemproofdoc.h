@@ -256,7 +256,8 @@ public:
 
   template<template<class...> class Container>
   ZFlyEmBodyAnnotation getFinalAnnotation(
-      const Container<uint64_t> &bodyList);
+      const Container<uint64_t> &bodyList,
+      std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
   /*!
    * \brief Remove unselected bodies from annotation map.
@@ -510,14 +511,15 @@ public:
 
   void setBodyColor(uint64_t bodyId, const std::string &colorCode);
   void setBodyColor(uint64_t bodyId, const QColor &color);
-  template<template<class...> class Container>
-  void setBodyColor(const Container<uint64_t> &bodyList, const QColor &color);
-  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColorFromStatus(uint64_t bodyId, const std::string &colorCode);
+
+
   void setBodyColor(
-      const C1<uint64_t> &bodyList, const C2<QColor> &colorList);
-  template<template<class...> class C1, template<class...> class C2>
-  void setBodyColor(
-      const C1<uint64_t> &bodyList, const C2<std::string> &colorList);
+    const std::vector<uint64_t> &bodyList,
+    const std::vector<std::string> &colorList);
+  void setBodyColorFromStatus(
+    const std::vector<uint64_t> &bodyList,
+    const std::vector<std::string> &colorList);
 
   ZJsonArray getMergeOperation() const;
 
@@ -540,6 +542,7 @@ public:
 
   const ZContrastProtocol& getContrastProtocol() const;
   const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
+  bool isMergable(const ZFlyEmBodyAnnotation &annot) const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
@@ -749,6 +752,18 @@ protected:
 
   bool _loadFile(const QString &filePath) override;
 
+  template<template<class...> class Container>
+  void setBodyColorT(
+      const Container<uint64_t> &bodyList, const QColor &color, size_t rank);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColorT(
+      const C1<uint64_t> &bodyList, const C2<QColor> &colorList, size_t rank);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColorT(
+      const C1<uint64_t> &bodyList, const C2<std::string> &colorList, size_t rank);
+
+  void setBodyColorR(uint64_t bodyId, const std::string &colorCode, size_t rank);
+
 private:
   void connectSignalSlot();
 
@@ -922,11 +937,12 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
 
 extern template
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::vector>(
-    const std::vector<uint64_t> &bodyList);
+    const std::vector<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
 extern template
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::set>(
-    const std::set<uint64_t> &bodyList);
-
+    const std::set<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
 #endif // ZFLYEMPROOFDOC_H

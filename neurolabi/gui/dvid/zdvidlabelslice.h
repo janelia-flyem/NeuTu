@@ -2,13 +2,12 @@
 #define ZDVIDLABELSLICE_H
 
 #include <vector>
+#include <unordered_set>
+#include <memory>
 
 #include <QCache>
 #include <QMutex>
 
-#include <unordered_set>
-
-#include "common/zsharedpointer.h"
 #include "zuncopyable.h"
 #include "neutube.h"
 #include "zstackobject.h"
@@ -155,9 +154,22 @@ public:
   QColor getLabelColor(uint64_t label, neutu::ELabelSource labelType) const;
   QColor getLabelColor(int64_t label, neutu::ELabelSource labelType) const;
 
-  bool setLabelColor(uint64_t label, const QColor &color);
-  bool setLabelColor(uint64_t label, const QString &colorCode);
-  bool removeLabelColor(uint64_t label);
+  bool setLabelColor(uint64_t label, const QColor &color, size_t rank);
+
+  /*!
+   * \brief Set the label color by specifing a string code.
+   *
+   * When the code is non-empty, it is taken as the name of color passed to
+   * QColor directly; otherwise it means no special color for the label and
+   * if it has one, the existing one will be removed.
+   */
+  bool setLabelColor(uint64_t label, const QString &colorCode, size_t rank);
+  bool setLabelColor(uint64_t label, const char *colorCode, size_t rank);
+  bool setLabelColor(uint64_t label, const std::string &colorCode, size_t rank);
+
+  bool removeLabelColor(uint64_t label, size_t rank);
+
+  bool resetLabelColor(size_t rank);
 
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
   uint64_t getMappedLabel(uint64_t label) const;
@@ -198,7 +210,7 @@ public:
   std::set<uint64_t> getRecentSelected(neutu::ELabelSource labelType) const;
   std::set<uint64_t> getRecentDeselected(neutu::ELabelSource labelType) const;
 
-  void setCustomColorMap(const ZSharedPointer<ZFlyEmBodyColorScheme> &colorMap);
+  void setCustomColorMap(const std::shared_ptr<ZFlyEmBodyColorScheme> &colorMap);
   void removeCustomColorMap();
   bool hasCustomColorMap() const;
   void assignColorMap();
@@ -292,6 +304,8 @@ private:
   std::shared_ptr<ZFlyEmBodyColorScheme> getBaseColorScheme() const;
   void updateColorField();
 
+  ZFlyEmBodyIdColorScheme* getIndividualColorScheme(size_t rank) const;
+
 private:
   ZSliceCanvas m_imageCanvas;
   ZImage *m_paintBuffer = nullptr;
@@ -306,9 +320,9 @@ private:
 
   double m_opacity = 0.3;
 
-  ZSharedPointer<ZFlyEmBodyColorScheme> m_defaultColorSheme;
-  ZSharedPointer<ZFlyEmBodyIdColorScheme> m_individualColorScheme;
-  ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
+  std::shared_ptr<ZFlyEmBodyColorScheme> m_defaultColorSheme;
+  std::vector<std::shared_ptr<ZFlyEmBodyIdColorScheme>> m_individualColorScheme;
+  std::shared_ptr<ZFlyEmBodyColorScheme> m_customColorScheme;
 
   std::vector<int> m_rgbTable;
 

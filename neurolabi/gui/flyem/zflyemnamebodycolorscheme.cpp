@@ -18,7 +18,7 @@ ZFlyEmNameBodyColorScheme::ZFlyEmNameBodyColorScheme()
   m_colorMap["MB-DPM"] = QColor(140, 255, 0);
   m_isMapReady = false;
 
-  m_defaultColor = 0;
+//  m_defaultColor = 0;
 
   buildColorTable();
 }
