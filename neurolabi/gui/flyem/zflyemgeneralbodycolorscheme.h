@@ -1,6 +1,8 @@
 #ifndef ZFLYEMGENERALBODYCOLORSCHEME_H
 #define ZFLYEMGENERALBODYCOLORSCHEME_H
 
+#include <functional>
+
 #include "zflyembodycolorscheme.h"
 
 class ZFlyEmGeneralBodyColorScheme : public ZFlyEmBodyColorScheme
