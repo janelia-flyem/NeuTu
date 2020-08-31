@@ -8,6 +8,7 @@
 #include "common/utilities.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyembodymerger.h"
+#include "flyem/zflyembodyidcolorscheme.h"
 
 TEST(ZDvidLabelSlice, Selection)
 {
@@ -137,9 +138,71 @@ TEST(ZDvidLabelSlice, ColorScheme)
 {
   ZDvidLabelSlice slice;
 
-  ASSERT_NE(0, slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL));
-  ASSERT_EQ(0, slice.getLabelColor(uint64_t(0), neutu::ELabelSource::ORIGINAL));
+  ASSERT_NE(QColor(0, 0, 0, 0),
+            slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL));
+  ASSERT_EQ(QColor(0, 0, 0, 0),
+            slice.getLabelColor(uint64_t(0), neutu::ELabelSource::ORIGINAL));
 
+  ASSERT_TRUE(slice.setLabelColor(100, QColor(0, 0, 100, 0), 0));
+  ASSERT_TRUE(slice.setLabelColor(200, "#FFFFFFFF", 0));
+  ASSERT_TRUE(slice.setLabelColor(1, QColor(0, 0, 100, 0), 0));
+  ASSERT_EQ(QColor(0, 0, 100, 0),
+            slice.getLabelColor(uint64_t(100), neutu::ELabelSource::ORIGINAL));
+  ASSERT_EQ(QColor(0, 0, 100, 0),
+            slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL));
+  ASSERT_TRUE(slice.setLabelColor(1, "", 0));
+  ASSERT_NE(QColor(0, 0, 1, 0).name().toStdString(),
+            slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL).name().toStdString());
+
+  slice.resetLabelColor(0);
+
+  auto defaultScheme = new ZFlyEmBodyIdColorScheme;
+  defaultScheme->setColor(1, 1);
+  defaultScheme->setColor(2, 2);
+  defaultScheme->setColor(3, 3);
+
+  slice.setCustomColorMap(
+        std::shared_ptr<ZFlyEmBodyColorScheme>(defaultScheme));
+  ASSERT_EQ(QColor(0, 0, 1, 0),
+            slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL));
+  ASSERT_EQ(QColor(0, 0, 2, 0),
+            slice.getLabelColor(uint64_t(2), neutu::ELabelSource::ORIGINAL));
+  ASSERT_EQ(QColor(0, 0, 3, 0),
+            slice.getLabelColor(uint64_t(3), neutu::ELabelSource::ORIGINAL));
+  ASSERT_EQ(QColor(0, 0, 0, 0),
+            slice.getLabelColor(uint64_t(4), neutu::ELabelSource::ORIGINAL));
+
+
+  ASSERT_TRUE(slice.setLabelColor(100, QColor(0, 0, 100, 0), 0));
+  ASSERT_TRUE(slice.setLabelColor(200, "#FFFFFFFF", 0));
+  ASSERT_TRUE(slice.setLabelColor(1, QColor(0, 0, 100, 0), 0));
+  ASSERT_EQ(QColor(0, 0, 100, 0),
+            slice.getLabelColor(uint64_t(100), neutu::ELabelSource::ORIGINAL));
+  ASSERT_EQ(QColor(0, 0, 100, 0),
+            slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL));
+  ASSERT_TRUE(slice.setLabelColor(1, "", 0));
+  ASSERT_EQ(QColor(0, 0, 1, 0).name().toStdString(),
+            slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL).name().toStdString());
+
+//  slice.addSelection(1, neutu::ELabelSource::ORIGINAL);
+  ZFlyEmBodyMerger *merger = new ZFlyEmBodyMerger;
+  slice.setBodyMerger(merger);
+  merger->pushMap(1, 2);
+  ASSERT_EQ(QColor(0, 0, 2, 0),
+            slice.getLabelColor(uint64_t(1), neutu::ELabelSource::ORIGINAL));
+
+  ASSERT_EQ(QColor(0, 0, 100, 0).name().toStdString(),
+            slice.getLabelColor(uint64_t(100), neutu::ELabelSource::ORIGINAL).name().toStdString());
+  slice.setLabelColor(100, "", 0);
+  ASSERT_NE(QColor(0, 0, 100, 0).name().toStdString(),
+            slice.getLabelColor(uint64_t(100), neutu::ELabelSource::ORIGINAL).name().toStdString());
+
+  slice.setLabelColor(100, QColor(100, 0, 0), 1);
+  ASSERT_NE(QColor(100, 0, 0).name().toStdString(),
+            slice.getLabelColor(uint64_t(100), neutu::ELabelSource::ORIGINAL).name().toStdString());
+  slice.removeCustomColorMap();
+  ASSERT_EQ(QColor(100, 0, 0).name().toStdString(),
+            slice.getLabelColor(uint64_t(100), neutu::ELabelSource::ORIGINAL).name().toStdString());
 
 }
 

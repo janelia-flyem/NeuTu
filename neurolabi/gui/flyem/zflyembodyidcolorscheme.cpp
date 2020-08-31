@@ -2,6 +2,7 @@
 
 #include <unordered_set>
 #include <unordered_map>
+#include <iostream>
 
 int ZFlyEmBodyIdColorScheme::COLOR_CAPACITY = 65535;
 
@@ -24,29 +25,32 @@ ZFlyEmBodyIdColorScheme::~ZFlyEmBodyIdColorScheme()
 int ZFlyEmBodyIdColorScheme::getColorNumber() const
 {
   int colorCount = m_colorTable.size();
+  /*
   if (m_defaultColorScheme) {
     colorCount += m_defaultColorScheme->getColorNumber() - 1;
   }
+  */
 
   return colorCount;
 }
 
+/*
 bool ZFlyEmBodyIdColorScheme::hasOwnColor(uint64_t bodyId) const
 {
   return m_bodyToIndex.contains(bodyId);
 }
+*/
 
 bool ZFlyEmBodyIdColorScheme::hasExplicitColor(uint64_t bodyId) const
 {
-  if (m_bodyToIndex.contains(bodyId)) {
-    return true;
-  }
-
+  return m_bodyToIndex.contains(bodyId);
+  /*
   if (m_defaultColorScheme) {
     return m_defaultColorScheme->hasExplicitColor(bodyId);
   }
+  */
 
-  return false;
+//  return false;
 }
 
 bool ZFlyEmBodyIdColorScheme::removeBody(uint64_t bodyId)
@@ -61,8 +65,8 @@ bool ZFlyEmBodyIdColorScheme::removeBody(uint64_t bodyId)
 
 bool ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, const QColor &color)
 {
-  if (hasOwnColor(bodyId) && getBodyColor(bodyId) == color) {
-    return  false;
+  if (hasExplicitColor(bodyId) && getBodyColor(bodyId) == color) {
+    return false;
   }
 
   setColor(bodyId, GetIntCode(color));
@@ -72,7 +76,7 @@ bool ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, const QColor &color)
 
 bool ZFlyEmBodyIdColorScheme::setColor(uint64_t bodyId, uint32_t color)
 {
-  if (hasOwnColor(bodyId) && getBodyColorCode(bodyId) == color) {
+  if (hasExplicitColor(bodyId) && getBodyColorCode(bodyId) == color) {
     return  false;
   }
 
@@ -148,21 +152,23 @@ QHash<uint64_t, int> ZFlyEmBodyIdColorScheme::getColorIndexMap() const
   return m_bodyToIndex;
 }
 
+/*
 void ZFlyEmBodyIdColorScheme::setDefaultColorScheme(
     std::shared_ptr<ZFlyEmBodyColorScheme> scheme)
 {
   m_defaultColorScheme = scheme;
 }
+*/
 
 uint32_t ZFlyEmBodyIdColorScheme::getBodyColorCode(uint64_t bodyId) const
 {
   if (m_bodyToIndex.contains(bodyId)) {
     return m_colorTable[m_bodyToIndex[bodyId]];
-  } else {
+  }/* else {
     if (m_defaultColorScheme && m_defaultColorScheme->hasExplicitColor(bodyId)) {
       return m_defaultColorScheme->getBodyColorCode(bodyId);
     }
-  }
+  }*/
 
   return m_defaultColor;
 }
@@ -173,12 +179,12 @@ int ZFlyEmBodyIdColorScheme::getBodyColorIndex(uint64_t bodyId) const
 
   if (m_bodyToIndex.contains(bodyId)) {
     index = m_bodyToIndex[bodyId];
-  } else if (m_defaultColorScheme) {
+  }/* else if (m_defaultColorScheme) {
     index = m_defaultColorScheme->getBodyColorIndex(bodyId);
     if (index > 0) { //foreground color
       index += m_colorTable.size();
     }
-  }
+  }*/
 
   return index;
 }
@@ -189,7 +195,22 @@ QColor ZFlyEmBodyIdColorScheme::getBodyColorFromIndex(int index) const
     return m_colorTable[index];
   }
 
-  return m_defaultColorScheme->getBodyColorFromIndex(index - m_colorTable.size());
+  return m_defaultColor;
+//  return m_defaultColorScheme->getBodyColorFromIndex(index - m_colorTable.size());
+}
+
+void ZFlyEmBodyIdColorScheme::print() const
+{
+  std::cout << "ID -> Color: " << std::endl;
+  for (auto iter = m_bodyToIndex.begin(); iter != m_bodyToIndex.end(); ++iter) {
+    std::cout << "  " << iter.key() << " -> "
+              << m_colorTable[iter.value()] << std::endl;
+  }
+}
+
+bool ZFlyEmBodyIdColorScheme::isEmpty() const
+{
+  return m_bodyToIndex.isEmpty();
 }
 
 /*

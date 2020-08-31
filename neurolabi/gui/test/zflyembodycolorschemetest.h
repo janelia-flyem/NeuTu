@@ -215,6 +215,7 @@ TEST(ZFlyEmBodyIdColorScheme, Basic)
     ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(2));
     ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
 
+    /*
     auto defaultScheme = std::shared_ptr<ZFlyEmBodyColorScheme>(
           new ZFlyEmRandomBodyColorScheme());
     scheme.setDefaultColorScheme(defaultScheme);
@@ -232,6 +233,8 @@ TEST(ZFlyEmBodyIdColorScheme, Basic)
     ASSERT_EQ(defaultScheme->getBodyColor(2), scheme.getBodyColor(2));
 
     scheme.setDefaultColorScheme(nullptr);
+    */
+
     ASSERT_EQ(4, scheme.getColorNumber());
 
     ASSERT_EQ(QColor(255, 0, 0).name().toStdString(),
@@ -273,14 +276,14 @@ TEST(ZFlyEmBodyIdColorScheme, Basic)
   {
     ZFlyEmBodyIdColorScheme scheme;
     ASSERT_TRUE(scheme.setColor(1, 100));
-    ASSERT_TRUE(scheme.hasOwnColor(1));
-    ASSERT_FALSE(scheme.hasOwnColor(0));
+    ASSERT_TRUE(scheme.hasExplicitColor(1));
+    ASSERT_FALSE(scheme.hasExplicitColor(0));
     ASSERT_FALSE(scheme.setColor(1, 100));
     ASSERT_TRUE(scheme.setColor(1, 200));
     ASSERT_TRUE(scheme.setColor(2, 100));
-    ASSERT_TRUE(scheme.hasOwnColor(2));
+    ASSERT_TRUE(scheme.hasExplicitColor(2));
     ASSERT_TRUE(scheme.removeBody(1));
-    ASSERT_FALSE(scheme.hasOwnColor(1));
+    ASSERT_FALSE(scheme.hasExplicitColor(1));
     ASSERT_FALSE(scheme.removeBody(1));
     ASSERT_TRUE(scheme.removeBody(2));
   }

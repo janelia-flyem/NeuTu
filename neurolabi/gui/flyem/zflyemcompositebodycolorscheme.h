@@ -22,6 +22,8 @@ public:
 
   int getColorNumber() const override;
 
+  bool isEmpty() const;
+
 private:
   std::vector<std::shared_ptr<ZFlyEmBodyColorScheme>> m_schemeList;
 };

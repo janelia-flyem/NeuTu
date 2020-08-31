@@ -3055,16 +3055,22 @@ void ZFlyEmProofMvc::updateBodyMessage(
 {
   ZWidgetMessage msg("", neutu::EMessageType::INFORMATION,
                      ZWidgetMessage::TARGET_CUSTOM_AREA);
+  /*
   if (annot.isEmpty()) {
     msg.setMessage(QString("%1 is not annotated.").arg(bodyId));
   } else {
     msg.setMessage(annot.toString().c_str());
   }
+  */
 
   if (annot.isEmpty()) {
     msg.setMessage(QString("%1 is not annotated.").arg(bodyId));
   } else {
-    msg.setMessage(annot.toString().c_str());
+    QString str = QString::fromStdString(annot.toString());
+    if (!getCompleteDocument()->isMergable(annot)) {
+      str = "<font color=\"#FF0000\">" + str + "</font>";
+    }
+    msg.setMessage(str);
   }
   emit messageGenerated(msg);
 }
@@ -3084,8 +3090,8 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     return;
   }
 
-  ZDvidLabelSlice *labelSlice =
-      getCompleteDocument()->getActiveLabelSlice(neutu::EAxis::Z);
+  auto doc = getCompleteDocument();
+  ZDvidLabelSlice *labelSlice = doc->getActiveLabelSlice(neutu::EAxis::Z);
   if (labelSlice != NULL){
     if (labelSlice->isSupervoxel()) {
       std::vector<uint64_t> selected =
@@ -3097,8 +3103,18 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
       std::vector<uint64_t> selected =
           labelSlice->getSelector().getSelectedList();
       if (selected.size() > 0) {
+        std::pair<std::vector<uint64_t>, std::vector<std::string>> coloringList;
+
+        auto processAnnotation =
+            [&](uint64_t bodyId, const ZFlyEmBodyAnnotation& annot) {
+          std::string color = doc->getBodyStatusProtocol().getColorCode(
+                annot.getStatus());
+          coloringList.first.push_back(bodyId);
+          coloringList.second.push_back(color);
+        };
         ZFlyEmBodyAnnotation finalAnnotation =
-            getCompleteDocument()->getFinalAnnotation(selected);
+            doc->getFinalAnnotation(selected, processAnnotation);
+        doc->setBodyColorFromStatus(coloringList.first, coloringList.second);
 
         updateBodyMessage(selected.front(), finalAnnotation);
       }

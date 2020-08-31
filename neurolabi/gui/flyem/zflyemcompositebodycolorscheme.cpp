@@ -5,6 +5,11 @@ ZFlyEmCompositeBodyColorScheme::ZFlyEmCompositeBodyColorScheme()
 
 }
 
+bool ZFlyEmCompositeBodyColorScheme::isEmpty() const
+{
+  return m_schemeList.empty();
+}
+
 void ZFlyEmCompositeBodyColorScheme::appendScheme(
     std::shared_ptr<ZFlyEmBodyColorScheme> scheme)
 {
