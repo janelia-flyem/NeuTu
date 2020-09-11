@@ -904,7 +904,7 @@ void ZImage::drawColorFieldTranspose(const uint32_t *data)
     int *line = (int*) scanLine(j);
     dataLine = data + j;
     for (int i = 0; i < w; i++) {
-      *line++ = *data;
+      *line++ = *dataLine;
       dataLine += h;
     }
   }

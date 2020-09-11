@@ -324,6 +324,8 @@
 #include "zsysteminfo.h"
 #include "neulib/core/utilities.h"
 #include "bigdata/zblockgrid.h"
+#include "imgproc/zfilestacksource.h"
+#include "movie/zimageframeshot.h"
 
 #include "flyem/zglobaldvidrepo.h"
 #include "flyem/zflyemarbmvc.h"
@@ -30983,7 +30985,7 @@ void ZTest::test(MainWindow *host)
             << color.blue() << " " << color.alpha() << std::endl;
 #endif
 
-#if 1
+#if 0
   QColor color(Qt::red);
   uint32_t code = 0;
   tic();
@@ -31313,10 +31315,16 @@ void ZTest::test(MainWindow *host)
   delete stack;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
 
+  ZStack *stack = reader->readGrayScale(
+        0, 0, 40896, 1141*32, 1817*32, 1, 5);
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
 
+  delete stack;
+  /*
   for (int k = 18; k < 21; ++k) {
     for (int j = 10; j < 30; ++j) {
       for (int i = 10; i < 30; ++i) {
@@ -31326,6 +31334,7 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
+  */
 
 //  ZStack *stack = reader->readGrayScaleLowtis(12448, 11227, 10240, 10000, 10000, 5);
 //  ZStack *stack = reader->readGrayScaleBlock(0, 0, 40896/64/32, 5);
@@ -31344,6 +31353,57 @@ void ZTest::test(MainWindow *host)
 //  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
 
 //  delete stack;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZStack *stack = reader->readGrayScaleWithBlock(0, 0, 0, 512, 512, 1, 2);
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test2.tif", stack);
+
+  delete stack;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZStack *stack = ZStackFactory::MakeZeroStack(256, 256, 1);
+
+
+#endif
+
+#if 0
+  ZViewProj vp;
+  vp.setCanvasRect(QRect(0, 0, 10000, 10000));
+  vp.setWidgetRect(QRect(0, 0, 1024, 1024));
+  vp.move(5000, 5000, 512, 512);
+  vp.setZoom(0.2, ZViewProj::EReference::CENTER);
+//  vp.setZoomWithFixedPoint(0.1, QPoint(512, 512));
+  qDebug() << vp.getViewPort();
+#endif
+
+#if 0
+  ZFileStackSource source;
+  source.setUrl(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+
+  auto stack = source.getStack(ZIntCuboid(0, 0, 100, 249, 249, 100), 0);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 1
+  ZImageFrameShot fs(1024, 1024);
+  auto source = std::shared_ptr<ZFileStackSource>(new ZFileStackSource);
+  source->setUrl(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  fs.setStackSource(dynamic_pointer_cast<ZStackSource>(source));
+
+  ZViewProj vp;
+  vp.setCanvasRect(QRect(0, 0, 250, 250));
+  vp.setWidgetRect(QRect(0, 0, 1024, 1024));
+  vp.move(125, 125, 512, 512);
+  vp.setZoom(10, ZViewProj::EReference::CENTER);
+
+  qDebug() << vp.getViewPort();
+  QImage image = fs.takeShot(vp.getViewPort(), 100);
+  image.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test2.tif"));
 #endif
 
   std::cout << "Done." << std::endl;

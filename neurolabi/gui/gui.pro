@@ -264,6 +264,7 @@ include(qt/qt.pri)
 include(widgets/widgets.pri)
 include(flyem/flyem.pri)
 include(tracing/tracing.pri)
+include(movie/movie.pri)
 
 # Input
 win32 {
