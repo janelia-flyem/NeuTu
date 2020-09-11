@@ -104,5 +104,6 @@
 #include "test/zflyembodycolorschemetest.h"
 #include "test/zcolorschemetest.h"
 #include "test/zdvidlabelslicetest.h"
+#include "test/zdvidinfotest.h"
 
 #endif // ZTESTALL_H

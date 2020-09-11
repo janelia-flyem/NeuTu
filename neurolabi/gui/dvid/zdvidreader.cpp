@@ -1991,7 +1991,6 @@ ZStack* ZDvidReader::readGrayScaleBlock(
   return stack;
 }
 
-#if 0
 ZStack* ZDvidReader::readGrayScaleBlock(int bx, int by, int bz, int zoom) const
 {
   std::vector<int> blockcoords;
@@ -2003,20 +2002,20 @@ ZStack* ZDvidReader::readGrayScaleBlock(int bx, int by, int bz, int zoom) const
 
   std::vector<libdvid::DVIDCompressedBlock> c_blocks;
   try {
+    ZDvidInfo info = readGrayScaleInfo();
     m_service->get_specificblocks3D(
-          getDvidTarget().getGrayScaleName(), blockcoords, false, c_blocks, zoom);
+          getDvidTarget().getGrayScaleName(zoom),
+          blockcoords, /*gray=*/true, c_blocks, zoom, info.isLz4Compression());
 
     if (c_blocks.size() == 1) {
       libdvid::DVIDCompressedBlock &block = c_blocks[0];
       libdvid::BinaryDataPtr data = block.get_uncompressed_data();
       std::vector<int> offset = block.get_offset();
 
-      ZDvidInfo info = readLabelInfo();
-
       ZIntCuboid box;
-      box.setFirstCorner(offset[0], offset[1], offset[2]);
+      box.setMinCorner(offset[0], offset[1], offset[2]);
       box.setSize(info.getBlockSize());
-      stack = ZStackFactory::MakeZeroStack(box, mylib::UINT64_TYPE);
+      stack = ZStackFactory::MakeZeroStack(box);
       stack->copyValueFrom(data->get_raw(), data->length());
     }
   } catch(libdvid::DVIDException &e) {
@@ -2030,6 +2029,7 @@ ZStack* ZDvidReader::readGrayScaleBlock(int bx, int by, int bz, int zoom) const
   return stack;
 }
 
+#if 0
 std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
     const ZObject3dScan &blockObj, int zoom) const
 {
@@ -3939,6 +3939,11 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
 //        zoom -= 1;
       }
 
+#ifdef _DEBUG_
+      std::cout << "Grayscale: " << width << "x" << height << "@" << offset[0]
+                << ", " << offset[1] << ", " << offset[2] << "; zoom=" << zoom
+                << std::endl;
+#endif
       m_lowtisServiceGray->retrieve_image(
             width, height, offset, (char*) stack->array8(), zoom, centerCut);
 

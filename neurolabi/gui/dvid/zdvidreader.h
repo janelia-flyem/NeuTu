@@ -291,6 +291,8 @@ public:
 
 //  QString readInfo(const QString &dataName) const;
 
+  ZStack* readGrayScaleBlock(int bx, int by, int bz, int zoom) const;
+
   std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth,
       bool ignoringZero = true);

@@ -31302,6 +31302,50 @@ void ZTest::test(MainWindow *host)
   std::cout << s2.toJsonObject().dumpString(2) << std::endl;
 #endif
 
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->readLabelBlock(10, 10, 10, 0);
+
+  ZStack *stack = reader->readGrayScaleBlock(10, 10, 10, 0);
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+
+  delete stack;
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+
+
+  for (int k = 18; k < 21; ++k) {
+    for (int j = 10; j < 30; ++j) {
+      for (int i = 10; i < 30; ++i) {
+        std::cout << i << ", " << j << ", " << k << std::endl;
+        ZStack *stack = reader->readGrayScaleBlock(i, j, k, 5);
+        stack->printInfo();
+      }
+    }
+  }
+
+//  ZStack *stack = reader->readGrayScaleLowtis(12448, 11227, 10240, 10000, 10000, 5);
+//  ZStack *stack = reader->readGrayScaleBlock(0, 0, 40896/64/32, 5);
+  //1441x1817@0, 0, 40896; zoom=5
+//  reader->setGrayCenterCut(0, 0);
+//  reader->readGrayScaleLowtis(
+//        1141*24, 1817*24, 40896, 1141*8, 1817*8, 5);
+
+//  reader->readGrayScaleLowtis(
+//        1141*16, 1817*16, 40896, 1141*8, 1817*8, 5);
+
+//  reader->readGrayScaleLowtis(
+//        1141*16, 1817*16, 40896, 1141*8, 1817*8, 5);
+
+//  ZStackWriter writer;
+//  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+
+//  delete stack;
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

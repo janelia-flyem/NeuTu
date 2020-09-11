@@ -1451,12 +1451,13 @@ void ZFlyEmProofMvc::mergeCoarseBodyWindow()
 void ZFlyEmProofMvc::updateCoarseBodyWindow()
 {
   if (m_coarseBodyWindow != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+//    std::set<uint64_t> bodySet =
+//        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
-      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processBodySelectionChange();
+//      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
   }
 
@@ -1513,12 +1514,13 @@ void ZFlyEmProofMvc::updateMeshWindowDeep()
 void ZFlyEmProofMvc::updateBodyWindow()
 {
   if (m_bodyWindow != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+//    std::set<uint64_t> bodySet =
+//        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
-      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processBodySelectionChange();
+//      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
   }
 }
@@ -1563,12 +1565,13 @@ void ZFlyEmProofMvc::updateCoarseMeshWindow()
 void ZFlyEmProofMvc::updateBodyWindow(Z3DWindow *window)
 {
   if (window != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+//    std::set<uint64_t> bodySet =
+//        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
     if (doc != NULL){
-      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processBodySelectionChange();
+//      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
   }
 }
@@ -1576,14 +1579,15 @@ void ZFlyEmProofMvc::updateBodyWindow(Z3DWindow *window)
 void ZFlyEmProofMvc::updateBodyWindowDeep(Z3DWindow *window)
 {
   if (window != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+//    std::set<uint64_t> bodySet =
+//        getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
     if (doc != NULL){
       doc->beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
       doc->dumpAllBody(false);
-      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+      doc->processBodySelectionChange();
+//      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
       doc->processEventFunc();
       doc->endObjectModifiedMode();
       doc->processObjectModified();
