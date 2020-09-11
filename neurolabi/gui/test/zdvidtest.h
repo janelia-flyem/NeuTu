@@ -19,63 +19,6 @@
 
 #ifdef _USE_GTEST_
 
-TEST(ZDvidTest, ZDvidInfo)
-{
-  ZDvidInfo info;
-  info.print();
-  std::cout << std::endl;
-  /*
-  const char* ZDvidInfo::m_minPointKey = "MinPoint";
-  const char* ZDvidInfo::m_maxPointKey = "MaxPoint";
-  const char* ZDvidInfo::m_blockSizeKey = "BlockSize";
-  const char* ZDvidInfo::m_voxelSizeKey = "VoxelSize";
-  const char* ZDvidInfo::m_blockMinIndexKey = "MinIndex";
-*/
-  info.setFromJsonString("{ "
-                         " \"MinPoint\": [1, 2, 3], "
-                         " \"BlockSize\": [16, 32, 64],"
-                         " \"MaxPoint\": [1000, 2000, 3000],"
-                         " \"MinIndex\": [4, 5, 6],"
-                         " \"MaxIndex\": [1000, 2000, 3000]"
-                         "}");
-  info.print();
-
-  ASSERT_EQ(1, info.getStartCoordinates().getX());
-  ASSERT_EQ(2, info.getStartCoordinates().getY());
-  ASSERT_EQ(3, info.getStartCoordinates().getZ());
-
-  ASSERT_EQ(1000, info.getEndCoordinates().getX());
-  ASSERT_EQ(2000, info.getEndCoordinates().getY());
-  ASSERT_EQ(3000, info.getEndCoordinates().getZ());
-
-  ASSERT_EQ(16, info.getBlockSize().getX());
-  ASSERT_EQ(32, info.getBlockSize().getY());
-  ASSERT_EQ(64, info.getBlockSize().getZ());
-
-  ASSERT_EQ(ZIntPoint(0, 0, 0), info.getBlockIndex(0, 0, 0));
-  ASSERT_EQ(ZIntPoint(-1, -1, -1), info.getBlockIndex(-1, -1, -1));
-  ASSERT_EQ(ZIntPoint(1, 1, 1), info.getBlockIndex(16, 32, 64));
-  ASSERT_EQ(ZIntPoint(-1, -1, -1), info.getBlockIndex(-16, -32, -64));
-  ASSERT_EQ(ZIntPoint(-2, -2, -2), info.getBlockIndex(-17, -33, -65));
-  ASSERT_EQ(ZIntPoint(0, 0, 0), info.getBlockCoord(0, 0, 0));
-  ASSERT_EQ(ZIntPoint(16, 32, 64), info.getBlockCoord(1, 1, 1));
-  ZIntCuboid box = info.getBlockBox(1, 2, 3);
-  ASSERT_EQ(ZIntPoint(16, 64, 192), box.getMinCorner());
-  ASSERT_EQ(16, box.getWidth());
-  ASSERT_EQ(32, box.getHeight());
-  ASSERT_EQ(64, box.getDepth());
-
-  ASSERT_TRUE(info.isValidBlockIndex(ZIntPoint(100, 20, 30)));
-  ASSERT_FALSE(info.isValidBlockIndex(ZIntPoint(100, 20, 3)));
-
-  ZObject3dScan obj;
-  obj.addSegment(-1, -2, -1, 10);
-  ZObject3dScan obj2 = info.getBlockIndex(obj);
-  ASSERT_EQ(2, int(obj2.getVoxelNumber()));
-  ASSERT_TRUE(obj2.contains(-1, -1, -1));
-  ASSERT_TRUE(obj2.contains(0, -1, -1));
-}
-
 TEST(ZDvidTest, Util)
 {
   ASSERT_TRUE(dvid::IsUuidMatched("12345", "123"));
