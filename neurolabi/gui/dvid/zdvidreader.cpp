@@ -2543,6 +2543,13 @@ ZStack* ZDvidReader::readGrayScale(
 #endif
 }
 
+ZStack* ZDvidReader::readGrayScaleWithBlock(const ZIntCuboid &box, int zoom) const
+{
+  return readGrayScaleWithBlock(
+        box.getMinX(), box.getMinY(), box.getMinZ(),
+        box.getWidth(), box.getHeight(), box.getDepth(), zoom);
+}
+
 ZStack* ZDvidReader::readGrayScaleWithBlock(
     int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
@@ -2560,9 +2567,11 @@ ZStack* ZDvidReader::readGrayScaleWithBlock(
     std::vector<int> blockCoords;
     while (iter.hasNext()) {
       ZIntPoint blockIndex = iter.next();
-      blockCoords.push_back(blockIndex.getX());
-      blockCoords.push_back(blockIndex.getY());
-      blockCoords.push_back(blockIndex.getZ());
+      if (info.isValidBlockIndex(blockIndex)) {
+        blockCoords.push_back(blockIndex.getX());
+        blockCoords.push_back(blockIndex.getY());
+        blockCoords.push_back(blockIndex.getZ());
+      }
 
 //      auto substack = std::unique_ptr<ZStack>(
 //            readGrayScaleBlock(

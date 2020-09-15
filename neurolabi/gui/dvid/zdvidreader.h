@@ -274,6 +274,8 @@ public:
 
   ZStack* readGrayScaleWithBlock(
       int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
+
+  ZStack* readGrayScaleWithBlock(const ZIntCuboid &box, int zoom) const;
 #if 0
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;

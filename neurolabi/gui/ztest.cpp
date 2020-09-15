@@ -290,6 +290,7 @@
 #include "dvid/zdvidstackblockfactory.h"
 #include "dvid/zdvidneurontracer.h"
 #include "dvid/zdvidglobal.h"
+#include "dvid/zdvidstacksource.h"
 
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
@@ -326,6 +327,7 @@
 #include "bigdata/zblockgrid.h"
 #include "imgproc/zfilestacksource.h"
 #include "movie/zimageframeshot.h"
+#include "movie/zfileseqmovieframewriter.h"
 
 #include "flyem/zglobaldvidrepo.h"
 #include "flyem/zflyemarbmvc.h"
@@ -31389,21 +31391,156 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
-  ZImageFrameShot fs(1024, 1024);
-  auto source = std::shared_ptr<ZFileStackSource>(new ZFileStackSource);
-  source->setUrl(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidStackSource source;
+  source.setDvidTarget(reader->getDvidTarget());
+
+  auto stack = source.getStack(ZIntCuboid(0, 0, 0, 1023, 1023, 1), 0);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZImageFrameShot fs(800, 800);
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  auto source = std::shared_ptr<ZDvidStackSource>(new ZDvidStackSource);
+  source->setDvidTarget(reader->getDvidTarget().getGrayScaleTarget());
   fs.setStackSource(dynamic_pointer_cast<ZStackSource>(source));
 
-  ZViewProj vp;
-  vp.setCanvasRect(QRect(0, 0, 250, 250));
-  vp.setWidgetRect(QRect(0, 0, 1024, 1024));
-  vp.move(125, 125, 512, 512);
-  vp.setZoom(10, ZViewProj::EReference::CENTER);
+  int cx = 25234;
+  int cy = 20486;
+  int z0 = 17569;
 
-  qDebug() << vp.getViewPort();
-  QImage image = fs.takeShot(vp.getViewPort(), 100);
-  image.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test2.tif"));
+  auto viewport = fs.getViewport(cx, cy, 1024, 1024);
+
+  ZFileseqMovieFrameWriter writer;
+  writer.setPathPrefix(GET_TEST_DATA_DIR + "/tmp/movie2/test_");
+
+  ZStack decor;
+  decor.load(GET_TEST_DATA_DIR + "/tmp/face2.tif");
+
+  ZStack *alpha = decor.clone();
+  uint8_t *alphaArray = alpha->array8();
+  size_t v = alpha->getVoxelNumber();
+  int defaultAlpha = 127;
+  for (size_t i = 0; i < v; ++i) {
+    if (decor.getIntValue(i) > 230) {
+      alphaArray[i] = 0;
+    } else {
+      alphaArray[i] = defaultAlpha;
+    }
+  }
+
+  ZImage di(decor.width(), decor.height());
+  di.setCData(decor.array8(), alphaArray);
+//  di.setData(decor.array8());
+//  di.save((GET_TEST_DATA_DIR + "/tmp/face2.tif").c_str());
+
+  QImage image = fs.takeShot(viewport, z0 + 235);
+  QPainter painter(&image);
+  painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+  painter.drawImage(QPoint(80, 497), di);
+  writer.write(image, 235);
+
+#endif
+
+#if 1
+  ZImageFrameShot fs(800, 800);
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  auto source = std::shared_ptr<ZDvidStackSource>(new ZDvidStackSource);
+  source->setDvidTarget(reader->getDvidTarget().getGrayScaleTarget());
+
+//  auto source = std::shared_ptr<ZFileStackSource>(new ZFileStackSource);
+//  source->setUrl(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  fs.setStackSource(dynamic_pointer_cast<ZStackSource>(source));
+
+//  ZViewProj vp;
+//  vp.setCanvasRect(QRect(0, 0, 34284, 28804));
+//  vp.setWidgetRect(QRect(0, 0, 1024, 1024));
+//  vp.move(25234, 20486, 512, 512);
+//  (25667, 20757, 17569)
+
+  ZFileseqMovieFrameWriter writer;
+  writer.setPathPrefix(GET_TEST_DATA_DIR + "/tmp/movie2/test_");
+  double zoomRatio = 0.01;
+  int i = 0;
+  int cx = 25234;
+  int cy = 20486;
+  int z0 = 17569;
+  QRect viewport = fs.getViewport(cx, cy, zoomRatio);
+  bool skip = true;
+  while (viewport.width() > 1024) {
+//    vp.setZoom(zoomRatio, ZViewProj::EReference::CENTER);
+
+//    vp.print();
+    qDebug() << viewport.center();
+    if (skip) {
+      ++i;
+    } else {
+      QImage image = fs.takeShot(viewport, z0);
+      //  image.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test2.tif"));
+
+      writer.write(image, ++i);
+    }
+    zoomRatio *= 1.1;
+    viewport = fs.getViewport(cx, cy, zoomRatio);
+  }
+
+  viewport = fs.getViewport(cx, cy, 1024, 1024);
+//  vp.setZoom(1.0, ZViewProj::EReference::CENTER);
+
+
+  ZStack decor;
+  decor.load(GET_TEST_DATA_DIR + "/tmp/face.tif");
+  uint8_t *decorArray = decor.array8();
+
+  ZStack *alpha = decor.clone();
+  uint8_t *alphaArray = alpha->array8();
+  size_t v = alpha->getVoxelNumber();
+  for (size_t i = 0; i < v; ++i) {
+    decorArray[i] /= 2;
+  }
+  decor.save(GET_TEST_DATA_DIR + "/tmp/face3.tif");
+
+  QImage di;
+  di.load((GET_TEST_DATA_DIR + "/tmp/face.png").c_str());
+  skip = false;
+  while (i < 720) {
+    std::cout << "Frame " << i << std::endl;
+    int defaultAlpha = 0;
+    if (i > 280 && i < 290) {
+      defaultAlpha = 255 - std::abs(i - 285) * 15;
+    }
+
+    if (defaultAlpha > 0) {
+      QImage image = fs.takeShot(viewport, z0++);
+      /*
+      for (size_t i = 0; i < v; ++i) {
+        if (decorArray[i] > 110) {
+          alphaArray[i] = 0;
+        } else {
+          alphaArray[i] = defaultAlpha;
+        }
+      }
+
+      ZImage di(decor.width(), decor.height());
+      di.setCData(decor.array8(), alphaArray);
+      */
+      QPainter painter(&image);
+      painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+      painter.drawImage(QPoint(80, 497), di);
+      writer.write(image, ++i);
+    } else if (skip) {
+      ++i;
+      ++z0;
+    } else {
+      QImage image = fs.takeShot(viewport, z0++);
+      writer.write(image, ++i);
+    }
+  }
 #endif
 
   std::cout << "Done." << std::endl;

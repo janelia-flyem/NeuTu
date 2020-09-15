@@ -287,6 +287,7 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
     dvid/zdvidglobal.h \
+    dvid/zdvidstacksource.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
@@ -829,6 +830,7 @@ SOURCES += main.cpp \
     dialogs/userfeedbackdialog.cpp \
     dialogs/zsynapsepropertydialog.cpp \
     dvid/zdvidglobal.cpp \
+    dvid/zdvidstacksource.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     protocols/protocolassignment.cpp \

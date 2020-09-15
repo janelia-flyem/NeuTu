@@ -847,6 +847,21 @@ void ZImage::setCData(const uint8_t *data, uint8_t alpha)
   }
 }
 
+void ZImage::setCData(const uint8_t *data, const uint8_t *alpha)
+{
+  int i, j;
+
+  for (j = 0; j < height(); j++) {
+    uchar *line = scanLine(j);
+    for (i = 0; i < width(); i++) {
+      *line++ = *data;
+      *line++ = *data;
+      *line++ = *data++;
+      *line++ = *alpha++;
+    }
+  }
+}
+
 void ZImage::drawColorField(const uint32_t *data)
 {
   int h = height();

@@ -41,6 +41,7 @@ public:
   QRectF getProjRect() const;
   QRect getViewPort() const;
   QPoint getViewPortCenter() const;
+  QRect getUnboundedViewPort() const;
 
   QPoint getWidgetCenter() const;
 
