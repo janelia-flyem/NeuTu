@@ -272,6 +272,10 @@ public:
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
 
+  ZStack* readGrayScaleWithBlock(
+      int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
+
+  ZStack* readGrayScaleWithBlock(const ZIntCuboid &box, int zoom) const;
 #if 0
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -291,7 +295,13 @@ public:
 
 //  QString readInfo(const QString &dataName) const;
 
+  void readGrayScaleBlock(
+      std::vector<int> &blockcoords, int zoom, ZStack *dest) const;
+
   ZStack* readGrayScaleBlock(int bx, int by, int bz, int zoom) const;
+
+  ZStack* readGrayScaleBlock(
+      int bx, int by, int bz, int zoom, const ZDvidInfo &info) const;
 
   std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth,

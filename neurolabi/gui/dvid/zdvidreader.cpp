@@ -1991,7 +1991,49 @@ ZStack* ZDvidReader::readGrayScaleBlock(
   return stack;
 }
 
+void ZDvidReader::readGrayScaleBlock(
+    std::vector<int> &blockcoords, int zoom, ZStack *dest) const
+{
+  if (!blockcoords.empty() && dest) {
+    try {
+      std::vector<libdvid::DVIDCompressedBlock> c_blocks;
+      ZDvidInfo info = readGrayScaleInfo();
+      m_service->get_specificblocks3D(
+            getDvidTarget().getGrayScaleName(zoom),
+            blockcoords, /*gray=*/true, c_blocks, 0, info.isLz4Compression());
+
+      if (!c_blocks.empty()) {
+        auto substack = std::unique_ptr<ZStack>(
+              ZStackFactory::MakeZeroStack(
+                info.getBlockSize().getX(), info.getBlockSize().getY(),
+                info.getBlockSize().getZ()));
+        for (const auto &block : c_blocks) {
+//          libdvid::DVIDCompressedBlock &block = c_blocks[0];
+          libdvid::BinaryDataPtr data = block.get_uncompressed_data();
+          std::vector<int> offset = block.get_offset();
+          substack->setOffset(offset[0], offset[1], offset[2]);
+          substack->copyValueFrom(data->get_raw(), data->length());
+          substack->paste(dest);
+        }
+      }
+    } catch(libdvid::DVIDException &e) {
+      LERROR() << e.what();
+      m_statusCode = e.getStatus();
+    } catch (std::exception &e) {
+      LERROR() << e.what();
+      m_statusCode = 0;
+    }
+  }
+}
+
 ZStack* ZDvidReader::readGrayScaleBlock(int bx, int by, int bz, int zoom) const
+{
+  ZDvidInfo info = readGrayScaleInfo();
+  return readGrayScaleBlock(bx, by, bz, zoom, info);
+}
+
+ZStack* ZDvidReader::readGrayScaleBlock(
+    int bx, int by, int bz, int zoom, const ZDvidInfo &info) const
 {
   std::vector<int> blockcoords;
   blockcoords.push_back(bx);
@@ -2002,10 +2044,9 @@ ZStack* ZDvidReader::readGrayScaleBlock(int bx, int by, int bz, int zoom) const
 
   std::vector<libdvid::DVIDCompressedBlock> c_blocks;
   try {
-    ZDvidInfo info = readGrayScaleInfo();
     m_service->get_specificblocks3D(
           getDvidTarget().getGrayScaleName(zoom),
-          blockcoords, /*gray=*/true, c_blocks, zoom, info.isLz4Compression());
+          blockcoords, /*gray=*/true, c_blocks, 0, info.isLz4Compression());
 
     if (c_blocks.size() == 1) {
       libdvid::DVIDCompressedBlock &block = c_blocks[0];
@@ -2357,11 +2398,17 @@ ZStack* ZDvidReader::readGrayScaleOld(
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
+  if (width <= 0 || height <= 0 || depth <= 0) {
+    return nullptr;
+  }
+
   int zoomRatio = pow(2, zoom);
 
-  return readGrayScale(getDvidTarget().getGrayScaleName(zoom),
-                     x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
-                      width / zoomRatio, height / zoomRatio, depth / zoomRatio);
+  return readGrayScaleWithBlock(
+        /*getDvidTarget().getGrayScaleName(zoom),*/
+        x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
+        width / zoomRatio, height / zoomRatio, std::max(1, depth / zoomRatio),
+        zoom);
 }
 
 ZStack* ZDvidReader::readGrayScale(
@@ -2496,12 +2543,58 @@ ZStack* ZDvidReader::readGrayScale(
 #endif
 }
 
+ZStack* ZDvidReader::readGrayScaleWithBlock(const ZIntCuboid &box, int zoom) const
+{
+  return readGrayScaleWithBlock(
+        box.getMinX(), box.getMinY(), box.getMinZ(),
+        box.getWidth(), box.getHeight(), box.getDepth(), zoom);
+}
+
+ZStack* ZDvidReader::readGrayScaleWithBlock(
+    int x0, int y0, int z0, int width, int height, int depth, int zoom) const
+{
+  ZStack *stack = nullptr;
+
+  ZDvidInfo info = readGrayScaleInfo();
+  ZIntCuboid box;
+  box.setMinCorner(x0, y0, z0);
+  box.setSize(width, height, depth);
+  ZObject3dScan blockObj = info.getBlockIndex(box);
+
+  if (!blockObj.isEmpty()) {
+    stack = ZStackFactory::MakeZeroStack(box);
+    ZObject3dScan::ConstVoxelIterator iter(&blockObj);
+    std::vector<int> blockCoords;
+    while (iter.hasNext()) {
+      ZIntPoint blockIndex = iter.next();
+      if (info.isValidBlockIndex(blockIndex)) {
+        blockCoords.push_back(blockIndex.getX());
+        blockCoords.push_back(blockIndex.getY());
+        blockCoords.push_back(blockIndex.getZ());
+      }
+
+//      auto substack = std::unique_ptr<ZStack>(
+//            readGrayScaleBlock(
+//              blockIndex.getX(), blockIndex.getY(), blockIndex.getZ(), zoom, info));
+//      if (substack) {
+//        substack->paste(stack);
+//      }
+    }
+    readGrayScaleBlock(blockCoords, zoom, stack);
+  }
+
+  return stack;
+  /*
+  return readGrayScale(getDvidTarget().getGrayScaleName(),
+                       x0, y0, z0, width, height, depth);
+                       */
+}
+
 
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth) const
 {
-  return readGrayScale(getDvidTarget().getGrayScaleName(),
-                       x0, y0, z0, width, height, depth);
+  return readGrayScale(x0, y0, z0, width, height, depth, 0);
 }
 
 /*

@@ -502,6 +502,16 @@ QPoint ZViewProj::mapPointBack(const QPointF &p) const
   return QPoint(x, y);
 }
 
+QRect ZViewProj::getUnboundedViewPort() const
+{
+  QRect viewport;
+  viewport.setTopLeft(QPoint(m_x0, m_y0));
+  viewport.setSize(QSize(std::ceil(m_widgetRect.width() / m_zoom),
+                           std::ceil(m_widgetRect.height() / m_zoom)));
+
+  return viewport;
+}
+
 void ZViewProj::update() const
 {
   m_projRegion = QRectF();

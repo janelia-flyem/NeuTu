@@ -266,6 +266,7 @@ include(widgets/widgets.pri)
 include(flyem/flyem.pri)
 include(tracing/tracing.pri)
 include(dialogs/dialogs.pri)
+include(movie/movie.pri)
 
 # Input
 win32 {
@@ -288,6 +289,7 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
     dvid/zdvidglobal.h \
+    dvid/zdvidstacksource.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
@@ -640,6 +642,7 @@ FORMS += mainwindow.ui \
 SOURCES += main.cpp \
     concurrent/zworkerwrapper.cpp \
     dvid/zdvidglobal.cpp \
+    dvid/zdvidstacksource.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     zimage.cpp \
