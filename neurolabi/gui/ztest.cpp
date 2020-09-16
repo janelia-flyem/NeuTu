@@ -31446,7 +31446,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZImageFrameShot fs(800, 800);
 
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
@@ -31541,6 +31541,20 @@ void ZTest::test(MainWindow *host)
       writer.write(image, ++i);
     }
   }
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+  ZDvidStackSource source;
+  source.setDvidTarget(reader->getDvidTarget());
+
+  //1408, 0, 1216
+//  int z0 = 40896 / 64;
+//  for (int z = z0; z < 64; ++z) {
+    auto stack =
+        source.getStack(ZIntCuboid(1047, 0, 1216, 1050, 2, 1217), 5);
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+//  }
 #endif
 
   std::cout << "Done." << std::endl;
