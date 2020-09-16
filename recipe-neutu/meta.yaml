@@ -35,7 +35,7 @@ requirements:
     - libpng  1.6*
     - hdf5    1.10*
     - pango   1.40* # [linux64]
-    - lowtis  0.1.0.post71*
+    - lowtis  0.1.0.post75*
     - cmake
     - ninja 1.7.2*
     - tbb 2019.4*
@@ -61,7 +61,7 @@ requirements:
     - libpng  1.6*
     - hdf5    1.10*
     - pango   1.40* # [linux64]
-    - lowtis  0.1.0.post71*
+    - lowtis  0.1.0.post75*
     - tbb 2019.4*
     - tbb-devel 2019.4*
     - vtk 8.2.*
