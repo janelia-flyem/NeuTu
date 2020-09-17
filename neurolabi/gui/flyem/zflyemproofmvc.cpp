@@ -5372,7 +5372,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     if (ZDialogFactory::Ask(
           "Save Results",
           "Do you want to save the current preview splits?\n"
-          "Please run split again if you do need the curren preview.",
+          "Please run split again if you do not need the curren preview.",
           this)) {
       m_splitProject.uploadSplitList();
     }
