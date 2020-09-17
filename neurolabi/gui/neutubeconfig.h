@@ -521,7 +521,7 @@ private:
 #define GET_CONFIG_DIR (NeutubeConfig::getInstance().getConfigDir())
 #define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
 #define GET_DOC_DIR (NeutubeConfig::getInstance().getApplicatinDir() + "/doc")
-#define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA))
+#define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::TMP_DATA))
 
 #if defined(_QT_GUI_USED_)
 #  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())

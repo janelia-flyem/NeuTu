@@ -7,6 +7,9 @@
 #include <QWidget>
 #include <QUndoStack>
 #include <QMutexLocker>
+#include <QDir>
+
+#include "neulib/core/stringbuilder.h"
 
 #include "zjsondef.h"
 
@@ -1747,6 +1750,21 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
     QVector<uint64_t> updateBodyArray;
     ZObject3dScan *wholeBody = getDocument()->getSparseStackMask();
 
+    //For tmp debugging
+    std::string tmpDirPath =
+        neulib::StringBuilder("/tmp/neutu_split_debug/").append(getBodyId());
+    QDir tmpDirObj(tmpDirPath.c_str());
+    if (tmpDirObj.exists()) {
+      tmpDirObj.removeRecursively();
+    }
+    if (!tmpDirObj.exists()) {
+      if (!tmpDirObj.mkpath(tmpDirPath.c_str())) {
+        emitError(QString::fromStdString(
+                    "Failed to make tmp directory: " + tmpDirPath));
+        tmpDirPath = "";
+      }
+    }
+
     /*
     QVector<size_t> bodySizeList(m_splitList.size());
     for (int i = 0; i < m_splitList.size(); ++i) {
@@ -1755,9 +1773,15 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
     */
 
     foreach (const ZObject3dScan &obj, m_splitList) {
+      wholeBody->save(neulib::StringBuilder(tmpDirPath + "/").
+                      append(getBodyId()).append("_").append(bodyIndex).append(".sobj"));
+
       wholeBody->subtractSliently(obj);
 
       uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
+
+      //tmp debug
+//      newBodyId = 0;
       //    uint64_t newBodyId = writer.writeSplit(obj, getBodyId(), 0);
       ++bodyIndex;
 
@@ -1785,8 +1809,15 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
 
         emitMessage(msg);
       } else {
-        emitError("Warning: Something wrong happened during uploading! "
-                  "Please contact the developer as soon as possible.");
+        if (obj.isEmpty()) {
+          emitError("Warning: Failed to upload an empty split! "
+                    "Please contact the developer as soon as possible.");
+        } else {
+          obj.save(neulib::StringBuilder(tmpDirPath + "/").
+                   append(getBodyId()).append("_s").append(bodyIndex).append(".sobj"));
+          emitError("Warning: Something wrong happened during uploading! "
+                    "Please contact the developer as soon as possible.");
+        }
       }
 
 
