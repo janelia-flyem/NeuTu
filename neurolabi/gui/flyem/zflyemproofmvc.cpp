@@ -5348,12 +5348,14 @@ void ZFlyEmProofMvc::commitCurrentSplit()
           "Do you want to save the current preview splits?\n"
           "Please run split again if you do need the curren preview.",
           this)) {
+      LINFO() << "Uploading existing splits ...";
       m_splitProject.uploadSplitList();
     }
   } else if (requestingSplitResult("Save Results")) {
     const QString threadId = "ZFlyEmBodySplitProject::commitResult";
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();
+      LINFO() << "Uploading splits ...";
       QFuture<void> future =
           QtConcurrent::run(
             &m_splitProject, &ZFlyEmBodySplitProject::commitResult);

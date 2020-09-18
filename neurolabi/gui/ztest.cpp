@@ -31218,7 +31218,7 @@ void ZTest::test(MainWindow *host)
             << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZDvidSynapse s = reader->readSynapse(
         ZIntPoint(1159, 1137, 1023), dvid::EAnnotationLoadMode::PARTNER_RELJSON);
@@ -31227,6 +31227,17 @@ void ZTest::test(MainWindow *host)
   s.updatePartnerProperty(*reader);
   ZDvidSynapse s2 = s;
   std::cout << s2.toJsonObject().dumpString(2) << std::endl;
+#endif
+
+#if 1
+  ZObject3dScan obj1;
+  obj1.load(GET_TEST_DATA_DIR + "/5338118_0.sobj");
+  std::cout << obj1.getVoxelNumber() << std::endl;
+
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/5338118_s1.sobj");
+  std::cout << obj2.getVoxelNumber() << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;

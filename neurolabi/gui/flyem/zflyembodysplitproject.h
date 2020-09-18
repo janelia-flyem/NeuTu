@@ -304,6 +304,7 @@ private:
   void updateBodyDep(
       uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer);
 
+  std::string getTmpDir(bool init = false);
 
 private:
   ZDvidReader m_reader;
