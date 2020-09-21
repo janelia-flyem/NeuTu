@@ -117,6 +117,7 @@ public:
   void emitMessage(const QString &msg, bool appending = true);
   void emitPopoupMessage(const QString &msg);
   void emitError(const QString &msg, bool appending = true);
+  void emitWarn(const QString &msg, bool appending = true);
 
   ZProgressSignal* getProgressSignal() const;
 
@@ -164,6 +165,7 @@ public: //Obsolete functions
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
 
   void waitSplitVis3d();
+  void processSegmentationUpdate(bool invalidatingResult);
 //  void downloadBodyMask();
 
 signals:

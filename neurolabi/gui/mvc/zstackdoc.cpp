@@ -10235,9 +10235,9 @@ void ZStackDoc::runSeededWatershed()
 //  seededWatershed();
 }
 
-void ZStackDoc::notifySegmentationUpdated()
+void ZStackDoc::notifySegmentationUpdated(bool invalidatingSplit)
 {
-  emit segmentationUpdated();
+  emit segmentationUpdated(invalidatingSplit);
 }
 
 const ZStack* ZStackDoc::getLabelFieldUnsync() const

@@ -4730,7 +4730,7 @@ void ZFlyEmProofDoc::runSplitFunc(
     ZObject3dScanArray *result = new ZObject3dScanArray;
 
     container.makeSplitResult(1, result, NULL);
-    ZStackDocAccessor::ConsumeSplitResult(this, result);
+    ZStackDocAccessor::ConsumeSplitResult(this, result, true);
 #if 0
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
