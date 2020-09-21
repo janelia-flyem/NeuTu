@@ -1786,7 +1786,9 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
 {
   if (m_splitList.empty()) {
     emitError("Warning: No splits generated for upload! "
-              "Please contact the developer as soon as possible.");
+              "There might be no segment with a split label in your initial splits. "
+              "It usually means that you need to run the split again. "
+              "Please contact the developer if you think it is caused by a bug.");
     getProgressSignal()->endProgress();
   } else {
     double dp = 0.2 / m_splitList.size();
