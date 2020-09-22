@@ -147,13 +147,20 @@ void ZFlyEmBodySplitProject::clear()
 
 bool ZFlyEmBodySplitProject::hasFinalSplitResult() const
 {
-  return !m_splitList.empty();
+  for (const auto &obj: m_splitList) {
+    if (obj.getLabel() > 1) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void ZFlyEmBodySplitProject::invalidateResult()
 {
   LINFO() << "Invalidate result in split project.";
   m_splitList.clear();
+  m_oldBodyIdList.clear();
 }
 
 void ZFlyEmBodySplitProject::shallowClearDataFrame()
@@ -1150,8 +1157,7 @@ void ZFlyEmBodySplitProject::resetStatusAfterUpload()
     removeAllSeed();
   }
 
-  m_splitList.clear();
-  m_oldBodyIdList.clear();
+  invalidateResult();
 
   getDocument()->setSegmentationReady(false);
 
@@ -1933,8 +1939,7 @@ void ZFlyEmBodySplitProject::makeFinalResult(
     body.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-  m_splitList.clear();
-  m_oldBodyIdList.clear();
+  invalidateResult();
 
   ZObject3dScan mainBody;
 
