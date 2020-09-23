@@ -291,6 +291,7 @@ void ZStackDocAccessor::ParseWatershedContainer(
   }
 }
 
+/*
 void ZStackDocAccessor::UpdateSplitResult(
     ZStackDoc *doc, const QList<ZObject3dScan *> &result)
 {
@@ -302,9 +303,10 @@ void ZStackDocAccessor::UpdateSplitResult(
     ConsumeSplitResult(doc, sa);
   }
 }
+*/
 
 void ZStackDocAccessor::ConsumeSplitResult(
-    ZStackDoc *doc, ZObject3dScanArray *result)
+    ZStackDoc *doc, ZObject3dScanArray *result, bool invalidatingSplit)
 {
   if (doc) {
     doc->getDataBuffer()->addUpdate([=]() {
@@ -321,7 +323,7 @@ void ZStackDocAccessor::ConsumeSplitResult(
 #endif
 
       doc->setSegmentationReady(true);
-      doc->notifySegmentationUpdated();
+      doc->notifySegmentationUpdated(invalidatingSplit);
     });
     doc->getDataBuffer()->deliver();
   }

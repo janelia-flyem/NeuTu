@@ -6,6 +6,8 @@
 #ifndef ZSTACKVIEW_H_
 #define ZSTACKVIEW_H_
 
+#include <atomic>
+
 #include <QImage>
 #include <QWidget>
 #include <QPixmap>
@@ -72,7 +74,7 @@ class ZStackView : public QWidget, ZWorkerWrapper {
   Q_OBJECT
 
 public:
-  explicit ZStackView(ZStackFrame *parent = nullptr);
+  explicit ZStackView(ZStackFrame *parent);
   explicit ZStackView(QWidget *parent = nullptr);
   ~ZStackView() override;
 
@@ -97,6 +99,7 @@ public:
     DIRECT //Update immediately
   };
 
+  int getViewId() const;
 
   bool viewingInfo(neutu::mvc::ViewInfoFlags f) const;
   void setViewInfoFlag(neutu::mvc::ViewInfoFlags f);
@@ -691,6 +694,7 @@ private slots:
   void processTransformChange();
 
 protected:
+  int m_viewId;
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;
@@ -759,6 +763,8 @@ protected:
 
   std::shared_ptr<ZStackViewRecorder> m_recorder;
   ZStackViewRecordDialog *m_recordDlg = nullptr;
+
+  static std::atomic<int> m_nextViewId;
 };
 
 #endif

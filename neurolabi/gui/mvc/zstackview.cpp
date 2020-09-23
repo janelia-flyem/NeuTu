@@ -57,6 +57,7 @@
 #include "zpositionmapper.h"
 #include "utilities.h"
 
+std::atomic<int> ZStackView::m_nextViewId{1};
 
 using namespace std;
 
@@ -96,6 +97,8 @@ ZStackView::~ZStackView()
 
 void ZStackView::init()
 {
+  m_viewId = m_nextViewId++;
+
   setFocusPolicy(Qt::ClickFocus);
   m_depthControl = new ZSlider(true, this);
   m_depthControl->setFocusPolicy(Qt::NoFocus);
@@ -224,6 +227,11 @@ void ZStackView::init()
 
   m_recorder = std::shared_ptr<ZStackViewRecorder>(
         new ZStackViewRecorder);
+}
+
+int ZStackView::getViewId() const
+{
+  return m_viewId;
 }
 
 void ZStackView::addToolButton(QPushButton *button)
@@ -2394,6 +2402,7 @@ void ZStackView::updateObjectBuffer(
     neutu::data3d::DisplayConfig config;
     config.setStyle(buddyPresenter()->objectStyle());
     config.setTransform(canvas->getTransform());
+    config.setViewId(getViewId());
 
     for (ZStackObject *obj : objList) {
       if (obj->display(painter, config)) {

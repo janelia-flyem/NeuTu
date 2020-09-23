@@ -916,7 +916,7 @@ public:
     m_hadSegmentationDownsampled = on;
   }
 
-  void notifySegmentationUpdated();
+  void notifySegmentationUpdated(bool invalidatingSplit);
 
 public:
   void emitInfo(const QString &msg);
@@ -1343,7 +1343,7 @@ signals:
   void stackRangeChanged();
   void sparseStackModified();
   void labelFieldModified();
-  void segmentationUpdated();
+  void segmentationUpdated(bool invalidatingSplit);
   void stackReadDone();
   void stackLoaded();
 //  void punctaModified();

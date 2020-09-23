@@ -122,12 +122,12 @@ LIBS *= -lboost_system -lboost_filesystem
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
-        LIBS *= -llowtis
-#        CONFIG(debug, debug|release) {
-#            LIBS *= -llowtis-g
-#        } else {
-#            LIBS *= -llowtis
-#        }
+#        LIBS *= -llowtis
+        CONFIG(debug, debug|release) {
+            LIBS *= -llowtis-g
+        } else {
+            LIBS *= -llowtis
+        }
     }
 
     !contains(DEFINES, _LIBDVIDCPP_OLD_) {

@@ -77,13 +77,16 @@ public:
   ZModelViewTransform getWorldViewTransform() const;
   ZViewPlaneTransform getViewCanvasTransform() const;
 
+  void setViewId(int id);
+  int getViewId() const;
+
 //  void setCutRect(const ZAffineRect &rect);
 //  void setSliceAxis(neutu::EAxis axis);
 
 private:
   ZModelViewTransform m_transform;
   ViewSpaceAlignedDisplayConfig m_alignedConfig;
-  uint64_t m_viewerId = 0;
+  int m_viewId = 0;
 };
 
 class DisplayConfigBuilder {

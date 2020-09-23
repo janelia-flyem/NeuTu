@@ -69,7 +69,7 @@ ZDvidLabelSlice::~ZDvidLabelSlice()
   delete m_mappedLabelArray;
 }
 
-void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutu::EAxis sliceAxis)
+void ZDvidLabelSlice::init(int maxWidth, int maxHeight, neutu::EAxis sliceAxis)
 {
   setTarget(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
   m_type = GetType();
@@ -86,7 +86,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutu::EAxis sliceAxis
 //  m_maxWidth = maxWidth;
 //  m_maxHeight = maxHeight;
 
-  m_paintBuffer = NULL;
+//  m_paintBuffer = NULL;
 //  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
   m_labelArray = NULL;
   m_mappedLabelArray = NULL;

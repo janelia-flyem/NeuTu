@@ -3362,9 +3362,11 @@ void ZFlyEmProofMvc::testBodyVis()
 void ZFlyEmProofMvc::processObjectModified(const ZStackObjectInfoSet &objSet)
 {
   ZStackMvc::processObjectModified(objSet);
+  /*
   if (objSet.hasDataModified(ZStackObjectRole::ROLE_SEGMENTATION)) {
     m_splitProject.invalidateResult();
   }
+  */
 }
 
 void ZFlyEmProofMvc::testSlot()
@@ -3862,6 +3864,8 @@ void ZFlyEmProofMvc::updateSplitBody()
     ZOUT(LINFO(), 3) << "Updating split body:" << m_splitProject.getBodyId();
     getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
     getCompleteDocument()->deprecateSplitSource();
+    getCompleteDocument()->processObjectModified(
+          getCompleteDocument()->getBodyForSplit());
 
     if (m_coarseBodyWindow != NULL) {
       ZOUT(LINFO(), 3) << "Removing rect roi from coarse body window.";
@@ -5307,8 +5311,32 @@ bool ZFlyEmProofMvc::requestingSplitResult(const QString &title)
    return false;
 }
 
+namespace {
+
+bool has_main_label(const QList<ZStackObject*> &objList)
+{
+  foreach (const ZStackObject *obj, objList) {
+    if (obj->getLabel() == 1) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}
+
 void ZFlyEmProofMvc::previewCurrentSplit()
 {
+  QList<ZStackObject*> objList =
+      getDocument()->getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
+  if (has_main_label(objList) == false) {
+    emit messageGenerated(
+          ZWidgetMessage("Cannot generate preview without a main body. "
+                         "This can happen when you run duplicated preview.",
+                         neutu::EMessageType::WARNING));
+    return;
+  }
+
   if (requestingSplitResult("Preview Results")) {
     const QString threadId = "ZFlyEmBodySplitProject::previewResult";
     if (!m_futureMap.isAlive(threadId)) {

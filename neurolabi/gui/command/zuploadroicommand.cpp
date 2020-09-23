@@ -60,10 +60,15 @@ int ZUploadRoiCommand::run(
     qDebug() << fileList;
     for (const QString &masterFileName : fileList) {
       int extLength = DATA_EXT[masterRoiType].length() + 1;
-      bool hasTifExt = false;
+//      bool hasTifExt = false;
+      QString imgExt;
       if (masterFileName.endsWith(".tif." + DATA_EXT[masterRoiType])) {
         extLength += 4;
-        hasTifExt = true;
+        imgExt = ".tif";
+//        hasTifExt = true;
+      } else if (masterFileName.endsWith(".nrrd." + DATA_EXT[masterRoiType])) {
+        extLength += 5;
+        imgExt = ".nrrd";
       }
       QString roiName = masterFileName.left(
             masterFileName.length() - extLength);
@@ -77,7 +82,7 @@ int ZUploadRoiCommand::run(
 
       if (uploadingMesh) {
         meshFilePath = dir.filePath(
-              roiName + (hasTifExt ? ".tif." : ".") + DATA_EXT[ROI_TYPE_MESH]);
+              roiName + imgExt + "." + DATA_EXT[ROI_TYPE_MESH]);
 #ifdef _DEBUG_
         qDebug() << "Mesh file:" << meshFilePath;
 #endif
@@ -91,7 +96,7 @@ int ZUploadRoiCommand::run(
 
       if (uploadingData) {
         roiFilePath= dir.filePath(
-              roiName + (hasTifExt ? ".tif." : ".") + DATA_EXT[ROI_TYPE_DATA]);
+              roiName + imgExt + "." + DATA_EXT[ROI_TYPE_DATA]);
 #ifdef _DEBUG_
         qDebug() << "Data file:" << roiFilePath;
 #endif

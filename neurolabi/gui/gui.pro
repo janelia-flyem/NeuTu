@@ -583,6 +583,8 @@ HEADERS += mainwindow.h \
     zstackblockfactory.h \
     dvid/zdvidstackblockfactory.h \
     zstackblocksource.h \
+    dvid/zdvidblockstream.h \
+    imgproc/zstackmultiscalewatershed.h \
     protocols/protocolswitcher.h \
     protocols/protocolchooser.h \
     protocols/protocolmetadata.h \
@@ -610,8 +612,6 @@ HEADERS += mainwindow.h \
     protocols/protocoltaskconfig.h \
     protocols/taskfalsesplitreview.h \
     protocols/taskprotocoltaskfactory.h \
-    dvid/zdvidblockstream.h \
-    imgproc/zstackmultiscalewatershed.h \
     protocols/taskmergereview.h \
     main.h \
     dvid/zdvidgraysliceensemble.h \

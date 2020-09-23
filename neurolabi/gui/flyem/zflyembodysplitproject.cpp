@@ -127,11 +127,13 @@ void ZFlyEmBodySplitProject::exit()
   if (m_splitVis3dWindow != NULL) {
     m_splitVis3dWindow->close();
   }
+  invalidateResult();
 //  m_timer->stop();
 }
 
 void ZFlyEmBodySplitProject::clear()
 {
+  m_futureMap.waitForFinished();
   clearQuickResultWindow();
 
   if (m_dataFrame != NULL) {
@@ -145,12 +147,20 @@ void ZFlyEmBodySplitProject::clear()
 
 bool ZFlyEmBodySplitProject::hasFinalSplitResult() const
 {
-  return !m_splitList.empty();
+  for (const auto &obj: m_splitList) {
+    if (obj.getLabel() > 1) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void ZFlyEmBodySplitProject::invalidateResult()
 {
+  LINFO() << "Invalidate result in split project.";
   m_splitList.clear();
+  m_oldBodyIdList.clear();
 }
 
 void ZFlyEmBodySplitProject::shallowClearDataFrame()
@@ -1147,8 +1157,7 @@ void ZFlyEmBodySplitProject::resetStatusAfterUpload()
     removeAllSeed();
   }
 
-  m_splitList.clear();
-  m_oldBodyIdList.clear();
+  invalidateResult();
 
   getDocument()->setSegmentationReady(false);
 
@@ -1176,6 +1185,7 @@ void ZFlyEmBodySplitProject::previewResult()
 
   QList<ZStackObject*> objList =
       getDocument()->getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
+
   std::vector<ZObject3dScan*> objArray;
   foreach (ZStackObject *obj, objList) {
     ZObject3dScan *tmpObj = dynamic_cast<ZObject3dScan*>(obj);
@@ -1200,6 +1210,7 @@ void ZFlyEmBodySplitProject::commitResult()
 {
   getProgressSignal()->startProgress("Saving splits");
 
+  LINFO() << "Saving splits ...";
 //  getProgressSignal()->startProgress(0.8);
 
 //  m_cancelSplitQuick = true;
@@ -1212,15 +1223,19 @@ void ZFlyEmBodySplitProject::commitResult()
           getDocument()->getLabelField(),
           getMinObjSize());
   } else {
+    LINFO() << "Collecting segments ...";
     QList<ZStackObject*> objList =
         getDocument()->getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
     std::vector<ZObject3dScan*> objArray;
+    std::string segInfo = std::to_string(objList.size()) + " segments: ";
     foreach (ZStackObject *obj, objList) {
       ZObject3dScan *tmpObj = dynamic_cast<ZObject3dScan*>(obj);
       if (tmpObj != NULL) {
         objArray.push_back(tmpObj);
+        segInfo += std::to_string(tmpObj->getVoxelNumber()) + " voxels; ";
       }
     }
+    LINFO() << segInfo;
     commitResultFunc(
           getDocument()->getSparseStackMask(), objArray,
           getMinObjSize(), getDocument()->hadSegmentationDownsampled());
@@ -1231,6 +1246,10 @@ static void prepare_body_upload(const ZObject3dScan &obj,
                               QVector<ZObject3dScan> &objList,
                               QList<uint64_t> &oldBodyIdList, uint64_t label)
 {
+  if (NeutubeConfig::GetVerboseLevel() >= 3) {
+    LINFO() << "To split:" << obj.getVoxelNumber() << "voxels with label"
+          << obj.getLabel() << "for old label" << label;
+  }
   objList.append(obj);
   oldBodyIdList.append(label);
 }
@@ -1297,6 +1316,13 @@ void ZFlyEmBodySplitProject::processIsolation(
     QVector<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
     const ZObject3dScan *obj, size_t minIsolationSize)
 {
+  if (NeutubeConfig::GetVerboseLevel() >= 3) {
+    LINFO() << "Processing isolation:" << "currentBody:"
+            << currentBody.getVoxelNumber()
+            << "#splitList:" << splitList.size()
+            << "#oldBodyIdList:"<< oldBodyIdList.size();
+  }
+
   std::vector<ZObject3dScan> objArray =
       currentBody.getConnectedComponent(ZObject3dScan::ACTION_NONE);
   if (objArray.empty()) {
@@ -1309,12 +1335,17 @@ void ZFlyEmBodySplitProject::processIsolation(
     if (subobj.getVoxelNumber() < minIsolationSize &&
         currentBody.getVoxelNumber() / subobj.getVoxelNumber() > 10) {
       if (body->isAdjacentTo(subobj)) {
+        if (NeutubeConfig::GetVerboseLevel() >= 3) {
+          LINFO() << "Adopted:" << subobj.getVoxelNumber()
+                  << " voxels with label" << subobj.getLabel();
+        }
         body->concat(subobj);
         isAdopted = true;
       }
     }
 
     if (!isAdopted) {
+      ZOUT(LINFO(), 3) << "Not adopted";
       prepare_body_upload(
             subobj, splitList, oldBodyIdList, obj->getLabel());
     }
@@ -1431,6 +1462,7 @@ void ZFlyEmBodySplitProject::prepareSplitList(
     double dp
     )
 {
+  LINFO() << "Preparing split list ...";
   for (std::vector<ZObject3dScan*>::const_iterator iter = objArray.begin();
        iter != objArray.end(); ++iter) {
     const ZObject3dScan *obj = *iter;
@@ -1442,6 +1474,13 @@ void ZFlyEmBodySplitProject::prepareSplitList(
        * currentBody is the one to split; body becomes the remaining part */
       ZObject3dScan currentBody = body.subtract(*obj);
       currentBody.setLabel(obj->getLabel());
+
+      if (NeutubeConfig::GetVerboseLevel() >= 3) {
+        LINFO() << "Body subtracted:" << "Remaining size:"
+                << body.getVoxelNumber() << "; Leaving:"
+                << obj->getVoxelNumber()
+                << " voxels with label "<< obj->getLabel();
+      }
 
       if (currentBody.isEmpty()) {
         emitError("Warning: Empty split detected.");
@@ -1456,6 +1495,9 @@ void ZFlyEmBodySplitProject::prepareSplitList(
         }
       }
     } else {
+      if (NeutubeConfig::GetVerboseLevel() >= 3) {
+        LINFO() << "Back to main body:" << obj->getVoxelNumber() << "voxels";
+      }
       mainBody.concat(*obj);
     }
 //      delete obj;
@@ -1468,8 +1510,17 @@ void ZFlyEmBodySplitProject::regroupSplit(
     ZObject3dScan &body, const ZObject3dScan &mainBody,
     ZObject3dScan &smallBodyGroup, size_t minObjSize)
 {
+  if (mainBody.isEmpty()) {
+    emitWarn("WARNING: Failed to regroup the split without a main body. "
+             "If you think there is something unexpected with the split, "
+             "please contact the developer.");
+    return;
+  }
+
   std::vector<ZObject3dScan> objArray =
       body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
+
+  LINFO() << objArray.size() << "components found for regrouping.";
 
 #ifdef _DEBUG_2
   body.save(GET_TEST_DATA_DIR + "/test2.sobj");
@@ -1525,13 +1576,24 @@ void ZFlyEmBodySplitProject::regroupSplit(
 
     if (connectedIndices.empty()) {
       if (obj.getVoxelNumber() < minObjSize) {
+        if (NeutubeConfig::GetVerboseLevel() <= 3)  {
+          LINFO() << "To smallBodyGroup:" << obj.getVoxelNumber() << "voxels";
+        }
         smallBodyGroup.concat(obj);
       }
     } else {
+      LINFO() << "Merging splits ...";
       ZObject3dScan &split = m_splitList[connectedIndices.front()];
+      if (NeutubeConfig::GetVerboseLevel() <= 3)  {
+        LINFO() << obj.getVoxelNumber() << "->" << split.getLabel();
+      }
       split.concat(obj);
       for (size_t i = 1; i < connectedIndices.size(); ++i) {
         int splitIndex = connectedIndices[i];
+        if (NeutubeConfig::GetVerboseLevel() <= 3)  {
+          LINFO() << m_splitList[splitIndex].getVoxelNumber() << "->"
+                  << split.getLabel();
+        }
         split.concat(m_splitList[splitIndex]);
         isValid[size_t(splitIndex)] = false;
       }
@@ -1664,7 +1726,7 @@ void ZFlyEmBodySplitProject::previewSplitList()
     result->append(obj);
   }
 
-  ZStackDocAccessor::ConsumeSplitResult(m_doc.get(), result);
+  ZStackDocAccessor::ConsumeSplitResult(m_doc.get(), result, false);
 
   getProgressSignal()->endProgress();
 }
@@ -1730,7 +1792,9 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
 {
   if (m_splitList.empty()) {
     emitError("Warning: No splits generated for upload! "
-              "Please contact the developer as soon as possible.");
+              "There might be no segment with a split label in your initial splits. "
+              "It usually means that you need to run the split again. "
+              "Please contact the developer if you think it is caused by a bug.");
     getProgressSignal()->endProgress();
   } else {
     double dp = 0.2 / m_splitList.size();
@@ -1746,6 +1810,10 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
 
     QVector<uint64_t> updateBodyArray;
     ZObject3dScan *wholeBody = getDocument()->getSparseStackMask();
+
+    if (NeutubeConfig::GetVerboseLevel() >= 3) {
+      LINFO() << "Whole body size" <<  wholeBody->getVoxelNumber();
+    }
 
     /*
     QVector<size_t> bodySizeList(m_splitList.size());
@@ -1764,6 +1832,9 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
       uint64_t oldBodyId = m_oldBodyIdList[bodyIndex - 1];
       QString msg;
       if (newBodyId > 0) {
+        if (NeutubeConfig::GetVerboseLevel() >= 3) {
+          LINFO() << "obj size:" << obj.getVoxelNumber();
+        }
         size_t voxelNumber = obj.getVoxelNumber();
         if (oldBodyId > 0) {
           msg = QString("Label %1 uploaded as %2 (%3 voxels).").
@@ -1856,14 +1927,19 @@ void ZFlyEmBodySplitProject::makeFinalResult(
   ZObject3dScan smallBodyGroup;
   processSmallBodyGroup(&body, minObjSize, &smallBodyGroup);
 
+  if (NeutubeConfig::GetVerboseLevel() >= 3) {
+    LINFO() << "Small body group processed, current whole body size: "
+            << body.getVoxelNumber() << "; small body group size: "
+            << smallBodyGroup.getVoxelNumber();
+  }
+
   progress(0.1);
 
 #ifdef _DEBUG_2
     body.save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-  m_splitList.clear();
-  m_oldBodyIdList.clear();
+  invalidateResult();
 
   ZObject3dScan mainBody;
 
@@ -1895,6 +1971,12 @@ void ZFlyEmBodySplitProject::makeFinalResult(
 
   if (!body.isEmpty() && m_runningCca /*&& minObjSize > 0*/) { //Check isolated objects after split
     regroupSplit(body, mainBody, smallBodyGroup, minObjSize);
+    if (NeutubeConfig::GetVerboseLevel() >= 3) {
+      LINFO() << "After regrouping:";
+      for (const auto &obj : m_splitList) {
+        LINFO() << " " << obj.getLabel() << ":" << obj.getVoxelNumber() << "voxels";
+      }
+    }
   }
 
   if (!smallBodyGroup.isEmpty()) {
@@ -2352,6 +2434,7 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
       }
     }
 
+    bool updated = false;
     for (QSet<ZDocPlayer*>::iterator iter = newSeedSet.begin();
          iter != newSeedSet.end(); ++iter) {
       ZDocPlayer *seed = *iter;
@@ -2383,6 +2466,7 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
             splitObj->setColor(ZStroke2d::GetLabelColor(label));
           }
           getDocument()->bufferObjectModified(splitObj);
+          updated = true;
         }
         getDocument()->bufferObjectModified(
               splitObj, ZStackObjectInfo::STATE_COLOR_CHANGED);
@@ -2393,9 +2477,13 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
     if (labelField) {
       labelField->swapValue(1, label);
       getDocument()->notifyStackModified(false);
+      updated = true;
     }
 
     getDocument()->processObjectModified();
+    if (updated) {
+      getDocument()->notifySegmentationUpdated(true);
+    }
 
     /*
     if (m_dataFrame != NULL) {
@@ -3051,14 +3139,24 @@ ZSharedPointer<ZStackDoc> ZFlyEmBodySplitProject::getSharedDocument() const
   return m_doc;
 }
 
+void ZFlyEmBodySplitProject::processSegmentationUpdate(bool invalidatingResult)
+{
+  newSplitVis3d();
+  if (invalidatingResult) {
+    invalidateResult();
+  }
+}
+
 void ZFlyEmBodySplitProject::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
   if (m_doc != doc) {
-    disconnect(m_doc.get(), SIGNAL(segmentationUpdated()),
-               this, SLOT(newSplitVis3d()));
+    if (m_doc) {
+      disconnect(m_doc.get(), &ZStackDoc::segmentationUpdated,
+                 this, &ZFlyEmBodySplitProject::processSegmentationUpdate);
+    }
     m_doc = doc;
-    connect(m_doc.get(), SIGNAL(segmentationUpdated()),
-            this, SLOT(newSplitVis3d()));
+    connect(m_doc.get(), &ZStackDoc::segmentationUpdated,
+            this, &ZFlyEmBodySplitProject::processSegmentationUpdate);
   }
 }
 
@@ -3147,6 +3245,19 @@ void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
         ZWidgetMessage(msg, neutu::EMessageType::ERROR,
                        target | ZWidgetMessage::TARGET_KAFKA));
 }
+
+void ZFlyEmBodySplitProject::emitWarn(const QString &msg, bool appending)
+{
+  ZWidgetMessage::ETarget target = ZWidgetMessage::TARGET_TEXT;
+  if (appending) {
+    target = ZWidgetMessage::TARGET_TEXT_APPENDING;
+  }
+
+  emit messageGenerated(
+        ZWidgetMessage(msg, neutu::EMessageType::WARNING,
+                       target | ZWidgetMessage::TARGET_KAFKA));
+}
+
 
 void ZFlyEmBodySplitProject::update3DViewPlane()
 {

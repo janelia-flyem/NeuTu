@@ -165,6 +165,16 @@ void neutu::data3d::DisplayConfig::setCutPlane(
   m_transform.setCutPlane(sliceAxis, cutDepth);
 }
 
+int neutu::data3d::DisplayConfig::getViewId() const
+{
+  return m_viewId;
+}
+
+void neutu::data3d::DisplayConfig::setViewId(int id)
+{
+  m_viewId = id;
+}
+
 ZModelViewTransform neutu::data3d::DisplayConfig::getWorldViewTransform() const
 {
   return m_transform;
