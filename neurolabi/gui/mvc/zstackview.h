@@ -215,7 +215,7 @@ public:
    */
   void prepareDocument();
 
-  virtual void resizeEvent(QResizeEvent *event) override;
+//  virtual void resizeEvent(QResizeEvent *event) override;
   virtual void showEvent(QShowEvent *event) override;
 
   /*!

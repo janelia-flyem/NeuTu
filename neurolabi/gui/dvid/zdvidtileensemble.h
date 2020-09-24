@@ -34,7 +34,7 @@ public:
   bool isEmpty() const;
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const {
     return false;
   }
   /*

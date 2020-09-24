@@ -114,6 +114,9 @@ public:
 
   ZSliceViewTransform getSliceViewTransform() const;
 
+  void setViewId(int id);
+  int getViewId() const;
+
 private:
 //  void init(neutu::ECoordinateSystem coordSys);
 
@@ -135,6 +138,7 @@ private:
 
 private:
   ZSliceViewTransform m_transform;
+  int m_viewId = 0;
 //  neutu::View::EExploreAction m_action =
 //      neutu::View::EExploreAction::EXPLORE_UNKNOWN;
 

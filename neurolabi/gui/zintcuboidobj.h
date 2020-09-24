@@ -10,7 +10,7 @@ public:
   ZIntCuboidObj();
 
 public:
-  bool display(QPainter *painter, const DisplayConfig &config) const override {
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
     return false;
   }
   /*

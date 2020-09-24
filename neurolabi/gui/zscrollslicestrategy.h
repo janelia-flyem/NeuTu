@@ -14,6 +14,8 @@ public:
     m_view = view;
   }
 
+  int getViewId() const;
+
   void setRange(int minSlice, int maxSlice);
 
   virtual int scroll(int slice, int step) const;

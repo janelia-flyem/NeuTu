@@ -22,7 +22,7 @@ public:
 
 public:
   virtual const std::string& className() const {static std::string name("ZSegmentationNodeWrapper");return name;}
-  bool display(QPainter *painter, const DisplayConfig &config) const override {
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
     return false;
   }
   /*

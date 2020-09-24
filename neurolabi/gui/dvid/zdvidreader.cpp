@@ -116,7 +116,8 @@ bool ZDvidReader::startService()
   try {
     m_service = dvid::MakeDvidNodeService(getDvidTarget());
     m_connection = dvid::MakeDvidConnection(getDvidTarget().getRootUrl());
-    m_bufferReader.setService(getDvidTarget());
+    m_bufferReader.setService(m_service);
+//    m_bufferReader.setService(getDvidTarget());
   } catch (std::exception &e) {
     m_service.reset();
     m_errorMsg = e.what();

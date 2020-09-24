@@ -2900,6 +2900,7 @@ bool ZStackPresenter::addActiveDecorationAsSwc()
     }
   });
 
+  return succ;
   /*
   ZSwcTree *tree = m_mouseCursorGlyph->getActiveGlyph<ZSwcTree>(
         ZMouseCursorGlyph::ERole::ROLE_SWC);
@@ -2998,7 +2999,7 @@ void ZStackPresenter::tryDrawRectMode(double x, double y)
   interactiveContext().setRectSpan(false);
 }
 
-void ZStackPresenter::enterDrawStrokeMode(double x, double y)
+void ZStackPresenter::enterDrawStrokeMode(double /*x*/, double /*y*/)
 {
 //  buddyDocument()->mapToDataCoord(&x, &y, NULL);
 

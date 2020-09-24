@@ -90,7 +90,7 @@ public:
   bool isReady() const;
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const override {
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
     return false;
   }
 #if 0
@@ -129,7 +129,7 @@ public:
 
 //  const std::string& className() const;
 
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, double z) override;
 
 //  void downloadForLabel(uint64_t label);
   void download(int z);

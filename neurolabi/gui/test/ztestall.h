@@ -48,7 +48,7 @@
 #include "test/z3dgraphtest.h"
 #include "test/zvoxelarraytest.h"
 #include "test/zxmltest.h"
-#include "test/zflyemproofdoctest.h"
+//#include "test/zflyemproofdoctest.h"
 #include "test/zflyembody3dtest.h"
 #include "test/zresolutiontest.h"
 #include "test/zviewprojtest.h"

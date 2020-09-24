@@ -31,7 +31,11 @@ std::shared_ptr<ZDvidGraySlice> ZDvidGraySliceEnsemble::activateNext()
     std::shared_ptr<ZDvidGraySlice> newSlice =
         ZDvidGraySliceEnsemble::getActiveSlice();
 
-    newSlice->update(currentSlice->getViewParam());
+    currentSlice->forEachViewParam([=](const ZStackViewParam& param) {
+      newSlice->update(param);
+    });
+
+//    newSlice->update(currentSlice->getViewParam());
 
     return newSlice;
   }
@@ -124,11 +128,11 @@ bool ZDvidGraySliceEnsemble::update(const ZStackViewParam &viewParam)
   return false;
 }
 
-ZTask* ZDvidGraySliceEnsemble::makeFutureTask(ZStackDoc *doc)
+ZTask* ZDvidGraySliceEnsemble::makeFutureTask(ZStackDoc *doc, int viewId)
 {
   std::shared_ptr<ZDvidGraySlice> grayslice = getActiveSlice();
   if (grayslice) {
-    return grayslice->makeFutureTask(doc);
+    return grayslice->makeFutureTask(doc, viewId);
   }
 
   return nullptr;

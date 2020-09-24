@@ -20,7 +20,7 @@ public:
   void addPunctum(ZPunctum *p, bool ignoreNull = true);
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
     return false;
   }
   /*

@@ -182,7 +182,7 @@ public:
 public:
   bool isEmpty() const;
 
-  bool display(QPainter *painter, const DisplayConfig &config) const override {
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
     return false;
   }
 

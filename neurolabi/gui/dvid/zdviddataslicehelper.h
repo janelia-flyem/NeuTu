@@ -1,6 +1,8 @@
 #ifndef ZDVIDDATASLICEHELPER_H
 #define ZDVIDDATASLICEHELPER_H
 
+#include <unordered_map>
+
 #include "zdvidreader.h"
 #include "zstackviewparam.h"
 #include "zdviddata.h"
@@ -40,10 +42,16 @@ public:
 
   int getLowresZoom() const;
 
-  const ZStackViewParam& getViewParam() const {
-    return m_currentViewParam;
+  const ZStackViewParam& getViewParam(int viewId) const;
+
+  ZStackViewParam& getViewParam(int viewId) {
+    return const_cast<ZStackViewParam&>(
+          static_cast<const ZDvidDataSliceHelper&>(*this).getViewParam(viewId));
   }
-  neutu::EAxis getSliceAxis() const;
+
+  void forEachViewParam(std::function<void(const ZStackViewParam&)> f);
+
+  neutu::EAxis getSliceAxis(int viewId) const;
 
   int getMaxWidth() const {
     return m_maxWidth;
@@ -69,22 +77,23 @@ public:
 //  QRect getViewPort() const;
 //  int getX() const;
 //  int getY() const;
+  int getZ(int viewId) const;
   int getZ() const;
 //  void setZ(int z);
-  int getWidth() const;
-  int getHeight() const;
-  size_t getViewPortArea() const;
-  size_t getViewDataSize() const;
+  int getWidth(int viewId) const;
+  int getHeight(int viewId) const;
+  size_t getViewPortArea(int viewId) const;
+  size_t getViewDataSize(int viewId) const;
   static size_t GetViewDataSize(const ZStackViewParam &viewParam, int zoom);
 
-  void closeViewPort();
-  void openViewPort();
+  void closeViewPort(int viewId);
+  void openViewPort(int viewId);
 
   int getCenterCutWidth() const;
   int getCenterCutHeight() const;
 
   static ZIntCuboid GetBoundBox(const QRect &viewPort, int z);
-  ZIntCuboid getBoundBox() const;
+  ZIntCuboid getBoundBox(int viewId) const;
   ZIntCuboid getDataRange() const;
 //  void setBoundBox(const ZRect2d &rect);
 
@@ -107,31 +116,34 @@ public:
    * \brief Check if the current viewing slice is within a given slice
    *
    * It returns true iff:
+   * 1. the currrent viewport exists; or
    * 1. the current viewport is the same as the given one, and the
-   *    given viewport has a higher resolution.
+   *    given viewport has a higher resolution; or
    * 2. the current viewport is within and smaller than the given one, and the
-   *    given viewport does not have a lower resolution
+   *    given viewport does not have a lower resolution.
    */
   bool actualContainedIn(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
 
+  /*
   ZSliceViewTransform getCanvasTransform(
       const ZAffinePlane &ap, int width, int height) const;
+      */
   ZSliceViewTransform getCanvasTransform(
-      const ZAffinePlane &ap, int width, int height, int zoom) const;
+      const ZAffinePlane &ap, int width, int height, int zoom, int viewId) const;
 
-  ZAffineRect getIntCutRect() const;
+  ZAffineRect getIntCutRect(int viewId) const;
 
   /*!
    * \brief Check if the actual resolution is not lower than the specified one
    */
-  bool isResolutionReached() const;
+  bool isResolutionReached(int viewId) const;
 
   /*!
    * \brief Check if a high resolution update is needed
    */
-  bool needHighResUpdate() const;
+  bool needHighResUpdate(int viewId) const;
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);
@@ -142,14 +154,15 @@ public:
   void setMaxZoom(int maxZoom);
   void updateMaxZoom();
 
-  void invalidateViewParam();
+  void invalidateViewParam(int viewId);
+  void invalidateAllViewParam();
   void updateCenterCut();
 
-  void setActualQuality(int zoom, int ccw, int cch, bool centerCut);
-  void syncActualQuality();
+  void setActualQuality(int zoom, int ccw, int cch, bool centerCut, int viewId);
+  void syncActualQuality(int viewId);
 
-  int getActualScale() const;
-  int getActualZoom() const;
+  int getActualScale(int viewId) const;
+  int getActualZoom(int viewId) const;
 
   neutu::EDataSliceUpdatePolicy getUpdatePolicy() const;
   void setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
@@ -158,7 +171,7 @@ public:
   void setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
   neutu::EDataSliceUpdatePolicy getPreferredUpdatePolicy() const;
 
-  bool hit(double x, double y, double z) const;
+  bool hit(double x, double y, double z, int viewId) const;
 
 private:
   /*!
@@ -173,8 +186,23 @@ private:
       int targetZoom, int targetCenterCutX, int targetCenterCutY, bool targetCenterCut,
       int viewWidth, int viewHeight, int maxZoom);
 
+  struct ViewParamBuffer {
+    ZStackViewParam m_viewParam;
+
+    int m_actualZoom = 0;
+    int m_actualCenterCutWidth = 256;
+    int m_actualCenterCutHeight = 256;
+    bool m_actualUsingCenterCut = true;
+  };
+
+  bool isViewParamBuffered(int viewId) const;
+  const ViewParamBuffer& getViewParamBuffer(int viewId) const;
+  ViewParamBuffer& getViewParamBuffer(int viewId);
+
 public:
-  ZStackViewParam m_currentViewParam;
+  std::unordered_map<int, ViewParamBuffer> m_currentViewParamMap;
+  ViewParamBuffer m_emptyViewParamBuffer;
+
   int m_zoom = 0;
   int m_maxZoom = 0;
 
@@ -185,10 +213,10 @@ public:
   int m_centerCutHeight = 256;
   bool m_usingCenterCut = true;
 
-  int m_actualZoom = 0;
-  int m_actualCenterCutWidth = 256;
-  int m_actualCenterCutHeight = 256;
-  bool m_actualUsingCenterCut = true;
+//  int m_actualZoom = 0;
+//  int m_actualCenterCutWidth = 256;
+//  int m_actualCenterCutHeight = 256;
+//  bool m_actualUsingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
   neutu::EDataSliceUpdatePolicy m_updatePolicy = neutu::EDataSliceUpdatePolicy::DIRECT;

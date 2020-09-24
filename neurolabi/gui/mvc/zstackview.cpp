@@ -1223,6 +1223,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
   }
 }
 
+#if 0
 void ZStackView::resizeEvent(QResizeEvent *event)
 {
 #if 0
@@ -1272,6 +1273,7 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 //  updateTileCanvas();
   //buddyPresenter()->updateInteractiveContext();
 }
+#endif
 
 void ZStackView::showEvent(QShowEvent */*event*/)
 {
@@ -2886,7 +2888,7 @@ void ZStackView::addWidgetCanvasTask()
 }
 #endif
 
-void ZStackView::configurePainter(ZStackObjectPainter &painter)
+void ZStackView::configurePainter(ZStackObjectPainter &/*painter*/)
 {
 //  painter.setRestoringPainter(true);
 //  painter.setSliceAxis(getSliceAxis());
@@ -3042,6 +3044,7 @@ QRectF ZStackView::getProjRegion() const
 ZViewProj ZStackView::getViewProj() const
 {
 //  return m_imageWidget->getViewProj();
+  return ZViewProj();
 }
 
 /*
@@ -3155,6 +3158,7 @@ ZStackViewParam ZStackView::getViewParameter() const
   param.setSize(
         imageWidget()->width(), imageWidget()->height(),
         neutu::data3d::ESpace::CANVAS);
+  param.setViewId(getViewId());
 //  param.setExploreAction(action);
 
   return param;
@@ -3361,7 +3365,7 @@ ZPoint ZStackView::transform(
 }
 
 void ZStackView::setViewPortCenter(
-    int x, int y, int z, neutu::EAxisSystem system)
+    int /*x*/, int /*y*/, int /*z*/, neutu::EAxisSystem /*system*/)
 {
 #if 0
   switch (system) {

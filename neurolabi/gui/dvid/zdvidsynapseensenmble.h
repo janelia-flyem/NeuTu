@@ -101,7 +101,7 @@ public:
   void setRange(const ZIntCuboid &dataRange);
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const {
     return false;
   }
 

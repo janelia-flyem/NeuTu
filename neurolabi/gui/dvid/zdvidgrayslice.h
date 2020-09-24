@@ -2,6 +2,7 @@
 #define ZDVIDGRAYSLICE_H
 
 #include <memory>
+#include <unordered_map>
 
 #include "zstackobject.h"
 #include "zimage.h"
@@ -52,17 +53,18 @@ public:
 
   void printInfo() const;
 
-  int getWidth() const;
-  int getHeight() const;
+  int getWidth(int viewId) const;
+  int getHeight(int viewId) const;
   int getZoom() const;
 
   int getScale() const;
 
-  ZCuboid getBoundBox() const override;
+  ZCuboid getBoundBox(int viewId) const override;
 
-  ZStackViewParam getViewParam() const;
+  ZStackViewParam getViewParam(int viewId) const;
   ZIntCuboid getDataRange() const;
 
+  void forEachViewParam(std::function<void(const ZStackViewParam &param)> f);
 
   void setZoom(int zoom);
   void setContrastProtocol(const ZContrastProtocol &cp);
@@ -72,7 +74,7 @@ public:
   /*!
    * \brief Check if the slice has any low-resolution region.
    */
-  bool hasLowresRegion() const;
+  bool hasLowresRegion(int viewId) const;
 
   void setCenterCut(int width, int height);
 
@@ -81,9 +83,11 @@ public:
     return m_pixmap;
   }
   */
+  /*
   const QImage getImage() const {
     return m_imageCanvas.toImage();
   }
+  */
 
 //  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
 
@@ -91,17 +95,17 @@ public:
                int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
                    int centerCutX, int centerCutY, bool centerCut) const;
-  ZTask* makeFutureTask(ZStackDoc *doc);
+  ZTask* makeFutureTask(ZStackDoc *doc, int viewId);
 
 public: //for testing
-  void saveImage(const std::string &path);
-  void savePixmap(const std::string &path);
+  void saveImage(const std::string &path, int viewId);
+  void savePixmap(const std::string &path, int viewId);
 //  void test();
 
 private:
   void clear();
 
-  void updateImage(const ZStack *stack, const ZAffinePlane &ap, int zoom);
+  void updateImage(const ZStack *stack, const ZAffinePlane &ap, int zoom, int viewId);
   void forceUpdate(const ZStackViewParam &viewParam);
   void updateContrast();
 
@@ -120,9 +124,26 @@ private:
     return m_helper.get();
   }
 
+  struct DisplayBuffer {
+//    DisplayBuffer() {}
+//    DisplayBuffer(bool valid) {
+//      m_isValid = valid;
+//    }
+
+    ZSliceCanvas m_imageCanvas;
+    ZImage m_image;
+//    bool m_isValid = true;
+  };
+
+  std::shared_ptr<DisplayBuffer> getDisplayBuffer(int viewId) const;
+  ZSliceCanvas& getImageCanvas(int viewId) const;
+  ZImage& getImage(int viewId) const;
+
 private:
-  ZSliceCanvas m_imageCanvas;
-  ZImage m_image; //Todo: need to replace ZImage type with a more concise one
+//  ZSliceCanvas m_imageCanvas;
+//  ZImage m_image; //Todo: need to replace ZImage type with a more concise one
+  mutable std::unordered_map<int, std::shared_ptr<DisplayBuffer>> m_displayBufferMap;
+  mutable std::mutex m_displayBufferMutex;
 
   bool m_usingContrastProtocol = false;
   ZContrastProtocol m_contrastProtocol;

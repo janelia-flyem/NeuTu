@@ -85,6 +85,7 @@ public:
 
   virtual ZTask* getFutureTask() const;
   virtual ZTask* getFutureTask(ZStackDoc *doc) const;
+  virtual ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
 
   inline ZStackObject* getData() const {
     return m_data;
@@ -344,7 +345,7 @@ public:
   QString getTypeName() const { return "DvidGraySlice"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidGraySlice *getCompleteData() const;
-  ZTask* getFutureTask(ZStackDoc *doc) const;
+  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
 };
 
 /**************************************************/
@@ -357,7 +358,7 @@ public:
   QString getTypeName() const { return "DvidGraySliceEnsemble"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidGraySliceEnsemble *getCompleteData() const;
-  ZTask* getFutureTask(ZStackDoc *doc) const;
+  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
 };
 
 /**************************************************/
@@ -370,7 +371,7 @@ public:
   QString getTypeName() const { return "DvidLabelSlice"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidLabelSlice *getCompleteData() const;
-  ZTask* getFutureTask(ZStackDoc *doc) const;
+  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
 };
 
 /**************************************************/

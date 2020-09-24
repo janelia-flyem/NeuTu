@@ -7,6 +7,15 @@ ZScrollSliceStrategy::ZScrollSliceStrategy(ZStackView *view) : m_view(view)
   setRange(0, 0);
 }
 
+int ZScrollSliceStrategy::getViewId() const
+{
+  if (m_view) {
+    return m_view->getViewId();
+  }
+
+  return -1;
+}
+
 void ZScrollSliceStrategy::setRange(int minSlice, int maxSlice)
 {
   m_minSlice = minSlice;

@@ -69,7 +69,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  bool hit(double x, double y, double z) override;
+  bool hit(double x, double y, double z, int viewId) override;
   void processHit(ESelection s) override;
 
   void selectHit(bool appending = false);
@@ -216,17 +216,22 @@ public:
   bool hasCustomColorMap() const;
   void assignColorMap();
 
+  /*
   ZImage* getPaintBuffer() {
     return m_paintBuffer;
   }
+  */
 
   int64_t getReadingTime() const;
 
   bool refreshReaderBuffer();
 
-  void paintBuffer();
-  void invalidatePaintBuffer();
-  bool isPaintBufferValid() const;
+  void paintBuffer(int viewId);
+  void invalidatePaintBuffer(int viewId);
+  bool isPaintBufferValid(int viewId) const;
+
+  void paintAllBuffer();
+  void invalidateAllPaintBuffer();
 
 //  QRect getDataRect(const ZStackViewParam &viewParam) const;
 
@@ -234,12 +239,12 @@ public:
                int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
                    int centerCutX, int centerCutY, bool usingCenterCut) const;
-  ZTask* makeFutureTask(ZStackDoc *doc);
+  ZTask* makeFutureTask(ZStackDoc *doc, int viewId);
   void setTaskFactory(std::unique_ptr<ZDvidDataSliceTaskFactory> &&factory);
 
   void allowBlinking(bool on);
 
-  void saveCanvas(const std::string &path);
+  void saveCanvas(const std::string &path, int viewId);
 
   const ZDvidReader& getDvidReader() const;
   const ZDvidReader& getWorkDvidReader() const;
@@ -263,9 +268,9 @@ private:
             neutu::EAxis sliceAxis = neutu::EAxis::Z);
   QColor getCustomColor(uint64_t label) const;
 
-  void paintBufferUnsync();
-  void remapId(ZArray *label);
-  void remapId();
+  void paintBufferUnsync(int viewId);
+//  void remapId(ZArray *label);
+//  void remapId();
 
   void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v);
   void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
@@ -279,11 +284,11 @@ private:
   void updateRgbTable();
 
   ZFlyEmBodyMerger::TLabelMap getLabelMap() const;
-  void clearLabelData();
+  void clearLabelData(int viewId);
 
 //  void updatePixmap(ZPixmap *pixmap) const;
-  void updatePaintBuffer();
-  void updateCanvas();
+  void updatePaintBuffer(int viewId);
+  void updateCanvas(int viewId);
 //  void setTransform(ZImage *image) const;
 
   const ZDvidDataSliceHelper* getHelper() const {
@@ -295,26 +300,51 @@ private:
 
   void setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
 
-  bool isPaintBufferAllocNeeded(int width, int height) const;
-  bool isPaintBufferUpdateNeeded() const;
+  bool isPaintBufferAllocNeeded(int width, int height, int viewId) const;
+  bool isPaintBufferUpdateNeeded(int viewId) const;
 
   int getFirstZoom(const ZStackViewParam &viewParam) const;
 
 //  bool hasValidPaintBuffer() const;
 
   std::shared_ptr<ZFlyEmBodyColorScheme> getBaseColorScheme() const;
-  void updateColorField();
+  void updateColorField(int viewId);
 
   ZFlyEmBodyIdColorScheme* getIndividualColorScheme(size_t rank) const;
 
-private:
-  ZSliceCanvas m_imageCanvas;
-  ZImage *m_paintBuffer = nullptr;
-  bool m_isPaintBufferValid = false;
+  struct DisplayBuffer {
+    std::shared_ptr<ZArray> m_labelArray;
+//    std::shared_ptr<ZArray> m_mappedLabelArray;
+    std::vector<uint32_t> m_colorField;
+    std::shared_ptr<ZImage> m_paintBuffer;
+    ZSliceCanvas m_imageCanvas;
+//    std::shared_ptr<ZDvidDataSliceHelper> m_helper;
+    bool m_isPaintBufferValid = false;
+  };
 
-  ZArray *m_labelArray;
-  ZArray *m_mappedLabelArray;
-  std::vector<uint32_t> m_colorField;
+  std::shared_ptr<DisplayBuffer> getDisplayBuffer(int viewId) const;
+  ZSliceCanvas& getImageCanvas(int viewId) const;
+  std::shared_ptr<ZArray> getLabelArray(int viewId) const;
+//  std::shared_ptr<ZArray> getMappedLabelArray(int viewId) const;
+  std::shared_ptr<ZImage> getPaintBuffer(int viewId) const;
+  const std::vector<uint32_t>& getColorField(int viewId) const;
+  std::vector<uint32_t>& getColorField(int viewId);
+
+//  std::shared_ptr<ZDvidDataSliceHelper> getHelper(int viewId) const;
+
+private:
+  mutable std::unordered_map<int, std::shared_ptr<DisplayBuffer>> m_displayBufferMap;
+  mutable std::mutex m_displayBufferMutex;
+
+//  int m_maxWidth = 512;
+//  int m_maxHeight = 512;
+
+//  ZSliceCanvas m_imageCanvas;
+//  ZImage *m_paintBuffer = nullptr;
+//  bool m_isPaintBufferValid = false;
+
+//  ZArray *m_labelArray;
+//  ZArray *m_mappedLabelArray;
   QMutex m_updateMutex; //Review-TZ: does not seem used properly
 
   ZObject3dScanArray m_objArray;
@@ -397,7 +427,7 @@ void ZDvidLabelSlice::setSelection(
 {
   clearSelection();
   addSelection(begin, end, labelType);
-  paintBuffer();
+  paintAllBuffer();
 }
 
 template<template<class...> class Container>

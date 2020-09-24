@@ -21,7 +21,7 @@ public:
   void setReader(ZDvidReader *reader);
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const {
     return false;
   }
   /*

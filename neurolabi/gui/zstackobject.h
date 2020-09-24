@@ -265,6 +265,7 @@ public:
 
   void setHittable(bool on);
 
+  virtual bool hit(double x, double y, double z, int viewId);
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
   virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
@@ -284,6 +285,7 @@ public:
    */
   virtual void boundBox(ZIntCuboid *box) const;
   virtual ZCuboid getBoundBox() const;
+  virtual ZCuboid getBoundBox(int viewId) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);

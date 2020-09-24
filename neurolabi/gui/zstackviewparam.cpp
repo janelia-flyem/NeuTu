@@ -714,6 +714,16 @@ ZSliceViewTransform ZStackViewParam::getSliceViewTransform() const
   return m_transform;
 }
 
+void ZStackViewParam::setViewId(int id)
+{
+  m_viewId = id;
+}
+
+int ZStackViewParam::getViewId() const
+{
+  return m_viewId;
+}
+
 ZJsonObject ZStackViewParam::toJsonObject() const
 {
   return m_transform.toJsonObject();

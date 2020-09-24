@@ -31,7 +31,7 @@ public:
   void setLabel(uint64_t label);
 
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const {
     return false;
   }
   /*

@@ -1,5 +1,6 @@
 #include "zdviddataslicehelper.h"
 
+#include "neulib/math/utilities.h"
 #include "common/math.h"
 #include "zrect2d.h"
 #include "geometry/zintcuboid.h"
@@ -35,6 +36,33 @@ void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
   m_workReader.openRaw(m_reader.getDvidTarget());
 
   updateCenterCut();
+}
+
+const ZStackViewParam& ZDvidDataSliceHelper::getViewParam(int viewId) const
+{
+  return getViewParamBuffer(viewId).m_viewParam;
+}
+
+bool ZDvidDataSliceHelper::isViewParamBuffered(int viewId) const
+{
+  return m_currentViewParamMap.count(viewId) > 0;
+}
+
+const ZDvidDataSliceHelper::ViewParamBuffer&
+ZDvidDataSliceHelper::getViewParamBuffer(int viewId) const
+{
+  if (m_currentViewParamMap.count(viewId) > 0) {
+    return m_currentViewParamMap.at(viewId);
+  }
+
+  return m_emptyViewParamBuffer;
+}
+
+ZDvidDataSliceHelper::ViewParamBuffer&
+ZDvidDataSliceHelper::getViewParamBuffer(int viewId)
+{
+  return const_cast<ZDvidDataSliceHelper::ViewParamBuffer&>(
+        static_cast<const ZDvidDataSliceHelper&>(*this).getViewParamBuffer(viewId));
 }
 
 void ZDvidDataSliceHelper::setMaxZoom(int maxZoom)
@@ -153,30 +181,41 @@ int ZDvidDataSliceHelper::updateParam(ZStackViewParam *param) const
   return maxZoomLevel;
 }
 
+int ZDvidDataSliceHelper::getZ(int viewId) const
+{
+  return neulib::iround(getViewParam(viewId).getCutDepth(ZPoint(0, 0, 0)));
+}
+
 int ZDvidDataSliceHelper::getZ() const
 {
-  return neutu::iround(getViewParam().getCutDepth(ZPoint(0, 0, 0)));
+  if (!m_currentViewParamMap.empty()) {
+    ZPoint center =
+        (*m_currentViewParamMap.begin()).second.m_viewParam.getCutCenter();
+    return neulib::iround(center.getZ());
+  }
+
+  return 0;
 }
 
-size_t ZDvidDataSliceHelper::getViewPortArea() const
+size_t ZDvidDataSliceHelper::getViewPortArea(int viewId) const
 {
-  return size_t(getWidth()) * size_t(getHeight());
+  return size_t(getWidth(viewId)) * size_t(getHeight(viewId));
 }
 
-size_t ZDvidDataSliceHelper::getViewDataSize() const
+size_t ZDvidDataSliceHelper::getViewDataSize(int viewId) const
 {
   int scale = getScale();
-  return getViewPortArea() / scale / scale;
+  return getViewPortArea(viewId) / scale / scale;
 }
 
-int ZDvidDataSliceHelper::getWidth() const
+int ZDvidDataSliceHelper::getWidth(int viewId) const
 {
-  return m_currentViewParam.getIntWidth(neutu::data3d::ESpace::MODEL);
+  return getViewParam(viewId).getIntWidth(neutu::data3d::ESpace::MODEL);
 }
 
-int ZDvidDataSliceHelper::getHeight() const
+int ZDvidDataSliceHelper::getHeight(int viewId) const
 {
-  return m_currentViewParam.getIntHeight(neutu::data3d::ESpace::MODEL);
+  return getViewParam(viewId).getIntHeight(neutu::data3d::ESpace::MODEL);
 }
 
 size_t ZDvidDataSliceHelper::GetViewDataSize(
@@ -187,19 +226,32 @@ size_t ZDvidDataSliceHelper::GetViewDataSize(
   return viewParam.getArea(neutu::data3d::ESpace::MODEL) / scale / scale;
 }
 
-neutu::EAxis ZDvidDataSliceHelper::getSliceAxis() const
+neutu::EAxis ZDvidDataSliceHelper::getSliceAxis(int viewId) const
 {
-  return getViewParam().getSliceAxis();
+  return getViewParam(viewId).getSliceAxis();
 }
 
-void ZDvidDataSliceHelper::closeViewPort()
+void ZDvidDataSliceHelper::forEachViewParam(
+    std::function<void (const ZStackViewParam &)> f)
 {
-  m_currentViewParam.closeViewPort();
+  for (const auto &param : m_currentViewParamMap) {
+    f(param.second.m_viewParam);
+  }
 }
 
-void ZDvidDataSliceHelper::openViewPort()
+void ZDvidDataSliceHelper::closeViewPort(int viewId)
 {
-  m_currentViewParam.openViewPort();
+  if (m_currentViewParamMap.count(viewId) > 0) {
+    getViewParam(viewId).closeViewPort();
+  }
+}
+
+void ZDvidDataSliceHelper::openViewPort(int viewId)
+{
+  if (m_currentViewParamMap.count(viewId) > 0) {
+    getViewParam(viewId).openViewPort();
+  }
+//  m_currentViewParam.openViewPort();
 }
 
 int ZDvidDataSliceHelper::getCenterCutWidth() const
@@ -217,14 +269,15 @@ int ZDvidDataSliceHelper::getScale() const
   return zgeom::GetZoomScale(getZoom());
 }
 
-int ZDvidDataSliceHelper::getActualScale() const
+int ZDvidDataSliceHelper::getActualScale(int viewId) const
 {
-  return zgeom::GetZoomScale(getActualZoom());
+  return zgeom::GetZoomScale(getActualZoom(viewId));
 }
 
-int ZDvidDataSliceHelper::getActualZoom() const
+int ZDvidDataSliceHelper::getActualZoom(int viewId) const
 {
-  return m_actualZoom;
+  return getViewParamBuffer(viewId).m_actualZoom;
+//  return m_actualZoom;
 }
 
 void ZDvidDataSliceHelper::setZoom(int zoom)
@@ -258,7 +311,7 @@ bool ZDvidDataSliceHelper::getMaxArea() const
 
 void ZDvidDataSliceHelper::setViewParam(const ZStackViewParam &viewParam)
 {
-  m_currentViewParam = viewParam;
+  m_currentViewParamMap[viewParam.getViewId()].m_viewParam = viewParam;
 }
 
 ZStackViewParam ZDvidDataSliceHelper::getValidViewParam(
@@ -286,12 +339,18 @@ bool ZDvidDataSliceHelper::hasNewView(const ZStackViewParam &viewParam) const
 bool ZDvidDataSliceHelper::hasNewView(
     const ZStackViewParam &viewParam, const ZIntCuboid &modelRange) const
 {
-  ZAffineRect currentCutRect = m_currentViewParam.getIntCutRect(modelRange);
-  ZAffineRect newCutRect = viewParam.getIntCutRect(modelRange);
-  if (currentCutRect.contains(newCutRect)) {
-    int maxZoomLevel = getMaxZoom();
-    return viewParam.getZoomLevel(maxZoomLevel) <
-        m_currentViewParam.getZoomLevel(maxZoomLevel);
+  int viewId = viewParam.getViewId();
+  if (m_currentViewParamMap.count(viewId) > 0) {
+    const auto &currentViewParam =
+        m_currentViewParamMap.at(viewId);
+    ZAffineRect currentCutRect =
+        currentViewParam.m_viewParam.getIntCutRect(modelRange);
+    ZAffineRect newCutRect = viewParam.getIntCutRect(modelRange);
+    if (currentCutRect.contains(newCutRect)) {
+      int maxZoomLevel = getMaxZoom();
+      return viewParam.getZoomLevel(maxZoomLevel) <
+          currentViewParam.m_viewParam.getZoomLevel(maxZoomLevel);
+    }
   }
 
   return true;
@@ -310,7 +369,8 @@ bool ZDvidDataSliceHelper::hasNewView(
   return newView;
 }
 
-void ZDvidDataSliceHelper::CanonizeQuality(int *zoom, int *centerCutX, int *centerCutY,
+void ZDvidDataSliceHelper::CanonizeQuality(
+    int *zoom, int *centerCutX, int *centerCutY,
     bool *centerCut, int viewWidth, int viewHeight, int maxZoom)
 {
   if (*zoom < 0) { //full resolution
@@ -331,9 +391,11 @@ void ZDvidDataSliceHelper::CanonizeQuality(int *zoom, int *centerCutX, int *cent
   }
 }
 
-bool ZDvidDataSliceHelper::hit(double x, double y, double z) const
+bool ZDvidDataSliceHelper::hit(double x, double y, double z, int viewId) const
 {
-  return m_currentViewParam.contains(x, y, z);
+  if (m_currentViewParamMap.count(viewId) > 0) {
+    return getViewParam(viewId).contains(x, y, z);
+  }
 }
 
 bool ZDvidDataSliceHelper::IsResIncreasing(
@@ -390,42 +452,57 @@ bool ZDvidDataSliceHelper::actualContainedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool centerCut) const
 {
+  if (m_currentViewParamMap.count(viewParam.getViewId()) == 0) {
+    return true;
+  }
+
   bool contained = false;
 
-  ZAffineRect rect1 = m_currentViewParam.getIntCutRect(getDataRange());
+  const ViewParamBuffer &currentViewParamBuffer = m_currentViewParamMap.at(
+        viewParam.getViewId());
+  ZAffineRect rect1 = currentViewParamBuffer.m_viewParam.
+      getIntCutRect(getDataRange());
   ZAffineRect rect2 = viewParam.getIntCutRect(getDataRange());
 
   if (rect2 == rect1) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
-          m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
-          m_actualUsingCenterCut,
+          currentViewParamBuffer.m_actualZoom,
+          currentViewParamBuffer.m_actualCenterCutWidth,
+          currentViewParamBuffer.m_actualCenterCutHeight,
+          currentViewParamBuffer.m_actualUsingCenterCut,
           zoom, centerCutX, centerCutY, centerCut,
-          getWidth(), getHeight(), getMaxZoom());
+          getWidth(viewParam.getViewId()), getHeight(viewParam.getViewId()),
+          getMaxZoom());
   } else if (rect2.contains(rect1)) {
     contained = !ZDvidDataSliceHelper::IsResIncreasing(
-          zoom, centerCutX, centerCutY, centerCut, getWidth(), getHeight(),
-          m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
-          m_actualUsingCenterCut, getMaxZoom());
+          zoom, centerCutX, centerCutY, centerCut,
+          getWidth(viewParam.getViewId()), getHeight(viewParam.getViewId()),
+          currentViewParamBuffer.m_actualZoom,
+          currentViewParamBuffer.m_actualCenterCutWidth,
+          currentViewParamBuffer.m_actualCenterCutHeight,
+          currentViewParamBuffer.m_actualUsingCenterCut, getMaxZoom());
   }
 
   return contained;
 }
 
+/*
 ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
     const ZAffinePlane &ap, int width, int height) const
 {
   return getCanvasTransform(ap, width, height, getZoom());
 }
+*/
 
 ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
-    const ZAffinePlane &ap, int width, int height, int zoom) const
+    const ZAffinePlane &ap, int width, int height, int zoom, int viewId) const
 {
   ZSliceViewTransform t;
 
-  if (getSliceAxis() == neutu::EAxis::ARB) {
+  if (getSliceAxis(viewId) == neutu::EAxis::ARB) {
     t.setCutPlane(ap);
   } else {
-    t.setCutPlane(getSliceAxis(), ap.getOffset());
+    t.setCutPlane(getSliceAxis(viewId), ap.getOffset());
   }
 
   t.setScale(1.0 / zgeom::GetZoomScale(zoom));
@@ -435,9 +512,9 @@ ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
   return t;
 }
 
-ZAffineRect ZDvidDataSliceHelper::getIntCutRect() const
+ZAffineRect ZDvidDataSliceHelper::getIntCutRect(int viewId) const
 {
-  ZAffineRect rect = getViewParam().getIntCutRect(getDataRange());
+  ZAffineRect rect = getViewParam(viewId).getIntCutRect(getDataRange());
   if (m_maxZoom < 3) {
     int width = rect.getWidth();
     int height = rect.getHeight();
@@ -449,35 +526,48 @@ ZAffineRect ZDvidDataSliceHelper::getIntCutRect() const
   return rect;
 }
 
-bool ZDvidDataSliceHelper::isResolutionReached() const
+bool ZDvidDataSliceHelper::isResolutionReached(int viewId) const
 {
-  if (getViewDataSize() == 0) {
+  if (getViewDataSize(viewId) == 0) {
     return false;
   }
 
+  auto vpb = getViewParamBuffer(viewId);
+
   return !IsResIncreasing(
-        m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
-        m_actualUsingCenterCut,
+        vpb.m_actualZoom, vpb.m_actualCenterCutWidth, vpb.m_actualCenterCutHeight,
+        vpb.m_actualUsingCenterCut,
         m_zoom, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut,
-        getWidth(), getHeight(), getMaxZoom());
+        getWidth(viewId), getHeight(viewId), getMaxZoom());
 }
 
-bool ZDvidDataSliceHelper::needHighResUpdate() const
+bool ZDvidDataSliceHelper::needHighResUpdate(int viewId) const
 {
-  if (getViewDataSize() == 0) {
+  if (getViewDataSize(viewId) == 0) {
     return true;
   }
 
+  auto vpb = getViewParamBuffer(viewId);
   return IsResIncreasing(
-        m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
-        m_actualUsingCenterCut,
+        vpb.m_actualZoom, vpb.m_actualCenterCutWidth, vpb.m_actualCenterCutHeight,
+        vpb.m_actualUsingCenterCut,
         m_zoom, m_centerCutWidth, m_centerCutHeight, false,
-        getWidth(), getHeight(), getMaxZoom());
+        getWidth(viewId), getHeight(viewId), getMaxZoom());
 }
 
-void ZDvidDataSliceHelper::invalidateViewParam()
+void ZDvidDataSliceHelper::invalidateViewParam(int viewId)
 {
-  m_currentViewParam.invalidate();
+  if (m_currentViewParamMap.count(viewId) > 0) {
+    m_currentViewParamMap[viewId].m_viewParam.invalidate();
+  }
+//  m_currentViewParam.invalidate();
+}
+
+void ZDvidDataSliceHelper::invalidateAllViewParam()
+{
+  for (auto &p : m_currentViewParamMap) {
+    p.second.m_viewParam.invalidate();
+  }
 }
 
 ZIntCuboid ZDvidDataSliceHelper::GetBoundBox(const QRect &viewPort, int z)
@@ -489,9 +579,14 @@ ZIntCuboid ZDvidDataSliceHelper::GetBoundBox(const QRect &viewPort, int z)
   return box;
 }
 
-ZIntCuboid ZDvidDataSliceHelper::getBoundBox() const
+ZIntCuboid ZDvidDataSliceHelper::getBoundBox(int viewId) const
 {
-  return zgeom::GetIntBoundBox(m_currentViewParam.getCutRect());
+  if (m_currentViewParamMap.count(viewId) > 0) {
+    return zgeom::GetIntBoundBox(
+          m_currentViewParamMap.at(viewId).m_viewParam.getCutRect());
+  }
+
+  return ZIntCuboid();
 //  return GetBoundBox(getViewPort(), getZ());
 }
 
@@ -522,17 +617,18 @@ void ZDvidDataSliceHelper::setBoundBox(const ZRect2d &rect)
 */
 
 void ZDvidDataSliceHelper::setActualQuality(
-    int zoom, int ccw, int cch, bool centerCut)
+    int zoom, int ccw, int cch, bool centerCut, int viewId)
 {
-  m_actualZoom = zoom;
-  m_actualCenterCutWidth = ccw;
-  m_actualCenterCutHeight = cch;
-  m_actualUsingCenterCut = centerCut;
+  m_currentViewParamMap[viewId].m_actualZoom = zoom;
+  m_currentViewParamMap[viewId].m_actualCenterCutWidth = ccw;
+  m_currentViewParamMap[viewId].m_actualCenterCutHeight = cch;
+  m_currentViewParamMap[viewId].m_actualUsingCenterCut = centerCut;
 }
 
-void ZDvidDataSliceHelper::syncActualQuality()
+void ZDvidDataSliceHelper::syncActualQuality(int viewId)
 {
-  setActualQuality(getZoom(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
+  setActualQuality(
+        getZoom(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut, viewId);
 }
 
 void ZDvidDataSliceHelper::setPreferredUpdatePolicy(

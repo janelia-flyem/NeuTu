@@ -2994,13 +2994,13 @@ void ZFlyEmProofMvc::highlightSelectedObject(
       } else {
         labelSlice->addVisualEffect(
               neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
-        labelSlice->invalidatePaintBuffer();
+        labelSlice->invalidateAllPaintBuffer();
         doc->processObjectModified(labelSlice);
       }
     } else {
       labelSlice->removeVisualEffect(
             neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
-      labelSlice->invalidatePaintBuffer();
+      labelSlice->invalidateAllPaintBuffer();
       if (usingSparseVol) {
         doc->notifyActiveViewModified();
       } else {

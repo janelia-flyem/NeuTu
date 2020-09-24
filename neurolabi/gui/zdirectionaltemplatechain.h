@@ -23,8 +23,10 @@ public:
 //    virtual const std::string& className() const;
 
 public:
-    virtual bool display(
-        QPainter *painter, const DisplayConfig &config) const {}
+    bool display(
+        QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+      return false;
+    }
     /*
     virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                          neutu::EAxis sliceAxis) const override;

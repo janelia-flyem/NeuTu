@@ -38,7 +38,7 @@ public:
 //  virtual const std::string& className() const;
 
 public:
-  bool display(QPainter *painter, const DisplayConfig &config) const override {
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
     return false;
   }
   /*

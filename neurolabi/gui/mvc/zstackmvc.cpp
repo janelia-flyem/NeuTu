@@ -558,7 +558,7 @@ void ZStackMvc::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
 }
 #endif
 
-void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
+void ZStackMvc::zoomWithWidthAligned(const ZStackView */*view*/)
 {
   /*
   ZStackViewParam param = view->getViewParameter();
@@ -594,7 +594,7 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 #endif
 }
 
-void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
+void ZStackMvc::zoomWithHeightAligned(const ZStackView */*view*/)
 {
   /*
   ZStackViewParam param = view->getViewParameter();

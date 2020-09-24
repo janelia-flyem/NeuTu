@@ -23,7 +23,7 @@ public:
 
 public:
   bool display(
-      QPainter *painter, const DisplayConfig &config) const {
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
     return false;
   }
   /*
@@ -43,7 +43,7 @@ public:
   void setY(double y);
   void setZ(double z);
 
-  bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis);
+  bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis) override;
 
 
 private:

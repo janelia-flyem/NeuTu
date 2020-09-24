@@ -3264,7 +3264,7 @@ void ZFlyEmProofDoc::updateBodyObject()
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
   foreach (ZDvidLabelSlice *slice, sliceList) {
-    slice->paintBuffer();
+    slice->paintAllBuffer();
     processObjectModified(slice);
 //    slice->clearSelection();
 //    slice->updateLabelColor();
@@ -5417,7 +5417,7 @@ void ZFlyEmProofDoc::setBodyColorT(
       for (uint64_t body : bodyList) {
         slice->setLabelColor(body, color, rank);
       }
-      slice->paintBuffer();
+      slice->paintAllBuffer();
       processObjectModified(slice);
     }
   }
@@ -5444,7 +5444,7 @@ void ZFlyEmProofDoc::setBodyColorT(
       for (size_t i = 0; i < bodyList.size(); ++i) {
         slice->setLabelColor(bodyList[i], colorList[i], rank);
       }
-      slice->paintBuffer();
+      slice->paintAllBuffer();
       processObjectModified(slice);
     }
   }
@@ -5462,7 +5462,7 @@ void ZFlyEmProofDoc::setBodyColorT(
         changed = slice->setLabelColor(bodyList[i], colorList[i], rank);
       }
       if (changed) {
-        slice->paintBuffer();
+        slice->paintAllBuffer();
         processObjectModified(slice);
       }
     }
@@ -5489,7 +5489,7 @@ void ZFlyEmProofDoc::setBodyColorR(
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   for (auto slice : sliceList) {
     if (slice->setLabelColor(bodyId, QString::fromStdString(colorCode), rank)) {
-      slice->paintBuffer();
+      slice->paintAllBuffer();
       processObjectModified(slice);
     }
   }
@@ -5511,7 +5511,7 @@ void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const QColor &color)
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   for (auto slice : sliceList) {
     if (slice->setLabelColor(bodyId, color, 0)) {
-      slice->paintBuffer();
+      slice->paintAllBuffer();
       processObjectModified(slice);
     }
   }
@@ -5522,7 +5522,7 @@ void ZFlyEmProofDoc::setSelectedBodyColor(const QColor &color)
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   for (auto slice : sliceList) {
     slice->setSelectedLabelColor(color);
-    slice->paintBuffer();
+    slice->paintAllBuffer();
     processObjectModified(slice);
   }
 }
@@ -5532,7 +5532,7 @@ void ZFlyEmProofDoc::resetSelectedBodyColor()
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   for (auto slice : sliceList) {
     slice->resetSelectedLabelColor();
-    slice->paintBuffer();
+    slice->paintAllBuffer();
     processObjectModified(slice);
   }
 }
@@ -5553,7 +5553,7 @@ void ZFlyEmProofDoc::updateBodyColor(
     } else {
       slice->removeCustomColorMap();
     }
-    slice->invalidatePaintBuffer();
+    slice->invalidateAllPaintBuffer();
 
     processObjectModified(slice);
   }
@@ -5598,7 +5598,7 @@ void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
   }
 }
 
-void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
+void ZFlyEmProofDoc::selectBodyInRoi(int /*z*/, bool appending, bool removingRoi)
 {
 //  ZRect2d rect = getRect2dRoi();
 

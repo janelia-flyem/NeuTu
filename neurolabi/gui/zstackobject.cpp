@@ -317,6 +317,11 @@ bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
   return false;
 }
 
+bool ZStackObject::hit(double x, double y, double z, int /*viewId*/)
+{
+  return hit(x, y, z);
+}
+
 bool ZStackObject::hit(double x, double y, double z)
 {
   if (m_hittable) {
@@ -448,6 +453,11 @@ void ZStackObject::boundBox(ZIntCuboid *box) const
 ZCuboid ZStackObject::getBoundBox() const
 {
   return ZCuboid();
+}
+
+ZCuboid ZStackObject::getBoundBox(int /*viewId*/) const
+{
+  return getBoundBox();
 }
 
 void ZStackObject::addVisualEffect(neutu::display::TVisualEffect ve)

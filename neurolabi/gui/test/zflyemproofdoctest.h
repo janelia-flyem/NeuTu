@@ -48,7 +48,7 @@ TEST(ZFlyEmProofDoc, DVID)
 //    param.setZ(1023);
     slice->update(param);
 
-    ASSERT_TRUE(slice->hit(1017, 797, 1023));
+    ASSERT_TRUE(slice->hit(1017, 797, 1023, 0));
 
     slice->selectHit();
     ASSERT_EQ(1, (int) slice->getSelectedOriginal().size());
@@ -168,6 +168,7 @@ TEST(ZFlyEmProofDoc, SparseStack)
               body->getDvidTarget().getGrayscaleSourceString());
   }
 
+  /*
    doc.toggleGrayscale(neutu::EAxis::Z);
    {
      ZDvidReader reader;
@@ -188,6 +189,7 @@ TEST(ZFlyEmProofDoc, SparseStack)
      ASSERT_EQ("http:127.0.0.1:1600:c315::grayscale",
                body->getDvidTarget().getGrayscaleSourceString());
    }
+   */
 }
 
 TEST(ZFlyEmOrthoDoc, Basic)

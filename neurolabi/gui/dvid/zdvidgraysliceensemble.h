@@ -36,7 +36,7 @@ public:
   void prepare(const std::vector<ZDvidTarget>& targetList);
 
   bool update(const ZStackViewParam &viewParam);
-  ZTask* makeFutureTask(ZStackDoc *doc);
+  ZTask* makeFutureTask(ZStackDoc *doc, int viewId);
 
   std::shared_ptr<ZDvidGraySlice> getActiveSlice() const;
   std::shared_ptr<ZDvidGraySlice> getSlice(const std::string &source) const;

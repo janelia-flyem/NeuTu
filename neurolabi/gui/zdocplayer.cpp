@@ -81,6 +81,11 @@ ZTask* ZDocPlayer::getFutureTask(ZStackDoc */*doc*/) const
   return NULL;
 }
 
+ZTask* ZDocPlayer::getFutureTask(ZStackDoc */*doc*/, int /*viewId*/) const
+{
+  return NULL;
+}
+
 /*************************************/
 ZDocPlayerList::~ZDocPlayerList()
 {
@@ -721,11 +726,11 @@ bool ZDvidGraySlicePlayer::updateData(const ZStackViewParam &viewParam) const
   return updated;
 }
 
-ZTask* ZDvidGraySlicePlayer::getFutureTask(ZStackDoc *doc) const
+ZTask* ZDvidGraySlicePlayer::getFutureTask(ZStackDoc *doc, int viewId) const
 {
   ZDvidGraySlice *obj = getCompleteData();
   if (obj != NULL) {
-    return obj->makeFutureTask(doc);
+    return obj->makeFutureTask(doc, viewId);
   }
 
   return NULL;
@@ -760,11 +765,12 @@ bool ZDvidGraySliceEnsemblePlayer::updateData(const ZStackViewParam &viewParam) 
   return updated;
 }
 
-ZTask* ZDvidGraySliceEnsemblePlayer::getFutureTask(ZStackDoc *doc) const
+ZTask* ZDvidGraySliceEnsemblePlayer::getFutureTask(
+    ZStackDoc *doc, int viewId) const
 {
   ZDvidGraySliceEnsemble *obj = getCompleteData();
   if (obj != NULL) {
-    return obj->makeFutureTask(doc);
+    return obj->makeFutureTask(doc, viewId);
   }
 
   return NULL;
@@ -800,11 +806,11 @@ bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
   return updated;
 }
 
-ZTask* ZDvidLabelSlicePlayer::getFutureTask(ZStackDoc *doc) const
+ZTask* ZDvidLabelSlicePlayer::getFutureTask(ZStackDoc *doc, int viewId) const
 {
   ZDvidLabelSlice *obj = getCompleteData();
   if (obj != NULL) {
-    return obj->makeFutureTask(doc);
+    return obj->makeFutureTask(doc, viewId);
   }
 
   return NULL;
