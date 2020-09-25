@@ -1132,22 +1132,22 @@ QSize ZStackView::sizeHint() const
 
 void ZStackView::mouseReleasedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMouseReleaseEvent(event);
+  buddyPresenter()->processMouseReleaseEvent(event, getViewId());
 }
 
 void ZStackView::mousePressedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMousePressEvent(event);
+  buddyPresenter()->processMousePressEvent(event, getViewId());
 }
 
 void ZStackView::mouseMovedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMouseMoveEvent(event);
+  buddyPresenter()->processMouseMoveEvent(event, getViewId());
 }
 
 void ZStackView::mouseDoubleClickedInImageWidget(QMouseEvent *event)
 {
-  buddyPresenter()->processMouseDoubleClickEvent(event);
+  buddyPresenter()->processMouseDoubleClickEvent(event, getViewId());
 }
 
 bool ZStackView::isDepthScrollable()

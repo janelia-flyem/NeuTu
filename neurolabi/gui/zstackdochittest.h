@@ -18,6 +18,8 @@ public:
 
   void setSliceAxis(neutu::EAxis axis);
   neutu::EAxis getSliceAxis() const;
+  void setViewId(int id);
+  int getViewId() const;
 
   bool hitTest(ZStackDoc *doc, double x, double y, double z);
   bool hitTest(ZStackDoc *doc, const ZPoint &pt);
@@ -36,6 +38,7 @@ public:
 private:
   ZStackObject *m_hitObject;
   neutu::EAxis m_sliceAxis;
+  int m_viewId = 0;
 
  // Swc_Tree_Node *m_hitSwcNode;
 //  ZStroke2d *m_hitStroke;

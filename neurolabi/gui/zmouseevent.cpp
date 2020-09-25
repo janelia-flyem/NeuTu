@@ -99,6 +99,16 @@ void ZMouseEvent::setSliceViewTransform(const ZSliceViewTransform &t)
   m_sliceViewTransform = t;
 }
 
+int ZMouseEvent::getViewId() const
+{
+  return m_viewId;
+}
+
+void ZMouseEvent::setViewId(int id)
+{
+  m_viewId = id;
+}
+
 /*
 void ZMouseEvent::setSliceAxis(neutu::EAxis axis)
 {

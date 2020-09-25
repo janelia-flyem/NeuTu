@@ -30,15 +30,16 @@ ZMouseEventMapper::EOperation ZMouseEventMapper::getOperation(
 #endif
 
 ZStackOperator ZMouseEventMapper::getOperation(
-    const ZMouseEvent &/*event*/) const
+    const ZMouseEvent &event) const
 {
-  return ZStackOperator();
+  return initOperation(event);
 }
 
-ZStackOperator ZMouseEventMapper::initOperation() const
+ZStackOperator ZMouseEventMapper::initOperation(const ZMouseEvent &event) const
 {
   ZStackOperator op;
   op.setMouseEventRecorder(m_eventRecorder);
+  op.setViewId(event.getViewId());
 
   return op;
 }
@@ -233,6 +234,7 @@ void ZMouseEventLeftButtonReleaseMapper::hitTest(
 
   ZStackDocHitTest hitManager;
   hitManager.setSliceAxis(event.getSliceAxis());
+  hitManager.setViewId(event.getViewId());
 
   if (m_context->isObjectProjectView()) {
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
@@ -248,7 +250,7 @@ void ZMouseEventLeftButtonReleaseMapper::hitTest(
 ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
     const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
   if (m_context != NULL) {
     switch (m_context->exploreMode()) {
     case ZInteractiveContext::EXPLORE_CAPTURE_MOUSE: //It triggers a processing step
@@ -360,7 +362,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
 ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
     const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
 
   ZPoint stackPosition = event.getStackPosition();
   ZPoint dataPosition = event.getPosition(neutu::ECoordinateSystem::ORGDATA);
@@ -372,6 +374,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
 //  }
   ZStackDocHitTest hitManager;
   hitManager.setSliceAxis(event.getSliceAxis());
+  hitManager.setViewId(event.getViewId());
   if (m_context->isProjectView()) {
     hitManager.hitTest(const_cast<ZStackDoc*>(
                          getDocument()), stackPosition.x(), stackPosition.y());
@@ -439,7 +442,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
 ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
   op.setPressedButtons(event.getButtons());
 
 
@@ -459,6 +462,7 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
   if (op.isNull()) {
     ZStackDocHitTest hitManager;
     hitManager.setSliceAxis(event.getSliceAxis());
+    hitManager.setViewId(event.getViewId());
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
                        event.getDataPosition());
 //                       event.getPosition(neutu::ECoordinateSystem::ORGDATA));
@@ -473,7 +477,7 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
 ZStackOperator ZMouseEventLeftRightButtonPressMapper::getOperation(
     const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
   op.setPressedButtons(event.getButtons());
 
   if (event.isInStack()) {
@@ -499,7 +503,7 @@ ZStackOperator ZMouseEventLeftRightButtonPressMapper::getOperation(
 ZStackOperator ZMouseEventMiddleButtonPressMapper::getOperation(
     const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
   op.setPressedButtons(event.getButtons());
 
   if (event.isInStack()) {
@@ -526,7 +530,7 @@ ZStackOperator ZMouseEventMiddleButtonPressMapper::getOperation(
 ZStackOperator
 ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
   if (m_context != NULL && m_doc.get() != NULL) {
     if (event.getButtons() == Qt::RightButton) {
       if (m_context->isContextMenuActivated()) {
@@ -577,9 +581,9 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
 ///////////////ZMouseEventRightButtonPressMapper/////////////////////
 ////////             O-             ////////////////////////////
 ZStackOperator
-ZMouseEventRightButtonPressMapper::getOperation(const ZMouseEvent &/*event*/) const
+ZMouseEventRightButtonPressMapper::getOperation(const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
 
   return op;
 }
@@ -687,7 +691,7 @@ void ZMouseEventMoveMapper::mapToImageZoom(
 ZStackOperator ZMouseEventMoveMapper::getOperation(
     const ZMouseEvent &event) const
 {
-  ZStackOperator op = initOperation();
+  ZStackOperator op = initOperation(event);
   op.setPressedButtons(event.getButtons());
 
   if (m_context) {

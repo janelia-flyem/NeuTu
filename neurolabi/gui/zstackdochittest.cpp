@@ -20,9 +20,19 @@ void ZStackDocHitTest::setSliceAxis(neutu::EAxis axis)
   m_sliceAxis = axis;
 }
 
+int ZStackDocHitTest::getViewId() const
+{
+  return m_viewId;
+}
+
+void ZStackDocHitTest::setViewId(int id)
+{
+  m_viewId = id;
+}
+
 bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y)
 {
-  m_hitObject = doc->hitTest(x, y, getSliceAxis());
+  m_hitObject = doc->hitTest(x, y, getSliceAxis(), getViewId());
   return m_hitObject != NULL;
 
 
@@ -65,7 +75,7 @@ bool ZStackDocHitTest::hitTest(ZStackDoc *doc, const ZPoint &pt)
 
 bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y, double z)
 {
-  m_hitObject = doc->hitTest(x, y, z);
+  m_hitObject = doc->hitTest(x, y, z, getViewId());
   return m_hitObject != NULL;
   /*
   m_hitStroke = NULL;

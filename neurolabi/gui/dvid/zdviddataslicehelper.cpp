@@ -396,6 +396,8 @@ bool ZDvidDataSliceHelper::hit(double x, double y, double z, int viewId) const
   if (m_currentViewParamMap.count(viewId) > 0) {
     return getViewParam(viewId).contains(x, y, z);
   }
+
+  return false;
 }
 
 bool ZDvidDataSliceHelper::IsResIncreasing(

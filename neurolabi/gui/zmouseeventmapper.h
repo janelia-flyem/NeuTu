@@ -26,7 +26,7 @@ public:
   //virtual EOperation getOperation(QMouseEvent *event);
   virtual ZStackOperator getOperation(const ZMouseEvent &event) const;
 
-  ZStackOperator initOperation() const;
+  ZStackOperator initOperation(const ZMouseEvent &event) const;
   //virtual EOperation getOperation()
 
   inline void setContext(ZInteractiveContext *context) {

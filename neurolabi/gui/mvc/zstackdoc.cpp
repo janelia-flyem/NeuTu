@@ -5528,7 +5528,7 @@ ZStackObject* ZStackDoc::hitTest(
   return NULL;
 }
 
-ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
+ZStackObject* ZStackDoc::hitTest(double x, double y, double z, int viewId)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
@@ -5541,7 +5541,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
     if (obj->isHittable()) {
-      if (obj->hit(x, y, z)) {
+      if (obj->hit(x, y, z, viewId)) {
         return obj;
       }
     }
@@ -5551,7 +5551,7 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 }
 
 ZStackObject* ZStackDoc::hitTest(
-    double x, double y, neutu::EAxis sliceAxis)
+    double x, double y, neutu::EAxis sliceAxis, int viewId)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
@@ -5565,7 +5565,7 @@ ZStackObject* ZStackDoc::hitTest(
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
     if (obj->isHittable() && obj->isProjectionVisible()) {
-      if (obj->hit(x, y, sliceAxis)) {
+      if (obj->hit(x, y, sliceAxis, viewId)) {
         return obj;
       }
     }

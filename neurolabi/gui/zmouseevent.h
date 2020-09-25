@@ -30,6 +30,8 @@ public:
   void setSliceViewTransform(const ZSliceViewTransform &t);
   neutu::EAxis getSliceAxis() const;
 
+  void setViewId(int id);
+  int getViewId() const;
   //void setStackPosition(const ZPoint &pt);
   //void setStackPosition(double x, double y, double z);
 
@@ -126,6 +128,7 @@ private:
   ZPoint m_stackPosition;
   ZPoint m_dataPosition;
   bool m_isInStack;
+  int m_viewId = 0;
 //  neutu::EAxis m_sliceAxis;
   ZSliceViewTransform m_sliceViewTransform;
 };

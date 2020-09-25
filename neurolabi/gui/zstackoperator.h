@@ -181,6 +181,9 @@ public:
     return m_shift;
   }
 
+  void setViewId(int viewId);
+  int getViewId() const;
+
   inline Qt::MouseButtons getPressedButtons() const {
     return m_buttonPressed;
   }
@@ -199,6 +202,7 @@ private:
   bool m_togglingStrokeLabel = false;
   int m_label = 0;
   bool m_shift = false;
+  int m_viewId = 0;
   Qt::MouseButtons m_buttonPressed = Qt::NoButton;
   const ZMouseEventRecorder *m_mouseEventRecorder = nullptr;
 };

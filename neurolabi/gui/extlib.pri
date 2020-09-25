@@ -124,7 +124,11 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     contains(DEFINES, _ENABLE_LOWTIS_) {
 #        LIBS *= -llowtis
         CONFIG(debug, debug|release) {
-            LIBS *= -llowtis-g
+            CONFIG(force_lowtis_release) {
+                LIBS *= -llowtis
+            } else {
+                LIBS *= -llowtis-g
+            }
         } else {
             LIBS *= -llowtis
         }

@@ -1588,7 +1588,7 @@ int ZStackPresenter::getSliceIndex() const {
   return sliceIndex;
 }
 
-void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
+void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event, int viewId)
 {
 //  interactiveContext().setUniqueMode(ZInteractiveContext::INTERACT_FREE);
 
@@ -1615,13 +1615,14 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
   }
 
   const ZMouseEvent& mouseEvent =
-      m_mouseEventProcessor.process(event, ZMouseEvent::EAction::RELEASE);
+      m_mouseEventProcessor.process(event, ZMouseEvent::EAction::RELEASE, viewId);
 
   if (mouseEvent.isNull()) {
     return;
   }
 
-  ZStackOperator op = m_mouseEventProcessor.getOperator();  
+  ZStackOperator op = m_mouseEventProcessor.getOperator();
+  op.setViewId(viewId);
   process(op);
 
   if (isContextMenuOn()) {
@@ -1724,7 +1725,7 @@ void ZStackPresenter::decreaseZoomRatio(int x, int y)
   buddyView()->decreaseZoomRatio(x, y);
 }
 
-void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
+void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event, int viewId)
 {
 #ifdef _DEBUG_2
   std::cout << "Recorder address: " << &(m_mouseEventProcessor.getRecorder())
@@ -1734,7 +1735,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
   updateMouseCursorGlyphPos();
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::EAction::MOVE);
+        event, ZMouseEvent::EAction::MOVE, viewId);
 
   if (mouseEvent.isNull()) {
     return;
@@ -1790,7 +1791,7 @@ void ZStackPresenter::setContextMenuFactory(
   m_menuFactory = std::move(factory);
 }
 
-void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
+void ZStackPresenter::processMousePressEvent(QMouseEvent *event, int viewId)
 {
   if (event->buttons() == (Qt::LeftButton | Qt::RightButton)) {
     m_skipMouseReleaseEvent = 2;
@@ -1803,7 +1804,7 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::EAction::PRESS);
+        event, ZMouseEvent::EAction::PRESS, viewId);
   if (mouseEvent.isNull()) {
     return;
   }
@@ -2319,10 +2320,11 @@ bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
   return false;
 }
 
-void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
+void ZStackPresenter::processMouseDoubleClickEvent(
+    QMouseEvent *event, int viewId)
 {
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::EAction::DOUBLE_CLICK);
+        event, ZMouseEvent::EAction::DOUBLE_CLICK, viewId);
 
   if (mouseEvent.isNull()) {
     return;

@@ -36,7 +36,7 @@ void ZMouseEventProcessor::registerMapper()
 }
 
 const ZMouseEvent& ZMouseEventProcessor::process(
-    QMouseEvent *event, ZMouseEvent::EAction action)
+    QMouseEvent *event, ZMouseEvent::EAction action, int viewId)
 {
   switch (action) {
   case ZMouseEvent::EAction::PRESS:
@@ -88,6 +88,8 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   std::cout << "Processing mouse event: Z= " << z << std::endl;
   std::cout << "Data positoin: Z=" << dataPos.getZ() << std::endl;
 #endif
+
+  zevent.setViewId(viewId);
 
   return m_recorder.record(zevent);;
 }

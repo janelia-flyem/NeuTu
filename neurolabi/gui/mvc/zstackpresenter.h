@@ -159,12 +159,13 @@ public:
   void updateZoomOffset(int cx, int cy, int wx, int wy);
   void setZoomOffset(int x, int y);
 */
-  void processMouseReleaseEvent(QMouseEvent *event);
+  void processMouseReleaseEvent(QMouseEvent *event, int viewId);
+  void processMouseMoveEvent(QMouseEvent *event, int viewId);
+  void processMousePressEvent(QMouseEvent *event, int viewId);
+  void processMouseDoubleClickEvent(QMouseEvent *event, int viewId);
+
   virtual bool processKeyPressEvent(QKeyEvent *event);
   bool processKeyPressEventOther(QKeyEvent *event);
-  void processMouseMoveEvent(QMouseEvent *event);
-  void processMousePressEvent(QMouseEvent *event);
-  void processMouseDoubleClickEvent(QMouseEvent *eventint);
 
   virtual bool customKeyProcess(QKeyEvent *event);
   virtual bool processCustomOperator(const ZStackOperator &op,

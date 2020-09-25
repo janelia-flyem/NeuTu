@@ -29,7 +29,7 @@ public:
 //  neutu::EAxis getSliceAxis() const;
 
   const ZMouseEvent&
-  process(QMouseEvent *event, ZMouseEvent::EAction action);
+  process(QMouseEvent *event, ZMouseEvent::EAction action, int viewId);
 
   //void getCurrentMousePosition() const;
   //void getLastMousePosition() const;

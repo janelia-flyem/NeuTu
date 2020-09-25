@@ -656,8 +656,8 @@ public:
 
   ZSwcTree* nodeToSwcTree(const Swc_Tree_Node *node) const;
 
-  ZStackObject *hitTest(double x, double y, double z);
-  ZStackObject *hitTest(double x, double y, neutu::EAxis sliceAxis);
+  ZStackObject *hitTest(double x, double y, double z, int viewId);
+  ZStackObject *hitTest(double x, double y, neutu::EAxis sliceAxis, int viewId);
 //  ZStackObject *hitTestWidget(int x, int y);
 
   ZStackObject *hitTest(

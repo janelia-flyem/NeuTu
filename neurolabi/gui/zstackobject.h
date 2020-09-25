@@ -267,10 +267,12 @@ public:
 
   virtual bool hit(double x, double y, double z, int viewId);
   virtual bool hit(double x, double y, double z);
-  virtual bool hit(const ZIntPoint &pt);
+  bool hit(const ZIntPoint &pt);
+  bool hit(const ZIntPoint &pt, int viewId);
   virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
                    neutu::EAxis axis);
   virtual bool hit(double x, double y, neutu::EAxis axis);
+  virtual bool hit(double x, double y, neutu::EAxis axis, int viewId);
   virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis);
 
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }

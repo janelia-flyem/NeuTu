@@ -317,6 +317,11 @@ bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
   return false;
 }
 
+bool ZStackObject::hit(double x, double y, neutu::EAxis axis, int /*viewId*/)
+{
+  return hit(x, y, axis);
+}
+
 bool ZStackObject::hit(double x, double y, double z, int /*viewId*/)
 {
   return hit(x, y, z);
@@ -334,6 +339,11 @@ bool ZStackObject::hit(double x, double y, double z)
 bool ZStackObject::hit(const ZIntPoint &pt)
 {
   return hit(pt.getX(), pt.getY(), pt.getZ());
+}
+
+bool ZStackObject::hit(const ZIntPoint &pt, int viewId)
+{
+  return hit(pt.getX(), pt.getY(), pt.getZ(), viewId);
 }
 
 bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,

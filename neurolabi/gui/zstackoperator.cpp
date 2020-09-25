@@ -29,6 +29,16 @@ bool ZStackOperator::isNull() const
   return getOperation() == OP_NULL;
 }
 
+void ZStackOperator::setViewId(int viewId)
+{
+  m_viewId = viewId;
+}
+
+int ZStackOperator::getViewId() const
+{
+  return m_viewId;
+}
+
 ZPoint ZStackOperator::getMouseOffset(neutu::ECoordinateSystem cs) const
 {
   ZPoint offset(0, 0, 0);
