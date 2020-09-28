@@ -52,20 +52,20 @@ const ZMouseEvent& ZMouseEventProcessor::process(
   }
 
   ZMouseEvent zevent;
-  zevent.set(event, action, m_context->getSliceViewTransform());
+  zevent.set(event, action, m_context->getSliceViewTransform(viewId));
 //  zevent.setSliceAxis(getSliceAxis());
   const ZIntPoint &pt = zevent.getWidgetPosition();
 //  zevent.setRawStackPosition(ZPositionMapper::WidgetToRawStack(pt, viewProj));
 //  zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt, viewProj));
 
 
-  ZPoint stackPosition = m_context->getSliceViewTransform().transform(
+  ZPoint stackPosition = m_context->getSliceViewTransform(viewId).transform(
         ZPoint(pt.getX(), pt.getY(), 0), neutu::data3d::ESpace::CANVAS,
         neutu::data3d::ESpace::VIEW);
   zevent.setStackPosition(stackPosition);
 
 
-  ZPoint dataPosition = m_context->getSliceViewTransform().transform(
+  ZPoint dataPosition = m_context->getSliceViewTransform(viewId).transform(
         stackPosition, neutu::data3d::ESpace::VIEW,
         neutu::data3d::ESpace::MODEL);
 
@@ -254,6 +254,15 @@ ZPoint ZMouseEventProcessor::getStackPosition(
     Qt::MouseButtons buttons, ZMouseEvent::EAction action) const
 {
   return getMouseEvent(buttons, action).getStackPosition();
+}
+
+ZPoint ZMouseEventProcessor::getLatestPosition(
+    Qt::MouseButtons buttons, ZMouseEvent::EAction action,
+    neutu::data3d::ESpace space) const
+{
+  const ZMouseEvent &event = getMouseEvent(buttons, action);
+
+  return event.getPosition(space);
 }
 
 /*

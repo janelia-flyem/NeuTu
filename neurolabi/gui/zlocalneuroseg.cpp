@@ -47,7 +47,7 @@ ZLocalNeuroseg::~ZLocalNeuroseg()
   }
 }
 
-bool ZLocalNeuroseg::display(QPainter *painter, const DisplayConfig &config) const
+bool ZLocalNeuroseg::display(QPainter */*painter*/, const DisplayConfig &/*config*/) const
 {
   return false;
 }

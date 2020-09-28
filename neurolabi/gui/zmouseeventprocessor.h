@@ -52,6 +52,9 @@ public:
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
   ZPoint getStackPosition(
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
+  ZPoint getLatestPosition(
+      Qt::MouseButtons buttons, ZMouseEvent::EAction action,
+      neutu::data3d::ESpace space) const;
 //  ZPoint getRawStackPosition(
 //      Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
 

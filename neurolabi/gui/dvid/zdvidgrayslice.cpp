@@ -310,9 +310,11 @@ int ZDvidGraySlice::updateParam(T *param)
 
 bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
 {
+  /*
   if (viewParam.getSliceAxis() != getSliceAxis()) {
     return false;
   }
+  */
 
   if (viewParam.isViewportEmpty()) {
     return false;
@@ -430,9 +432,11 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc, int viewId)
 
 void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 {
+  /*
   if (viewParam.getSliceAxis() != m_sliceAxis) {
     return;
   }
+  */
 
   getHelper()->setViewParam(viewParam);
   setZoom(viewParam.getZoomLevel());

@@ -22,11 +22,12 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> d
   ZFlyEmArbMvc *frame = new ZFlyEmArbMvc(parent);
 
   BaseConstruct(frame, doc, neutu::EAxis::ARB);
-  frame->getView()->setHoverFocus(true);
-  ZArbSliceScrollStrategy *strategy = new ZArbSliceScrollStrategy(frame->getView());
-  frame->getView()->setScrollStrategy(strategy);
-  frame->getView()->configure(ZStackView::EMode::PLAIN_IMAGE);
-  frame->getView()->setMaxViewPort(1600 * 1600);
+  frame->getMainView()->setHoverFocus(true);
+  ZArbSliceScrollStrategy *strategy = new ZArbSliceScrollStrategy(
+        frame->getMainView());
+  frame->getMainView()->setScrollStrategy(strategy);
+  frame->getMainView()->configure(ZStackView::EMode::PLAIN_IMAGE);
+  frame->getMainView()->setMaxViewPort(1600 * 1600);
   frame->initViewButton();
 
   return frame;
@@ -66,7 +67,7 @@ void ZFlyEmArbMvc::setDvid(const ZDvidEnv &env)
 {
   clear();
   if (getCompleteDocument()->setDvid(env)) {
-    getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
+    getMainView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
                                     SLOT(allowBlinkingSegmentation(bool)));
     if (getRole() == ERole::ROLE_WIDGET) {
       getViewButton(EViewButton::GOTO_POSITION)->show();
@@ -104,7 +105,7 @@ void ZFlyEmArbMvc::updateViewParam(const ZArbSliceViewParam &param)
 void ZFlyEmArbMvc::resetViewParam(const ZArbSliceViewParam &param)
 {
 //  getCompletePresenter()->setViewParam(param);
-  getView()->resetViewParam(param);
+  getMainView()->resetViewParam(param);
 }
 
 /*

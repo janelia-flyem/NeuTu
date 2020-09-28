@@ -95,8 +95,8 @@ public:
   QColor getBodyColor(uint64_t bodyId) const;
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis, bool sv) const;
-  ZDvidLabelSlice* getActiveLabelSlice(neutu::EAxis axis) const;
+  ZDvidLabelSlice* getDvidLabelSlice(bool sv) const;
+  ZDvidLabelSlice* getActiveLabelSlice() const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSliceList(bool sv);
   QList<ZDvidLabelSlice*> getFrontDvidLabelSliceList() const;
   QList<ZDvidLabelSlice*> getDvidBodySliceList() const;
@@ -105,8 +105,8 @@ public:
   void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
 
 //  ZDvidGraySlice* getDvidGraySlice() const;
-  ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
-  ZDvidGraySliceEnsemble* getDvidGraySliceEnsemble(neutu::EAxis axis) const;
+  ZDvidGraySlice* getDvidGraySlice() const;
+  ZDvidGraySliceEnsemble* getDvidGraySliceEnsemble() const;
 
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
@@ -219,7 +219,7 @@ public:
 
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
-  void enhanceTileContrast(neutu::EAxis axis, bool highContrast);
+  void enhanceTileContrast(bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
 //  void useBodyNameMap(bool on);
@@ -335,8 +335,7 @@ public: //Synapse functions
   bool hasDvidSynapse() const;
 //  void tryMoveSelectedSynapse(const ZIntPoint &dest);
   void annotateSelectedSynapse(ZJsonObject propJson, neutu::EAxis axis);
-  void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
-                               neutu::EAxis axis);
+  void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg);
 
   /*!
    * \brief Sync the synapse with DVID
@@ -386,8 +385,7 @@ public: //Todo list functions
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 
-  void annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg,
-                                neutu::EAxis axis);
+  void annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg);
 
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
@@ -436,6 +434,7 @@ public:
    * \brief Fetch DVID label slice data and set body selections
    */
   void updateDvidLabelSlice(neutu::EAxis axis);
+  void updateDvidLabelSlice();
 
   void allowDvidLabelSliceBlinking(bool on);
 //  void updateDvidLabelSlice();
@@ -551,9 +550,9 @@ public:
   void updateSegmentationOpacity(double opacity);
 
   //Obsolete. Use getCurrentGrayscaleReader() instead
-  ZDvidReader* getCurrentGrayscaleReader(neutu::EAxis axis) const;
-
   ZDvidReader* getCurrentGrayscaleReader() const;
+
+//  ZDvidReader* getCurrentGrayscaleReader() const;
   ZDvidReader* getCurrentBodyGrayscaleReader();
 
   ZMesh* makeRoiMesh(const QString &name);

@@ -1051,7 +1051,7 @@ void ZStackFrame::changeWindowTitle(bool clean)
 void ZStackFrame::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
-    if (!m_presenter->processKeyPressEvent(event)) {
+    if (!m_presenter->processKeyPressEvent(event, -1)) {
       emit keyEventEmitted(event);
     }
   }

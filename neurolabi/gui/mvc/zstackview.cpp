@@ -91,7 +91,7 @@ ZStackView::~ZStackView()
   delete m_imageMask;
 
   delete m_sliceStrategy;
-  delete m_tileCanvas;
+//  delete m_tileCanvas;
 //  delete m_objectCanvas;
 }
 
@@ -480,10 +480,12 @@ void ZStackView::connectSignalSlot()
 
   connect(m_depthControl, SIGNAL(valueChanged(int)),
           this, SLOT(processDepthSliderValueChange(int)));
-  connect(m_depthControl, SIGNAL(sliderPressed()),
-          this, SIGNAL(sliceSliderPressed()));
-  connect(m_depthControl, SIGNAL(sliderReleased()),
-          this, SIGNAL(sliceSliderReleased()));
+  connect(m_depthControl, &ZSlider::sliderPressed,
+          this, &ZStackView::notifySliceSliderPressed);
+  connect(m_depthControl, &ZSlider::sliderReleased,
+          this, &ZStackView::notifySliceSliderReleased);
+//  connect(m_depthControl, SIGNAL(sliderReleased()),
+//          this, SIGNAL(sliceSliderReleased()));
   connect(m_depthSpinBox, SIGNAL(valueChanged(int)),
           this, SLOT(setDepth(int)));
   connect(m_depthControl, SIGNAL(valueChanged(int)),
@@ -513,6 +515,16 @@ void ZStackView::connectSignalSlot()
   }
 
 //  connect(this, SIGNAL(viewPortChanged()), this, SLOT(paintActiveTile()));
+}
+
+void ZStackView::notifySliceSliderPressed()
+{
+  emit sliceSliderPressed(this);
+}
+
+void ZStackView::notifySliceSliderReleased()
+{
+  emit sliceSliderReleased(this);
 }
 
 void ZStackView::updateZSpinBoxValue()
@@ -647,7 +659,7 @@ void ZStackView::enableOffsetAdjustment(bool on)
 void ZStackView::processTransformChange()
 {
   updateDataInfo();
-  buddyPresenter()->setSliceViewTransform(getSliceViewTransform());
+  buddyPresenter()->setSliceViewTransform(getViewId(), getSliceViewTransform());
 //  m_paintSorter.clear();
 //  m_paintBundle.setSliceViewTransform(getSliceViewTransform());
   updateViewData();
@@ -2406,7 +2418,19 @@ void ZStackView::updateObjectBuffer(
     config.setTransform(canvas->getTransform());
     config.setViewId(getViewId());
 
+#ifdef _DEBUG_
+      if (m_viewId == 2) {
+        std::cout << "debug here" << std::endl;
+      }
+#endif
+
     for (ZStackObject *obj : objList) {
+#ifdef _DEBUG_
+      if (m_viewId == 2) {
+        std::cout << "debug here" << std::endl;
+      }
+#endif
+
       if (obj->display(painter, config)) {
         canvas->setPainted(true);
       }
@@ -3591,6 +3615,16 @@ void ZStackView::logViewParam()
 //       << ZLog::Tag("parameter", QJsonValue(jdoc.object()));
 }
 
+bool ZStackView::signalingViewChange() const
+{
+  return m_signalingViewChange;
+}
+
+void ZStackView::enableViewChangeSignal(bool on)
+{
+  m_signalingViewChange = on;
+}
+
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 {
   if (!isViewChangeEventBlocked() && isVisible()) {
@@ -3624,7 +3658,8 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
       LDEBUG() << "Painting objects in" << painted;
     }
 
-    notifyViewChanged(getViewParameter()); //?
+    notifyViewChanged();
+//    notifyViewChanged(getViewParameter()); //?
 
 #ifdef _DEBUG_2
     if (m_objectCanvas) {
@@ -3654,12 +3689,13 @@ void ZStackView::notifyViewChanged(NeuTube::View::EExploreAction action)
 
 void ZStackView::notifyViewChanged()
 {
-  if (!isViewChangeEventBlocked()) {
-    emit viewChanged();
+  if (signalingViewChange()) {
+    emit viewChanged(getViewId());
   }
 //  notifyViewChanged(getViewParameter(neutu::ECoordinateSystem::STACK));
 }
 
+#if 0
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
 //  updateActiveDecorationCanvas();
@@ -3677,6 +3713,7 @@ void ZStackView::notifyViewChanged(const ZStackViewParam &param)
     emit viewChanged(param);
   }
 }
+#endif
 
 /*
 void ZStackView::notifyViewPortChanged()
@@ -4082,9 +4119,9 @@ void ZStackView::highlightPosition(const ZIntPoint &pt)
 
 void ZStackView::highlightPosition(int x, int y, int z)
 {
-  ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
-  ball->setColor(255, 0, 0);
-  ball->addVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL);
+//  ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
+//  ball->setColor(255, 0, 0);
+//  ball->addVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL);
 //  ball->display(m_objectCanvasPainter, sliceIndex(), ZStackObject::SOLID);
 
   buddyPresenter()->setHighlight(true);

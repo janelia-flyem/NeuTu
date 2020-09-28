@@ -4113,7 +4113,7 @@ QColor ZFlyEmBody3dDoc::getBodyColor(uint64_t bodyId)
 #ifndef _NEU3_
   if (getDataDocument() != NULL) {
     ZDvidLabelSlice *labelSlice =
-        ZFlyEmProofDocUtil::GetActiveLabelSlice(getDataDocument(), neutu::EAxis::Z);
+        ZFlyEmProofDocUtil::GetActiveLabelSlice(getDataDocument());
 
     if (labelSlice != NULL) {
       if (getBodyType() == flyem::EBodyType::SPHERE) { //using the original color

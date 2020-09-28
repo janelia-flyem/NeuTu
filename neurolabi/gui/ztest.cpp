@@ -32386,7 +32386,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
   ZDvidStackSource source;
   source.setDvidTarget(reader->getDvidTarget());
@@ -32400,6 +32400,46 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+
+#  if 0
+  ZStack *stack = reader->readGrayScaleLowtis(
+        /*x0=*/23057, /*y0=*/29734, /*z0=*/41138,
+        /*vx1=*/1, /*vy1=*/0, /*vz1=*/0, /*vx2=*/0, /*vy2=*/1, /*vz2=*/0,
+        /*width=*/46114, /*height=*/59468, /*zoom=*/7,
+        /*cx=*/0, /*cy=*/0, /*centerCut=*/true);
+#  endif
+
+//  std::vector<int> blockcoords{0, 0, 2};
+  reader->readGrayScaleBlock(1, 0, 2, 8);
+  reader->readGrayScaleBlock(2, 0, 2, 8);
+  reader->readGrayScaleBlock(0, 1, 2, 8);
+  reader->readGrayScaleBlock(1, 1, 2, 8);
+  reader->readGrayScaleBlock(2, 1, 2, 8);
+  reader->readGrayScaleBlock(0, 2, 2, 8);
+  reader->readGrayScaleBlock(1, 2, 2, 8);
+  reader->readGrayScaleBlock(2, 2, 2, 8);
+  reader->readGrayScaleBlock(0, 3, 2, 8);
+  reader->readGrayScaleBlock(1, 3, 2, 8);
+  reader->readGrayScaleBlock(2, 3, 2, 8);
+#endif
+
+#if 1
+//  ZStack *stack = new ZStack;
+//  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  ZStack *stack = ZStackFactory::MakeVirtualStack(512, 512, 512);
+  std::shared_ptr<ZStackDoc> doc = std::shared_ptr<ZStackDoc>(new ZStackDoc);
+  ZStackMvc *frame = ZStackMvc::Make(
+        nullptr, doc, {neutu::EAxis::Z, neutu::EAxis::X, neutu::EAxis::Y});
+  frame->connectSignalSlot();
+  doc->loadStack(stack);
+  ZStackBall *ball = new ZStackBall(300, 256, 256, 100);
+  ball->setColor(255, 0, 0);
+  doc->addObject(ball);
+
+  frame->show();
+#endif
   std::cout << "Done." << std::endl;
 }
 

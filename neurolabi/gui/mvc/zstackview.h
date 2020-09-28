@@ -393,13 +393,16 @@ public:
   bool isViewChanged(const ZSliceViewTransform &t);
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
+
+  bool signalingViewChange() const;
+  void enableViewChangeSignal(bool on);
 //  void processViewChange(bool redrawing);
 //  void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
   void setSmoothDisplay(bool on);
 
-  void notifyViewChanged(const ZStackViewParam &param);
+//  void notifyViewChanged(const ZStackViewParam &param);
 
   /*!
    * \brief Get the size of the image window.
@@ -597,15 +600,18 @@ public slots:
   void syncTransformControl();
   void updateDataInfo();
 
+  void notifySliceSliderPressed();
+  void notifySliceSliderReleased();
+
 signals:
 //  void currentSliceChanged(int);
-  void viewChanged(ZStackViewParam param);
-  void viewChanged();
+  void viewChanged(const ZStackViewParam &param);
+  void viewChanged(int viewId);
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
   void changingSetting();
-  void sliceSliderPressed();
-  void sliceSliderReleased();
+  void sliceSliderPressed(ZStackView*);
+  void sliceSliderReleased(ZStackView*);
   void closingChildFrame();
   void autoTracing();
   void widgetCanvasUpdated(ZPixmap *canvas);
@@ -705,7 +711,7 @@ protected:
 //  ZPainter m_imagePainter;
   ZImage *m_imageMask = NULL;
 
-  ZSliceCanvas *m_tileCanvas = NULL;
+//  ZSliceCanvas *m_tileCanvas = NULL;
   ZImageWidget *m_imageWidget;
   ZLabeledSpinBoxWidget *m_depthSpinBox;
 
@@ -740,6 +746,7 @@ protected:
   bool m_depthFrozen;
   bool m_viewPortFrozen;
   bool m_viewChangeEventBlocked;
+  bool m_signalingViewChange = true;
 
   ZScrollSliceStrategy *m_sliceStrategy;
 

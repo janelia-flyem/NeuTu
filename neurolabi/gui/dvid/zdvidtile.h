@@ -99,7 +99,7 @@ private:
   int m_ix = 0;
   int m_iy = 0;
   int m_z = 0;
-  mutable int m_latestZ = 0;
+//  mutable int m_latestZ = 0;
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;

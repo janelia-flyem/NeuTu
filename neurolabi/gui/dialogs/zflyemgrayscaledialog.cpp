@@ -145,7 +145,7 @@ ZStackViewParam ZFlyEmGrayscaleDialog::getViewParam() const
   ZFlyEmProofMvc *mvc = getFlyEmProofMvc();
   ZStackViewParam viewParam;
   if (mvc != NULL) {
-    viewParam = mvc->getView()->getViewParameter();
+    viewParam = mvc->getMainView()->getViewParameter();
   }
 
   return viewParam;

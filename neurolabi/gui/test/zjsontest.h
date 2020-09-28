@@ -41,7 +41,7 @@ TEST(Json, basic)
 
   arrayObj.append(3.0);
   ASSERT_EQ(3, (int) arrayObj.size());
-  ASSERT_EQ(0, ZJsonParser::integerValue(arrayObj.at(2)));
+  ASSERT_EQ(int64_t(0), ZJsonParser::integerValue(arrayObj.at(2)));
 
   ZJsonValue value2;
   ASSERT_TRUE(value2.isNull());
@@ -109,7 +109,7 @@ TEST(ZJsonArray, basic)
   myList.append(12345);
 
   ZJsonArray arrayObj3(obj.value("key"));
-  ASSERT_EQ(12345, ZJsonParser::integerValue(arrayObj3.at(0)));
+  ASSERT_EQ(int64_t(12345), ZJsonParser::integerValue(arrayObj3.at(0)));
 }
 
 TEST(ZJsonObject, basic)

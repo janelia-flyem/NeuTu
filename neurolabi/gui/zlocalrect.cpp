@@ -45,7 +45,7 @@ ZCuboid ZLocalRect::getBoundBox() const
   return ZCuboid();
 }
 
-bool ZLocalRect::display(QPainter *painter, const DisplayConfig &config) const
+bool ZLocalRect::display(QPainter */*painter*/, const DisplayConfig &/*config*/) const
 {
   return false;
 }

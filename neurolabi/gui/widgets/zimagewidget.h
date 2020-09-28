@@ -200,7 +200,9 @@ public:
 //  QSize canvasSize() const;
   QSize screenSize() const;
 
-  ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
+
+  ZPoint getCurrentMousePosition(neutu::data3d::ESpace space) const;
+  bool containsCurrentMousePostion() const;
 
   void paintEvent(QPaintEvent *event) override;
 

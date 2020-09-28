@@ -699,7 +699,7 @@ void Neu3Window::applyBrowserColorScheme()
   if (m_browserColorScheme) {
     ZFlyEmProofDoc* doc = m_sliceWidget->getCompleteDocument();
     ZDvidLabelSlice* slice =
-        ZFlyEmProofDocUtil::GetActiveLabelSlice(doc, neutu::EAxis::ARB);
+        ZFlyEmProofDocUtil::GetActiveLabelSlice(doc);
     if (slice) {
       slice->setCustomColorMap(m_browserColorScheme);
       updateSliceBrowserSelection();

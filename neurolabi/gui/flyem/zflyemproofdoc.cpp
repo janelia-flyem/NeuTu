@@ -1092,10 +1092,11 @@ std::string get_grayscale_key(const ZDvidTarget &target) {
 
 }
 
-ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader(neutu::EAxis axis) const
+/*
+ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader() const
 {
   ZDvidReader *reader = m_mainGrayscaleReader;
-  ZDvidGraySlice* slice = getDvidGraySlice(axis);
+  ZDvidGraySlice* slice = getDvidGraySlice();
   if (slice) {
     const std::string &key = get_grayscale_key(slice->getDvidTarget());
     auto iter = m_grayscaleReaderMap.find(key);
@@ -1108,6 +1109,7 @@ ZDvidReader* ZFlyEmProofDoc::getCurrentGrayscaleReader(neutu::EAxis axis) const
 
   return reader;
 }
+*/
 
 ZDvidReader* ZFlyEmProofDoc::getCurrentBodyGrayscaleReader()
 {
@@ -1726,27 +1728,27 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 }
 */
 
-ZDvidGraySliceEnsemble* ZFlyEmProofDoc::getDvidGraySliceEnsemble(
-    neutu::EAxis axis) const
+ZDvidGraySliceEnsemble* ZFlyEmProofDoc::getDvidGraySliceEnsemble() const
 {
   ZStackObject *obj = getObject(
         ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE,
-        ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(axis));
+        ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(neutu::EAxis::Z));
   ZDvidGraySliceEnsemble *se = dynamic_cast<ZDvidGraySliceEnsemble*>(obj);
 
   return se;
 }
 
-ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutu::EAxis axis) const
+ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 {
   ZDvidGraySlice *slice = nullptr;
 
-  ZDvidGraySliceEnsemble *se = getDvidGraySliceEnsemble(axis);
+  ZDvidGraySliceEnsemble *se = getDvidGraySliceEnsemble();
   if (se) {
     slice = se->getActiveSlice().get();
   } else { //to be removed
-    ZStackObject *obj = getObject(ZStackObject::EType::DVID_GRAY_SLICE,
-                                  ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
+    ZStackObject *obj = getObject(
+          ZStackObject::EType::DVID_GRAY_SLICE,
+          ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutu::EAxis::Z));
     slice = dynamic_cast<ZDvidGraySlice*>(obj);
   }
 
@@ -1794,16 +1796,16 @@ void ZFlyEmProofDoc::prepareDvidData(const ZDvidEnv &env)
   if (getDvidTarget().hasTileData()) {
     initTileData();
   } else {
-    initGrayscaleSlice(env, neutu::EAxis::X);
-    initGrayscaleSlice(env, neutu::EAxis::Y);
-    initGrayscaleSlice(env, neutu::EAxis::Z);
+//    initGrayscaleSlice(env, neutu::EAxis::X);
+//    initGrayscaleSlice(env, neutu::EAxis::Y);
     initGrayscaleSlice(env, neutu::EAxis::ARB);
+//    initGrayscaleSlice(env, neutu::EAxis::ARB);
   }
 
-  initLabelSlice(neutu::EAxis::X);
-  initLabelSlice(neutu::EAxis::Y);
-  initLabelSlice(neutu::EAxis::Z);
+//  initLabelSlice(neutu::EAxis::X);
+//  initLabelSlice(neutu::EAxis::Y);
   initLabelSlice(neutu::EAxis::ARB);
+//  initLabelSlice(neutu::EAxis::ARB);
 
   if (getDvidInfo().isValid()) {
     setResolution(getDvidInfo().getVoxelResolution());
@@ -2058,16 +2060,16 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
   UpdateDvidTargetForObject<FlyEmSynapseEnsemble>(this);
 }
 
-ZDvidLabelSlice* ZFlyEmProofDoc::getActiveLabelSlice(neutu::EAxis axis) const
+ZDvidLabelSlice* ZFlyEmProofDoc::getActiveLabelSlice() const
 {
-  return getDvidLabelSlice(axis, isSupervoxelMode());
+  return getDvidLabelSlice(isSupervoxelMode());
 }
 
-ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(neutu::EAxis axis, bool sv) const
+ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(bool sv) const
 {
   QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
   std::string source =
-      ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis, sv);
+      ZStackObjectSourceFactory::MakeDvidLabelSliceSource(neutu::EAxis::Z, sv);
   for (QList<ZDvidLabelSlice*>::iterator iter = teList.begin();
        iter != teList.end(); ++iter) {
     ZDvidLabelSlice *te = *iter;
@@ -2411,8 +2413,7 @@ void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
 #endif
 }
 
-void ZFlyEmProofDoc::annotateSelectedTodoItem(
-    ZFlyEmTodoAnnotationDialog *dlg, neutu::EAxis /*axis*/)
+void ZFlyEmProofDoc::annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg)
 {
   FlyEmTodoEnsemble *te = getTodoEnsemble();
 
@@ -2500,7 +2501,7 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(const ZIntPoint &dest)
 #endif
 
 void ZFlyEmProofDoc::annotateSelectedSynapse(
-    ZFlyEmSynapseAnnotationDialog *dlg, neutu::EAxis /*axis*/)
+    ZFlyEmSynapseAnnotationDialog *dlg)
 {
   FlyEmSynapseEnsemble *te = getSynapseEnsemble();
 
@@ -3024,8 +3025,7 @@ bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode)
 std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
     neutu::ELabelSource type) const
 {
-  const ZDvidLabelSlice *labelSlice =
-      getDvidLabelSlice(neutu::EAxis::Z, false);
+  const ZDvidLabelSlice *labelSlice = getDvidLabelSlice(false);
   if (labelSlice != NULL) {
     return labelSlice->getSelected(type);
   }
@@ -3274,7 +3274,7 @@ void ZFlyEmProofDoc::updateBodyObject()
   foreach (ZDvidSparsevolSlice *slice, sparsevolSliceList) {
 //    slice->setLabel(m_bodyMerger.getFinalLabel(slice->getLabel()));
 //    uint64_t finalLabel = m_bodyMerger.getFinalLabel(slice->getLabel());
-    slice->setColor(getDvidLabelSlice(neutu::EAxis::Z, false)->getLabelColor(
+    slice->setColor(getDvidLabelSlice(false)->getLabelColor(
                       slice->getLabel(), neutu::ELabelSource::ORIGINAL));
     processObjectModified(slice);
     //slice->updateSelection();
@@ -3402,7 +3402,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
 {
 //  QMutexLocker locker(&m_workWriterMutex);
 
-  ZDvidLabelSlice *slice = getDvidLabelSlice(viewParam.getSliceAxis(), sv);
+  ZDvidLabelSlice *slice = getDvidLabelSlice(sv);
   if (!slice) {
     return;
   }
@@ -3440,7 +3440,7 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
     int centerCutX, int centerCutY,
     bool usingCenterCut, const std::string &source)
 {
-  ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
+  ZDvidGraySlice *slice = getDvidGraySlice();
   if (slice) {
     const ZDvidReader &workReader = slice->getWorkDvidReader();
     ZStack *array = NULL;
@@ -3527,8 +3527,7 @@ void ZFlyEmProofDoc::updateLabelSlice(
     int centerCutX, int centerCutY, bool usingCenterCut)
 {
   if (array != NULL) {
-    ZDvidLabelSlice *slice =
-        getDvidLabelSlice(viewParam.getSliceAxis(), m_supervoxelMode);
+    ZDvidLabelSlice *slice = getDvidLabelSlice(m_supervoxelMode);
     if (slice != NULL) {
       if (slice->consume(
             array, viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
@@ -3545,7 +3544,7 @@ void ZFlyEmProofDoc::updateGraySlice(ZStack *array, const ZStackViewParam &viewP
     int centerCutX, int centerCutY, bool usingCenterCut, const std::string &source)
 {
   if (array != NULL) {
-    ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
+    ZDvidGraySlice *slice = getDvidGraySlice();
     if (slice != NULL) {
       if (slice->getSource() == source) {
         if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY,
@@ -3625,6 +3624,21 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutu::EAxis axis)
       obj->forceUpdate(false);
       processObjectModified(obj);
     }
+  }
+  endObjectModifiedMode();
+  processObjectModified();
+}
+
+void ZFlyEmProofDoc::updateDvidLabelSlice()
+{
+  beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
+  ZOUT(LTRACE(), 5) << "Update dvid label";
+  TStackObjectList &objList = getObjectList(ZStackObject::EType::DVID_LABEL_SLICE);
+  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+       ++iter) {
+    ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
+    obj->forceUpdate(false);
+    processObjectModified(obj);
   }
   endObjectModifiedMode();
   processObjectModified();
@@ -3750,7 +3764,7 @@ ZDvidSparsevolSlice* ZFlyEmProofDoc::makeDvidSparsevol(
 void ZFlyEmProofDoc::updateDvidLabelObject(neutu::EAxis axis)
 {
   beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
-  ZDvidLabelSlice *labelSlice = getActiveLabelSlice(axis);
+  ZDvidLabelSlice *labelSlice = getActiveLabelSlice();
   if (labelSlice != NULL) {
 //    labelSlice->clearCache();
     labelSlice->forceUpdate(false);
@@ -4698,7 +4712,7 @@ void ZFlyEmProofDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
   }
 }
 
-void ZFlyEmProofDoc::enhanceTileContrast(neutu::EAxis axis, bool highContrast)
+void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
 {
   ZDvidTileEnsemble *tile = getDvidTileEnsemble();
   if (tile != NULL) {
@@ -4713,7 +4727,7 @@ void ZFlyEmProofDoc::enhanceTileContrast(neutu::EAxis axis, bool highContrast)
                                 std::to_string(highContrast));
 //    LDEBUG() << "Updating contrast:" << highContrast;
 
-    ZDvidGraySliceEnsemble *se = getDvidGraySliceEnsemble(axis);
+    ZDvidGraySliceEnsemble *se = getDvidGraySliceEnsemble();
     if (se) {
       se->updateContrast(highContrast);
       bufferObjectModified(se);
@@ -5723,7 +5737,7 @@ bool ZFlyEmProofDoc::isActive(ZFlyEmBodyColorOption::EColorOption type)
 
 void ZFlyEmProofDoc::recordBodySelection()
 {
-  ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
+  ZDvidLabelSlice *slice = getActiveLabelSlice();
   if (slice != NULL) {
     slice->startSelection();
   }
@@ -5731,7 +5745,7 @@ void ZFlyEmProofDoc::recordBodySelection()
 
 void ZFlyEmProofDoc::processBodySelection()
 {
-  ZDvidLabelSlice *slice = getActiveLabelSlice(neutu::EAxis::Z);
+  ZDvidLabelSlice *slice = getActiveLabelSlice();
   if (slice != NULL) {
     slice->endSelection();
   }

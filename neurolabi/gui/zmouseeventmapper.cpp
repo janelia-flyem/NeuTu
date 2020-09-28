@@ -623,7 +623,7 @@ void ZMouseEventMoveMapper::mapLeftButtonOperation(
      if (hasMode(ZInteractiveContext::INTERACT_OBJECT_MOVE) ||
          hasMode(ZInteractiveContext::INTERACT_SWC_MOVE_NODE)) {
        op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
-     } else if (m_context->getSliceAxis() == neutu::EAxis::ARB) {
+     } else if (m_context->getSliceAxis(event.getViewId()) == neutu::EAxis::ARB) {
        if (m_context->isExploreModeOff()) {
          if (isMouseMovedSignficantly(event)) {
            op.setOperation(ZStackOperator::OP_START_ROTATE_VIEW);

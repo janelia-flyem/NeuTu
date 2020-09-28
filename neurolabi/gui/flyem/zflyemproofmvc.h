@@ -81,12 +81,16 @@ public:
   ~ZFlyEmProofMvc() override;
 
   static ZFlyEmProofMvc* Make(
-      QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
+      QWidget *parent, std::shared_ptr<ZFlyEmProofDoc> doc,
       neutu::EAxis axis = neutu::EAxis::Z, ERole role = ERole::ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(
+      QWidget *parent, std::shared_ptr<ZFlyEmProofDoc> doc,
+      const std::vector<neutu::EAxis> &axes, ERole role);
   static ZFlyEmProofMvc* Make(
       const ZDvidEnv &env, ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(ERole role = ERole::ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(neutu::EAxis axis);
+  static ZFlyEmProofMvc* Make(const std::vector<neutu::EAxis> &axes);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -285,7 +289,7 @@ public slots:
   void addLocateBody(uint64_t bodyId);
   void selectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
   void deselectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
-  void selectBodyInRoi(bool appending = true);
+  void selectBodyInRoi(int viewId, bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
   void notifyBodyMergeEdited();
   void updateProtocolRangeGlyph(
@@ -423,7 +427,7 @@ public slots:
   void updateLatencyWidget(int t);
 
   void suppressObjectVisible();
-  void recoverObjectVisible();
+  void recoverObjectVisible(ZStackView *view);
 
   void updateRoiWidget();
 
@@ -611,6 +615,7 @@ private:
 
   void prepareTile(ZDvidTileEnsemble *te);
   void applySettings();
+  void prepareTopLayout();
   void connectSignalSlot() override;
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
@@ -714,10 +719,6 @@ protected:
   bool m_ROILoaded;
 
   std::vector<std::shared_ptr<ZRoiMesh>> m_roiMeshList;
-//  std::vector<std::string> m_roiList;
-//  std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
-//  std::vector<ZObject3dScan> m_loadedROIs;
-//  std::vector<std::string> m_roiSourceList;
 
   std::map<EViewButton, QPushButton*> m_viewButtons;
 

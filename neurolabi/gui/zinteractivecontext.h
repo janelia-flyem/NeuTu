@@ -5,7 +5,9 @@
 #ifndef ZINTERACTIVECONTEXT_H
 #define ZINTERACTIVECONTEXT_H
 
+#include <unordered_map>
 #include <QRect>
+
 #include "common/neutudefs.h"
 #include "data3d/displayconfig.h"
 
@@ -181,12 +183,13 @@ public:
 
   bool isFreeMode() const;
 
-  void setSliceViewTransform(const ZSliceViewTransform &transform);
-  ZSliceViewTransform getSliceViewTransform() const;
-  neutu::EAxis getSliceAxis() const;
+  void setSliceViewTransform(int viewId, const ZSliceViewTransform &transform);
+  ZSliceViewTransform getSliceViewTransform(int viewId) const;
+  neutu::EAxis getSliceAxis(int viewId) const;
 
-  void setSliceMode(neutu::data3d::EDisplaySliceMode mode);
-  neutu::data3d::EDisplaySliceMode getSliceMode() const;
+  void setSliceMode(int viewId, neutu::data3d::EDisplaySliceMode mode);
+  neutu::data3d::EDisplaySliceMode getSliceMode(int viewId) const;
+  const neutu::data3d::DisplayConfig& getDisplayConfig(int viewId) const;
 //  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
 //  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
 
@@ -216,7 +219,8 @@ private:
 //  neutu::EAxis m_sliceAxis;
   int m_keyIndex;
 
-  neutu::data3d::DisplayConfig m_displayConfig;
+  std::unordered_map<int, neutu::data3d::DisplayConfig> m_displayConfigMap;
+  neutu::data3d::DisplayConfig m_nullDispalyConfig;
 //  ZSliceViewTransform m_transform;
 //  neutu::data3d::EDisplaySliceMode m_sliceMode;
   //ZImageWidget *m_imageWidget;

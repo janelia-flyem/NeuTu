@@ -267,8 +267,8 @@ public:
 
   virtual bool hit(double x, double y, double z, int viewId);
   virtual bool hit(double x, double y, double z);
-  bool hit(const ZIntPoint &pt);
-  bool hit(const ZIntPoint &pt, int viewId);
+  virtual bool hit(const ZIntPoint &pt);
+  virtual bool hit(const ZIntPoint &pt, int viewId);
   virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
                    neutu::EAxis axis);
   virtual bool hit(double x, double y, neutu::EAxis axis);

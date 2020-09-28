@@ -256,7 +256,7 @@ bool ZFlyEmProofPresenter::connectAction(
 void ZFlyEmProofPresenter::refreshSegmentation()
 {
   getCompleteDocument()->refreshDvidLabelBuffer(0);
-  getCompleteDocument()->updateDvidLabelSlice(buddyView()->getSliceAxis());
+  getCompleteDocument()->updateDvidLabelSlice();
 }
 
 void ZFlyEmProofPresenter::refreshData()
@@ -297,20 +297,26 @@ void ZFlyEmProofPresenter::resetBodyColor()
 
 void ZFlyEmProofPresenter::selectBodyInRoi()
 {
-  getCompleteDocument()->selectBodyInRoi(buddyView()->getCurrentDepth(), true, true);
+  ZStackView *view = getContextView();
+  if (view) {
+    getCompleteDocument()->selectBodyInRoi(view->getCurrentDepth(), true, true);
+  }
 }
 
 void ZFlyEmProofPresenter::zoomInRectRoi()
 { 
-  ZAffineRect rect = buddyDocument()->getRectRoi();
+  ZStackView *view = getContextView();
+  if (view) {
+    ZAffineRect rect = buddyDocument()->getRectRoi();
 
-  if (!rect.isEmpty()) {
-//    ZIntCuboid box = rect.getIntBoundBox();
-    buddyView()->zoomTo(
-          rect.getCenter(), std::max(rect.getWidth(), rect.getHeight()), false);
-//    buddyView()->setViewPort(QRect(rect.getMinX(), rect.getMinY(),
-//                               rect.getWidth(), rect.getHeight()));
-    buddyDocument()->executeRemoveRectRoiCommand();
+    if (!rect.isEmpty()) {
+      //    ZIntCuboid box = rect.getIntBoundBox();
+      view->zoomTo(
+            rect.getCenter(), std::max(rect.getWidth(), rect.getHeight()), false);
+      //    buddyView()->setViewPort(QRect(rect.getMinX(), rect.getMinY(),
+      //                               rect.getWidth(), rect.getHeight()));
+      buddyDocument()->executeRemoveRectRoiCommand();
+    }
   }
 }
 
@@ -533,7 +539,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   return processed;
 }
 
-bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
+bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event, int viewId)
 {
   neutu::LogKeyPressEvent(event, "ZFlyEmProofMvc");
 //  KINFO << QString("Key %1 pressed in ZFlyEmProofMvc").
@@ -586,7 +592,7 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 
 
   if (processed == false) {
-    processed = ZStackPresenter::processKeyPressEvent(event);
+    processed = ZStackPresenter::processKeyPressEvent(event, viewId);
   }
 
   return processed;
@@ -1127,22 +1133,22 @@ void ZFlyEmProofPresenter::runTipDetection() {
 
 void ZFlyEmProofPresenter::setCutPlaneAlongX()
 {
-  buddyView()->setCutPlane(neutu::EAxis::X);
+  getMainView()->setCutPlane(neutu::EAxis::X);
 }
 
 void ZFlyEmProofPresenter::setCutPlaneAlongY()
 {
-  buddyView()->setCutPlane(neutu::EAxis::Y);
+  getMainView()->setCutPlane(neutu::EAxis::Y);
 }
 
 void ZFlyEmProofPresenter::setCutPlaneAlongZ()
 {
-  buddyView()->setCutPlane(neutu::EAxis::Z);
+  getMainView()->setCutPlane(neutu::EAxis::Z);
 }
 
 void ZFlyEmProofPresenter::setCutPlaneArb()
 {
-  buddyView()->setCutPlane(neutu::EAxis::ARB);
+  getMainView()->setCutPlane(neutu::EAxis::ARB);
 }
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
@@ -1213,12 +1219,12 @@ bool ZFlyEmProofPresenter::allowingBodySplit() const
 
 void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
 {
-  getCompleteDocument()->setSupervoxelMode(on, buddyView()->getViewParameter());
+  getCompleteDocument()->setSupervoxelMode(on, getMainView()->getViewParameter());
 }
 
 void ZFlyEmProofPresenter::takeScreenshot()
 {
-  buddyView()->takeScreenshot();
+  getMainView()->takeScreenshot();
 }
 
 void ZFlyEmProofPresenter::setBodyHittable(bool on)
@@ -1237,6 +1243,8 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   bool processed = true;
 
   m_docSelector.setDocument(getSharedBuddyDocument());
+
+  ZStackView *view = getView(op.getViewId());
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
@@ -1272,7 +1280,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     emit annotatingTodo();
     break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
-    emit selectingBodyInRoi(true);
+    emit selectingBodyInRoi(op.getViewId(), true);
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_SINGLE:
   {
@@ -1352,10 +1360,12 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_SELECT_TOGGLE:
-    getCompleteDocument()->getDvidSynapseEnsemble(
-          buddyView()->getSliceAxis())->toggleHitSelectWithPartner();
-    if (e != NULL) {
-      e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    if (view) {
+      getCompleteDocument()->getDvidSynapseEnsemble(
+            view->getSliceAxis())->toggleHitSelectWithPartner();
+      if (e != NULL) {
+        e->setEvent(ZInteractionEvent::EVENT_OBJECT_SELECTED);
+      }
     }
     break;
   case ZStackOperator::OP_DVID_SYNAPSE_ADD:
@@ -1545,8 +1555,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     tryAddPostSynapseMode();
     break;
   case ZStackOperator::OP_GRAYSCALE_TOGGLE:
-    getCompleteDocument()->toggleGrayscale(
-          buddyView()->getSliceAxis());
+    if (view) {
+      getCompleteDocument()->toggleGrayscale(view->getSliceAxis());
+    }
     break;
   default:
     processed = false;
@@ -1563,6 +1574,11 @@ bool ZFlyEmProofPresenter::processCustomOperator(
 
 void ZFlyEmProofPresenter::copyLink(const QString &option) const
 {
+  ZStackView *view = getContextView();
+  if (view == nullptr) {
+    return;
+  }
+
   ZJsonObject obj;
   obj.decode(option.toStdString(), true);
 
@@ -1600,7 +1616,7 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
 
     QString path = ZNeuroglancerPathFactory::MakePath(
           getCompleteDocument()->getDvidEnv(), res,
-          pt, buddyView()->getViewParameter().getZoomRatio(),
+          pt, view->getViewParameter().getZoomRatio(),
           additionalLayers);
     ZGlobal::CopyToClipboard(
           GET_FLYEM_CONFIG.getNeuroglancerServer() + path.toStdString());
@@ -1660,7 +1676,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
               Qt::LeftButton, ZMouseEvent::EAction::RELEASE);
         QPoint currentWidgetPos(event.getWidgetPosition().getX(),
                                 event.getWidgetPosition().getY());
-        buddyView()->showContextMenu(menu, currentWidgetPos);
+        getView(event.getViewId())->showContextMenu(menu, currentWidgetPos);
       }
       interactiveContext().setAcceptingRect(false);
     }

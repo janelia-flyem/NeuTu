@@ -401,11 +401,25 @@ void neutu::HideLayout(QLayout *layout, bool removing)
       if (widget) {
         widget->hide();
       }
-      if (removing) {
-        layout->removeItem(item);
-      }
+//      if (removing) {
+//        layout->removeItem(item);
+//      }
+    }
+
+    if (removing) {
+      ClearLayout(layout);
     }
 
     layout->setSizeConstraint(QLayout::SetNoConstraint);
+  }
+}
+
+void neutu::ClearLayout(QLayout *layout, bool deletingWidget)
+{
+  while (auto item = layout->takeAt(0)) {
+    if (deletingWidget) {
+      delete item->widget();
+    }
+    delete item;
   }
 }

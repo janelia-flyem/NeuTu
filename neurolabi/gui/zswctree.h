@@ -388,7 +388,7 @@ public:
    *        (\a corner[0], \a corner[1], corner[2]) and the last corner is
    *        (\a corner[3], \a corner[4], corner[5]).
    */
-  void getBoundBox(double *corner) const;
+  void getBoundBoxC(double *corner) const;
 
 
   /*!

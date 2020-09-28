@@ -16,6 +16,7 @@ namespace neutu {
 QString GetKeyString(int key, const Qt::KeyboardModifiers &modifier);
 void SetHtmlIcon(QPushButton *button, const QString &text);
 void HideLayout(QLayout *layout, bool removing);
+void ClearLayout(QLayout *layout, bool deletingWidget = false);
 
 void DrawText(QPainter &painter, const QPoint &pos, const QStringList &text);
 void DrawText(QPainter &painter, const QPoint &pos, const QString &text);

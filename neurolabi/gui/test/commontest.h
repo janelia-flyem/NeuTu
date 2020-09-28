@@ -48,7 +48,7 @@ TEST(common, utilities)
   });
 
   ASSERT_EQ(10, partition.size());
-  for (size_t i = 1; i <= 10; ++i) {
+  for (int i = 1; i <= 10; ++i) {
     ASSERT_EQ(i, partition[i-1].first);
     ASSERT_EQ(i, partition[i-1].second);
   }
@@ -59,7 +59,7 @@ TEST(common, utilities)
   });
 
   ASSERT_EQ(10, partition.size());
-  for (size_t i = 1; i <= 10; ++i) {
+  for (int i = 1; i <= 10; ++i) {
     ASSERT_EQ(i, partition[i-1].first);
     ASSERT_EQ(i, partition[i-1].second);
   }

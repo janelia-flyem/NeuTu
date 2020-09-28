@@ -168,7 +168,8 @@ void ZDvidLabelSlice::setSliceAxis(neutu::EAxis sliceAxis)
 
 bool ZDvidLabelSlice::isVisible_inner(const DisplayConfig &config) const
 {
-  return getSliceAxis() == config.getSliceAxis();
+  return true;
+//  return getSliceAxis() == config.getSliceAxis();
 }
 
 bool ZDvidLabelSlice::display_inner(
@@ -525,9 +526,11 @@ int ZDvidLabelSlice::getFirstZoom(const ZStackViewParam &viewParam) const
 void ZDvidLabelSlice::forceUpdate(
     const ZStackViewParam &viewParam, bool ignoringHidden)
 {
+  /*
   if (viewParam.getSliceAxis() != m_sliceAxis) {
     return;
   }
+  */
 
   int viewId = viewParam.getViewId();
 
@@ -822,9 +825,11 @@ bool ZDvidLabelSlice::consume(
 
 bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 {
+  /*
   if (viewParam.getSliceAxis() != m_sliceAxis) {
     return false;
   }
+  */
 
   bool updated = false;
 

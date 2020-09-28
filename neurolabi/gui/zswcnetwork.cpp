@@ -248,7 +248,7 @@ void ZSwcNetwork::boundBox(double *corner)
   double tmpCorner[6];
 
   for (size_t i = 0; i < m_swcTreeArray.size(); i++) {
-    m_swcTreeArray[i]->getBoundBox(tmpCorner);
+    m_swcTreeArray[i]->getBoundBoxC(tmpCorner);
     for (int j = 0; j < 3; j++) {
       corner[j] = min(corner[j], tmpCorner[j]);
       corner[j + 3] = max(corner[j + 3], tmpCorner[j + 3]);

@@ -116,10 +116,10 @@ public:
    * \brief Check if the current viewing slice is within a given slice
    *
    * It returns true iff:
-   * 1. the currrent viewport exists; or
-   * 1. the current viewport is the same as the given one, and the
+   * 1. the currrent viewport does not exist; or
+   * 2. the current viewport is the same as the given one, and the
    *    given viewport has a higher resolution; or
-   * 2. the current viewport is within and smaller than the given one, and the
+   * 3. the current viewport is within and smaller than the given one, and the
    *    given viewport does not have a lower resolution.
    */
   bool actualContainedIn(

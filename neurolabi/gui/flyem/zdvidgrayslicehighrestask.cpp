@@ -11,7 +11,7 @@ void ZDvidGraySliceHighresTask::execute()
 {
   ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc);
   if (doc != NULL) {
-    ZDvidGraySlice *slice = doc->getDvidGraySlice(m_viewParam.getSliceAxis());
+    ZDvidGraySlice *slice = doc->getDvidGraySlice();
     if (slice != NULL) {
       if (slice->containedIn(
             m_viewParam, m_zoom,

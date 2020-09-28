@@ -81,7 +81,7 @@ TEST(ZBlockGrid, Intersect)
 //    ZIntCuboid box = grid.getBlockBox(ZIntPoint(i, j, k));
 //    std::cout << box << std::endl;
   });
-  ASSERT_EQ(8, blocks.size());
+  ASSERT_EQ(8, int(blocks.size()));
   ASSERT_EQ(ZIntPoint(0, 0, 0), blocks[0]);
   ASSERT_EQ(ZIntPoint(1, 0, 0), blocks[1]);
   ASSERT_EQ(ZIntPoint(0, 1, 0), blocks[2]);
@@ -100,7 +100,7 @@ TEST(ZBlockGrid, Intersect)
 //    std::cout << box << std::endl;
   });
 
-  ASSERT_EQ(8, blocks.size());
+  ASSERT_EQ(8, int(blocks.size()));
   ASSERT_EQ(ZIntPoint(0, 0, 0), blocks[0]);
   ASSERT_EQ(ZIntPoint(0, 1, 0), blocks[1]);
   ASSERT_EQ(ZIntPoint(0, 0, 1), blocks[2]);

@@ -69,7 +69,7 @@ TEST(ZFlyEmBodyColorScheme, Basic)
   ASSERT_EQ(0xFF00FF00, scheme.getBodyColorCode(6));
   ASSERT_EQ(1, scheme.getBodyColorIndex(1));
   ASSERT_EQ(-1, scheme.getBodyColorIndex(20000));
-  ASSERT_EQ(0, scheme.getBodyColorCode(20000));
+  ASSERT_EQ(uint32_t(0), scheme.getBodyColorCode(20000));
   ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(20000));
   ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColorFromIndex(-1));
 
@@ -116,7 +116,7 @@ TEST(ZFlyEmGeneralBodyColorScheme, Basic)
 
   ASSERT_EQ(3, scheme.getColorNumber());
   ASSERT_EQ(0, scheme.getBodyColorIndex(1));
-  ASSERT_EQ(2, scheme.getBodyColorCode(1));
+  ASSERT_EQ(2, int(scheme.getBodyColorCode(1)));
   ASSERT_EQ(QColor(0, 0, 2, 0), scheme.getBodyColor(1));
   ASSERT_EQ(100, scheme.getBodyColorCode(10));
   ASSERT_EQ(-1, scheme.getBodyColorIndex(3));

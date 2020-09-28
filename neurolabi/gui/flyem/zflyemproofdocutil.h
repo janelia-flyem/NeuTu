@@ -20,13 +20,11 @@ public:
   ZFlyEmProofDocUtil();
 
 public:
-  static ZDvidLabelSlice* GetActiveLabelSlice(ZFlyEmProofDoc *doc, neutu::EAxis axis);
   static ZDvidLabelSlice* GetActiveLabelSlice(ZFlyEmProofDoc *doc);
-  static ZDvidGraySlice* GetActiveGraySlice(ZFlyEmProofDoc *doc, neutu::EAxis axis);
+//  static ZDvidLabelSlice* GetActiveLabelSlice(ZFlyEmProofDoc *doc);
+  static ZDvidGraySlice* GetActiveGraySlice(ZFlyEmProofDoc *doc);
 
-  static std::set<uint64_t> GetSelectedBodyId(
-      ZFlyEmProofDoc *doc,
-      neutu::EAxis axis, neutu::ELabelSource type);
+  static std::set<uint64_t> GetSelectedBodyId(ZFlyEmProofDoc *doc, neutu::ELabelSource type);
   static void ExportSelectedBodyStack(ZFlyEmProofDoc *doc, bool isSparse,
       bool isFullRange, const ZIntCuboid &box, const QString &filePath);
   static void ExportSelecteBodyLevel(

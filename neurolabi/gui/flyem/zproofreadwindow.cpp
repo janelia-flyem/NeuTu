@@ -84,10 +84,11 @@ void ZProofreadWindow::init()
   layout->setMargin(1);
   widget->setLayout(layout);
 
-//  ZDvidTarget target;
-//  target.set("http://emdata1.int.janelia.org", "9db", 8500);
-
-  m_mainMvc = ZFlyEmProofMvc::Make(neutu::EAxis::Z);
+  std::vector<neutu::EAxis> axes;
+  axes.push_back(neutu::EAxis::Z);
+  axes.push_back(neutu::EAxis::X);
+  axes.push_back(neutu::EAxis::Y);
+  m_mainMvc = ZFlyEmProofMvc::Make(axes);
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);

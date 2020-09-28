@@ -1703,7 +1703,7 @@ void ZStackDoc::updateVirtualStackSize()
     QList<ZSwcTree*> swcList = getSwcList();
     for (int i = 0; i < swcList.size(); i++) {
       double tmpcorner[6];
-      swcList[i]->getBoundBox(tmpcorner);
+      swcList[i]->getBoundBoxC(tmpcorner);
       corner[3] = std::max(corner[3], tmpcorner[3]);
       corner[4] = std::max(corner[4], tmpcorner[4]);
       corner[5] = std::max(corner[5], tmpcorner[5]);
@@ -2087,7 +2087,7 @@ void ZStackDoc::readSwc(const char *filePath)
     return;
   Stack stack;
   double corner[6];
-  tree->getBoundBox(corner);
+  tree->getBoundBoxC(corner);
   static const double Lateral_Margin = 10.0;
   static const double Axial_Margin = 1.0;
   Stack_Set_Attribute(&stack, round(corner[3] + Lateral_Margin - corner[0] + 1),

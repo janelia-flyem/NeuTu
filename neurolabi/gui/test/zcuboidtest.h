@@ -42,8 +42,8 @@ TEST(ZIntCuboid, Basic)
   ASSERT_EQ(20, box.getMaxY());
   ASSERT_EQ(30, box.getMaxZ());
 
-  ASSERT_EQ(10*19*28, box.getVolume());
-  ASSERT_EQ(6*7*8, box.getDsMaxVolume(1, 2, 3));
+  ASSERT_EQ(size_t(10*19*28), box.getVolume());
+  ASSERT_EQ(size_t(6*7*8), box.getDsMaxVolume(1, 2, 3));
 
   std::cout << box.getCenter() << std::endl;
   box.setMaxCorner(100, 200, 300);

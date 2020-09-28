@@ -695,7 +695,7 @@ ZImage *ZImageWidget::makeWidgetCanvas() const
 //  canvas->fill(Qt::transparent);
 }
 
-void ZImageWidget::updateWidgetCanvas(ZPixmap *canvas)
+void ZImageWidget::updateWidgetCanvas(ZPixmap */*canvas*/)
 {
 #if 0
   if (m_widgetCanvas != canvas) {
@@ -1155,7 +1155,13 @@ QSize ZImageWidget::screenSize() const
   */
 }
 
-ZPoint ZImageWidget::getCurrentMousePosition(neutu::data3d::ESpace space)
+bool ZImageWidget::containsCurrentMousePostion() const
+{
+  QPoint widgetPos = mapFromGlobal(QCursor::pos());
+  return rect().contains(widgetPos);
+}
+
+ZPoint ZImageWidget::getCurrentMousePosition(neutu::data3d::ESpace space) const
 {
   QPoint widgetPos = mapFromGlobal(QCursor::pos());
   return getSliceViewTransform().transform(
@@ -1560,8 +1566,10 @@ void ZImageWidget::notifyTransformChanged()
 
 void ZImageWidget::setSliceViewTransform(const ZSliceViewTransform &t)
 {
-  m_sliceViewTransform = t;
-  notifyTransformChanged();
+  if (m_sliceViewTransform != t) {
+    m_sliceViewTransform = t;
+    notifyTransformChanged();
+  }
 }
 
 void ZImageWidget::setCutPlane(neutu::EAxis axis)

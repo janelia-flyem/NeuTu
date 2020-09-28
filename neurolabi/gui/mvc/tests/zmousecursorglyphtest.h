@@ -80,14 +80,14 @@ TEST(ZMouseCursorGlyph, Basic)
 
   ZStackBall *ball = mcg._getGlyph<ZStackBall>(ZMouseCursorGlyph::ROLE_BOOKMARK);
   ASSERT_TRUE(ball);
-  ASSERT_NE(123, ball->getLabel());
+  ASSERT_NE(uint64_t(123), ball->getLabel());
 
   mcg.setPrepareFunc(ZMouseCursorGlyph::ROLE_BOOKMARK, [](ZStackObject *obj) {
     obj->setLabel(123);
   });
   mcg.activate(ZMouseCursorGlyph::ROLE_BOOKMARK);
 
-  ASSERT_EQ(123, ball->getLabel());
+  ASSERT_EQ(uint64_t(123), ball->getLabel());
 
   mcg.setPrepareFunc(ZMouseCursorGlyph::ROLE_BOOKMARK, [](ZStackObject *obj) {
     ZStackBall *ball = dynamic_cast<ZStackBall*>(obj);
@@ -106,7 +106,7 @@ TEST(ZMouseCursorGlyph, Basic)
     obj->setLabel(20);
   });
   ASSERT_EQ(ZPoint(4, 5, 6), mcg.getActiveGlyphPosition());
-  ASSERT_EQ(20, ball->getLabel());
+  ASSERT_EQ(uint64_t(20), ball->getLabel());
 
   mcg.setActiveGlyphSize(11.0, [](ZStackObject *obj) {
     obj->setLabel(21);

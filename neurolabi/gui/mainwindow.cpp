@@ -2243,7 +2243,7 @@ void MainWindow::updateTraceMode(ZStackFrame *frame, QAction *action)
       traceMode = ZInteractiveContext::TRACE_OFF;
     }
     frame->presenter()->interactiveContext().setTraceMode(traceMode);
-    frame->presenter()->updateLeftMenu();
+    frame->presenter()->updateLeftMenu(frame->view());
   }
 }
 
@@ -2302,11 +2302,11 @@ void MainWindow::activateInteractiveMarkPuncta(QAction *action)
     if (action == noMarkPunctaAction) {
       frame->presenter()->interactiveContext().
           setMarkPunctaMode(ZInteractiveContext::MARK_PUNCTA_OFF);
-      frame->presenter()->updateLeftMenu();
+      frame->presenter()->updateLeftMenu(frame->view());
     } else if (action == markPunctaAction) {
       frame->presenter()->interactiveContext().
           setMarkPunctaMode(ZInteractiveContext::MARK_PUNCTA);
-      frame->presenter()->updateLeftMenu();
+      frame->presenter()->updateLeftMenu(frame->view());
     }
   }
 }

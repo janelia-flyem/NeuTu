@@ -1,13 +1,15 @@
 #ifndef ZSTACKMVC_H
 #define ZSTACKMVC_H
 
+#include <memory>
+
 #include <QObject>
 #include <QWidget>
 #include <QFrame>
 #include <QLayout>
 #include <QThread>
+#include <QLabel>
 
-#include "common/zsharedpointer.h"
 #include "common/neutudefs.h"
 #include "logging/zloggable.h"
 //#include "zwidgetmessage.h"
@@ -40,19 +42,21 @@ public:
   explicit ZStackMvc(QWidget *parent = 0);
   virtual ~ZStackMvc();
 
-  static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
-  static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc,
+  static ZStackMvc* Make(QWidget *parent, std::shared_ptr<ZStackDoc> doc);
+  static ZStackMvc* Make(QWidget *parent, std::shared_ptr<ZStackDoc> doc,
                          neutu::EAxis axis);
+  static ZStackMvc* Make(QWidget *parent, std::shared_ptr<ZStackDoc> doc,
+                         const std::vector<neutu::EAxis> &axes);
 
   enum class ERole {
     ROLE_WIDGET, ROLE_DOCUMENT
   };
 
   void attachDocument(ZStackDoc *doc);
-  void attachDocument(ZSharedPointer<ZStackDoc> doc);
+  void attachDocument(std::shared_ptr<ZStackDoc> doc);
   void detachDocument();
 
-  ZSharedPointer<ZStackDoc> getDocument() const {
+  std::shared_ptr<ZStackDoc> getDocument() const {
     return m_doc;
   }
 
@@ -60,14 +64,19 @@ public:
     return m_presenter;
   }
 
-  inline ZStackView* getView() const {
-    return m_view;
-  }
+  ZStackView *getMainView() const;
+  ZStackView* getDefaultView() const;
+  ZStackView* getView(int viewId) const;
+  std::vector<ZStackView*> getViewList() const;
+  ZStackView* getMouseHoveredView() const;
+
+  void forEachView(std::function<void(ZStackView*)> f) const;
+  void forEachVisibleView(std::function<void(ZStackView*)> f) const;
 
   /*!
    * \brief Get the global geometry of the view window.
    */
-  QRect getViewGeometry() const;
+  QRect getViewGeometry(int viewId) const;
 
   virtual void connectSignalSlot();
   void disconnectAll();
@@ -112,7 +121,7 @@ signals:
 public slots:
 //  void updateActiveViewData();
 //  void processViewChange(const ZStackViewParam &viewParam);
-  void processViewChange();
+  void processViewChange(int viewId);
 
   virtual void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
@@ -124,7 +133,7 @@ public slots:
 //  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
 //  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
   void goToSlice(int z);
-  void stepSlice(int dz);
+//  void stepSlice(int dz);
 
 //  void zoomWithWidthAligned(const QRect &viewPort, int z, double pw);
   void zoomWithWidthAligned(const ZStackView *view);
@@ -149,7 +158,10 @@ protected:
 
 protected:
   static void BaseConstruct(
-      ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis);
+      ZStackMvc *frame, std::shared_ptr<ZStackDoc> doc, neutu::EAxis axis);
+  static void BaseConstruct(
+      ZStackMvc *frame, std::shared_ptr<ZStackDoc> doc,
+      const std::vector<neutu::EAxis> &axes);
   virtual void customInit();
   virtual void createPresenter();
   void createPresenter(neutu::EAxis axis);
@@ -160,6 +172,8 @@ protected:
 //  virtual void focusInEvent(QFocusEvent * event);
 //  virtual void focusOutEvent(QFocusEvent * event);
 //  virtual void changeEvent(QEvent * event);
+
+  void layoutView();
 
   typedef bool FConnectAction(
       const QObject*, const char *,
@@ -177,19 +191,24 @@ protected:
   void updateSignalSlot(FConnectAction connectAction);
 
 private:
-  void dropDocument(ZSharedPointer<ZStackDoc> doc);
+  void dropDocument(std::shared_ptr<ZStackDoc> doc);
   void updateDocument();
-  void construct(ZSharedPointer<ZStackDoc> doc,
+  void construct(std::shared_ptr<ZStackDoc> doc,
                  neutu::EAxis axis = neutu::EAxis::Z);
+  void construct(
+      std::shared_ptr<ZStackDoc> doc,  const std::vector<neutu::EAxis> &axes);
 
 private slots:
   void shortcutTest();
 
 protected:
-  ZSharedPointer<ZStackDoc> m_doc;
+  std::shared_ptr<ZStackDoc> m_doc;
   ZStackPresenter *m_presenter;
-  ZStackView *m_view;
-  QLayout *m_layout;
+  std::vector<ZStackView*> m_viewList;
+  QVBoxLayout *m_layout;
+  QHBoxLayout *m_topLayout;
+  QGridLayout *m_viewLayout;
+  QLabel *m_infoLabel = nullptr;
   ZProgressSignal *m_progressSignal;
   QTimer *m_testTimer;
   ERole m_role;

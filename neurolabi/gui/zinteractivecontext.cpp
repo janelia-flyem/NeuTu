@@ -244,31 +244,42 @@ bool ZInteractiveContext::turnOffEditMode()
   return toggled;
 }
 
-void ZInteractiveContext::setSliceMode(neutu::data3d::EDisplaySliceMode mode)
+void ZInteractiveContext::setSliceMode(
+    int viewId, neutu::data3d::EDisplaySliceMode mode)
 {
-  m_displayConfig.setSliceMode(mode);
+  m_displayConfigMap[viewId].setSliceMode(mode);
 }
 
-neutu::data3d::EDisplaySliceMode ZInteractiveContext::getSliceMode() const
+const neutu::data3d::DisplayConfig&
+ZInteractiveContext::getDisplayConfig(int viewId) const
 {
-  return m_displayConfig.getSliceMode();
+  if (m_displayConfigMap.count(viewId) > 0) {
+    return m_displayConfigMap.at(viewId);
+  }
+
+  return m_nullDispalyConfig;
+}
+
+neutu::data3d::EDisplaySliceMode ZInteractiveContext::getSliceMode(int viewId) const
+{
+  return getDisplayConfig(viewId).getSliceMode();
 }
 
 void ZInteractiveContext::setSliceViewTransform(
-    const ZSliceViewTransform &transform)
+    int viewId, const ZSliceViewTransform &transform)
 {
-  m_displayConfig.setTransform(transform);
+  m_displayConfigMap[viewId].setTransform(transform);
 //  m_transform = transform;
 }
 
-ZSliceViewTransform ZInteractiveContext::getSliceViewTransform() const
+ZSliceViewTransform ZInteractiveContext::getSliceViewTransform(int viewId) const
 {
-  return m_displayConfig.getTransform();
+  return getDisplayConfig(viewId).getTransform();
 //  return m_transform;
 }
 
-neutu::EAxis ZInteractiveContext::getSliceAxis() const
+neutu::EAxis ZInteractiveContext::getSliceAxis(int viewId) const
 {
-  return getSliceViewTransform().getSliceAxis();
+  return getSliceViewTransform(viewId).getSliceAxis();
 }
 

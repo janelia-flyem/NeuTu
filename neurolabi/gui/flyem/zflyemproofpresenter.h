@@ -42,7 +42,7 @@ public:
   void disableSplit();
   void setSplitEnabled(bool s);
 
-  bool processKeyPressEvent(QKeyEvent *event) override;
+  bool processKeyPressEvent(QKeyEvent *event, int viewId) override;
   bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL) override;
 
@@ -101,8 +101,8 @@ signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody(bool asking);
-  void selectingBodyInRoi();
-  void selectingBodyInRoi(bool appending);
+  void selectingBodyInRoi(int viewId);
+  void selectingBodyInRoi(int viewId, bool appending);
   void runningSplit();
   void runningFullSplit();
   void runningLocalSplit();

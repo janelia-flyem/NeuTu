@@ -530,6 +530,11 @@ void ZSliceViewTransform::setCutPlane(const ZPoint &v1, const ZPoint &v2)
   m_modelViewTransform.setCutPlane(v1, v2);
 }
 
+void ZSliceViewTransform::setCutPlane(const ZPlane &p)
+{
+  setCutPlane(p.getV1(), p.getV2());
+}
+
 void ZSliceViewTransform::setCutPlane(const ZAffinePlane &plane)
 {
   m_modelViewTransform.setCutPlane(plane);
