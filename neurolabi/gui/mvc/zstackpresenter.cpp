@@ -1993,6 +1993,7 @@ bool ZStackPresenter::processKeyPressEventForStack(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
+      op.setViewId(m_interactiveContext.getViewId());
       taken = process(op);
     }
   }
@@ -2012,6 +2013,7 @@ bool ZStackPresenter::processKeyPressEventForActiveStroke(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
+      op.setViewId(m_interactiveContext.getViewId());
       taken = process(op);
     }
   }
@@ -2035,6 +2037,7 @@ bool ZStackPresenter::processKeyPressEventForSwc(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
+      op.setViewId(m_interactiveContext.getViewId());
       taken = process(op);
     }
   }
@@ -2052,6 +2055,7 @@ bool ZStackPresenter::processKeyPressEventForObject(QKeyEvent *event)
     ZStackOperator op;
     op.setOperation(opId);
     if (!op.isNull()) {
+      op.setViewId(m_interactiveContext.getViewId());
       taken = process(op);
     }
   }
@@ -2201,13 +2205,8 @@ bool ZStackPresenter::estimateActiveStrokeWidth()
 bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event, int viewId)
 {
   bool processed = false;
-  ZStackView *view = nullptr;
+  ZStackView *view = getView(viewId);
 
-  if (viewId == -1) {
-    view = getDefaultView();
-  } else {
-    view = getView(viewId);
-  }
   switch (event->key()) {
   case Qt::Key_P:
     if (event->modifiers() == Qt::ControlModifier) {
@@ -2437,6 +2436,8 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event, int viewId)
 
 bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event, int viewId)
 {
+  m_interactiveContext.setViewId(viewId);
+
   bool processed = buddyDocument()->getKeyProcessor()->processKeyEvent(event);
 
   if (processKeyPressEventForActiveStroke(event)) {
@@ -2902,10 +2903,12 @@ ZSliceViewTransform ZStackPresenter::getSliceViewTransform() const
 void ZStackPresenter::setSliceViewTransform(
     int viewId, const ZSliceViewTransform &transform)
 {
+  /*
   if (transform.getSliceAxis() !=
       m_interactiveContext.getSliceViewTransform(viewId).getSliceAxis()) {
-    setSliceAxis(transform.getSliceAxis());
+    setSliceAxis(viewId, transform.getSliceAxis());
   }
+  */
   m_interactiveContext.setSliceViewTransform(viewId, transform);
   updateMouseCursorGlyphPos();
 }
@@ -3373,6 +3376,56 @@ void ZStackPresenter::enterSwcSelectMode()
   updateCursor();
 }
 
+void ZStackPresenter::updateCutPlane(
+    neutu::EAxis a1, neutu::EAxis a2, neutu::EAxis a3)
+{
+  auto viewList = getViewList();
+  if (!viewList.empty()) {
+    viewList[0]->setCutPlane(a1);
+    if (viewList.size() > 1) {
+      viewList[1]->setCutPlane(a2);
+      if (viewList.size() > 2) {
+        viewList[2]->setCutPlane(a3);
+      }
+    }
+  }
+  m_mainViewAxis = a1;
+  updateViewLayout();
+}
+
+void ZStackPresenter::updateViewLayout()
+{
+  std::vector<int> viewLayout;
+  switch (m_viewCount) {
+  case 1:
+    viewLayout = {0};
+    break;
+  case 2:
+    if (m_mainViewAxis == neutu::EAxis::Y) {
+      viewLayout = {0, 2};
+    } else {
+      viewLayout = {0, 1};
+    }
+    break;
+  case 3:
+    switch (m_mainViewAxis) {
+    case neutu::EAxis::X:
+      viewLayout = {0, 1, 3};
+      break;
+    case neutu::EAxis::Y:
+      viewLayout = {0, 2, 3};
+      break;
+    default:
+      viewLayout = {0, 1, 2};
+    }
+    break;
+  default:
+    break;
+  }
+
+  emit updatingViewLayout(viewLayout);
+}
+
 void ZStackPresenter::setViewCursor(const QCursor &cursor)
 {
   auto viewList = getViewList();
@@ -3730,7 +3783,8 @@ bool ZStackPresenter::hasDrawable(neutu::data3d::ETarget target) const
 
 neutu::EAxis ZStackPresenter::getSliceAxis() const
 {
-  return getMainView()->getSliceAxis();
+  return m_mainViewAxis;
+//  return getMainView()->getSliceAxis();
 }
 
 static void SyncDvidLabelSliceSelection(
@@ -3765,7 +3819,20 @@ bool ZStackPresenter::process(ZStackOperator::EOperation op)
 
 bool ZStackPresenter::process(ZStackOperator &op)
 {
+  if (op.isNull()) {
+    return false;
+  }
+
   bool processed = true;
+
+#ifdef _DEBUG_
+  if (op.getOperation() != ZStackOperator::OP_TRACK_MOUSE_MOVE) {
+    std::cout << "Operator: " << op << std::endl;
+    if (op.isNull()) {
+      std::cout << "debug here" << std::endl;
+    }
+  }
+#endif
 
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
@@ -4931,7 +4998,18 @@ ZStackObject* ZStackPresenter::getActiveObject(EObjectRole role) const
 }
 #endif
 
-void ZStackPresenter::setSliceAxis(neutu::EAxis axis)
+void ZStackPresenter::setViewCount(int n)
 {
+  m_viewCount = n;
+}
+
+void ZStackPresenter::setSliceAxis(int viewId, neutu::EAxis axis)
+{
+  m_interactiveContext.setSliceAxis(viewId, axis);
+}
+
+void ZStackPresenter::setMainSliceAxis(neutu::EAxis axis)
+{
+  m_mainViewAxis = axis;
   m_mouseCursorGlyph->setSliceAxis(axis);
 }

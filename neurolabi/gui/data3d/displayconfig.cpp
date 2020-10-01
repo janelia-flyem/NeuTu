@@ -209,12 +209,14 @@ void zstackobject::DisplayConfig::setCutRect(const ZAffineRect &rect)
 
 //  m_cutRect = rect;
 }
+*/
 
-void zstackobject::DisplayConfig::setSliceAxis(neutu::EAxis axis)
+void neutu::data3d::DisplayConfig::setSliceAxis(neutu::EAxis axis)
 {
+  m_transform.setCutPlane(axis);
 //  m_sliceAxis = axis;
 }
-*/
+
 
 //DisplayConfigBuilder
 

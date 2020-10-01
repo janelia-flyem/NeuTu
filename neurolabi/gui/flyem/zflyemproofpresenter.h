@@ -181,6 +181,10 @@ public slots:
   //for testing
   void setCutPlaneArb();
 
+  void setViewLayout3();
+  void setViewLayout2();
+  void setViewLayout1();
+
   void showSupervoxelList();
 
   void allowBlinkingSegmentation(bool on);

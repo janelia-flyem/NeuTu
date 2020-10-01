@@ -49,6 +49,7 @@
 #include "zstackdocutil.h"
 #include "data3d/utilities.h"
 #include "dialogs/zstackviewrecorddialog.h"
+#include "zdialogfactory.h"
 #include "ztask.h"
 #include "vis2d/zslicecanvas.h"
 #include "vis2d/zimageslicefactory.h"
@@ -98,6 +99,13 @@ ZStackView::~ZStackView()
 void ZStackView::init()
 {
   m_viewId = m_nextViewId++;
+
+  if (m_viewId < 0) {
+    ZDialogFactory::Warn(
+          "Failed to initialize GUI",
+          "Invalid view ID detected. Please restart NeuTu to reset it back to normal",
+          nullptr);
+  }
 
   setFocusPolicy(Qt::ClickFocus);
   m_depthControl = new ZSlider(true, this);
@@ -250,7 +258,13 @@ void ZStackView::removeToolButton(QPushButton *button)
 
 void ZStackView::setWidgetReady(bool ready)
 {
-  imageWidget()->setReady(ready);
+  if (!imageWidget()->isReady() != ready) {
+    imageWidget()->setReady(ready);
+    if (ready) {
+      updateViewData();
+      redraw();
+    }
+  }
 }
 
 void ZStackView::enableMessageManager()
@@ -603,12 +617,22 @@ neutu::EAxis ZStackView::getSliceAxis() const
   return m_imageWidget->getSliceAxis();
 }
 
+ZPlane ZStackView::getCutOrientation() const
+{
+  return m_imageWidget->getCutOrientation();
+}
+
 void ZStackView::setSliceAxis(neutu::EAxis axis)
 {
 //  m_sliceAxis = axis;
   m_imageWidget->setSliceAxis(axis);
 //  m_paintBundle.setViewParam(getViewParameter());
 //  m_paintBundle.setSliceAxis(axis);
+}
+
+void ZStackView::setRightHanded(bool r)
+{
+  m_imageWidget->setRightHanded(r);
 }
 
 void ZStackView::setCutPlane(neutu::EAxis axis)

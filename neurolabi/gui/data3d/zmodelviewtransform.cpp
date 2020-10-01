@@ -9,6 +9,27 @@ ZModelViewTransform::ZModelViewTransform()
 
 }
 
+ZPoint ZModelViewTransform::transformWithoutOffset(const ZPoint &pt) const
+{
+  ZPoint newPt = pt;
+  switch (m_sliceAxis) {
+  case neutu::EAxis::X:
+  case neutu::EAxis::Y:
+  case neutu::EAxis::Z:
+    newPt.shiftSliceAxis(m_sliceAxis);
+    break;
+  case neutu::EAxis::ARB:
+    newPt = m_cutPlane.getPlane().align(pt);
+    break;
+  }
+
+  if (!m_rightHanded) {
+    newPt.flipZ();
+  }
+
+  return newPt;
+}
+
 ZPoint ZModelViewTransform::transform(const ZPoint &pt) const
 {
   ZPoint newPt = pt;
@@ -24,6 +45,10 @@ ZPoint ZModelViewTransform::transform(const ZPoint &pt) const
     break;
   }
 
+  if (!m_rightHanded) {
+    newPt.flipZ();
+  }
+
   return newPt;
 }
 
@@ -37,7 +62,7 @@ void ZModelViewTransform::transform(double *x, double *y, double *z) const
 
 ZPoint ZModelViewTransform::inverseTransform(double u, double v, double n) const
 {
-  ZPoint pt(u, v, n);
+  ZPoint pt(u, v, m_rightHanded ? n : -n);
 
   switch (m_sliceAxis) {
   case neutu::EAxis::ARB:
@@ -171,7 +196,7 @@ void ZModelViewTransform::setCutPlane(
 
 void ZModelViewTransform::moveCutDepth(double d)
 {
-  m_cutPlane.addOffset(d, getSliceAxis());
+  m_cutPlane.addOffset(m_rightHanded ? d : -d, getSliceAxis());
 }
 
 double ZModelViewTransform::getCutDepth(const ZPoint &startPlane) const
@@ -184,7 +209,7 @@ double ZModelViewTransform::getCutDepth(const ZPoint &startPlane) const
         startPlane.getValue(getSliceAxis());
   }
 
-  return d;
+  return m_rightHanded ? d : -d;
 }
 
 void ZModelViewTransform::setCutDepth(const ZPoint &startPlane, double d)
@@ -195,6 +220,10 @@ void ZModelViewTransform::setCutDepth(const ZPoint &startPlane, double d)
     d0 = (startPlane - getCutCenter()).dot(getCutPlaneNormal());
   } else {
     d0 = (getCutCenter() - startPlane).getValue(getSliceAxis());
+  }
+
+  if (!m_rightHanded) {
+    d0 = -d0;
   }
 
   moveCutDepth(d - d0);
@@ -251,6 +280,16 @@ void ZModelViewTransform::setCutCenter(double x, double y, double z)
   */
 }
 
+void ZModelViewTransform::setRightHanded(bool r)
+{
+  m_rightHanded = r;
+}
+
+bool ZModelViewTransform::rightHanded() const
+{
+  return m_rightHanded;
+}
+
 ZJsonObject ZModelViewTransform::toJsonObject() const
 {
   ZJsonObject obj;
@@ -275,6 +314,10 @@ ZJsonObject ZModelViewTransform::toJsonObject() const
     obj.setEntry("slice", sliceObj);
   }
     break;
+  }
+
+  if (!m_rightHanded) {
+    obj.setEntry("hand", "left");
   }
 
   return obj;
@@ -318,4 +361,9 @@ std::ostream& operator<< (
    stream << t.m_cutPlane;
 
    return stream;
+}
+
+void ZModelViewTransform::copyWithoutOrientation(const ZModelViewTransform &t)
+{
+  m_cutPlane.setOffset(t.m_cutPlane.getOffset());
 }

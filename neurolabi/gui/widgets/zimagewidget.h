@@ -89,8 +89,10 @@ public:
       const ZPoint &pt, neutu::data3d::ESpace src, neutu::data3d::ESpace dst) const;
   void setSliceViewTransform(const ZSliceViewTransform &t);
   void setCutPlane(neutu::EAxis axis);
+  void setRightHanded(bool r);
   void setCutPlane(const ZPoint &v1, const ZPoint &v2);
   void setCutPlane(const ZAffinePlane &plane);
+  ZPlane getCutOrientation() const;
 
   void setCutCenter(double x, double y, double z);
   void setCutCenter(const ZPoint &center);
@@ -258,6 +260,7 @@ public:
 
   void resetView(double defaultScale = 0.0);
   void setReady(bool ready);
+  bool isReady() const;
 
 //  void paintWidgetObject();
 
@@ -333,6 +336,7 @@ private:
   bool paintObjectTmpl(QPainter *painter, const QList<ZStackObjectPtr> &objList);
   void paintZoomHint();
   void paintCrossHair();
+  void paintAxis();
 
   bool isBadView() const;
 

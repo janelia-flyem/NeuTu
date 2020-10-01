@@ -698,6 +698,19 @@ void ZProofreadWindow::createToolbar()
   addViewAction(neutu::EAxis::Z);
   addViewAction(neutu::EAxis::ARB);
 
+  QActionGroup *viewLayoutGroup = new QActionGroup(this);
+
+  auto addViewLayoutAction = [&](ZActionFactory::EAction option, bool checked) {
+    QAction *action = m_mainMvc->getCompletePresenter()->getAction(option);
+    action->setChecked(checked);
+    viewLayoutGroup->addAction(action);
+    m_mainToolBar->addAction(action);
+  };
+
+  addViewLayoutAction(ZActionFactory::EAction::ACTION_VIEW_LAYOUT_1, true);
+  addViewLayoutAction(ZActionFactory::EAction::ACTION_VIEW_LAYOUT_2, false);
+  addViewLayoutAction(ZActionFactory::EAction::ACTION_VIEW_LAYOUT_3, false);
+
   m_mainToolBar->addSeparator();
 
   if (m_openSequencerAction != NULL) {
@@ -1149,6 +1162,7 @@ void ZProofreadWindow::loadDatabaseFromUrl()
 void ZProofreadWindow::postDvidReady()
 {
   getMainMvc()->updateRoiWidget();
+  getMainMvc()->setViewReady();
 }
 
 void ZProofreadWindow::processFeedback()

@@ -193,11 +193,15 @@ public:
    */
   int getCurrentDepth() const;
 
+  ZPlane getCutOrientation() const;
+
   //int threshold();
 
   void setSliceAxis(neutu::EAxis axis);
   neutu::EAxis getSliceAxis() const;// { return m_sliceAxis; }
 //  ZAffinePlane getAffinePlane() const;
+
+  void setRightHanded(bool r);
 
   void setCutPlane(neutu::EAxis axis);
   void setCutPlane(const ZPoint &v1, const ZPoint &v2);

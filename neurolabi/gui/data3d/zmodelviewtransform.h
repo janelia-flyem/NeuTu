@@ -14,6 +14,8 @@ public:
   ZPoint transform(const ZPoint &pt) const;
   void transform(double *x, double *y, double *z) const;
 
+  ZPoint transformWithoutOffset(const ZPoint &pt) const;
+
   ZPoint inverseTransform(double u, double v, double n = 0) const;
   ZPoint inverseTransform(const ZPoint &pt) const;
 
@@ -52,6 +54,9 @@ public:
 
   void setCutPlane(neutu::EAxis sliceAxis, const ZPoint &cutCenter);
 
+  void setRightHanded(bool r);
+  bool rightHanded() const;
+
   void moveCutDepth(double d);
   void setCutDepth(const ZPoint &startPlane, double d);
   double getCutDepth(const ZPoint &startPlane) const;
@@ -84,8 +89,11 @@ public:
   friend std::ostream& operator<< (
       std::ostream &stream, const ZModelViewTransform &t);
 
+  void copyWithoutOrientation(const ZModelViewTransform &t);
+
 private:
   neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
+  bool m_rightHanded = true;
 
   ZAffinePlane m_cutPlane;
 };

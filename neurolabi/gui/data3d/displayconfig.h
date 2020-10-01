@@ -81,7 +81,7 @@ public:
   int getViewId() const;
 
 //  void setCutRect(const ZAffineRect &rect);
-//  void setSliceAxis(neutu::EAxis axis);
+  void setSliceAxis(neutu::EAxis axis);
 
 private:
   ZModelViewTransform m_transform;

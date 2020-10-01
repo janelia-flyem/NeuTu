@@ -73,6 +73,8 @@ public:
   void forEachView(std::function<void(ZStackView*)> f) const;
   void forEachVisibleView(std::function<void(ZStackView*)> f) const;
 
+  void setViewReady();
+
   /*!
    * \brief Get the global geometry of the view window.
    */
@@ -139,6 +141,8 @@ public slots:
   void zoomWithWidthAligned(const ZStackView *view);
   void zoomWithHeightAligned(const ZStackView *view);
 
+  void updateViewLayout(std::vector<int> viewLayoutIndices);
+
   void dump(const QString &msg);
 
   void saveStack();
@@ -164,7 +168,7 @@ protected:
       const std::vector<neutu::EAxis> &axes);
   virtual void customInit();
   virtual void createPresenter();
-  void createPresenter(neutu::EAxis axis);
+  void createPresenter(neutu::EAxis axis, int viewCount);
   virtual void createView();
   virtual void createView(neutu::EAxis axis);
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -174,6 +178,7 @@ protected:
 //  virtual void changeEvent(QEvent * event);
 
   void layoutView();
+  void layoutView(ZStackView *view, int index);
 
   typedef bool FConnectAction(
       const QObject*, const char *,
@@ -190,6 +195,9 @@ protected:
   void updateDocSignalSlot(FConnectAction connectAction);
   void updateSignalSlot(FConnectAction connectAction);
 
+  int getViewIndex(ZStackView *view);
+  int getViewIndex(int viewId);
+
 private:
   void dropDocument(std::shared_ptr<ZStackDoc> doc);
   void updateDocument();
@@ -205,6 +213,7 @@ protected:
   std::shared_ptr<ZStackDoc> m_doc;
   ZStackPresenter *m_presenter;
   std::vector<ZStackView*> m_viewList;
+  std::vector<int> m_viewLayoutIndices;
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;
   QGridLayout *m_viewLayout;

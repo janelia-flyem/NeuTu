@@ -60,6 +60,8 @@ public:
   inline void addY(double y) { m_y += y; }
   inline void addZ(double z) { m_z += z; }
 
+  void flipZ();
+
   double distanceTo(const ZPoint &pt) const;
   double distanceTo(double x, double y, double z) const;
   double distanceSquareTo(const ZPoint &pt) const;

@@ -186,6 +186,7 @@ public:
   void setSliceViewTransform(int viewId, const ZSliceViewTransform &transform);
   ZSliceViewTransform getSliceViewTransform(int viewId) const;
   neutu::EAxis getSliceAxis(int viewId) const;
+  void setSliceAxis(int viewId, neutu::EAxis axis);
 
   void setSliceMode(int viewId, neutu::data3d::EDisplaySliceMode mode);
   neutu::data3d::EDisplaySliceMode getSliceMode(int viewId) const;
@@ -197,6 +198,9 @@ public:
   bool acceptingRect() const { return m_acceptingRect; }
   void setRectSpan(bool on) { m_rectSpan = on; }
   bool rectSpan() const { return m_rectSpan; }
+
+  int getViewId() const;
+  void setViewId(int viewId);
 
 private:
   MarkPunctaMode m_markPunctaMode;
@@ -218,6 +222,7 @@ private:
   bool m_rectSpan;
 //  neutu::EAxis m_sliceAxis;
   int m_keyIndex;
+  int m_viewId = -1;
 
   std::unordered_map<int, neutu::data3d::DisplayConfig> m_displayConfigMap;
   neutu::data3d::DisplayConfig m_nullDispalyConfig;

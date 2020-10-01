@@ -113,7 +113,7 @@ void ZWorker::invalidateNamedTask(const QString &name)
 
 void ZWorker::disposeTask(ZTask *task)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "ZTask dispose: " << task << std::endl;
 #endif
   invalidateNamedTask(task, &m_nameTaskMapLock);

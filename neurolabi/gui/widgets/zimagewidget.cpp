@@ -211,6 +211,8 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     } else {
       paintCrossHair();
     }
+
+    paintAxis();
   }
 //    painter.restore();
 //    QSize size = projectSize();
@@ -368,8 +370,13 @@ bool ZImageWidget::isBadView() const
 
 void ZImageWidget::setSliceAxis(neutu::EAxis axis)
 {
-  m_sliceViewTransform.setCutPlane(axis);
-  notifyTransformChanged();
+  if (axis != m_sliceViewTransform.getSliceAxis()) {
+    m_sliceViewTransform.setCutPlane(axis);
+    m_sliceViewTransform.setRightHanded(
+          axis == neutu::EAxis::Z || axis == neutu::EAxis::ARB);
+    notifyTransformChanged();
+    emit sliceAxisChanged();
+  }
 }
 
 neutu::EAxis ZImageWidget::getSliceAxis() const
@@ -1020,6 +1027,34 @@ void ZImageWidget::paintZoomHint()
   }
 }
 
+void ZImageWidget::paintAxis()
+{
+  QPainter painter;
+  if (!painter.begin(this)) {
+    std::cout << "......failed to begin painter" << std::endl;
+    return;
+  }
+
+  QPointF anchor = getAnchorPoint();
+  double length = 20.0;
+
+  painter.setRenderHint(QPainter::Antialiasing, true);
+  ZPoint xAxis = m_sliceViewTransform.getModelViewTransform().
+      transformWithoutOffset({1, 0, 0});
+  painter.setPen(Qt::red);
+  painter.drawLine(anchor, anchor + QPointF(xAxis.getX(), xAxis.getY()) * length);
+
+  ZPoint yAxis = m_sliceViewTransform.getModelViewTransform().
+      transformWithoutOffset({0, 1, 0});
+  painter.setPen(Qt::green);
+  painter.drawLine(anchor, anchor + QPointF(yAxis.getX(), yAxis.getY()) * length);
+
+  ZPoint zAxis = m_sliceViewTransform.getModelViewTransform().
+      transformWithoutOffset({0, 0, 1});
+  painter.setPen(Qt::blue);
+  painter.drawLine(anchor, anchor + QPointF(zAxis.getX(), zAxis.getY()) * length);
+}
+
 void ZImageWidget::paintCrossHair()
 {
   QPainter painter;
@@ -1375,6 +1410,11 @@ void ZImageWidget::setReady(bool ready)
   m_isReady = ready;
 }
 
+bool ZImageWidget::isReady() const
+{
+  return m_isReady;
+}
+
 void ZImageWidget::showEvent(QShowEvent *event)
 {
   LDEBUG() << "ZImageWidget::showEvent" << size() << isVisible();
@@ -1564,12 +1604,22 @@ void ZImageWidget::notifyTransformChanged()
 #endif
 }
 
+ZPlane ZImageWidget::getCutOrientation() const
+{
+  return m_sliceViewTransform.getCutOrientation();
+}
+
 void ZImageWidget::setSliceViewTransform(const ZSliceViewTransform &t)
 {
   if (m_sliceViewTransform != t) {
     m_sliceViewTransform = t;
     notifyTransformChanged();
   }
+}
+
+void ZImageWidget::setRightHanded(bool r)
+{
+  m_sliceViewTransform.setRightHanded(r);
 }
 
 void ZImageWidget::setCutPlane(neutu::EAxis axis)
@@ -1589,12 +1639,14 @@ void ZImageWidget::setCutPlane(neutu::EAxis axis)
       center.setValue(slice, axis);
       m_sliceViewTransform.setCutCenter(center);
     }
-
-    m_sliceViewTransform.setCutPlane(axis);
+//    m_sliceViewTransform.setCutPlane(axis);
     if (axis == neutu::EAxis::ARB && m_defaultArbPlane.isValid()) {
       m_sliceViewTransform.setCutPlane(
             m_defaultArbPlane.getV1(), m_defaultArbPlane.getV2());
     }
+    m_sliceViewTransform.setCutPlane(axis);
+    m_sliceViewTransform.setRightHanded(
+          axis == neutu::EAxis::Z || axis == neutu::EAxis::ARB);
     notifyTransformChanged();
     emit sliceAxisChanged();
   }

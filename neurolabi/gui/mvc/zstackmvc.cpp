@@ -98,12 +98,12 @@ void ZStackMvc::construct(
 
   if (axes.empty()) {
     createView(neutu::EAxis::Z);
-    createPresenter(neutu::EAxis::Z);
+    createPresenter(neutu::EAxis::Z, 1);
   } else {
     for (auto axis : axes) {
       createView(axis);
     }
-    createPresenter(axes.front());
+    createPresenter(axes.front(), axes.size());
   }
 //  getPresenter()->createActions();
 
@@ -163,11 +163,55 @@ void ZStackMvc::createView(neutu::EAxis axis)
   }
 }
 
+void ZStackMvc::updateViewLayout(std::vector<int> viewLayoutIndices)
+{
+  bool updating = true;
+  if (viewLayoutIndices.size() == m_viewLayoutIndices.size()) {
+    updating = !std::equal(
+          viewLayoutIndices.begin(), viewLayoutIndices.end(),
+          m_viewLayoutIndices.begin());
+  }
+  if (updating) {
+    m_viewLayoutIndices = viewLayoutIndices;
+    layoutView();
+  }
+}
+
+void ZStackMvc::layoutView(ZStackView *view, int index)
+{
+  if (view) {
+    if (index >= 0) {
+      int row = index / 2;
+      int column = index % 2;
+      view->setVisible(true);
+      m_viewLayout->addWidget(view, row, column);
+    } else {
+      view->setVisible(false);
+    }
+  }
+}
+
 void ZStackMvc::layoutView()
 {
   neutu::ClearLayout(m_viewLayout);
-  int row = 0;
-  int column = 0;
+//  int row = 0;
+//  int column = 0;
+
+  if (m_viewLayoutIndices.empty()) {
+    for (size_t i = 0; i < m_viewList.size(); ++i) {
+      layoutView(m_viewList[i], i);
+    }
+  } else {
+    for (size_t i = 0; i< m_viewLayoutIndices.size(); ++i) {
+      if (i < m_viewList.size()) {
+        layoutView(m_viewList[i], m_viewLayoutIndices[i]);
+      }
+    }
+    for (size_t i = m_viewLayoutIndices.size(); i < m_viewList.size(); ++i) {
+      m_viewList[i]->hide();
+    }
+  }
+  /*
   for (ZStackView *view : m_viewList) {
     m_viewLayout->addWidget(view, row, column++);
     if (column == 2) {
@@ -175,6 +219,7 @@ void ZStackMvc::layoutView()
       ++row;
     }
   }
+  */
 }
 
 void ZStackMvc::createPresenter()
@@ -184,11 +229,12 @@ void ZStackMvc::createPresenter()
   }
 }
 
-void ZStackMvc::createPresenter(neutu::EAxis axis)
+void ZStackMvc::createPresenter(neutu::EAxis axis, int viewCount)
 {
   createPresenter();
   if (m_presenter != NULL) {
-    m_presenter->setSliceAxis(axis);
+    m_presenter->setMainSliceAxis(axis);
+    m_presenter->setViewCount(viewCount);
   }
 }
 
@@ -223,9 +269,15 @@ ZStackView* ZStackMvc::getDefaultView() const
 
 ZStackView* ZStackMvc::getView(int viewId) const
 {
-  for (auto view : m_viewList) {
-    if (view->getViewId() == viewId) {
-      return view;
+  if (viewId == 0) {
+    return getMainView();
+  } else if (viewId == -1) {
+    return getDefaultView();
+  } else if (viewId > 0) {
+    for (auto view : m_viewList) {
+      if (view->getViewId() == viewId) {
+        return view;
+      }
     }
   }
 
@@ -261,6 +313,13 @@ void ZStackMvc::forEachVisibleView(std::function<void (ZStackView *)> f) const
     if (view->isVisible()) {
       f(view);
     }
+  }
+}
+
+void ZStackMvc::setViewReady()
+{
+  for (ZStackView *view : m_viewList) {
+    view->setWidgetReady(true);
   }
 }
 
@@ -322,6 +381,9 @@ void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 //                  this, SLOT(processViewChange(const ZStackViewParam &viewParam)),
 //                  Qt::AutoConnection);
   }
+  connectAction(
+        m_presenter, SIGNAL(updatingViewLayout(std::vector<int>)),
+        this, SLOT(updateViewLayout(std::vector<int>)), Qt::AutoConnection);
 //  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
 //                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
 //                Qt::AutoConnection);
@@ -364,7 +426,8 @@ void ZStackMvc::updateDocument()
 bool ZStackMvc::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
-    return m_presenter->processKeyPressEvent(event, -1);
+    return m_presenter->processKeyPressEvent(
+          event, getDefaultView()->getViewId());
   }
 
   return false;
@@ -419,6 +482,75 @@ void ZStackMvc::blockViewChangeSignal(bool blocking)
   m_signalingViewChange = !blocking;
 }
 
+namespace {
+
+ZPlane get_orthor_ort(const ZPlane &ort, int fromViewIndex, int toViewIndex)
+{
+  ZPlane newOrt = ort;
+  if (fromViewIndex == 0) {
+    if (toViewIndex == 1) {
+      newOrt.set(ort.getNormal(), ort.getV2());
+    } else if (toViewIndex == 2) {
+      newOrt.set(ort.getV1(), ort.getNormal());
+    }
+  } else if (fromViewIndex == 1) {
+    if (toViewIndex == 0) {
+      newOrt.set(-ort.getNormal(), ort.getV2());
+    } else if (toViewIndex == 2) {
+      newOrt.set(-ort.getNormal(), ort.getV1());
+    }
+  } else if (fromViewIndex == 2) {
+    if (toViewIndex == 0) {
+      newOrt.set(ort.getV1(), -ort.getNormal());
+    } else if (toViewIndex == 1) {
+      newOrt.set(ort.getV2(), -ort.getNormal());
+    }
+  }
+
+  return newOrt;
+}
+
+}
+
+int ZStackMvc::getViewIndex(ZStackView *view)
+{
+  int index = -1;
+  for (size_t i = 0; i< m_viewList.size(); ++i) {
+    if (m_viewList[i] == view) {
+      if (m_viewLayoutIndices.empty()) {
+        index = i;
+      } else {
+        if (i < m_viewLayoutIndices.size()) {
+          index = m_viewLayoutIndices[i];
+        }
+      }
+      break;
+    }
+  }
+
+  return index;
+}
+
+int ZStackMvc::getViewIndex(int viewId)
+{
+  int index = -1;
+  for (size_t i = 0; i< m_viewList.size(); ++i) {
+    if (m_viewList[i]->getViewId() == viewId) {
+      if (m_viewLayoutIndices.empty()) {
+        index = i;
+      } else {
+        if (index < int(m_viewLayoutIndices.size())) {
+          index = m_viewLayoutIndices[i];
+        }
+      }
+      break;
+    }
+  }
+
+  return index;
+}
+
+
 void ZStackMvc::processViewChange(int viewId)
 {
   if (m_signalingViewChange) {
@@ -428,8 +560,19 @@ void ZStackMvc::processViewChange(int viewId)
   ZSliceViewTransform transform = getView(viewId)->getSliceViewTransform();
   for (ZStackView *view : m_viewList) {
     if (view->getViewId() != viewId) {
-      ZSliceViewTransform newTransform = transform;
-      newTransform.setCutPlane(view->getSliceViewTransform().getCutOrientation());
+      ZSliceViewTransform newTransform = view->getSliceViewTransform();
+      newTransform.copyWithoutOrientation(transform);
+//      newTransform.setCutPlane(view->getSliceViewTransform().getCutOrientation());
+      if (transform.getSliceAxis() == neutu::EAxis::ARB) {
+        newTransform.setCutPlane(
+              get_orthor_ort(
+                transform.getCutOrientation(),
+                getViewIndex(viewId), getViewIndex(view)));
+      }/* else {
+        newTransform.setCutPlane(view->getSliceViewTransform().getCutOrientation());
+      }
+      */
+//      newTransform.setRightHanded(view->getSliceViewTransform().rightHanded());
       view->enableViewChangeSignal(false);
       view->setSliceViewTransform(newTransform);
       view->enableViewChangeSignal(true);

@@ -758,6 +758,21 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QFontIcon::icon(9398, Qt::black));
     action->setCheckable(true);
     break;
+  case ACTION_VIEW_LAYOUT_3:
+    action = new QAction("View 1X1", parent);
+    action->setIcon(QFontIcon::icon(0xf009, Qt::darkGreen));
+    action->setCheckable(true);
+    break;
+  case ACTION_VIEW_LAYOUT_1:
+    action = new QAction("View 1X2", parent);
+    action->setIcon(QFontIcon::icon(0xf0c8, Qt::darkGreen));
+    action->setCheckable(true);
+    break;
+  case ACTION_VIEW_LAYOUT_2:
+    action = new QAction("View 2X2", parent);
+    action->setIcon(QFontIcon::icon(0xf0db, Qt::darkGreen));
+    action->setCheckable(true);
+    break;
   case ACTION_SAVE_ALL_MESH:
     action = new QAction("Save Meshes As", parent);
     break;

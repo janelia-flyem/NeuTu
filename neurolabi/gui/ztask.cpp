@@ -16,7 +16,7 @@ ZTask::ZTask(QObject *parent) : QObject(parent)
 
 ZTask::~ZTask()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "ZTask destroyed: " << this << std::endl;
 #endif
 }
@@ -52,7 +52,7 @@ void ZTask::executeSlot()
   if (m_isValid) {
     execute();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "ZTask finished: " << this << std::endl;
 #endif
 

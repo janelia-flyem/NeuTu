@@ -150,7 +150,9 @@ public:
   void setHighlight(bool state) { m_highlight = state; }
   void highlight(int x, int y, int z);
 
-  void setSliceAxis(neutu::EAxis axis);
+  void setSliceAxis(int viewId, neutu::EAxis axis);
+  void setMainSliceAxis(neutu::EAxis axis);
+  void setViewCount(int n);
 
   bool paintingRoi() const {
     return m_paintingRoi;
@@ -492,6 +494,7 @@ signals:
   void uncheckingBookmark();
   void savingStack();
   void movingCrossHairTo(int x, int y);
+  void updatingViewLayout(std::vector<int> viewLayoutIndices);
 
 protected:
   void init();
@@ -549,6 +552,8 @@ protected:
   ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
 
   void setViewCursor(const QCursor &cursor);
+  void updateViewLayout();
+  void updateCutPlane(neutu::EAxis a1, neutu::EAxis a2, neutu::EAxis a3);
 
 protected:
   //ZStackFrame *m_parent;
@@ -572,6 +577,8 @@ protected:
   ZInteractiveContext m_interactiveContext;
   int m_cursorRadius;
   int m_contextViewId = -1;
+  int m_viewCount = 1;
+  neutu::EAxis m_mainViewAxis = neutu::EAxis::Z;
 
   //  Action map
   QMap<ZActionFactory::EAction, QAction*> m_actionMap;

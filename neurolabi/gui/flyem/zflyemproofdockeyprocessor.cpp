@@ -26,5 +26,7 @@ bool ZFlyEmProofDocKeyProcessor::processKeyEvent(
     processed = ZStackDocKeyProcessor::processKeyEvent(event, context);
   }
 
+  m_operator.setViewId(context.getViewId());
+
   return processed;
 }

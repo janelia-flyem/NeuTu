@@ -33,6 +33,8 @@ public:
   ZViewPlaneTransform getViewCanvasTransform() const;
 
   neutu::EAxis getSliceAxis() const;
+  void setSliceAxis(neutu::EAxis axis);
+
   ZPoint getCutPlaneNormal() const;
   ZPoint getCutCenter() const;
   double getScale() const;
@@ -72,6 +74,9 @@ public:
    * Set the cut center \a pt and map it to (\a ca, \b cb) in the canvas space.
    */
   void setCutCenter(const ZPoint &pt, double ca, double db);
+
+  void setRightHanded(bool r);
+  bool rightHanded() const;
 
   void setModelViewTransform(const ZModelViewTransform &t);
   void setModelViewTransform(const ZAffinePlane &cutPlane);
@@ -213,6 +218,8 @@ public:
 
   friend std::ostream& operator << (
       std::ostream& stream, const ZSliceViewTransform &t);
+
+  void copyWithoutOrientation(const ZSliceViewTransform &t);
 
 private:
   ZModelViewTransform m_modelViewTransform;

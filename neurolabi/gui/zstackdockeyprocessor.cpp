@@ -49,5 +49,7 @@ bool ZStackDocKeyProcessor::processKeyEvent(
     break;
   }
 
-  return false;
+  m_operator.setViewId(context.getViewId());
+
+  return processed;
 }

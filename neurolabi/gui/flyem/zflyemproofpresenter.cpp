@@ -232,6 +232,15 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_VIEW_AXIS_Z:
       connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneAlongZ()));
       break;
+    case ZActionFactory::ACTION_VIEW_LAYOUT_1:
+      connect(action, SIGNAL(triggered()), this, SLOT(setViewLayout1()));
+      break;
+    case ZActionFactory::ACTION_VIEW_LAYOUT_2:
+      connect(action, SIGNAL(triggered()), this, SLOT(setViewLayout2()));
+      break;
+    case ZActionFactory::ACTION_VIEW_LAYOUT_3:
+      connect(action, SIGNAL(triggered()), this, SLOT(setViewLayout3()));
+      break;
     case ZActionFactory::ACTION_VIEW_AXIS_ARB:
       connect(action, SIGNAL(triggered()), this, SLOT(setCutPlaneArb()));
       break;
@@ -434,6 +443,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
             ZStackOperator op;
             op.setOperation(ZStackOperator::OP_GRAYSCALE_TOGGLE);
             processed = true;
+            op.setViewId(m_interactiveContext.getViewId());
             process(op);
           }
         }
@@ -455,6 +465,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
             op.setOperation(ZStackOperator::OP_DVID_SYNAPSE_START_TBAR);
           }
           if (!op.isNull()) {
+            op.setViewId(m_interactiveContext.getViewId());
             processed = true;
             process(op);
           }
@@ -533,6 +544,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
   if (!processed) {
     op.setOperation(m_bookmarkKeyOperationMap.getOperation(
                       event->key(), event->modifiers()));
+    op.setViewId(m_interactiveContext.getViewId());
     processed = process(op);
   }
 
@@ -1133,23 +1145,101 @@ void ZFlyEmProofPresenter::runTipDetection() {
 
 void ZFlyEmProofPresenter::setCutPlaneAlongX()
 {
+  updateCutPlane(neutu::EAxis::X, neutu::EAxis::Z, neutu::EAxis::Y);
+
+  /*
   getMainView()->setCutPlane(neutu::EAxis::X);
+  auto viewList = getViewList();
+  if (viewList.size() > 1) {
+    viewList[1]->setCutPlane(neutu::EAxis::Z);
+    if (viewList.size() > 2) {
+      viewList[2]->setCutPlane(neutu::EAxis::Y);
+    }
+  }
+  updateViewLayout();
+//  emit updatingViewLayout(std::vector<int>{0, 1, 3});
+    */
 }
 
 void ZFlyEmProofPresenter::setCutPlaneAlongY()
 {
+  updateCutPlane(neutu::EAxis::Y, neutu::EAxis::Z, neutu::EAxis::X);
+  /*
   getMainView()->setCutPlane(neutu::EAxis::Y);
+  auto viewList = getViewList();
+  if (viewList.size() > 1) {
+    viewList[1]->setCutPlane(neutu::EAxis::Z);
+    if (viewList.size() > 2) {
+      viewList[2]->setCutPlane(neutu::EAxis::X);
+    }
+  }
+
+  emit updatingViewLayout(std::vector<int>{0, 2, 3});
+  */
 }
 
 void ZFlyEmProofPresenter::setCutPlaneAlongZ()
 {
+  updateCutPlane(neutu::EAxis::Z, neutu::EAxis::X, neutu::EAxis::Y);
+  /*
   getMainView()->setCutPlane(neutu::EAxis::Z);
+  auto viewList = getViewList();
+  if (viewList.size() > 1) {
+    viewList[1]->setCutPlane(neutu::EAxis::X);
+    if (viewList.size() > 2) {
+      viewList[2]->setCutPlane(neutu::EAxis::Y);
+    }
+  }
+
+  emit updatingViewLayout(std::vector<int>());
+  */
 }
 
 void ZFlyEmProofPresenter::setCutPlaneArb()
 {
   getMainView()->setCutPlane(neutu::EAxis::ARB);
+  getMainView()->setRightHanded(true);
+
+  ZPlane ort = getMainView()->getCutOrientation();
+
+  auto viewList = getViewList();
+  if (viewList.size() > 1) {
+    viewList[1]->enableViewChangeSignal(false);
+    viewList[1]->setCutPlane(ort.getNormal(), ort.getV2());
+    viewList[1]->setRightHanded(false);
+    viewList[1]->enableViewChangeSignal(true);
+    if (viewList.size() > 2) {
+      viewList[2]->enableViewChangeSignal(false);
+      viewList[2]->setCutPlane(ort.getV1(), ort.getNormal());
+      viewList[2]->setRightHanded(false);
+      viewList[2]->enableViewChangeSignal(true);
+    }
+  }
+
+  m_mainViewAxis = neutu::EAxis::ARB;
+  updateViewLayout();
+
+//  emit updatingViewLayout(std::vector<int>());
 }
+
+void ZFlyEmProofPresenter::setViewLayout1()
+{
+  m_viewCount = 1;
+  updateViewLayout();
+}
+
+void ZFlyEmProofPresenter::setViewLayout2()
+{
+  m_viewCount = 2;
+  updateViewLayout();
+}
+
+void ZFlyEmProofPresenter::setViewLayout3()
+{
+  m_viewCount = 3;
+  updateViewLayout();
+}
+
 
 ZFlyEmProofDoc* ZFlyEmProofPresenter::getCompleteDocument() const
 {

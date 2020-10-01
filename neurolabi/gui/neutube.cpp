@@ -33,6 +33,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
+  qRegisterMetaType<std::vector<int>>("std::vector<int>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
   qRegisterMetaType<neutu::EBodySplitMode>("neutu::EBodySplitMode");
   qRegisterMetaType<ZStackObjectInfo>("ZStackObjectInfo");

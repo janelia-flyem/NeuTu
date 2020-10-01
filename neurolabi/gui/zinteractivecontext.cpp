@@ -48,6 +48,15 @@ ZInteractiveContext::ZInteractiveContext()
   m_uniqueMode = INTERACT_FREE;
 }
 
+int ZInteractiveContext::getViewId() const
+{
+  return m_viewId;
+}
+
+void ZInteractiveContext::setViewId(int viewId)
+{
+  m_viewId = viewId;
+}
 
 bool ZInteractiveContext::isTraceModeOff() const
 {
@@ -281,5 +290,12 @@ ZSliceViewTransform ZInteractiveContext::getSliceViewTransform(int viewId) const
 neutu::EAxis ZInteractiveContext::getSliceAxis(int viewId) const
 {
   return getSliceViewTransform(viewId).getSliceAxis();
+}
+
+void ZInteractiveContext::setSliceAxis(int viewId, neutu::EAxis axis)
+{
+  if (m_displayConfigMap.count(viewId) > 0) {
+    m_displayConfigMap[viewId].setSliceAxis(axis);
+  }
 }
 

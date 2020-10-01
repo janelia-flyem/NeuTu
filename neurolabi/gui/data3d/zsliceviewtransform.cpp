@@ -22,6 +22,11 @@ neutu::EAxis ZSliceViewTransform::getSliceAxis() const
   return m_modelViewTransform.getSliceAxis();
 }
 
+void ZSliceViewTransform::setSliceAxis(neutu::EAxis axis)
+{
+  m_modelViewTransform.setCutPlane(axis);
+}
+
 ZPoint ZSliceViewTransform::getCutPlaneNormal() const
 {
   return m_modelViewTransform.getCutPlaneNormal();
@@ -45,6 +50,16 @@ ZPlane ZSliceViewTransform::getCutOrientation() const
 double ZSliceViewTransform::getScale() const
 {
   return getViewCanvasTransform().getScale();
+}
+
+void ZSliceViewTransform::setRightHanded(bool r)
+{
+  m_modelViewTransform.setRightHanded(r);
+}
+
+bool ZSliceViewTransform::rightHanded() const
+{
+  return m_modelViewTransform.rightHanded();
 }
 
 ZAffineRect ZSliceViewTransform::getCutRect(
@@ -597,6 +612,12 @@ std::ostream& operator << (
 {
   stream << t.m_modelViewTransform << " -> " << t.m_viewCanvasTransform;
   return stream;
+}
+
+void ZSliceViewTransform::copyWithoutOrientation(const ZSliceViewTransform &t)
+{
+  m_modelViewTransform.copyWithoutOrientation(t.m_modelViewTransform);
+  m_viewCanvasTransform = t.m_viewCanvasTransform;
 }
 
 

@@ -1,6 +1,7 @@
 #ifndef ZSTACKOPERATOR_H
 #define ZSTACKOPERATOR_H
 
+#include <iostream>
 #include <Qt>
 #include "swctreenode.h"
 #include "zmouseevent.h"
@@ -146,9 +147,11 @@ public:
     m_hitObject = obj;
   }
 
+  /*
   inline int getPunctaIndex() const {
     return m_punctaIndex;
   }
+  */
 
   bool isNull() const;
 
@@ -192,17 +195,20 @@ public:
 
   static bool IsOperable(EOperation op, const ZStackDoc *doc);
 
+  friend std::ostream& operator<< (
+      std::ostream &stream, const ZStackOperator &op);
+
 private:
   EOperation m_op = OP_NULL;
   //Swc_Tree_Node *m_hitNode;
   ZStackObject *m_hitObject = nullptr;
 //  ZStroke2d *m_hitStroke;
 //  ZObject3d *m_hitObj3d;
-  int m_punctaIndex = -1;
+//  int m_punctaIndex = -1;
   bool m_togglingStrokeLabel = false;
   int m_label = 0;
   bool m_shift = false;
-  int m_viewId = 0;
+  int m_viewId = -1;
   Qt::MouseButtons m_buttonPressed = Qt::NoButton;
   const ZMouseEventRecorder *m_mouseEventRecorder = nullptr;
 };
