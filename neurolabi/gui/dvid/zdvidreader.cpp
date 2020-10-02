@@ -775,6 +775,10 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
               subconfig.bodyId, subconfig.labelType, subconfig.zoom,
               subconfig.range, canonizing, &part);
       }
+#ifdef _DEBUG_
+      std::cout << "Part size: #voxels: " << part.getVoxelNumber() << "; "
+                << part.getIntBoundBox().toString() << std::endl;
+#endif
       result->concat(part);
     });
     if (canonizing) {
@@ -823,7 +827,7 @@ ZObject3dScan *ZDvidReader::readBody(
           LKINFO<< QString("Try to read %1 with partitions").arg(bodyId);
 
           int zoomScale = zgeom::GetZoomScale(zoom);
-          int npart = nblocks / 2000 / zoomScale / zoomScale / zoomScale;
+          int npart = nblocks / 500 / zoomScale / zoomScale / zoomScale;
           config.range = newBox;
           readBodyWithPartition(config, canonizing, npart, result);
         }

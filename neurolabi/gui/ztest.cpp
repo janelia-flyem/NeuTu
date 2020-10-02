@@ -31543,7 +31543,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
   ZDvidStackSource source;
   source.setDvidTarget(reader->getDvidTarget());
@@ -31555,6 +31555,16 @@ void ZTest::test(MainWindow *host)
         source.getStack(ZIntCuboid(1047, 0, 1216, 1050, 2, 1217), 5);
     stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 //  }
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+  reader->updateMaxLabelZoom();
+  ZObject3dScan obj;
+  reader->readBody(
+        6733325345, neutu::EBodyLabelType::SUPERVOXEL, 1, ZIntCuboid(), true,
+        &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
   std::cout << "Done." << std::endl;
