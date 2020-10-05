@@ -1079,7 +1079,7 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
 
     while (siter.hasNext()) {
       ZDvidSynapse &synapse = siter.next();
-      if (synapse.hit(x, y, z)) {
+      if (synapse.hit(x, y, z, 0)) {
         m_hitPoint = synapse.getPosition();
         return true;
       }

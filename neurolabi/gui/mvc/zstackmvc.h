@@ -142,6 +142,8 @@ public slots:
   void zoomWithHeightAligned(const ZStackView *view);
 
   void updateViewLayout(std::vector<int> viewLayoutIndices);
+  void updateViewLayout();
+  void updateViewData();
 
   void dump(const QString &msg);
 

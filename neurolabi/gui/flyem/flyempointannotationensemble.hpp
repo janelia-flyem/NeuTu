@@ -40,7 +40,7 @@ public:
    */
   int removeSelected(std::function<void(const std::string &)> errorProcessor);
 
-  bool hit(double x, double y, double z) override;
+  bool hit(double x, double y, double z, int viewId) override;
 
   void processHit(ESelection s) override;
   void deselectSub() override;
@@ -110,11 +110,12 @@ void FlyEmPointAnnotationEnsemble<T, TChunk>::addItem(const T &item)
 }
 
 template<typename T, typename TChunk>
-bool FlyEmPointAnnotationEnsemble<T, TChunk>::hit(double x, double y, double z)
+bool FlyEmPointAnnotationEnsemble<T, TChunk>::hit(
+    double x, double y, double z, int viewId)
 {
   if (isVisible() && isHittable()) {
     m_hitItem = m_blockGrid->hitClosestCachedItem(
-          x, y, z, m_blockGrid->getBlockSize().toPoint().length() * 0.5);
+          x, y, z, m_blockGrid->getBlockSize().toPoint().length() * 0.5, viewId);
 
     return m_hitItem.isValid();
   }

@@ -127,24 +127,15 @@ bool ZRect2d::isEmpty() const
 
 bool ZRect2d::display(QPainter *painter, const DisplayConfig &config) const
 {
-  if (isVisible() && !isEmpty()) {
+  if (isVisible() && !isEmpty() && m_viewId == config.getViewId()) {
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
     QPen pen(getColor());
     pen.setCosmetic(m_usingCosmeticPen);
     painter->setPen(pen);
 
-    /*
-    double x0 = m_x0;
-    double y0 = m_y0;
-    double x1 = x0 + m_width;
-    double y1 = y0 + m_height;
-    */
-//    double z = m_z;
-
     int x1 = m_x0 + m_width - 1;
     int y1 = m_y0 + m_height - 1;
-    neutu::DrawIntRect(
-          *painter, m_x0, m_y0, x1, y1);
+    neutu::DrawIntRect(*painter, m_x0, m_y0, x1, y1);
 
     if (isSelected()) {
       neutu::DrawLine(*painter, QPoint(m_x0, m_y0), QPoint(x1, y1));
@@ -397,6 +388,11 @@ ZIntPoint ZRect2d::getCenter() const
   return ZIntPoint(m_x0 + m_width / 2, m_y0 + m_height / 2, m_z);
 }
 
+void ZRect2d::setViewId(int viewId)
+{
+  m_viewId = viewId;
+}
+
 /*
 bool ZRect2d::hit(double x, double y, neutu::EAxis axis)
 {
@@ -432,6 +428,15 @@ bool ZRect2d::hit(double x, double y, double z)
   return false;
 }
 */
+
+bool ZRect2d::hit(double x, double y, double z, int viewId)
+{
+  if (m_viewId == viewId) {
+    return ZStackObject::hit(x, y, z);
+  }
+
+  return false;
+}
 
 bool ZRect2d::IsEqual(const QRect &rect1, const QRect &rect2)
 {

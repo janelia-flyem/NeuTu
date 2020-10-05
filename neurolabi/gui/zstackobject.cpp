@@ -322,8 +322,12 @@ bool ZStackObject::hit(double x, double y, neutu::EAxis axis, int /*viewId*/)
   return hit(x, y, axis);
 }
 
-bool ZStackObject::hit(double x, double y, double z, int /*viewId*/)
+bool ZStackObject::hit(double x, double y, double z, int viewId)
 {
+  if (m_hitMap.count(viewId) > 0) {
+    return m_hitMap.at(viewId)(this, x, y, z);
+  }
+
   return hit(x, y, z);
 }
 

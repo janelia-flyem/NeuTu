@@ -632,6 +632,10 @@ bool ZFlyEmToDoItem::isChecked() const
 
 bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) const
 {
+  this->m_hitMap[config.getViewId()] = [](const ZStackObject*,double,double,double) {
+    return false;
+  };
+
   if (isVisible()) {
     ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
 
@@ -653,7 +657,8 @@ bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) con
     }
 
     if (s3Painter.getPaintedHint()) {
-      this->_hit = [=](const ZStackObject *obj, double x, double y ,double z) {
+      this->m_hitMap[config.getViewId()] =
+          [=](const ZStackObject *obj, double x, double y ,double z) {
         auto s = dynamic_cast<const ZFlyEmToDoItem*>(obj);
         ZIntPoint center = s->getPosition();
         return ZSlice3dPainter::BallHitTest(
@@ -663,9 +668,9 @@ bool ZFlyEmToDoItem::display(QPainter *painter, const DisplayConfig &config) con
 
 //      this->_hit = s3Painter.getBallHitFunc(
 //            getX(), getY(), getZ(), getRadius(), depthScale);
-    } else {
+    }/* else {
       this->_hit = [](const ZStackObject*,double,double,double) { return false; };
-    }
+    }*/
 
     return s3Painter.getPaintedHint();
   }

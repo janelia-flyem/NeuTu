@@ -78,6 +78,8 @@ public:
   std::string getConnString(
       const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
 
+  bool hit(double x, double y, double z, int viewId) override;
+
 #if 0
 public: //Json APIs
   static ZJsonObject MakeRelJson(const ZIntPoint &pt, const std::string &rel);

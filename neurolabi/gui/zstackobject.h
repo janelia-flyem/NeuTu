@@ -2,8 +2,10 @@
 #define ZSTACKOBJECT_H
 
 #include <functional>
+#include <unordered_map>
 
 #include "common/neutudefs.h"
+#include "common/utilities.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zaffinerect.h"
 #include "data3d/defs.h"
@@ -396,11 +398,18 @@ public:
 
   struct ZOrderBiggerThan {
     bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
-      return (obj1.getZOrder() > obj2.getZOrder());
+      if (neutu::EnumValue(obj1.getTarget()) ==
+          neutu::EnumValue(obj2.getTarget())) {
+        return (obj1.getZOrder() > obj2.getZOrder());
+      }
+
+      return  neutu::EnumValue(obj1.getTarget()) >
+          neutu::EnumValue(obj2.getTarget());
     }
 
     bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
-      return (obj1->getZOrder() > obj2->getZOrder());
+      return ZOrderBiggerThan()(*obj1, *obj2);
+//      return (obj1->getZOrder() > obj2->getZOrder());
     }
   };
 
@@ -492,6 +501,9 @@ protected:
   };
 
   virtual bool display_inner(QPainter *painter, const DisplayConfig &config) const;
+
+  mutable std::unordered_map<int,
+  std::function<bool(const ZStackObject*, double,double,double)>> m_hitMap;
 
 protected:
   static double m_defaultPenWidth;

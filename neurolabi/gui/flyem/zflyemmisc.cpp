@@ -32,6 +32,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "z3dwindow.h"
 #include "zcubearray.h"
+#include "zrect2d.h"
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"

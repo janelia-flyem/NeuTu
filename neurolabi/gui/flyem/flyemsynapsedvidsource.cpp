@@ -12,6 +12,7 @@ FlyEmSynapseDvidSource::FlyEmSynapseDvidSource()
 void FlyEmSynapseDvidSource::setDvidTarget(const ZDvidTarget &target)
 {
   m_writer.open(target);
+  m_writer.getDvidReader().setVerbose(false);
 }
 
 std::vector<ZDvidSynapse>

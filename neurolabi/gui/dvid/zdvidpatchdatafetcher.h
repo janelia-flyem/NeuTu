@@ -5,7 +5,7 @@
 #include <QMutex>
 
 #include "zimage.h"
-#include "zrect2d.h"
+//#include "zrect2d.h"
 #include "zdviddatafetcher.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"

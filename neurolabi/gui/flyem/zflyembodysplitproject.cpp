@@ -57,6 +57,7 @@
 #include "zpunctum.h"
 #include "zflyembookmarkarray.h"
 #include "misc/miscutility.h"
+#include "zrect2d.h"
 
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidgrayslice.h"

@@ -189,6 +189,9 @@ bool ZSliceCanvas::paintTo(
             m_transform.getCutPlaneNormal())) {
         paintable = false;
       }
+    } else if (std::fabs(painterTransform.getCutDepth(
+                           m_transform.getCutCenter())) > 0.5) {
+      paintable = false;
     }
   }
 

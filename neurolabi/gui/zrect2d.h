@@ -29,6 +29,8 @@ public:
 
   ZIntPoint getCenter() const;
 
+  void setViewId(int viewId);
+
 //  bool hit(double x, double y, neutu::EAxis axis) override;
 //  bool hit(double x, double y, double z) override;
 
@@ -109,6 +111,8 @@ public:
 
   ZAffineRect getAffineRect() const;
 
+  bool hit(double x, double y, double z, int viewId) override;
+
 private:
   void init(int x0, int y0, int width, int height);
   void preparePen(QPen &pen) const;
@@ -124,6 +128,8 @@ private:
 
   int m_sx0 = 0;
   int m_sy0 = 0;
+
+  int m_viewId = 0;
 
   mutable std::function<ZCuboid(const ZRect2d &rect)> _getBoundBox;
   mutable std::function<ZAffineRect(const ZRect2d &rect)> _getAffineRect;

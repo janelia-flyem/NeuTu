@@ -42,7 +42,7 @@
 #include "zdocplayer.h"
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
-#include "zrect2d.h"
+//#include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
 #include "zactionfactory.h"
@@ -107,6 +107,7 @@ class ZCurve;
 class ResolutionDialog;
 class ZNeuronTracer;
 struct ZRescaleSwcSetting;
+class ZRect2d;
 
 /*!
  * \brief The class of stack document

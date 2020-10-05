@@ -21,6 +21,8 @@ public:
     ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK, ROLE_TODO_ITEM
   };
 
+  std::string GetRoleName(ERole role);
+
   QList<ZStackObject*> getGlyphList() const;
 
   bool isActivated() const;

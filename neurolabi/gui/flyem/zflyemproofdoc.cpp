@@ -26,6 +26,7 @@
 #include "zpuncta.h"
 #include "zstackdocaccessor.h"
 #include "zjsonobjectparser.h"
+#include "zrect2d.h"
 
 #include "dvid/zdviddataslicehelper.h"
 #include "dvid/zdvidsynapseensenmble.h"
@@ -2069,7 +2070,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::getDvidLabelSlice(bool sv) const
 {
   QList<ZDvidLabelSlice*> teList = getDvidLabelSliceList();
   std::string source =
-      ZStackObjectSourceFactory::MakeDvidLabelSliceSource(neutu::EAxis::Z, sv);
+      ZStackObjectSourceFactory::MakeDvidLabelSliceSource(neutu::EAxis::ARB, sv);
   for (QList<ZDvidLabelSlice*>::iterator iter = teList.begin();
        iter != teList.end(); ++iter) {
     ZDvidLabelSlice *te = *iter;

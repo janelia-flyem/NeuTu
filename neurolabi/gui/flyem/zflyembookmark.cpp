@@ -269,6 +269,10 @@ void ZFlyEmBookmark::setCustom(bool state)
 bool ZFlyEmBookmark::display(
     QPainter *painter, const DisplayConfig &config) const
 {
+  this->m_hitMap[config.getViewId()] = [](const ZStackObject*,double,double,double) {
+    return false;
+  };
+
   if (isVisible()) {
     ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
 
@@ -289,16 +293,17 @@ bool ZFlyEmBookmark::display(
     }
 
     if (s3Painter.getPaintedHint()) {
-      this->_hit = [=](const ZStackObject *obj, double x, double y ,double z) {
+      this->m_hitMap[config.getViewId()] =
+          [=](const ZStackObject *obj, double x, double y ,double z) {
         auto s = dynamic_cast<const ZFlyEmBookmark*>(obj);
         return ZSlice3dPainter::BallHitTest(
               x, y, z, s->getX(), s->getY(), s->getZ(), s->getRadius(),
               config.getWorldViewTransform(), depthScale);
       };
-    } else {
+    }/* else {
       this->_hit = [](const ZStackObject*,double,double,double) {
         return false; };
-    }
+    }*/
 
     return s3Painter.getPaintedHint();
   }

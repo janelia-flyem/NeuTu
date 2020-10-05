@@ -1,5 +1,7 @@
 #include "zmousecursorglyph.h"
 
+#include <iostream>
+
 #include "geometry/zpoint.h"
 #include "zweightedpoint.h"
 #include "zswctree.h"
@@ -104,6 +106,24 @@ void ZMouseCursorGlyph::addGlyph(ERole role, ZStackObject *obj)
 
     m_glyphMap[role] = obj;
   }
+}
+
+std::string ZMouseCursorGlyph::GetRoleName(ERole role)
+{
+  switch (role) {
+  case ROLE_STROKE:
+    return "ROLE_STROKE";
+  case ROLE_SWC:
+    return "ROLE_SWC";
+  case ROLE_SYNAPSE:
+    return "ROLE_SYNAPSE";
+  case ROLE_BOOKMARK:
+    return "ROLE_BOOKMARK";
+  case ROLE_TODO_ITEM:
+    return "ROLE_TODO_ITEM";
+  }
+
+  return "";
 }
 
 QList<ZStackObject*> ZMouseCursorGlyph::getGlyphList() const

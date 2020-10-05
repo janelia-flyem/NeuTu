@@ -528,7 +528,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ZOOM_TO_RECT:
     action = new QAction("Zoom in", parent);
-    action->setIcon(QFontIcon::icon(0xF00E, Qt::darkGray));
+    action->setIcon(QFontIcon::icon(0xF00E, Qt::darkGreen));
 //    action->setIcon(QIcon(":/images/zoom2.png"));
     break;
   case ACTION_ENTER_RECT_ROI_MODE:
@@ -759,17 +759,17 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setCheckable(true);
     break;
   case ACTION_VIEW_LAYOUT_3:
-    action = new QAction("View 1X1", parent);
+    action = new QAction("View 2x2", parent);
     action->setIcon(QFontIcon::icon(0xf009, Qt::darkGreen));
     action->setCheckable(true);
     break;
   case ACTION_VIEW_LAYOUT_1:
-    action = new QAction("View 1X2", parent);
+    action = new QAction("Single view", parent);
     action->setIcon(QFontIcon::icon(0xf0c8, Qt::darkGreen));
     action->setCheckable(true);
     break;
   case ACTION_VIEW_LAYOUT_2:
-    action = new QAction("View 2X2", parent);
+    action = new QAction("2 subviews", parent);
     action->setIcon(QFontIcon::icon(0xf0db, Qt::darkGreen));
     action->setCheckable(true);
     break;

@@ -258,9 +258,9 @@ void ZStackView::removeToolButton(QPushButton *button)
 
 void ZStackView::setWidgetReady(bool ready)
 {
-  if (!imageWidget()->isReady() != ready) {
+  if (imageWidget()->isReady() != ready) {
     imageWidget()->setReady(ready);
-    if (ready) {
+    if (ready && isVisible()) {
       updateViewData();
       redraw();
     }
@@ -682,13 +682,15 @@ void ZStackView::enableOffsetAdjustment(bool on)
 
 void ZStackView::processTransformChange()
 {
-  updateDataInfo();
-  buddyPresenter()->setSliceViewTransform(getViewId(), getSliceViewTransform());
-//  m_paintSorter.clear();
-//  m_paintBundle.setSliceViewTransform(getSliceViewTransform());
-  updateViewData();
-  notifyViewChanged();
-  redraw();
+  if (isVisible()) {
+    updateDataInfo();
+    buddyPresenter()->setSliceViewTransform(getViewId(), getSliceViewTransform());
+    //  m_paintSorter.clear();
+    //  m_paintBundle.setSliceViewTransform(getSliceViewTransform());
+    updateViewData();
+    notifyViewChanged();
+    redraw();
+  }
 }
 
 void ZStackView::setDepthRangeQuietly(int minZ, int maxZ)
@@ -705,6 +707,12 @@ void ZStackView::syncTransformControl()
         imageWidget()->getMinCutDepth(), imageWidget()->getMaxCutDepth());
   m_depthControl->setValueQuietly(depth);
   m_depthSpinBox->setValueQuietly(depth);
+
+#ifdef _DEBUG_
+  std::cout << "Transform control synced: depth=" << depth << " within ["
+            << imageWidget()->getMinCutDepth() << ", "
+            << imageWidget()->getMaxCutDepth() << "]" << std::endl;
+#endif
 }
 
 #if 0
@@ -1071,9 +1079,9 @@ void ZStackView::updatePaintBundle(bool requestingWidgetCanvasUpdate)
 }
 */
 
-void ZStackView::restoreFromBadView()
+bool ZStackView::restoreFromBadView()
 {
-  imageWidget()->restoreFromBadView(buddyDocument()->getDataRange());
+  return imageWidget()->restoreFromBadView(buddyDocument()->getDataRange());
 }
 
 void ZStackView::refreshScreen(const RefreshConfig &config)
@@ -1314,6 +1322,11 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 void ZStackView::showEvent(QShowEvent */*event*/)
 {
   LDEBUG() << "ZStackView::showEvent:" << size() << isVisible();
+
+  if (isVisible()) {
+    updateViewData();
+    redraw();
+  }
 //  resetViewProj();
 }
 
@@ -2442,14 +2455,14 @@ void ZStackView::updateObjectBuffer(
     config.setTransform(canvas->getTransform());
     config.setViewId(getViewId());
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
       if (m_viewId == 2) {
         std::cout << "debug here" << std::endl;
       }
 #endif
 
     for (ZStackObject *obj : objList) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
       if (m_viewId == 2) {
         std::cout << "debug here" << std::endl;
       }
@@ -3572,8 +3585,17 @@ std::set<neutu::data3d::ETarget> ZStackView::updateViewData(
   return updater.getUpdatedTargetSet();
 }
 
+void ZStackView::updateSceneWithViewData()
+{
+  auto targetSet = updateViewData();
+  updateObjectBuffer(targetSet);
+  updateImageScreen(EUpdateOption::QUEUED);
+}
+
 std::set<neutu::data3d::ETarget> ZStackView::updateViewData()
 {
+  return updateViewData(getViewParameter());
+#if 0
   ZStackDoc::ActiveViewObjectUpdater updater(buddyDocument());
   if (buddyPresenter()->isObjectVisible()) {
 //  QSet<neutu::data3d::ETarget> targetSet =
@@ -3592,6 +3614,7 @@ std::set<neutu::data3d::ETarget> ZStackView::updateViewData()
   updater.update(param);
 
   return updater.getUpdatedTargetSet();
+#endif
 }
 
 bool ZStackView::isViewChanged(const ZSliceViewTransform &t)

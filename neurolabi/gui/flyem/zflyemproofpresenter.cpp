@@ -31,6 +31,7 @@
 #include "neuroglancer/zneuroglancerlayerspecfactory.h"
 #include "neuroglancer/zneuroglancerannotationlayerspec.h"
 #include "mvc/zmousecursorglyph.h"
+#include "zrect2d.h"
 
 
 #ifdef _WIN32
@@ -319,6 +320,9 @@ void ZFlyEmProofPresenter::zoomInRectRoi()
     ZAffineRect rect = buddyDocument()->getRectRoi();
 
     if (!rect.isEmpty()) {
+#ifdef _DEBUG_
+      std::cout << "Zoom to: " << rect << std::endl;
+#endif
       //    ZIntCuboid box = rect.getIntBoundBox();
       view->zoomTo(
             rect.getCenter(), std::max(rect.getWidth(), rect.getHeight()), false);

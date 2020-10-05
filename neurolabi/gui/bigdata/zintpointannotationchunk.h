@@ -26,7 +26,7 @@ public:
    * \brief Pick the closest item within a range.
    */
   TItem pickClosestItem(double x, double y, double z, double r);
-  TItem hitClosestItem(double x, double y, double z, double r);
+  TItem hitClosestItem(double x, double y, double z, double r, int viewId);
 
 protected:
   ZIntPoint getKey(const TItem &item) const override
@@ -84,7 +84,7 @@ T ZIntPointAnnotationChunk<T>::pickClosestItem(
 
 template<typename T>
 T ZIntPointAnnotationChunk<T>::hitClosestItem(
-    double x, double y, double z, double r)
+    double x, double y, double z, double r, int viewId)
 {
   T closestItem;
 
@@ -94,7 +94,7 @@ T ZIntPointAnnotationChunk<T>::hitClosestItem(
     double minDist2 = std::numeric_limits<double>::infinity();
     double d2 = t.getPosition().distanceSquareTo(x, y, z);
 //      double tr2 = t.getRadius() * t.getRadius();
-    if (d2 <= r2 && t.hit(x, y, z)) {
+    if (d2 <= r2 && t.hit(x, y, z, viewId)) {
       if (d2 < minDist2) {
         minDist2 = d2;
         closestItem = t;

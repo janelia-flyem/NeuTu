@@ -559,6 +559,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
   mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
 
   mvc->connectSignalSlot();
+  mvc->updateViewLayout();
 
   return mvc;
 }

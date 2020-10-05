@@ -123,6 +123,7 @@
 #include "z3dgraph.h"
 #include "zcurve.h"
 #include "zneurontracer.h"
+#include "zrect2d.h"
 
 #include "dialogs/swcskeletontransformdialog.h"
 #include "dialogs/swcsizedialog.h"
@@ -10456,12 +10457,12 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
             }
           }
         }
-        if (player->getData()->getSliceAxis() == param.getSliceAxis()) {
+//        if (player->getData()->getSliceAxis() == param.getSliceAxis()) {
           ZTask *task = player->getFutureTask(m_doc.get(), param.getViewId());
           if (task != NULL) {
             m_doc->addTask(task);
           }
-        }
+//        }
       }
     }
   }

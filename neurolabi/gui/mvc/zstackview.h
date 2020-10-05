@@ -124,7 +124,7 @@ public:
    *
    * The definition of a bad setting is provided by ZImageWidget::isBadView().
    */
-  void restoreFromBadView();
+  bool restoreFromBadView();
 
   /*!
    * \brief Get the parent frame
@@ -442,6 +442,8 @@ public: //Change view parameters
   void updateContrastProtocal();
 
   ZPoint getAnchorPoint(neutu::data3d::ESpace space) const;
+  std::set<neutu::data3d::ETarget> updateViewData();
+  void updateSceneWithViewData();
 
 public: //View parameters for arbitrary plane
 //  ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
@@ -492,7 +494,6 @@ protected:
   void paintMultipleChannelStackMip(ZStack *stack);
 
   std::set<neutu::data3d::ETarget> updateViewData(const ZStackViewParam &param);
-  std::set<neutu::data3d::ETarget> updateViewData();
 
   void init();
 

@@ -72,7 +72,7 @@ public:
   TItem pickClosestCachedItem(
       double x, double y, double z, double r) const;
   TItem hitClosestCachedItem(
-      double x, double y, double z, double r) const;
+      double x, double y, double z, double r, int viewId) const;
 
   void forEachItemInChunk(
       int i, int j, int k, std::function<void(const TItem &item)> f)
@@ -272,14 +272,14 @@ TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::pickClosestCachedItem(
 
 template<typename TItem, typename TChunk>
 TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::hitClosestCachedItem(
-    double x, double y, double z, double r) const
+    double x, double y, double z, double r, int viewId) const
 {
   ZIntPoint pos = ZPoint(x, y, z).toIntPoint();
   ZIntPoint blockIndex = getBlockIndex(pos);
   std::vector<TItem> itemList;
   if (containsBlock(blockIndex)) {
     std::lock_guard<std::mutex> guard(m_chunkMutex);
-    TItem item = getChunkRef(blockIndex).hitClosestItem(x, y, z, r);
+    TItem item = getChunkRef(blockIndex).hitClosestItem(x, y, z, r, viewId);
     if (item.isValid()) {
       itemList.push_back(item);
     }
@@ -290,7 +290,7 @@ TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::hitClosestCachedItem(
         [&](int i, int j, int k) {
     if (containsBlock(i, j, k)) {
       std::lock_guard<std::mutex> guard(m_chunkMutex);
-      TItem item = getChunkRef(i, j, k).hitClosestItem(x, y, z, r);
+      TItem item = getChunkRef(i, j, k).hitClosestItem(x, y, z, r, viewId);
       if (item.isValid()) {
         itemList.push_back(item);
       }

@@ -103,11 +103,11 @@ void ZStackMvc::construct(
     for (auto axis : axes) {
       createView(axis);
     }
-    createPresenter(axes.front(), axes.size());
+    createPresenter(axes.front(), 1);
   }
 //  getPresenter()->createActions();
 
-  layoutView();
+//  layoutView();
 
   updateDocument();
 
@@ -163,8 +163,21 @@ void ZStackMvc::createView(neutu::EAxis axis)
   }
 }
 
+void ZStackMvc::updateViewLayout()
+{
+  m_presenter->updateViewLayout();
+}
+
 void ZStackMvc::updateViewLayout(std::vector<int> viewLayoutIndices)
 {
+#ifdef _DEBUG_
+  std::cout << "Update view layout: ";
+  for (int index : viewLayoutIndices) {
+    std::cout << index << ", ";
+  }
+  std::cout << std::endl;
+#endif
+
   bool updating = true;
   if (viewLayoutIndices.size() == m_viewLayoutIndices.size()) {
     updating = !std::equal(
@@ -183,8 +196,12 @@ void ZStackMvc::layoutView(ZStackView *view, int index)
     if (index >= 0) {
       int row = index / 2;
       int column = index % 2;
-      view->setVisible(true);
       m_viewLayout->addWidget(view, row, column);
+      if (view != getMainView()) {
+//        view->setSliceViewTransform(getMainView()->getSliceViewTransform());
+        view->setWidgetReady(true);
+      }
+      view->setVisible(true);
     } else {
       view->setVisible(false);
     }
@@ -220,6 +237,18 @@ void ZStackMvc::layoutView()
     }
   }
   */
+}
+
+void ZStackMvc::updateViewData()
+{
+#ifdef _DEBUG_
+  std::cout << "ZStackMvc::updateViewData" << std::endl;
+#endif
+  for (auto view : m_viewList) {
+    if (view->isVisible()) {
+      view->updateSceneWithViewData();
+    }
+  }
 }
 
 void ZStackMvc::createPresenter()
@@ -384,6 +413,9 @@ void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
   connectAction(
         m_presenter, SIGNAL(updatingViewLayout(std::vector<int>)),
         this, SLOT(updateViewLayout(std::vector<int>)), Qt::AutoConnection);
+  connectAction(
+        m_presenter, SIGNAL(updatingViewData()),
+        this, SLOT(updateViewData()), Qt::AutoConnection);
 //  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
 //                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
 //                Qt::AutoConnection);

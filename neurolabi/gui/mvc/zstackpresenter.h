@@ -132,6 +132,7 @@ public:
   }
 
   void clearData();
+  void updateViewLayout();
 
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
@@ -387,9 +388,9 @@ public slots:
   void tryEraseStrokeMode();
   void tryDrawStrokeMode(double x, double y, bool isEraser);
 
-  void tryDrawRectMode(double x, double y);
-  void enterDrawRectMode(double x, double y);
   void tryDrawRectMode();
+  void enterDrawRectMode();
+//  void tryDrawRectMode();
   void cancelRectRoi();
   void exitRectEdit();
   void exitBookmarkEdit();
@@ -495,6 +496,7 @@ signals:
   void savingStack();
   void movingCrossHairTo(int x, int y);
   void updatingViewLayout(std::vector<int> viewLayoutIndices);
+  void updatingViewData();
 
 protected:
   void init();
@@ -552,7 +554,6 @@ protected:
   ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
 
   void setViewCursor(const QCursor &cursor);
-  void updateViewLayout();
   void updateCutPlane(neutu::EAxis a1, neutu::EAxis a2, neutu::EAxis a3);
 
 protected:

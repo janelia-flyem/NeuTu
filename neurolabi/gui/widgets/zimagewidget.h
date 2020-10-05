@@ -175,7 +175,7 @@ public:
 
   void setViewPort(const QRect &rect);
 
-  void restoreFromBadView(const ZIntCuboid &worldRange);
+  bool restoreFromBadView(const ZIntCuboid &worldRange);
 
   /*!
    * \brief Zoom an image at a fixed point

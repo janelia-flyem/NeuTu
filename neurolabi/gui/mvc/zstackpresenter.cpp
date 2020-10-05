@@ -3118,15 +3118,22 @@ void ZStackPresenter::tryPaintStrokeMode()
   }
 }
 
+#if 0
 void ZStackPresenter::tryDrawRectMode()
 {
+  /*
 //  ZPoint pos = getModelPositionFromGlobalCursor(QCursor::pos());
 //  QPointF pos = mapFromGlobalToStack(QCursor::pos());
   ZPoint pos = getCurrentMousePosition(neutu::data3d::ESpace::MODEL);
   if (pos.isValid()) {
+#ifdef _DEBUG_
+    std::cout << "ZStackPresenter::tryDrawRectMode " << "@" << pos << std::endl;
+#endif
     tryDrawRectMode(pos.x(), pos.y());
   }
+  */
 }
+#endif
 
 void ZStackPresenter::cancelRectRoi()
 {
@@ -3160,21 +3167,21 @@ void ZStackPresenter::tryDrawStrokeMode(double x, double y, bool isEraser)
   }
 }
 
-void ZStackPresenter::tryDrawRectMode(double x, double y)
+void ZStackPresenter::tryDrawRectMode()
 {
   if (GET_APPLICATION_NAME == "FlyEM") {
     if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF /*||
          interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT*/) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
         interactiveContext().isStrokeEditModeOff()) {
-      enterDrawRectMode(x, y);
+      enterDrawRectMode();
     }
   } else if (buddyDocument()->getTag() == neutu::Document::ETag::BIOCYTIN_PROJECTION) {
     if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF /*||
          interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT*/) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
         interactiveContext().isStrokeEditModeOff()) {
-      enterDrawRectMode(x, y);
+      enterDrawRectMode();
     }
   }
   interactiveContext().setRectSpan(false);
@@ -3200,8 +3207,12 @@ void ZStackPresenter::enterDrawStrokeMode(double /*x*/, double /*y*/)
   updateCursor();
 }
 
-void ZStackPresenter::enterDrawRectMode(double /*x*/, double /*y*/)
+void ZStackPresenter::enterDrawRectMode()
 {
+#ifdef _DEBUG_
+    std::cout << "Enter rect drawing" << std::endl;
+#endif
+
 //  buddyDocument()->mapToDataCoord(&x, &y, NULL);
   interactiveContext().setRectEditMode(ZInteractiveContext::RECT_DRAW);
   updateCursor();
@@ -3422,6 +3433,14 @@ void ZStackPresenter::updateViewLayout()
   default:
     break;
   }
+
+#ifdef _DEBUG_
+  std::cout << "Updating view layout: ";
+  for (int index : viewLayout) {
+    std::cout << index << ", ";
+  }
+  std::cout << std::endl;
+#endif
 
   emit updatingViewLayout(viewLayout);
 }
@@ -3840,6 +3859,10 @@ bool ZStackPresenter::process(ZStackOperator &op)
   QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
 //  ZPoint currentStackPos = event.getPosition(neutu::ECoordinateSystem::STACK);
   ZPoint currentModelPos = event.getPosition(neutu::data3d::ESpace::MODEL);
+
+#ifdef _DEBUG_0
+  std::cout << "Current model pos: " << currentModelPos << std::endl;
+#endif
 //  ZPoint currentRawStackPos = event.getPosition(neutu::ECoordinateSystem::RAW_STACK);
 
   m_docSelector.setDocument(getSharedBuddyDocument());
@@ -4484,9 +4507,13 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_EXIT_ZOOM_MODE:
     m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
-    view->restoreFromBadView();
-    view->processViewChange(true, false);
-    view->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+    if (!view->restoreFromBadView()) {
+      emit updatingViewData();
+//      view->updateViewData();
+//      view->redraw();
+    }
+//    view->processViewChange(true, false);
+//    view->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
     break;
   case ZStackOperator::OP_PAINT_STROKE:
     updateMouseCursorGlyphPos();
@@ -4503,6 +4530,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_RECT_ROI_INIT:
   {
     ZRect2d *rect = new ZRect2d;
+    rect->setViewId(op.getViewId());
     rect->setStartCorner(currentWidgetPos.x(), currentWidgetPos.y());
     rect->setSource(ZStackObjectSourceFactory::MakeRectRoiSource());
     rect->setPenetrating(true);

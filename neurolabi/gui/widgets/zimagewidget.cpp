@@ -407,11 +407,14 @@ bool ZImageWidget::isModelWithinWidget() const
   return false;
 }
 
-void ZImageWidget::restoreFromBadView(const ZIntCuboid &worldRange)
+bool ZImageWidget::restoreFromBadView(const ZIntCuboid &worldRange)
 {
   if (isBadView()) {
     maximizeViewPort(worldRange);
+    return true;
   }
+
+  return false;
 }
 
 /*
@@ -1083,10 +1086,10 @@ void ZImageWidget::paintCrossHair()
 QSize ZImageWidget::minimumSizeHint() const
 {
   if (m_image != NULL) {
-    return QSize(std::min(300, m_image->width()),
-                 std::min(300, m_image->height()));
+    return QSize(std::min(200, m_image->width()),
+                 std::min(200, m_image->height()));
   } else {
-    return QSize(300, 300);
+    return QSize(200, 200);
   }
 }
 
@@ -1370,25 +1373,28 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
   std::cout << "Transform: " << m_sliceViewTransform << std::endl;
 #endif
 
-  if (m_isReady) {
-    adjustTransformWithResize();
-    emit transformChanged();
-  } else {
-    m_isReady = true;
-    resetView(m_initScale);
+  if (isVisible()) {
+    if (m_isReady) {
+      adjustTransformWithResize();
+      emit transformChanged();
+#ifdef _DEBUG_
+      std::cout << "Adjusting with resize: ";
+#endif
+    } else {
+      m_isReady = true;
+      resetView(m_initScale);
+#ifdef _DEBUG_
+      std::cout << "Reset view: ";
+#endif
+    }
   }
 
 //  m_sliceViewTransform.canvasAdjust(
 //        width(), height(), m_viewAnchorX, m_viewAnchorY);
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << "Transform: " << m_sliceViewTransform << std::endl;
 #endif
-
-//  emit transformChanged();
-//  m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
-
-//  setValidViewPort(m_viewPort);
 }
 
 void ZImageWidget::resetView(double defaultScale)
@@ -1401,7 +1407,9 @@ void ZImageWidget::resetView(double defaultScale)
     } else {
       m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
     }
+//    blockTransformSyncSignal(true);
     notifyTransformChanged();
+//    blockTransformSyncSignal(false);
   }
 }
 
