@@ -2,6 +2,7 @@
 #define ZINTPOINTANNOTATIONBLOCKGRID_HPP
 
 #include <functional>
+#include <mutex>
 
 #include "geometry/zpoint.h"
 #include "geometry/zgeometry.h"

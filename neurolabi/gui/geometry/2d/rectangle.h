@@ -48,9 +48,6 @@ public:
   bool operator== (const Rectangle &r) const;
   bool operator!= (const Rectangle &r) const;
 
-  friend std::ostream& operator << (
-      std::ostream &stream, const neutu::geom2d::Rectangle &r);
-
 private:
   double m_x0 = 0.0;
   double m_y0 = 0.0;
@@ -61,5 +58,9 @@ private:
 }
 
 }
+
+std::ostream& operator << (
+      std::ostream &stream, const neutu::geom2d::Rectangle &r);
+
 
 #endif // RECTANGLE_H

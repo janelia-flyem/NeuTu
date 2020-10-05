@@ -59,7 +59,7 @@ neutu::geom2d::Point neutu::geom2d::Point::InvalidPoint()
                std::numeric_limits<double>::quiet_NaN());
 }
 
-std::ostream& neutu::geom2d::operator << (
+std::ostream& operator << (
     std::ostream &stream, const neutu::geom2d::Point &pt)
 {
   return stream << "(" << pt.getX() << ", " << pt.getY() << ")";

@@ -27,8 +27,6 @@ public:
   bool operator== (const Point &pt) const;
   bool operator!= (const Point &pt) const;
 
-  friend std::ostream& operator << (
-        std::ostream &stream, const neutu::geom2d::Point &pt);
 private:
   double m_x = 0.0;
   double m_y = 0.0;
@@ -37,5 +35,8 @@ private:
 }
 
 }
+
+std::ostream& operator << (
+        std::ostream &stream, const neutu::geom2d::Point &pt);
 
 #endif // GEOMTETRY_2D_POINT_H

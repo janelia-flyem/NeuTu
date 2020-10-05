@@ -17,7 +17,7 @@ TEST(FlyEmTodoEnsemble, Basic)
   te._setSource(source);
 
   ASSERT_FALSE(te.getItem({160, 160, 160}).isValid());
-  source->saveItem(ZFlyEmToDoItem({160, 160, 160}));
+  source->saveItem(ZFlyEmToDoItem(160, 160, 160));
   ASSERT_FALSE(te.getItem({160, 160, 160}).isValid());
   te.updateItem({160, 160, 160});
   ASSERT_TRUE(te.getItem({160, 160, 160}).isValid());

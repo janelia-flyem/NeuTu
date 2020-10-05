@@ -152,7 +152,7 @@ bool neutu::geom2d::Rectangle::isValid() const
   return getWidth() > 0.0 && getHeight() > 0.0;
 }
 
-std::ostream& neutu::geom2d::operator << (
+std::ostream& operator << (
     std::ostream &stream, const neutu::geom2d::Rectangle &r)
 {
   stream << r.getMinCorner() << "->" << r.getMaxCorner();

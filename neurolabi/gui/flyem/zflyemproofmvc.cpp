@@ -1,6 +1,8 @@
 #include "zflyemproofmvc.h"
 
 #include <functional>
+#include <sstream>
+
 #include <QFuture>
 #include <QtConcurrentRun>
 #include <QMessageBox>
@@ -11,6 +13,7 @@
 #include <QApplication>
 #include <QMimeData>
 
+#include "common/utilities.h"
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
@@ -2609,8 +2612,7 @@ void ZFlyEmProofMvc::diagnose()
 
   for (ZStackView *view : m_viewList) {
     emit messageGenerated(
-          ZWidgetMessage(
-            (std::ostringstream() << view->getSliceViewTransform()).str()));
+	  ZWidgetMessage(neutu::ToString(view->getSliceViewTransform())));
   }
   emit messageGenerated(
         ZWidgetMessage(getDvidTarget().toJsonObject().dumpString(2),

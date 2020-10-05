@@ -2,6 +2,7 @@
 #define QT_GUI_UTILITIES_H
 
 #include <vector>
+#include <functional>
 
 #include <QKeySequence>
 #include <QString>

@@ -35,7 +35,7 @@ TEST(FlyEmTodoBlockGrid, Source)
   {
     ZFlyEmToDoItem item = grid.getItem({160, 160, 160});
     ASSERT_FALSE(item.isValid());
-    source->saveItem(ZFlyEmToDoItem({160, 160, 160}));
+    source->saveItem(ZFlyEmToDoItem(1160, 160, 160));
     ASSERT_FALSE(grid.getItem({160, 160, 160}).isValid());
     grid.syncItemToCache({160, 160, 160});
     ASSERT_TRUE(grid.getItem({160, 160, 160}).isValid());
@@ -102,7 +102,7 @@ TEST(FlyEmTodoBlockGrid, Move)
         new FlyEmTodoMockSource);
   grid.setSource(source);
 
-  grid.addItem(ZFlyEmToDoItem({10, 20, 30}));
+  grid.addItem(ZFlyEmToDoItem(10, 20, 30));
   grid.moveItem({10, 20, 30}, {40, 50, 60});
   ASSERT_FALSE(grid.getItem({10, 20, 30}).isValid());
   ASSERT_TRUE(grid.getItem({40, 50, 60}).isValid());
@@ -118,12 +118,12 @@ TEST(FlyEmTodoBlockGrid, Update)
         new FlyEmTodoMockSource);
   grid.setSource(source);
 
-  grid.addItem(ZFlyEmToDoItem({10, 20, 30}));
+  grid.addItem(ZFlyEmToDoItem(10, 20, 30));
   ASSERT_TRUE(grid.getItem({10, 20, 30}).isValid());
   source->removeItem({10, 20, 30});
   grid.syncItemToCache({10, 20, 30});
   ASSERT_FALSE(grid.getItem({10, 20, 30}).isValid());
-  source->saveItem(ZFlyEmToDoItem({10, 20, 30}));
+  source->saveItem(ZFlyEmToDoItem(10, 20, 30));
   grid.syncItemToCache({10, 20, 30});
   ASSERT_TRUE(grid.getItem({10, 20, 30}).isValid());
 }
