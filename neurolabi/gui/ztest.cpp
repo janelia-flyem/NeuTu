@@ -32425,7 +32425,7 @@ void ZTest::test(MainWindow *host)
   reader->readGrayScaleBlock(2, 3, 2, 8);
 #endif
 
-#if 1
+#if 0
 //  ZStack *stack = new ZStack;
 //  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
   ZStack *stack = ZStackFactory::MakeVirtualStack(512, 512, 512);
@@ -32440,6 +32440,17 @@ void ZTest::test(MainWindow *host)
 
   frame->show();
 #endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+  reader->updateMaxLabelZoom();
+  ZObject3dScan obj;
+  reader->readBody(
+        6733325345, neutu::EBodyLabelType::SUPERVOXEL, 1, ZIntCuboid(), true,
+        &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
   std::cout << "Done." << std::endl;
 }
 
