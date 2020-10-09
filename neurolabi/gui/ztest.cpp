@@ -32400,7 +32400,7 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
-#if 0
+#if 1
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
 
 #  if 0
@@ -32441,7 +32441,7 @@ void ZTest::test(MainWindow *host)
   frame->show();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
   reader->updateMaxLabelZoom();
   ZObject3dScan obj;

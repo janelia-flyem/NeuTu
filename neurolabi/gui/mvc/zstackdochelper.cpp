@@ -191,6 +191,7 @@ void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
       slice->startSelection();
       slice->deselectAll();
       slice->endSelection();
+      doc->processObjectModified(slice);
     }
   }
   doc->clearBodyAnnotationMap();

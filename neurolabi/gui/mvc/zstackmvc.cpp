@@ -610,6 +610,8 @@ void ZStackMvc::processViewChange(int viewId)
       view->enableViewChangeSignal(true);
     }
   }
+
+  processViewChangeCustom(getMainView()->getViewParameter());
 }
 
 QRect ZStackMvc::getViewGeometry(int viewId) const

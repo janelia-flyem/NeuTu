@@ -4930,8 +4930,7 @@ int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
 
 void ZDvidReader::updateMaxGrayscaleZoom(int zoom)
 {
-  //tmp fix for avoiding fetching zoom>6
-   m_dvidTarget.setMaxGrayscaleZoom(std::min(5, zoom));
+   m_dvidTarget.setMaxGrayscaleZoom(zoom);
 }
 
 void ZDvidReader::updateMaxGrayscaleZoom(
