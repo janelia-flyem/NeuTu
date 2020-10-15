@@ -153,6 +153,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="exportRoiPushButton">
+       <property name="text">
+        <string>Export ROI</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

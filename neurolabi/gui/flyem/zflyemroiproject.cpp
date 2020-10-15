@@ -525,6 +525,31 @@ int ZFlyEmRoiProject::uploadRoi(int z)
   return count;
 }
 
+void ZFlyEmRoiProject::exportRoiData(const std::string &path)
+{
+  ZObject3dScan obj = getRoiSlice();
+
+  int intv = dvid::DEFAULT_ROI_BLOCK_SIZE - 1;
+
+  obj.downsampleMax(intv, intv, intv);
+  obj.setDsIntv(0, 0, 0);
+  int minZ = obj.getMinZ();
+  int maxZ = obj.getMaxZ();
+
+  ZObject3dScan interpolated;
+  for (int z = minZ; z <= maxZ; ++z) {
+    interpolated.concat(obj.interpolateSlice(z));
+  }
+
+  if (ZFileType::FileType(path) == ZFileType::EFileType::JSON) {
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(
+          interpolated, ZJsonFactory::OBJECT_SPARSE);
+    array.dump(path);
+  } else {
+    interpolated.save(path);
+  }
+}
+
 bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent)
 {
   bool succ = false;
