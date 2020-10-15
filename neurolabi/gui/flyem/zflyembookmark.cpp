@@ -286,6 +286,8 @@ bool ZFlyEmBookmark::display(
     const double fadingFactor = 1.0;
     s3Painter.drawBall(
           painter, getCenter(), getRadius(), depthScale, fadingFactor);
+    s3Painter.drawCross(
+          painter, getCenter(), getRadius(), depthScale, fadingFactor);
 
     if (isSelected()) {
       neutu::SetPenColor(painter, Qt::yellow);

@@ -465,6 +465,25 @@ ZSlice3dPainter::getBallHitFunc(
   };
 }
 
+void ZSlice3dPainter::prepareBallDrawing(
+    QPainter *painter, double dz, double r, double fadingFactor) const
+{
+  if (fadingFactor > 0.0 && dz > 0.0) {
+    double fading = (1.0 - fadingFactor * dz / r);
+    QPen pen = painter->pen();
+    QColor penColor = pen.color();
+    penColor.setAlphaF(penColor.alphaF() * fading);
+    pen.setColor(penColor);
+    painter->setPen(pen);
+
+    QBrush brush = painter->brush();
+    QColor brushColor = brush.color();
+    brushColor.setAlphaF(brushColor.alphaF() * fading);
+    brush.setColor(brushColor);
+    painter->setBrush(brush);
+  }
+}
+
 void ZSlice3dPainter::drawBall(
     QPainter *painter, double cx, double cy, double cz, double r,
     double depthScale, double fadingFactor) const
@@ -477,20 +496,7 @@ void ZSlice3dPainter::drawBall(
     if (dz < r) {
       double adjustedRadius = std::sqrt(r * r  - dz * dz);
       neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
-      if (fadingFactor > 0.0 && dz > 0.0) {
-        double fading = (1.0 - fadingFactor * dz / r);
-        QPen pen = painter->pen();
-        QColor penColor = pen.color();
-        penColor.setAlphaF(penColor.alphaF() * fading);
-        pen.setColor(penColor);
-        painter->setPen(pen);
-
-        QBrush brush = painter->brush();
-        QColor brushColor = brush.color();
-        brushColor.setAlphaF(brushColor.alphaF() * fading);
-        brush.setColor(brushColor);
-        painter->setBrush(brush);
-      }
+      prepareBallDrawing(painter, dz, r, fadingFactor);
 #ifdef _DEBUG_2
       std::cout << "drawBall newCenter: " << newCenter.toString() << std::endl;
 #endif
@@ -501,6 +507,33 @@ void ZSlice3dPainter::drawBall(
       }
     }
   }
+}
+
+void ZSlice3dPainter::drawCross(
+    QPainter *painter, double cx, double cy, double cz, double r,
+    double depthScale, double fadingFactor) const
+{
+  if (painter) {
+    ZPoint newCenter = m_worldViewTransform.transform(ZPoint(cx, cy, cz));
+    double dz = std::fabs(newCenter.getZ());
+    dz = adjusted_depth(dz, r, depthScale);
+
+    if (dz < r) {
+      double adjustedRadius = std::sqrt(r * r  - dz * dz);
+      neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+      prepareBallDrawing(painter, dz, r, fadingFactor);
+      m_painterHelper.drawCross(
+            painter, newCenter.getX(), newCenter.getY(), adjustedRadius);
+    }
+  }
+}
+
+void ZSlice3dPainter::drawCross(
+    QPainter *painter, const ZPoint &center, double r,
+    double depthScale, double fadingFactor) const
+{
+  drawCross(painter, center.getX(), center.getY(), center.getZ(), r,
+            depthScale, fadingFactor);
 }
 
 void ZSlice3dPainter::drawStar(

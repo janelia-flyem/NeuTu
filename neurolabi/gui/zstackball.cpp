@@ -114,6 +114,7 @@ bool ZStackBall::display_inner(QPainter *painter, const DisplayConfig &config) c
 
   QPen pen(getColor());
   pen.setCosmetic(true);
+  pen.setWidthF(GetDefaultPenWidth());
   painter->setPen(pen);
 
   if (hasVisualEffect(neutu::display::Sphere::VE_FORCE_FILL)) {
@@ -125,7 +126,16 @@ bool ZStackBall::display_inner(QPainter *painter, const DisplayConfig &config) c
   }
 
   double depthScale = 0.5;
-  s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_RECTANGLE_SHAPE)) {
+    s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
+  } else {
+    s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
+  }
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER)) {
+    s3Painter.drawCross(painter, m_center, m_r, 1.0, depthScale);
+  }
 
   if (isSelected()) {
     neutu::SetPenColor(painter, Qt::yellow);

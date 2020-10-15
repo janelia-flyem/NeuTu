@@ -6212,14 +6212,16 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
   if (m_currentViewParam != viewParam) {
 //    m_mergeProject.update3DBodyViewPlane(viewParam);
-    m_splitProject.update3DViewPlane();
+    if (is3DEnabled()) {
+      m_splitProject.update3DViewPlane();
 
-    updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
-    updateBodyWindowPlane(m_bodyWindow, viewParam);
-    updateBodyWindowPlane(m_skeletonWindow, viewParam);
-    updateBodyWindowPlane(m_meshWindow, viewParam);
-    updateBodyWindowPlane(m_coarseMeshWindow, viewParam);
-    updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
+      updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
+      updateBodyWindowPlane(m_bodyWindow, viewParam);
+      updateBodyWindowPlane(m_skeletonWindow, viewParam);
+      updateBodyWindowPlane(m_meshWindow, viewParam);
+      updateBodyWindowPlane(m_coarseMeshWindow, viewParam);
+      updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
+    }
 
     m_currentViewParam = viewParam;
   }

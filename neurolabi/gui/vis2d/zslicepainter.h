@@ -92,6 +92,14 @@ public:
   void drawBall(
       QPainter *painter, const ZPoint &center, double r,
       double depthScale, double fadingFactor) const;
+
+  void drawCross(
+      QPainter *painter, double cx, double cy, double cz, double r,
+      double depthScale, double fadingFactor) const;
+  void drawCross(
+      QPainter *painter, const ZPoint &center, double r,
+      double depthScale, double fadingFactor) const;
+
   void drawStar(
       QPainter *painter, double cx, double cy, double cz, double r,
       double depthScale, double fadingFactor) const;
@@ -146,6 +154,10 @@ public:
       double x, double y, double z,
       double cx, double cy, double cz, double r,
       const ZModelViewTransform &transform, double depthScale);
+
+private:
+  void prepareBallDrawing(
+      QPainter *painter, double dz, double r, double fadingFactor) const;
 
 private:
   ZSlice2dPainter m_painterHelper;

@@ -22,6 +22,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
 
   m_exploreMarker.setRadius(5.0);
   m_exploreMarker.setZ(0);
+  m_exploreMarker.SetDefaultPenWidth(2.0);
   m_exploreMarker.useCosmeticPen(true);
   m_exploreMarker.addVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER);
   m_exploreMarker.setColor(Qt::red);

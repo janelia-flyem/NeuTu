@@ -274,7 +274,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
 
-
+  painter->setRenderHint(QPainter::HighQualityAntialiasing, true);
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
     drawable->display(
