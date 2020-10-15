@@ -55,6 +55,7 @@ public slots:
   void nextSlice();
   void estimateRoi();
   void createRoiData();
+  void exportRoiData();
   void estimateRoiVolume();
   void movePlaneLeft();
   void movePlaneRight();

@@ -32400,7 +32400,7 @@ void ZTest::test(MainWindow *host)
 //  }
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
 
 #  if 0
@@ -32449,6 +32449,17 @@ void ZTest::test(MainWindow *host)
         6733325345, neutu::EBodyLabelType::SUPERVOXEL, 1, ZIntCuboid(), true,
         &obj);
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/_test.sobj");
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/_test2.sobj");
+
+  obj.unify(obj2);
+
+  obj.save(GET_TEST_DATA_DIR + "/nBreak-v1.sobj");
 #endif
 
   std::cout << "Done." << std::endl;
