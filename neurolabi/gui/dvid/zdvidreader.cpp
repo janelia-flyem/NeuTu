@@ -2718,7 +2718,7 @@ void ZDvidReader::syncBodyLabelName()
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
-    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner, bool ignoringZero)
+    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner, bool ignoringZero) const
 {
   return readBodyId(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ(),
                     lastCorner.getX() - firstCorner.getX() + 1,
@@ -2745,10 +2745,38 @@ std::set<uint64_t> extract_body_id(const ZArray *array, bool ignoringZero)
   return bodySet;
 }
 
+std::set<uint64_t> extract_body_id(
+    const ZArray *array, size_t minBodySize, bool ignoringZero)
+{
+  std::set<uint64_t> bodySet;
+  std::unordered_map<uint64_t, size_t> bodyHist;
+
+  if (array) {
+    uint64_t *dataArray = array->getDataPointer<uint64_t>();
+    for (size_t i = 0; i < array->getElementNumber(); ++i) {
+      if (!ignoringZero || dataArray[i] > 0) {
+        uint64_t bodyId = dataArray[i];
+        if (bodyHist.count(bodyId) == 0) {
+          bodyHist[bodyId] = 1;
+        } else {
+          bodyHist[bodyId]++;
+        }
+      }
+    }
+    for (auto h : bodyHist) {
+      if (h.second >= minBodySize) {
+        bodySet.insert(h.first);
+      }
+    }
+  }
+
+  return bodySet;
+}
+
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
-    int x0, int y0, int z0, int width, int height, int depth, bool ignoringZero)
+    int x0, int y0, int z0, int width, int height, int depth, bool ignoringZero) const
 {
   std::unique_ptr<ZArray> array(readLabels64(x0, y0, z0, width, height, depth));
 
@@ -2756,7 +2784,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
-    const ZAffineRect &rect, bool ignoringZero)
+    const ZAffineRect &rect, bool ignoringZero) const
 {
   std::unique_ptr<ZArray> array(readLabels64Lowtis(rect, 0, 0, 0, false));
 
@@ -2764,7 +2792,21 @@ std::set<uint64_t> ZDvidReader::readBodyId(
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
-    const ZIntCuboid &range, int zoom, bool ignoringZero)
+    const ZIntCuboid &range, int zoom, size_t minBodySize, bool ignoringZero) const
+{
+  ZArray *array = nullptr;
+
+  if (getDvidTarget().hasMultiscaleSegmentation()) {
+    array = readLabels64Lowtis(range, zoom);
+  } else {
+    array = readLabels64(range, zoom);
+  }
+
+  return extract_body_id(array, minBodySize, ignoringZero);
+}
+
+std::set<uint64_t> ZDvidReader::readBodyId(
+    const ZIntCuboid &range, int zoom, bool ignoringZero) const
 {
   ZArray *array = nullptr;
 
@@ -2822,7 +2864,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(const QString /*sizeRange*/)
 }
 #endif
 
-std::set<uint64_t> ZDvidReader::readBodyId(const ZDvidFilter &filter)
+std::set<uint64_t> ZDvidReader::readBodyId(const ZDvidFilter &filter) const
 {
   std::set<uint64_t> bodyIdSet;
 
@@ -2847,7 +2889,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(const ZDvidFilter &filter)
   return bodyIdSet;
 }
 
-std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize)
+std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize) const
 {
   ZDvidBufferReader &bufferReader = m_bufferReader;
 
@@ -2873,7 +2915,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize)
   return bodySet;
 }
 
-std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize)
+std::set<uint64_t> ZDvidReader::readBodyId(size_t minSize, size_t maxSize) const
 {
   ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);

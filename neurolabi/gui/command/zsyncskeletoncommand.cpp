@@ -104,7 +104,137 @@ void process_body(uint64_t bodyId, int index, int totalCount,
                 << " (" << reason << ")" << std::endl;
       processBody(bodyId);
     }
+  } else {
+    std::cout << bodyId << " does not exist." << std::endl;
   }
+}
+
+std::set<std::string> get_status_set(const ZJsonObject &config)
+{
+  std::set<std::string> statusSet;
+  ZJsonArray statusJson(config.value("bodyStatus"));
+  for (size_t i = 0; i < statusJson.size(); ++i) {
+    std::string status =
+        ZString(ZJsonParser::stringValue(statusJson.at(i))).lower();
+    if (!status.empty()) {
+      statusSet.insert(status);
+    }
+  }
+
+  return statusSet;
+}
+
+QStringList get_status_list(const ZJsonObject &config)
+{
+  std::set<std::string> statusSet = get_status_set(config);
+  QStringList statusList;
+  for (const std::string &status : statusSet) {
+    statusList.append(status.c_str());
+  }
+
+  return statusList;
+}
+
+std::set<uint64_t> get_body_set_from_annotation(
+    const ZJsonObject &config, const ZDvidReader &reader)
+{
+  std::set<uint64_t> bodySet;
+  QStringList annotList =
+      reader.readKeys(reader.getDvidTarget().getBodyAnnotationName().c_str());
+  auto statusSet = get_status_set(config);
+  for (const QString &bodyStr : annotList) {
+    uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();
+    if (bodyId > 0) {
+      ZFlyEmBodyAnnotation annot =
+          FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+      if (passed(annot, statusSet)) {
+        bodySet.insert(bodyId);
+//        process_body(bodyId, index, annotList.size(), reader, processBody);
+      }
+    }
+  }
+
+  return bodySet;
+}
+
+
+std::set<uint64_t> get_body_set_from_neuprint(
+    const ZJsonObject &config, const ZDvidReader &reader)
+{
+  std::set<uint64_t> bodySet;
+  if (config.hasKey("neuprint")) {
+    NeuPrintReader *neuprintReader;
+    ZJsonObject neuprintObj(config.value("neuprint"));
+    std::string uuid = reader.getDvidTarget().getUuid();
+    if (neuprintObj.hasKey("uuid")) {
+      uuid = ZJsonParser::stringValue(neuprintObj["uuid"]);
+    }
+    neuprintReader = get_neuprint_reader(neuprintObj, uuid.c_str());
+    if (neuprintReader) {
+      ZJsonArray predefinedBodyList =
+          neuprintReader->queryNeuronByStatus(get_status_list(config));
+      for (size_t i = 0; i < predefinedBodyList.size(); ++i) {
+        ZJsonObject bodyJson(predefinedBodyList.value(i));
+        uint64_t bodyId = ZJsonParser::integerValue(bodyJson["body ID"]);
+        bodySet.insert(bodyId);
+      }
+    } else {
+      qWarning() << "Failed to load dataset from neuprint:"
+                 << neuprintObj.dumpString(0).c_str();
+    }
+  }
+
+  return bodySet;
+}
+
+
+std::set<uint64_t> get_body_set(
+    const ZJsonObject &config, const ZDvidReader &reader)
+{
+  std::set<uint64_t> bodySet;
+  if (config.hasKey("bodyStatus")) { //Get body set by status filter
+    if (config.hasKey("neuprint")) {
+      bodySet = get_body_set_from_neuprint(config, reader);
+    } else {
+      bodySet = get_body_set_from_annotation(config, reader);
+    }
+  } else if (config.hasKey("bodyList")) {
+    auto bodyList = ZJsonParser::integerArray(config["bodyList"]);
+    bodySet.insert(bodyList.begin(), bodyList.end());
+  } else { //Get body set by lowres labels
+    int zoom = reader.getMaxLabelZoom();
+    ZDvidInfo info = reader.readDataInfo(
+          reader.getDvidTarget().getSegmentationName());
+    ZIntPoint startPoint = info.getStartCoordinates();
+    ZIntPoint endPoint = info.getEndCoordinates();
+    if (config.hasKey("minLowresVoxelCount")) {
+      bodySet = reader.readBodyId(
+            ZIntCuboid(startPoint, endPoint), zoom,
+            ZJsonParser::integerValue(config["minLowresVoxelCount"]), true);
+    } else {
+      bodySet = reader.readBodyId(
+            ZIntCuboid(startPoint, endPoint), zoom);
+    }
+  }
+
+  if (config.hasKey("minBodySize")) {
+    size_t minBodySize = ZJsonParser::integerValue(config["minBodySize"]);
+    std::set<uint64_t> oldBodySet = bodySet;;
+    bodySet.clear();
+    for (uint64_t body : oldBodySet) {
+      size_t voxelCount;
+      size_t blockCount;
+      ZIntCuboid range;
+      std::tie(voxelCount, blockCount, range) = reader.readBodySizeInfo(
+            body, neutu::EBodyLabelType::BODY);
+//      std::cout << "Size: " << voxelCount << " " << blockCount << std::endl;
+      if (voxelCount >= minBodySize) {
+        bodySet.insert(body);
+      }
+    }
+  }
+
+  return bodySet;
 }
 
 }
@@ -172,9 +302,19 @@ int ZSyncSkeletonCommand::run(
 
   ZDvidReader reader;
   if (reader.open(target)) {
+    reader.updateMaxLabelZoom();
     target = reader.getDvidTarget();
     reader.setVerbose(false);
     if (reader.hasData(reader.getDvidTarget().getSkeletonName())) {
+      std::set<uint64_t> bodySet = get_body_set(config, reader);
+      size_t i = 1;
+      for (uint64_t bodyId : bodySet) {
+        report_progress(i, bodySet.size());
+        process_body(
+              bodyId, i++, bodySet.size(), reader, processBody);
+      }
+
+#if 0
       std::set<std::string> statusSet;
       if (config.hasKey("bodyStatus")) {
         ZJsonArray statusJson(config.value("bodyStatus"));
@@ -194,8 +334,8 @@ int ZSyncSkeletonCommand::run(
 
       ZJsonArray predefinedBodyList;
 
-      NeuPrintReader *neuprintReader;
       if (config.hasKey("neuprint")) {
+        NeuPrintReader *neuprintReader;
         ZJsonObject neuprintObj(config.value("neuprint"));
         std::string uuid = reader.getDvidTarget().getUuid();
         if (neuprintObj.hasKey("uuid")) {
@@ -235,6 +375,7 @@ int ZSyncSkeletonCommand::run(
           index++;
         }
       }
+#endif
     } else {
       qWarning() << "Skeleton data store does not exist. Abort!";
       return 1;

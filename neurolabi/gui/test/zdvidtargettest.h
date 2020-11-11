@@ -207,6 +207,19 @@ TEST(ZDvidTarget, Factory)
   }
 }
 
+TEST(ZDvidTarget, Json)
+{
+  {
+    ZDvidTarget target;
+    target.setFromJson(
+          "{\"host\": \"emdata2.int.janelia.org\", "
+          "\"port\": 9000, \"scheme\": \"mock\", \"name\": \"test\"}");
+    target.toJsonObject().print();
+    ASSERT_EQ("test", target.getName());
+    ASSERT_TRUE(target.isMock());
+  }
+}
+
 #endif
 
 #endif // ZDVIDTARGETTEST_H

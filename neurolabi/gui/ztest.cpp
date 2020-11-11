@@ -32401,28 +32401,41 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("tmp_test");
 
+  //ZDvidReader::readGrayScaleLowtis(this=0x000061e000077570,
+  //x0=8704, y0=9728, z0=17408, vx1=1, vy1=0, vz1=0, vx2=0, vy2=1, vz2=0,
+  //width=17409, height=19457, zoom=5, cx=256, cy=256, centerCut=false)
 #  if 0
   ZStack *stack = reader->readGrayScaleLowtis(
-        /*x0=*/23057, /*y0=*/29734, /*z0=*/41138,
+        /*x0=*/8704, /*y0=*/9728, /*z0=*/17408,
         /*vx1=*/1, /*vy1=*/0, /*vz1=*/0, /*vx2=*/0, /*vy2=*/1, /*vz2=*/0,
-        /*width=*/46114, /*height=*/59468, /*zoom=*/7,
-        /*cx=*/0, /*cy=*/0, /*centerCut=*/true);
+        /*width=*/17409, /*height=*/19457, /*zoom=*/5,
+        /*cx=*/256, /*cy=*/256, /*centerCut=*/false);
 #  endif
 
 //  std::vector<int> blockcoords{0, 0, 2};
-  reader->readGrayScaleBlock(1, 0, 2, 8);
-  reader->readGrayScaleBlock(2, 0, 2, 8);
-  reader->readGrayScaleBlock(0, 1, 2, 8);
-  reader->readGrayScaleBlock(1, 1, 2, 8);
-  reader->readGrayScaleBlock(2, 1, 2, 8);
-  reader->readGrayScaleBlock(0, 2, 2, 8);
-  reader->readGrayScaleBlock(1, 2, 2, 8);
-  reader->readGrayScaleBlock(2, 2, 2, 8);
-  reader->readGrayScaleBlock(0, 3, 2, 8);
-  reader->readGrayScaleBlock(1, 3, 2, 8);
-  reader->readGrayScaleBlock(2, 3, 2, 8);
+
+  for (int k = 0; k < 10; ++k) {
+    for (int j = 0; j < 10; ++j) {
+      for (int i = 0; i < 10; ++i) {
+        reader->readGrayScaleBlock(i, j, k, 5);
+      }
+    }
+  }
+  /*
+  reader->readGrayScaleBlock(8, 9, 8, 5);
+  reader->readGrayScaleBlock(0, 0, 8, 5);
+  reader->readGrayScaleBlock(0, 1, 2, 5);
+  reader->readGrayScaleBlock(1, 1, 2, 5);
+  reader->readGrayScaleBlock(2, 1, 2, 5);
+  reader->readGrayScaleBlock(0, 2, 2, 5);
+  reader->readGrayScaleBlock(1, 2, 2, 5);
+  reader->readGrayScaleBlock(2, 2, 2, 5);
+  reader->readGrayScaleBlock(0, 3, 2, 5);
+  reader->readGrayScaleBlock(1, 3, 2, 5);
+  reader->readGrayScaleBlock(2, 3, 2, 5);
+  */
 #endif
 
 #if 0
@@ -32451,7 +32464,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/_test.sobj");
   ZObject3dScan obj2;
@@ -32460,6 +32473,35 @@ void ZTest::test(MainWindow *host)
   obj.unify(obj2);
 
   obj.save(GET_TEST_DATA_DIR + "/nBreak-v1.sobj");
+#endif
+
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("tmp_test");
+  ZDvidInfo info = reader->readDataInfo("segmentation");
+  info.print();
+
+  int zoom = 7;
+  int scale = zgeom::GetZoomScale(zoom);
+
+
+  ZIntPoint startPoint = info.getStartCoordinates();
+  ZIntPoint endPoint = info.getEndCoordinates();
+
+  std::cout << startPoint << " " << endPoint << std::endl;
+
+  std::set<uint64_t> bodySet = reader->readBodyId(
+        ZIntCuboid(startPoint, endPoint), 7, 20, zoom);
+  std::cout << bodySet.size() << std::endl;
+
+  for (uint64_t body : bodySet) {
+    size_t voxelCount;
+    size_t blockCount;
+    ZIntCuboid range;
+    std::tie(voxelCount, blockCount, range) = reader->readBodySizeInfo(
+          body, neutu::EBodyLabelType::BODY);
+    std::cout << "Size: " << voxelCount << " " << blockCount << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

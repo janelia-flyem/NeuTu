@@ -5,7 +5,7 @@
 
 #if _QT_APPLICATION_
 #include <QtDebug>
-#include "logging/zqslog.h"
+#include "logging/zlog.h"
 #include "dvid/zdvidbufferreader.h"
 #endif
 #include "neutubeconfig.h"
@@ -86,11 +86,12 @@ std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
 
   if (!getHost().empty()) {
     std::string uuid = getUuid();
-    if (uuidBrief > 0 && int(uuid.size()) > uuidBrief) {
+    if (uuidBrief > 0 && uuid.size() > uuidBrief) {
       uuid = uuid.substr(0, uuidBrief);
-    } else if (int(uuid.size()) < uuidBrief) {
+    } else if (uuid.size() < uuidBrief) {
 #if defined(_QT_APPLICATION_)
-      LWARN() << "Out-of-bound uuid brief (" << uuidBrief << ") for" << uuid;
+      ZWARN << "Out-of-bound uuid brief (" + std::to_string(uuidBrief) +
+               ") for " + uuid;
 #endif
     }
 
@@ -266,7 +267,11 @@ void ZDvidNode::setUuid(const std::string &uuid)
     std::string uuidLink = uuid.substr(4);
     ZDvidBufferReader reader;
     reader.read(uuidLink.c_str());
-    m_uuid = reader.getBuffer().constData();
+    if (reader.getStatus() == neutu::EReadStatus::OK) {
+      m_uuid = reader.getBuffer().constData();
+    } else {
+      ZWARN << "Failed to set uuid from " + uuidLink;
+    }
 #else
     m_uuid = "";
     std::cout << "Unsupported uuid ref in non-GUI application. No uuid is set."
@@ -332,7 +337,7 @@ void ZDvidNode::setFromSourceString(const std::string &sourceString)
 
   if (setFromSourceToken(tokens)) {
 #if defined(_QT_APPLICATION_)
-    LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
+    ZWARN << "Invalid source string for dvid target: " + sourceString;
 #endif
   }
 }

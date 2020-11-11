@@ -1042,20 +1042,42 @@ void ZImageWidget::paintAxis()
   double length = 20.0;
 
   painter.setRenderHint(QPainter::Antialiasing, true);
-  ZPoint xAxis = m_sliceViewTransform.getModelViewTransform().
+
+  struct Axis {
+    ZPoint endPoint;
+    QColor color;
+  };
+  std::vector<Axis> axes(3);
+
+  axes[0].endPoint = m_sliceViewTransform.getModelViewTransform().
       transformWithoutOffset({1, 0, 0});
+  axes[0].color = Qt::red;
+  axes[1].endPoint = m_sliceViewTransform.getModelViewTransform().
+      transformWithoutOffset({0, 1, 0});
+  axes[1].color = Qt::green;
+  axes[2].endPoint = m_sliceViewTransform.getModelViewTransform().
+      transformWithoutOffset({0, 0, 1});
+  axes[2].color = Qt::blue;
+
+  std::sort(axes.begin(), axes.end(), [](const Axis &a1, const Axis &a2) {
+    return a1.endPoint.getZ() < a2.endPoint.getZ();
+  });
+
+  for (const auto &axis : axes) {
+    painter.setPen(axis.color);
+    painter.drawLine(anchor, anchor + QPointF(
+                       axis.endPoint.getX(), axis.endPoint.getY()) * length);
+  }
+  /*
   painter.setPen(Qt::red);
   painter.drawLine(anchor, anchor + QPointF(xAxis.getX(), xAxis.getY()) * length);
 
-  ZPoint yAxis = m_sliceViewTransform.getModelViewTransform().
-      transformWithoutOffset({0, 1, 0});
   painter.setPen(Qt::green);
   painter.drawLine(anchor, anchor + QPointF(yAxis.getX(), yAxis.getY()) * length);
 
-  ZPoint zAxis = m_sliceViewTransform.getModelViewTransform().
-      transformWithoutOffset({0, 0, 1});
   painter.setPen(Qt::blue);
   painter.drawLine(anchor, anchor + QPointF(zAxis.getX(), zAxis.getY()) * length);
+  */
 }
 
 void ZImageWidget::paintCrossHair()
