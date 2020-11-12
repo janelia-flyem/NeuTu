@@ -194,6 +194,14 @@ TEST(ZDvidNode, URL)
   ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true, -1));
 
   node.setFromUrl_deprecated(
+        "http://emdata2.int.janelia.org:9000/api/node/@FIB25/branches/key/master");
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:@FIB25", node.getSourceString(true));
+
+  node.setFromUrl_deprecated(
+        "http://emdata2.int.janelia.org:9000/api/node/ref>FIB25/branches/key/master");
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:", node.getSourceString(true));
+
+  node.setFromUrl_deprecated(
         "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
   ASSERT_TRUE(node.isMock());
   ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456", node.getSourceString(true));

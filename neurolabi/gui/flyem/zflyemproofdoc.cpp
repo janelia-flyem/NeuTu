@@ -1600,6 +1600,11 @@ void ZFlyEmProofDoc::readInfo()
   for (const auto &p : m_grayscaleReaderMap) {
     m_dvidInfoMap[p.first] =ZDvidGlobal::Memo::ReadGrayscaleInfo(
           p.second->getDvidTarget());
+    std::string altKey = get_grayscale_key(p.second->getDvidTarget());
+    if (altKey != p.first) {
+      m_dvidInfoMap[altKey] = m_dvidInfoMap.at(p.first);
+    }
+
 //    m_dvidInfoMap[p.first] = p.second->readGrayScaleInfo();
   }
 

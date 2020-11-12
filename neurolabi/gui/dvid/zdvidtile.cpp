@@ -230,6 +230,9 @@ void ZDvidTile::display(
 
 //    LDEBUG() << "Painting tile:" << m_pixmap.size();
     painter.drawPixmap(getX(), getY(), m_pixmap);
+#ifdef _DEBUG_0
+    m_pixmap.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
 //    std::cout << "Draw image time: " << timer.elapsed() << std::endl;

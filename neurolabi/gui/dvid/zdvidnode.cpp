@@ -23,7 +23,7 @@ const char* ZDvidNode::m_schemeKey = "scheme";
  *
  * The member m_uuid in this class can be
  *   > explicit, which is just a normal DVID UUID
- *   > reference, which starts with "ref:", it is
+ *   > reference, which starts with "ref:" or "ref>", it is
  *       expected to followed by a link where the actual UUID is stored
  *   > alias, which starts with "@", referring to the master node of the root
  *       alias configured in the flyem configuration file.
@@ -46,7 +46,8 @@ ZDvidNode::ZDvidNode(
 bool ZDvidNode::hasDvidUuid() const
 {
   if (!m_uuid.empty()) {
-    if (m_uuid[0] == '@' || ZString(m_uuid).startsWith("ref:")) {
+    if (m_uuid[0] == '@' || ZString(m_uuid).startsWith("ref:") ||
+        ZString(m_uuid).startsWith("ref>")) {
       return false;
     }
   }
@@ -86,9 +87,9 @@ std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
 
   if (!getHost().empty()) {
     std::string uuid = getUuid();
-    if (uuidBrief > 0 && int(uuid.size()) > uuidBrief) {
+    if (uuidBrief > 0 && uuid.size() > uuidBrief && hasDvidUuid()) {
       uuid = uuid.substr(0, uuidBrief);
-    } else if (int(uuid.size()) < uuidBrief) {
+    } else if (uuid.size() < uuidBrief) {
 #if defined(_QT_APPLICATION_)
       LWARN() << "Out-of-bound uuid brief (" << uuidBrief << ") for" << uuid;
 #endif
@@ -261,7 +262,7 @@ void ZDvidNode::setUuid(const std::string &uuid)
   m_uuid.clear();
   m_originalUuid = uuid;
 
-  if (ZString(uuid).startsWith("ref:")) {
+  if (ZString(uuid).startsWith("ref:") || ZString(uuid).startsWith("ref>")) {
 #if _QT_APPLICATION_
     std::string uuidLink = uuid.substr(4);
     ZDvidBufferReader reader;
