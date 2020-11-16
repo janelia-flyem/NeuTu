@@ -1,13 +1,18 @@
 #include "zdviddialog.h"
 
 #include <iostream>
+#include <algorithm>
+
 #include <QInputDialog>
+
+#include "qfonticon.h"
 #include "neutubeconfig.h"
 #include "neutube.h"
 #include "ui_zdviddialog.h"
 #include "zdvidtargetproviderdialog.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
+#include "zjsonobjectparser.h"
 #include "zdialogfactory.h"
 #include "stringlistdialog.h"
 #include "dialogs/zdvidadvanceddialog.h"
@@ -16,15 +21,21 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidenv.h"
 
-const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
+const char* ZDvidDialog::DVID_REPO_KEY = "dvid repo";
+const char* ZDvidDialog::CUSTOM_NAME = "<Untitled>";
 
 ZDvidDialog::ZDvidDialog(QWidget *parent) :
   ZDvidTargetProviderDialog(parent),
   ui(new Ui::ZDvidDialog)
 {
   ui->setupUi(this);
+
+  m_defaultSegmentationLabel = ui->labelBlockLabel->text();
+  m_defaultGrayscaleLabel = ui->grayscaleLabel->text();
+  m_defaultSynapseLabel = ui->synapseLabel->text();
+
   ZDvidTarget customTarget("emdata1.int.janelia.org", "", -1);
-  customTarget.setName("Custom");
+  customTarget.setName(CUSTOM_NAME);
   m_dvidRepo.push_back(customTarget);
 
   QRegExp rx("[^\\s]*");
@@ -32,14 +43,10 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   ui->labelBlockLineEdit->setValidator(validator);
   ui->grayScalelineEdit->setValidator(validator);
 
-#if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
-
   std::string userName = neutu::GetCurrentUserName();
 
-  for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
-           iter != dvidRepo.end(); ++iter) {
-    const ZDvidTarget &target = *iter;
+  for ( const ZDvidTarget &target : dvidRepo) {
     bool access = true;
     if (!target.getUserNameSet().empty()) {
       if (target.getUserNameSet().count(userName) == 0) {
@@ -68,9 +75,6 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
     }
   }
 
-//  m_dvidRepo.insert(m_dvidRepo.end(), dvidRepo.begin(), dvidRepo.end());
-#endif
-
   m_roiDlg = new StringListDialog(this);
 
   for (QList<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();
@@ -81,10 +85,15 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
     } else {
       ui->serverComboBox->addItem(target.getSourceString(false).c_str());
     }
+    if (target.getName() != CUSTOM_NAME) {
+      ui->serverComboBox->setItemIcon(
+            ui->serverComboBox->count() - 1,
+            QFontIcon::icon(target.isEditable() ? 0xf044 : 0xf013, Qt::gray));
+    }
   }
 
   m_advancedDlg = new ZDvidAdvancedDialog(this);
-  m_advancedDlg->setDvidServer(getDvidTarget().getSourceString(false).c_str());
+//  m_advancedDlg->setDvidServer(getDvidTarget().getSourceString(false).c_str());
   connect(ui->advancedPushButton, SIGNAL(clicked()),
           this, SLOT(setAdvanced()));
 
@@ -110,6 +119,14 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
 ZDvidDialog::~ZDvidDialog()
 {
   delete ui;
+}
+
+void ZDvidDialog::forEachTarget(
+    std::function<void (const ZDvidTarget &)> f) const
+{
+  for (const ZDvidTarget &target : m_dvidRepo) {
+    f(target);
+  }
 }
 
 int ZDvidDialog::getPort() const
@@ -157,7 +174,7 @@ std::string ZDvidDialog::getRoiName() const
   return ui->roiLineEdit->text().trimmed().toStdString();
 }
 
-ZDvidTarget &ZDvidDialog::getDvidTarget()
+ZDvidTarget& ZDvidDialog::getDvidTargetWithOriginalData()
 {
   ZDvidTarget &target = m_dvidRepo[ui->serverComboBox->currentIndex()];
   if (target.isEditable()) {
@@ -183,15 +200,25 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.useDefaultDataSetting(usingDefaultSetting());
 
     m_advancedDlg->configure(&target);
-//    target.setLabelszName(ui->labelszLineEdit->text().toStdString());
-//    target.setSupervisorServer(ui->liblineEdit->text().toStdString());
   }
 
   return target;
 }
 
+ZDvidTarget &ZDvidDialog::getDvidTarget()
+{
+  m_currentTarget = getDvidTargetWithOriginalData();
+
+  m_currentTarget.useDefaultDataSetting(false);
+  m_currentTarget.loadDvidDataSetting(m_currentDefaultSettings);
+
+  return m_currentTarget;
+}
+
 void ZDvidDialog::setServer(const ZDvidTarget &dvidTarget, int index)
 {
+  m_currentDefaultSettings.clear();
+
   ui->readOnlyCheckBox->setChecked(dvidTarget.readOnly());
   ui->dvidSourceWidget->setAddress(dvidTarget.getHostWithScheme());
   ui->dvidSourceWidget->setPort(dvidTarget.getPort());
@@ -240,7 +267,7 @@ void ZDvidDialog::setServer(const ZDvidTarget &dvidTarget, int index)
 
   ui->saveButton->setEnabled(dvidTarget.isEditable());
   ui->deleteButton->setEnabled(dvidTarget.isEditable() &&
-                               (dvidTarget.getName() != "Custom"));
+                               (dvidTarget.getName() != CUSTOM_NAME));
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 
   resetAdvancedDlg(dvidTarget);
@@ -311,8 +338,8 @@ void ZDvidDialog::saveCurrentTargetAs()
 
 void ZDvidDialog::saveCurrentTarget(bool cloning)
 {
-  ZDvidTarget target = getDvidTarget();
-  if (target.getName() == "Custom") {
+  ZDvidTarget target = getDvidTargetWithOriginalData();
+  if (target.getName() == CUSTOM_NAME) {
     cloning = true;
   }
   bool cloned = false;
@@ -403,40 +430,38 @@ void ZDvidDialog::setAdvanced()
 void ZDvidDialog::updateWidgetForDefaultSetting()
 {
   ui->grayScalelineEdit->setVisible(true);
-//  ui->bodyLineEdit->setVisible(true);
   ui->labelBlockLineEdit->setVisible(true);
   ui->synapseLineEdit->setVisible(true);
 
-
-  ZJsonObject obj;
+  m_currentDefaultSettings.clear();
 
   if (usingDefaultSetting()) {
     ZDvidReader reader;
-    if (reader.open(getDvidTarget())) {
-      obj = reader.readDefaultDataSetting();
+    if (reader.open(m_dvidRepo[ui->serverComboBox->currentIndex()])) {
+      m_currentDefaultSettings = reader.readDefaultDataSetting();
     }
   }
 
   ZDvidAdvancedDialog::UpdateWidget(
-        ui->grayscaleLabel, ui->grayScalelineEdit, "Gray Scale", obj,
-        "grayscale");
+        ui->grayscaleLabel, ui->grayScalelineEdit, m_defaultGrayscaleLabel,
+        m_currentDefaultSettings, "grayscale");
 //  ZDvidAdvancedDialog::UpdateWidget(
 //        ui->bodyLabelLabel, ui->bodyLineEdit, "Body Label",
 //        obj, "bodies");
   ZDvidAdvancedDialog::UpdateWidget(
-        ui->labelBlockLabel, ui->labelBlockLineEdit, "Label Block",
-        obj, "segmentation");
+        ui->labelBlockLabel, ui->labelBlockLineEdit, m_defaultSegmentationLabel,
+        m_currentDefaultSettings, "segmentation");
   ZDvidAdvancedDialog::UpdateWidget(
-        ui->synapseLabel, ui->synapseLineEdit, "Synapse",
-        obj, "synapses");
+        ui->synapseLabel, ui->synapseLineEdit, m_defaultSynapseLabel,
+        m_currentDefaultSettings, "synapses");
 
-  m_advancedDlg->updateWidgetForDefaultSetting(obj);
+  m_advancedDlg->updateWidgetForDefaultSetting(m_currentDefaultSettings);
 }
 
 void ZDvidDialog::deleteCurrentTarget()
 {
   ZDvidTarget target = getDvidTarget();
-  if (target.isEditable() && target.getName() != "Custom") {
+  if (target.isEditable() && target.getName() != CUSTOM_NAME) {
     QSettings &settings = NeutubeConfig::getInstance().getSettings();
 
     ZJsonArray dvidJson;

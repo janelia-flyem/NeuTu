@@ -291,12 +291,9 @@ HEADERS += mainwindow.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
+    protocols/protocolchooseassignmentdialog.h \
     protocols/protocolassignmenttask.h \
     protocols/protocolassignmenturl.h \
-    dialogs/neuprintdatasetdialog.h \
-    protocols/protocolchooseassignmentdialog.h \
-    dialogs/userfeedbackdialog.h \
-    dialogs/zsynapsepropertydialog.h \
     dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
@@ -306,6 +303,9 @@ HEADERS += mainwindow.h \
     zinteractivecontext.h \
     ztraceproject.h \
     zpunctum.h \
+    dialogs/neuprintdatasetdialog.h \
+    dialogs/userfeedbackdialog.h \
+    dialogs/zsynapsepropertydialog.h \
     dialogs/settingdialog.h \
     dialogs/frameinfodialog.h \
     dialogs/traceoutputdialog.h \
@@ -326,6 +326,10 @@ HEADERS += mainwindow.h \
     dialogs/swcskeletontransformdialog.h \
     dialogs/swctypedialog.h \
     dialogs/mexicanhatdialog.h \
+    dialogs/helpdialog.h \
+    dialogs/moviedialog.h \
+    dialogs/projectiondialog.h \
+    dialogs/zalphadialog.h \
     dialogs/channeldialog.h \
     zsinglechannelstack.h \
     zrandom.h \
@@ -370,7 +374,6 @@ HEADERS += mainwindow.h \
     zobjsmanagerwidget.h \
     zmoviescriptgenerator.h \
     zmoviestage.h \
-    dialogs/zalphadialog.h \
     zqtbarprogressreporter.h \
     zstackdoccommand.h \
     zcursorstore.h \
@@ -379,27 +382,24 @@ HEADERS += mainwindow.h \
     zstroke2d.h \
     neutube.h \
     zreportable.h \
-    dialogs/helpdialog.h \
     zswcnodeobjsmodel.h \
     zstackstatistics.h \
     biocytin/biocytin.h \
     biocytin/zstackprojector.h \
-    dialogs/projectiondialog.h \
     zstackviewlocator.h \
     dialogs/startsettingdialog.h \
     zstackreadthread.h \
     zswccolorscheme.h \
-    dialogs/moviedialog.h \
     zpunctumio.h \
     zstatisticsutils.h \
     zswcrangeanalyzer.h \
     dialogs/informationdialog.h \
-    zswcnodezrangeselector.h \
-    zswcnodecompositeselector.h \
-    zswcnodeellipsoidrangeselector.h \
     dialogs/flyemdataquerydialog.h \
     dialogs/flyemdataprocessdialog.h \
     dialogs/autosaveswclistdialog.h \
+    zswcnodezrangeselector.h \
+    zswcnodecompositeselector.h \
+    zswcnodeellipsoidrangeselector.h \
     zswcfilelistmodel.h \
     zswcglobalfeatureanalyzer.h \
     zcommandline.h \

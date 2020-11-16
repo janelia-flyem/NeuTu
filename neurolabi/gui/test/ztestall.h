@@ -88,7 +88,6 @@
 #include "test/commontest.h"
 #include "test/zflyembodyannotationprotocaltest.h"
 #include "test/taskprotocoltasktest.h"
-//#include "test/zstringbuildtest.h"
 #include "test/zstackdocobjectupdatetest.h"
 #include "test/zinteractivecontexttest.h"
 #include "test/miscutilitytest.h"
@@ -105,5 +104,6 @@
 #include "test/zcolorschemetest.h"
 #include "test/zdvidlabelslicetest.h"
 #include "test/zdvidinfotest.h"
+#include "test/zdviddialogtest.h"
 
 #endif // ZTESTALL_H

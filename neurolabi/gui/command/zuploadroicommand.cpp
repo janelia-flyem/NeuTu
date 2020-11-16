@@ -51,6 +51,14 @@ int ZUploadRoiCommand::run(
 
   ZDvidWriter writer;
   if (writer.open(target)) {
+    if (!writer.getDvidReader().hasData("rois")) {
+      writer.createData("keyvalue", "rois");
+    }
+
+    if (!writer.getDvidReader().hasData("roi_data")) {
+      writer.createData("keyvalue", "roi_data");
+    }
+
     writer.setAdmin(true);
     QDir dir(input[0].c_str());
     qDebug() << "Input data: " << dir;

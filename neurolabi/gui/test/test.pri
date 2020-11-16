@@ -6,6 +6,7 @@ HEADERS += \
     $$PWD/taskprotocoltasktest.h \
   $$PWD/zaffinerecttest.h \
   $$PWD/zcolorschemetest.h \
+  $$PWD/zdviddialogtest.h \
   $$PWD/zdvidinfotest.h \
   $$PWD/zdvidlabelslicetest.h \
     $$PWD/zdvidtargetfactorytest.h \
