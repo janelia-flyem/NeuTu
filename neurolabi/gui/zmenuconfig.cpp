@@ -26,11 +26,19 @@ ZActionFactory::EAction ZMenuConfig::getLastAction() const
   return action;
 }
 
-void ZMenuConfig::appendSeparator()
+void ZMenuConfig::appendSeparator(const QString &groupName)
 {
   if (!m_actionGroup.empty()) {
-    if (getLastAction() != ZActionFactory::ACTION_SEPARATOR) {
-      append(ZActionFactory::ACTION_SEPARATOR);
+    const auto &action =  m_actionGroup.back();
+    bool appending = true;
+    if (action.first == groupName) {
+      if (action.second == ZActionFactory::ACTION_SEPARATOR) {
+        appending = false;
+      }
+    }
+
+    if (appending) {
+      append(groupName, ZActionFactory::ACTION_SEPARATOR);
     }
   }
 }
