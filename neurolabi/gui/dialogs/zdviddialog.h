@@ -39,8 +39,10 @@ private slots:
   void deleteCurrentTarget();
   void editRoiList();
   void updateWidgetForDefaultSetting();
+  void updateWidgetForDefaultSetting(const ZDvidTarget &target);
   void setAdvanced();
   void load();
+  void exportTarget();
 
 private:
   bool usingDefaultSetting() const;
@@ -51,17 +53,26 @@ private:
   std::string getSegmentationName() const;
   std::string getSynapseName() const;
   std::string getRoiName() const;
-  void setServer(const ZDvidTarget &dvidTarget, int index);
-  ZDvidTarget& getDvidTargetWithOriginalData();
+  void setServer(const ZDvidTarget &dvidTarget);
+  ZDvidTarget getDvidTargetWithOriginalData();
 
   int getPort() const;
   QString getAddress() const;
   QString getUuid() const;
 
-  void addDvidTarget(ZDvidTarget &target);
+  bool addDvidTarget(ZDvidTarget &target);
+  bool inputTargetName(ZDvidTarget &target);
 
   bool hasNameConflict(const std::string &name) const;
   void saveCurrentTarget(bool cloning);
+
+  void updateWidgetValue(const ZDvidTarget &dvidTarget);
+  void updateWidgetState(const ZDvidTarget &target);
+
+  void initDvidRepo();
+  void updateLastItemIcon(const ZDvidTarget &target);
+  void addTargetItem(const ZDvidTarget &target);
+  void updateAdvancedInfo();
 
 public:
   struct PrivateTest {
@@ -80,7 +91,6 @@ public:
     ZDvidDialog *m_this;
   };
 
-
 private:
   Ui::ZDvidDialog *ui;
   QList<ZDvidTarget> m_dvidRepo;
@@ -97,7 +107,7 @@ private:
 
 public:
   const static char *DVID_REPO_KEY;
-  const static char *CUSTOM_NAME;
+  const static char *UNTITTLED_NAME;
 };
 
 #endif // ZDVIDDIALOG_H

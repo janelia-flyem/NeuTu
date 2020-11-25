@@ -227,6 +227,12 @@ bool ZDialogFactory::Ask(
       QMessageBox::Yes;
 }
 
+void ZDialogFactory::Info(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  QMessageBox::information(parent, title, msg);
+}
+
 void ZDialogFactory::Warn(
     const QString &title, const QString &msg, QWidget *parent)
 {
