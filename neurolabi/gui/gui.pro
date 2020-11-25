@@ -293,9 +293,9 @@ HEADERS += mainwindow.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
+    protocols/protocolchooseassignmentdialog.h \
     protocols/protocolassignmenttask.h \
     protocols/protocolassignmenturl.h \
-    protocols/protocolchooseassignmentdialog.h \
     dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \

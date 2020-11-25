@@ -155,22 +155,21 @@ void ConnectionValidationProtocol::setCurrentReviewed() {
     onReviewedChanged();
 }
 
-void ConnectionValidationProtocol::onFirstButton() {
-    int first = findFirstUnreviewed();
-    if (first >= 0) {
-        setSelectGotoCurrentPoint(first);
+void ConnectionValidationProtocol::presentTask(int index)
+{
+    if (index >= 0) {
+        setSelectGotoCurrentPoint(index);
     } else {
-        showMessage("Done!", "No unreviewed connections! You may complete this protocol.");
+        showCompleteMessage();
     }
 }
 
+void ConnectionValidationProtocol::onFirstButton() {
+    presentTask(findFirstUnreviewed());
+}
+
 void ConnectionValidationProtocol::onNextButton() {
-    int next = findNextUnreviewed();
-    if (next >= 0) {
-        setSelectGotoCurrentPoint(next);
-    } else {
-        showMessage("Done!", "No unreviewed connections! You may complete this protocol.");
-    }
+    presentTask(findNextUnreviewed());
 }
 
 void ConnectionValidationProtocol::onMarkAndNextButton() {
@@ -580,7 +579,8 @@ void ConnectionValidationProtocol::clearSitesTable() {
     setSitesHeaders(m_sitesModel);
 }
 
-void ConnectionValidationProtocol::showError(QString title, QString message) {
+void ConnectionValidationProtocol::showError(QString title, QString message)
+{
     QMessageBox mb;
     mb.setText(title);
     mb.setIcon(QMessageBox::Warning);
@@ -590,13 +590,20 @@ void ConnectionValidationProtocol::showError(QString title, QString message) {
     mb.exec();
 }
 
-void ConnectionValidationProtocol::showMessage(QString title, QString message) {
+void ConnectionValidationProtocol::showMessage(QString title, QString message)
+{
     QMessageBox mb;
     mb.setText(title);
     mb.setInformativeText(message);
     mb.setStandardButtons(QMessageBox::Ok);
     mb.setDefaultButton(QMessageBox::Ok);
     mb.exec();
+}
+
+void ConnectionValidationProtocol::showCompleteMessage()
+{
+  showMessage(
+        "Done!", "No unreviewed connections! You may complete this protocol.");
 }
 
 ConnectionValidationProtocol::~ConnectionValidationProtocol()

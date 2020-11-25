@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <string>
+#include <functional>
 
 #include "zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
@@ -28,6 +29,8 @@ public:
   ZDvidTarget& getDvidTarget();
   const ZDvidTarget& getDvidTarget(const std::string &name) const;
 
+  void forEachTarget(std::function<void(const ZDvidTarget&)> f) const;
+
 private slots:
 
   void setServer(int index);
@@ -49,6 +52,7 @@ private:
   std::string getSynapseName() const;
   std::string getRoiName() const;
   void setServer(const ZDvidTarget &dvidTarget, int index);
+  ZDvidTarget& getDvidTargetWithOriginalData();
 
   int getPort() const;
   QString getAddress() const;
@@ -59,6 +63,24 @@ private:
   bool hasNameConflict(const std::string &name) const;
   void saveCurrentTarget(bool cloning);
 
+public:
+  struct PrivateTest {
+    PrivateTest(ZDvidDialog *dlg): m_this(dlg) {
+    }
+
+    bool hasNameConflict(const std::string &name) const {
+      return m_this->hasNameConflict(name);
+    }
+
+    void setSever(int index) {
+      m_this->setServer(index);
+    }
+
+  private:
+    ZDvidDialog *m_this;
+  };
+
+
 private:
   Ui::ZDvidDialog *ui;
   QList<ZDvidTarget> m_dvidRepo;
@@ -66,7 +88,16 @@ private:
   StringListDialog *m_roiDlg;
   ZDvidAdvancedDialog *m_advancedDlg;
   ZDvidTarget m_emptyTarget;
-  const static char *m_dvidRepoKey;
+  ZDvidTarget m_currentTarget;
+
+  QString m_defaultSegmentationLabel;
+  QString m_defaultGrayscaleLabel;
+  QString m_defaultSynapseLabel;
+  ZJsonObject m_currentDefaultSettings;
+
+public:
+  const static char *DVID_REPO_KEY;
+  const static char *CUSTOM_NAME;
 };
 
 #endif // ZDVIDDIALOG_H

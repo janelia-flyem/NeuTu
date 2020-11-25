@@ -5,10 +5,10 @@ HEADERS += \
     $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \
     $$PWD/zaffinerecttest.h \
-    $$PWD/zaffinerecttest.h \
     $$PWD/zcolorschemetest.h \
-    $$PWD/zdvidlabelslicetest.h \
+    $$PWD/zdviddialogtest.h \
     $$PWD/zdvidinfotest.h \
+    $$PWD/zdvidlabelslicetest.h \
     $$PWD/zdvidtargetfactorytest.h \
     $$PWD/zdvidtargettest.h \
     $$PWD/zdvidurltest.h \
