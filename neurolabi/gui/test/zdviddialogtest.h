@@ -12,7 +12,7 @@ TEST(ZDvidDialog, basic)
 {
   ZDvidDialog dlg;
   dlg.forEachTarget([](const ZDvidTarget &target) {
-    if (target.getName() == ZDvidDialog::CUSTOM_NAME) {
+    if (target.getName() == ZDvidDialog::UNTITTLED_NAME) {
       ASSERT_FALSE(target.isValid());
     } else {
       ASSERT_TRUE(target.isValid()) << target.toJsonObject().dumpString(2);
@@ -26,7 +26,7 @@ TEST(ZDvidDialog, basic)
   ASSERT_TRUE(test.hasNameConflict("MB_Test"));
 
   test.setSever(0);
-  ASSERT_EQ(ZDvidDialog::CUSTOM_NAME, dlg.getDvidTarget().getName());
+  ASSERT_EQ(ZDvidDialog::UNTITTLED_NAME, dlg.getDvidTarget().getName());
 }
 
 #endif

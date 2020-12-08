@@ -408,8 +408,12 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_bgValueKey, m_bgValue);
   obj.setNonEmptyEntry(m_bodyLabelNameKey, m_bodyLabelName);
   obj.setNonEmptyEntry(m_segmentationNameKey, m_segmentationName);
-  obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
-  obj.setEntry(m_maxGrayscaleZoomKey, getMaxGrayscaleZoom());
+  if (m_maxLabelZoom > 0) {
+    obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
+  }
+  if (m_maxGrayscaleZoom > 0) {
+    obj.setEntry(m_maxGrayscaleZoomKey, getMaxGrayscaleZoom());
+  }
   obj.setNonEmptyEntry(m_grayScaleNameKey, m_grayscaleName);
   obj.setNonEmptyEntry(m_synapseLabelszKey, m_synapseLabelszName);
   obj.setNonEmptyEntry(m_roiNameKey, m_roiName);
@@ -424,7 +428,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   }
   obj.setEntry(m_roiListKey, jsonArray);
 
-  obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+  obj.setNonEmptyEntry(m_multiscale2dNameKey, m_multiscale2dName);
 
   if (!m_tileConfig.empty()) {
     /*
@@ -449,7 +453,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
 //    obj.setEntry(m_sourceConfigKey, const_cast<ZJsonObject&>(m_sourceConfig));
   }
 
-  obj.setEntry(m_synapseNameKey, m_synapseName);
+  obj.setNonEmptyEntry(m_synapseNameKey, m_synapseName);
   obj.setEntry(m_supervisorKey, m_isSupervised);
   obj.setNonEmptyEntry(m_supervisorServerKey, m_supervisorServer);
   obj.setEntry(m_defaultSettingKey, usingDefaultDataSetting());
