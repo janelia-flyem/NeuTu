@@ -9,11 +9,6 @@
 #include <string>
 #include <iostream>
 
-#ifdef _QT_GUI_USED_
-#include "zglmutils.h"
-#include "widgets/znumericparameter.h"
-#endif
-
 #include "tz_image_lib_defs.h"
 #include "c_stack.h"
 #include "tz_stack_document.h"
@@ -23,6 +18,11 @@
 #include "zresolution.h"
 #include "common/neutudefs.h"
 #include "geometry/zintpoint.h"
+
+#ifdef _QT_GUI_USED_
+#include "zglmutils.h"
+#include "widgets/znumericparameter.h"
+#endif
 
 class ZPoint;
 class ZIntCuboid;

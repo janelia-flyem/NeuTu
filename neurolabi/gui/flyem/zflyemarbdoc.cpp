@@ -26,6 +26,16 @@ bool ZFlyEmArbDoc::setDvid(const ZDvidEnv &env)
     readInfo();
 
     prepareDvidData(env);
+
+#ifdef _DEBUG_2
+    ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+    bookmark->setCenter(1352, 1319, 890);
+    bookmark->setZScale(4);
+    addObject(bookmark);
+#endif
+
+    downloadBookmark();
+
     return true;
   }else {
     m_dvidWriter.clear();

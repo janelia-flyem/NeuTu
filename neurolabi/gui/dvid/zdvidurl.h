@@ -57,9 +57,16 @@ public:
 
   std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
 
-  std::string getMeshUrl();
+  enum class EMeshType {
+    DEFAULT, MERGED, NG, DRACO
+  };
+
+  std::string getMeshUrl() const;
+  std::string getMeshUrl(uint64_t bodyId, EMeshType type) const;
+  std::string getMergedMeshUrl(uint64_t bodyId) const;
+  std::string getNgMeshUrl(uint64_t bodyId) const;
   std::string getMeshUrl(uint64_t bodyId, int zoom);
-  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
+//  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
   static std::string GetMeshInfoUrl(const std::string &meshUrl);
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
@@ -152,6 +159,8 @@ public:
       const std::string &key1, const std::string &key2) const;
   std::string getAllKeyUrl(const std::string &name) const;
   std::string getKeyValuesUrl(const std::string &name) const;
+  std::string getKeyValuesUrl(
+      const std::string &name, const std::string &key1, const std::string &key2) const;
 
   std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
   std::string getBodyAnnotationUrl(
@@ -212,6 +221,7 @@ public:
       const std::string &dataName, int resLevel,
       int xi0, int yi0, int z0) const;
 
+  std::string getReposInfoUrl() const;
   std::string getRepoInfoUrl() const;
   std::string getLockUrl() const;
   std::string getBranchUrl() const;
@@ -291,8 +301,12 @@ public:
   std::string getContrastUrl() const;
 
   static std::string GetBodyKey(uint64_t bodyId);
+  static std::string GetBodyKey(uint64_t bodyId, int zoom);
   static std::string GetSkeletonKey(uint64_t bodyId);
-  static std::string GetMeshKey(uint64_t bodyId);
+  static std::string GetMeshKey(
+      uint64_t bodyId, EMeshType type = EMeshType::DEFAULT);
+  static std::string GetMeshKey(uint64_t bodyId, int zoom);
+  static std::string GetMeshKey(uint64_t bodyId, int zoom, EMeshType type);
   static std::string GetMeshInfoKey(uint64_t bodyId);
   static std::string GetTaskKey();
 
@@ -318,15 +332,35 @@ public:
   std::string applyAdminToken(const std::string &url) const;
 
 public:
+  /*!
+   * \brief Get DVID path (after /api/node/<node>)
+   */
   static std::string GetPath(const std::string &url);
+
+  /*!
+   * \brief Compose a full url
+   *
+   * It returns empty if any input component is empty.
+   */
   static std::string GetFullUrl(
       const std::string &prefix, const std::string &path);
+  template<typename... Args>
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &path, Args... args) {
+    if (prefix.empty() || path.empty()) {
+      return "";
+    }
+
+    return GetFullUrl(GetFullUrl(prefix, path), args...);
+  }
+
   /*!
    * \brief Get entry point of getting key value entries
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
   static std::string GetKeyValuesCommandUrl(const std::string &dataUrl);
+  static std::string GetKeyRangeValuesCommandUrl(const std::string &dataUrl);
 
   static std::string GetTarfileCommandUrl(const std::string &dataUrl);
 
@@ -406,6 +440,7 @@ private:
   static const std::string m_keysCommand;
   static const std::string m_keyRangeCommand;
   static const std::string m_keyValuesCommand;
+  static const std::string m_keyRangeValuesCommand;
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;

@@ -93,6 +93,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 
     ui->setupUi(this);
 
+    setAttribute(Qt::WA_DeleteOnClose, true);
+
     // office phone number = random seed
     qsrand(2094656);
 
@@ -158,6 +160,7 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
+    connect(ui->hideButton, SIGNAL(clicked()), this, SLOT(onHideButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
 //    connect(ui->allNamedPushButton, SIGNAL(clicked()), this, SLOT(onAllNamedButton()));
     connect(ui->queryNamePushButton, SIGNAL(clicked()),
@@ -261,10 +264,12 @@ void FlyEmBodyInfoDialog::prepareWidget()
     if (m_mode == EMode::NEUPRINT) {
       setWindowTitle("Body Information (NeuPrint)");
       ui->refreshButton->hide();
+      ui->closeButton->setDefault(false);
     } else {
       ui->maxBodiesLabel->hide();
       ui->maxBodiesMenu->hide();
       ui->namedCheckBox->hide();
+      ui->closeButton->hide();
     }
   } else {
     setWindowTitle("Body Information (Sequencer)");
@@ -272,6 +277,10 @@ void FlyEmBodyInfoDialog::prepareWidget()
     pixmap = pixmap.scaled(16, 16);
     ui->iconLabel->setPixmap(pixmap);
 //    ui->iconLabel->setMask(pixmap.mask());
+  }
+
+  if (m_mode == EMode::SEQUENCER) {
+    ui->closeButton->hide();
   }
 
   if (m_mode == EMode::NEUPRINT) {
@@ -294,8 +303,9 @@ namespace {
 std::string get_annotation_primary_neurite(const ZJsonObject &bodyData)
 {
   ZJsonObjectParser parser;
-  return
-      parser.getValue(bodyData, ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "");
+  return parser.getValue(
+        bodyData, {ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
+                   ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE}, std::string());
 }
 
 std::string get_annotation_name(const ZJsonObject &bodyData)
@@ -1257,7 +1267,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 entry.setNonEmptyEntry(
-                      ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE,
+                      ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
                       get_annotation_primary_neurite(bodyData));
             }
 
@@ -1464,7 +1474,11 @@ void FlyEmBodyInfoDialog::onFindSimilarButton()
 }
 
 void FlyEmBodyInfoDialog::onCloseButton() {
-    close();
+  close();
+}
+
+void FlyEmBodyInfoDialog::onHideButton() {
+  hide();
 }
 
 //state: 0: first batch; reset; -1: end; 1: reset and end
@@ -1609,49 +1623,6 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
   ui->bodyTableView->setEnabled(false);
 
   appendModel(data, STATE_BATCH_SINGLE);
-
-#if 0
-  m_bodyModel->clear();
-  setBodyHeaders(m_bodyModel);
-
-  m_totalPre = 0;
-  m_totalPost = 0;
-
-  ZJsonArray bookmarks(data);
-
-  logInfo(QString("Update model: %1 bodies").arg(bookmarks.size()));
-
-  m_bodyModel->setRowCount(int(bookmarks.size()));
-  m_bodyModel->blockSignals(true);
-  for (size_t i = 0; i < bookmarks.size(); ++i) {
-    ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
-
-    QList<QStandardItem*> itemList = getBodyItemList(bkmk);
-    for (int j = 0; j < itemList.size(); ++j) {
-      m_bodyModel->setItem(i, j, itemList[j]);
-      /* //Doesn't seem necessary here (TZ)
-          if (i == bookmarks.size() - 1 && j == itemList.size() - 1) { //A trick to avoid frequent table update
-            m_bodyModel->blockSignals(false);
-          }
-          */
-    }
-  }
-  m_bodyModel->blockSignals(false);
-
-  //Review-TZ: Consider moving this to updateBodyTableView() to reduce
-  //           code redundancy.
-  // the resize isn't reliable, so set the name column wider by hand
-  ui->bodyTableView->resizeColumnsToContents();
-  ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
-
-  // currently initially sorting on # pre-synaptic sites
-  ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
-
-  //Review-TZ: loadCompleted() signal seems unnecessary unless there's a
-  //           possiblity of calling updateModel in a separate thread.
-  //           Consider calling sth like onLoadCompleted() directly.
-  emit loadCompleted();
-#endif
 
   ui->bodyTableView->setEnabled(true);
 }
@@ -2024,14 +1995,17 @@ void FlyEmBodyInfoDialog::onDoubleClickFilterTable(const QModelIndex &proxyIndex
         }
     } else if (proxyIndex.column() == FILTER_COLOR_COLUMN) {
         // double-click on color; change it
-        QColor currentColor = m_bodyGroupProxy->data(m_bodyGroupProxy->index(proxyIndex.row(),
-            FILTER_COLOR_COLUMN), Qt::BackgroundRole).value<QColor>();
+        QColor currentColor = m_bodyGroupProxy->data(
+              m_bodyGroupProxy->index(
+                proxyIndex.row(),FILTER_COLOR_COLUMN), Qt::BackgroundRole).
+            value<QColor>();
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose color");
         if (newColor.isValid()) {
             setFilterTableModelColor(newColor, modelIndex.row());
             updateColorScheme();
-//            updateColorSchemeWithFilterCache();
+            raise(); //Keep the dialog front in case it is put behind by other events triggered
         }
+
     }
 }
 
@@ -2273,7 +2247,7 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
 //      updateFilterColorScheme(filterString, color);
 //    }
   }
-  m_colorScheme.buildColorTable();
+//  m_colorScheme.buildColorTable();
 
   emit colorMapChanged(m_colorScheme);
 
@@ -2885,9 +2859,46 @@ std::string FlyEmBodyInfoDialog::getNeuprintUuid() const {
   return m_reader.getDvidTarget().getUuid();
 }
 
+void FlyEmBodyInfoDialog::setNeuPrintReader(
+    std::unique_ptr<NeuPrintReader> &&reader)
+{
+  m_neuPrintReader = std::move(reader);
+  if (m_neuPrintReader) {
+    ui->datasetComboBox->clear();
+    auto datasets = m_neuPrintReader->getDatasetList();
+#ifdef _DEBUG_
+    std::cout << "#datasets: " << datasets.size() << std::endl;
+#endif
+    // Don't let combobox addItem trigger changeDataset when it needs to be
+    // chosen later.
+    if (!m_neuPrintReader->getCurrentDataset().isEmpty() &&
+        m_neuPrintReader->getCurrentDataset() != datasets[0]) {
+      // Use blockSignals may have side effect, but it might be OK here as
+      // QComboBox::addItem seems only trigger
+      // currentTextChanged/currentIndexChanged signal.
+      ui->datasetComboBox->blockSignals(true);
+    }
+    for (const QString &dataset : datasets) {
+      ui->datasetComboBox->addItem(dataset);
+    }
+    if (!m_neuPrintReader->getCurrentDataset().isEmpty()) {
+      ui->datasetComboBox->blockSignals(false);
+      ui->datasetComboBox->setCurrentText(m_neuPrintReader->getCurrentDataset());
+    }
+
+    setWindowTitle("Body Infomation @ NeuPrint:" +
+                   m_neuPrintReader->getServer() + "?dataset=" +
+                   m_neuprintDataset.c_str());
+  } else {
+    setStatusLabel("<font color=\"#800000\">Oops! "
+                   "Cannot connect NeuPrint!</font>");
+  }
+}
 
 NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
 {
+  return m_neuPrintReader.get();
+#if 0
   if (!m_neuPrintReader) {
     if (!m_neuprintDataset.empty()) {
       m_neuPrintReader = std::unique_ptr<NeuPrintReader>(
@@ -2923,6 +2934,7 @@ NeuPrintReader* FlyEmBodyInfoDialog::getNeuPrintReader()
   }
 
   return m_neuPrintReader.get();
+#endif
 }
 
 NeuPrintQueryDialog* FlyEmBodyInfoDialog::getNeuPrintRoiQueryDlg()

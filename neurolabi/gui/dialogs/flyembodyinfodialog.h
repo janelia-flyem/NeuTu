@@ -30,7 +30,7 @@ public:
     SEQUENCER, QUERY, NEUPRINT
   };
 
-  explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = 0);
+  explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = nullptr);
   ~FlyEmBodyInfoDialog();
 
   void simplify();
@@ -45,6 +45,7 @@ public:
   }
 
   std::string getNeuprintUuid() const;
+  void setNeuPrintReader(std::unique_ptr<NeuPrintReader> &&reader);
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
@@ -88,6 +89,7 @@ private:
 
 private slots:
     void onCloseButton();
+    void onHideButton();
     void onRefreshButton();
     void onAllNamedButton();
     void onQueryByNameButton();

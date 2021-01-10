@@ -20,6 +20,7 @@ const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
 const std::string ZDvidUrl::m_keyRangeCommand = "keyrange";
 const std::string ZDvidUrl::m_keyValuesCommand = "keyvalues";
+const std::string ZDvidUrl::m_keyRangeValuesCommand = "keyrangevalues";
 const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 //const std::string ZDvidUrl::m_supervoxelCommand = "sparsevol-supervoxel";
@@ -135,7 +136,11 @@ std::string ZDvidUrl::getInfoUrl(const std::string &dataName) const
 std::string ZDvidUrl::getApiUrl() const
 {
   if (!m_dvidTarget.getAddress().empty()) {
-    return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+    if (m_dvidTarget.getScheme().empty()) {
+      return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+    } else {
+      return m_dvidTarget.getRootUrl() + "/api";
+    }
   }
 
   return "";
@@ -206,16 +211,33 @@ std::string ZDvidUrl::AppendQuery(
 }
 
 
-std::string ZDvidUrl::getMeshUrl()
+std::string ZDvidUrl::getMeshUrl() const
 {
   return getDataUrl(m_dvidTarget.getMeshName());
+}
+
+std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, EMeshType type) const
+{
+  return applyAdminToken(GetFullUrl(
+        GetKeyCommandUrl(getMeshUrl()),
+        GetMeshKey(bodyId, type)));
+}
+
+std::string ZDvidUrl::getMergedMeshUrl(uint64_t bodyId) const
+{
+  return getMeshUrl(bodyId, EMeshType::MERGED);
+}
+
+std::string ZDvidUrl::getNgMeshUrl(uint64_t bodyId) const
+{
+  return getMeshUrl(bodyId, EMeshType::NG);
 }
 
 std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 {
   return applyAdminToken(GetFullUrl(
-        GetKeyCommandUrl(getDataUrl(m_dvidTarget.getMeshName(zoom))),
-        GetMeshKey(bodyId)));
+        GetKeyCommandUrl(getDataUrl(m_dvidTarget.getMeshName())),
+        GetMeshKey(bodyId, zoom)));
 #if 0
   std::string url;
 
@@ -232,10 +254,12 @@ std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 #endif
 }
 
+/*
 std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
 {
   return GetMeshInfoUrl(getMeshUrl(bodyId, zoom));
 }
+*/
 
 std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
 {
@@ -243,11 +267,12 @@ std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
   return meshUrl + MESH_INFO_SUFFIX;
 }
 
+
 std::string ZDvidUrl::getMeshesTarsUrl()
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_dvidTarget.getBodyLabelName()));
 }
 
@@ -261,7 +286,7 @@ std::string ZDvidUrl::getMeshesTarsUrl(uint64_t bodyId)
 std::string ZDvidUrl::getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId2)
 {
   ZString dataUrl = ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
-                                       ZDvidData::ERole::BODY_LABEL,
+                                       ZDvidData::ERole::SPARSEVOL,
                                        m_dvidTarget.getBodyLabelName());
   ZString key1 = GetBodyKey(bodyId1) + ".tar";
   ZString key2 = GetBodyKey(bodyId2) + ".tar";
@@ -272,7 +297,7 @@ std::string ZDvidUrl::getTarSupervoxelsUrl()
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::TAR_SUPERVOXELS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_dvidTarget.getBodyLabelName()));
 }
 
@@ -285,8 +310,8 @@ std::string ZDvidUrl::getTarSupervoxelsUrl(uint64_t bodyId)
 
 std::string ZDvidUrl::getSupervoxelMeshUrl(uint64_t bodyId)
 {
-  return applyAdminToken(GetFullUrl(GetFullUrl(getTarSupervoxelsUrl(), "supervoxel"),
-                    GetBodyKey(bodyId)));
+  return applyAdminToken(
+        GetFullUrl(getTarSupervoxelsUrl(), "supervoxel", GetBodyKey(bodyId)));
 }
 
 std::string ZDvidUrl::getSupervoxelMapUrl(uint64_t bodyId)
@@ -315,7 +340,7 @@ std::string ZDvidUrl::getSkeletonUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::SKELETON,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            bodyLabelName));
 }
 
@@ -348,7 +373,12 @@ std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
 
 std::string ZDvidUrl::GetKeyValuesCommandUrl(const std::string &dataUrl)
 {
-    return GetFullUrl(dataUrl, m_keyValuesCommand);
+  return GetFullUrl(dataUrl, m_keyValuesCommand);
+}
+
+std::string ZDvidUrl::GetKeyRangeValuesCommandUrl(const std::string &dataUrl)
+{
+  return GetFullUrl(dataUrl, m_keyRangeValuesCommand);
 }
 
 std::string ZDvidUrl::GetTarfileCommandUrl(const std::string &dataUrl)
@@ -666,14 +696,15 @@ std::string ZDvidUrl::getSparsevolUrl(
 std::string ZDvidUrl::getSparsevolSizeUrl(
     uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
-  ZString url;
+  std::string url;
 
   if (m_dvidTarget.hasSparsevolSizeApi()) {
     url = getDataUrl(m_dvidTarget.getBodyLabelName());
     if (!url.empty()) {
       url += "/" + ZDvidData::GetName(ZDvidData::ERole::SPARSEVOL_SIZE);
       url += "/";
-      url.appendNumber(bodyId);
+      url += std::to_string(bodyId);
+//      url.appendNumber(bodyId);
       if (labelType == neutu::EBodyLabelType::SUPERVOXEL) {
         url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
       }
@@ -719,9 +750,9 @@ std::string ZDvidUrl::AppendRangeQuery(
 {
   std::string newUrl = url;
   if (!url.empty()) {
-    append_range_query(newUrl, "x", box.getFirstX(), box.getLastX());
-    append_range_query(newUrl, "y", box.getFirstY(), box.getLastY());
-    append_range_query(newUrl, "z", box.getFirstZ(), box.getLastZ());
+    append_range_query(newUrl, "x", box.getMinX(), box.getMaxX());
+    append_range_query(newUrl, "y", box.getMinY(), box.getMaxY());
+    append_range_query(newUrl, "z", box.getMinZ(), box.getMaxZ());
   }
 
   return newUrl;
@@ -732,9 +763,9 @@ std::string ZDvidUrl::AppendRangeQuery(
 {
   std::string newUrl = url;
   if (!url.empty()) {
-    append_range_query(newUrl, "x", box.getFirstX(), box.getLastX());
-    append_range_query(newUrl, "y", box.getFirstY(), box.getLastY());
-    append_range_query(newUrl, "z", box.getFirstZ(), box.getLastZ());
+    append_range_query(newUrl, "x", box.getMinX(), box.getMaxX());
+    append_range_query(newUrl, "y", box.getMinY(), box.getMaxY());
+    append_range_query(newUrl, "z", box.getMinZ(), box.getMaxZ());
   }
 
   newUrl = AppendQuery(newUrl, std::make_pair("exact", exact));
@@ -923,7 +954,7 @@ std::string ZDvidUrl::getThumbnailUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL,
-                           ZDvidData::ERole::BODY_LABEL, bodyLabelName));
+                           ZDvidData::ERole::SPARSEVOL, bodyLabelName));
 }
 
 std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const
@@ -939,7 +970,7 @@ std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLa
 
   return applyAdminToken(
         getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL,
-                                     ZDvidData::ERole::BODY_LABEL, bodyLabelName),
+                                     ZDvidData::ERole::SPARSEVOL, bodyLabelName),
                    str + "_mraw"));
 //  return getThumbnailUrl(bodyLabelName) + "/" + str + ".mraw";
 }
@@ -970,7 +1001,7 @@ std::string ZDvidUrl::getOldMasterUrl() const
 
 std::string ZDvidUrl::getMasterUrl() const
 {
-  return GetFullUrl(GetFullUrl(getRepoUrl(), "branch-versions"), "master");
+  return GetFullUrl(getRepoUrl(), "branch-versions", "master");
 }
 
 std::string ZDvidUrl::getMirrorInfoUrl() const
@@ -1124,17 +1155,25 @@ std::string ZDvidUrl::getKeyValuesUrl(const std::string &name) const
     return url;
 }
 
+std::string ZDvidUrl::getKeyValuesUrl(
+    const std::string &name, const std::string &key1, const std::string &key2) const
+{
+  std::string url = GetKeyRangeValuesCommandUrl(getDataUrl(name));
+  url += "/" + key1 + "/" + key2 + "?tar=true";
+  return url;
+}
+
 std::string ZDvidUrl::getBodyAnnotationName() const
 {
   return ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                            ZDvidData::ERole::BODY_LABEL,
+                            ZDvidData::ERole::SPARSEVOL,
                             m_dvidTarget.getBodyLabelName());
 }
 
 std::string ZDvidUrl::getBodyAnnotationUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                                       ZDvidData::ERole::BODY_LABEL,
+                                       ZDvidData::ERole::SPARSEVOL,
                                        bodyLabelName));
 }
 
@@ -1157,14 +1196,14 @@ std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
 std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
-                                       ZDvidData::ERole::BODY_LABEL,
+                                       ZDvidData::ERole::SPARSEVOL,
                                        bodyLabelName));
 }
 
 std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId, const std::string &bodyName) const
 {
   return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
-                                      ZDvidData::ERole::BODY_LABEL,
+                                      ZDvidData::ERole::SPARSEVOL,
                                       bodyName), ZString::num2str(bodyId));
 }
 
@@ -1454,7 +1493,7 @@ std::string ZDvidUrl::getBookmarkUrl(
 
 std::string ZDvidUrl::getBookmarkUrl(const ZIntCuboid &box) const
 {
-  return getBookmarkUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+  return getBookmarkUrl(box.getMinCorner(), box.getWidth(), box.getHeight(),
                         box.getDepth());
 }
 
@@ -1493,9 +1532,14 @@ std::string ZDvidUrl::getTileUrl(
   return url;
 }
 
-std::string ZDvidUrl::getRepoInfoUrl() const
+std::string ZDvidUrl::getReposInfoUrl() const
 {
   return GetFullUrl(getApiUrl(), "/repos/info");
+}
+
+std::string ZDvidUrl::getRepoInfoUrl() const
+{
+  return GetFullUrl(getRepoUrl(), "info");
 }
 
 std::string ZDvidUrl::getLockUrl() const
@@ -1517,7 +1561,9 @@ std::string ZDvidUrl::GetPath(const std::string &url)
   if (markerPos != std::string::npos) {
     markerPos += marker.size();
     std::string::size_type uuidPos = url.find('/', markerPos);
-    return url.substr(uuidPos);
+    if (uuidPos != std::string::npos) {
+      return url.substr(uuidPos);
+    }
   }
 
   return url;
@@ -1685,8 +1731,8 @@ std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const ZIntCuboid &box) const
 {
   return getAnnotationUrl(
-        dataName, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+        dataName, box.getMinCorner().getX(), box.getMinCorner().getY(),
+        box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
         box.getDepth());
 }
 
@@ -1778,7 +1824,7 @@ std::string ZDvidUrl::getSynapseMoveUrl(
 
 std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
 {
-  return getSynapseUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+  return getSynapseUrl(box.getMinCorner(), box.getWidth(), box.getHeight(),
                        box.getDepth());
 }
 
@@ -1836,9 +1882,9 @@ std::string ZDvidUrl::getContrastUrl() const
 
 std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
 {
-  return getTodoListUrl(cuboid.getFirstCorner().getX(),
-                        cuboid.getFirstCorner().getY(),
-                        cuboid.getFirstCorner().getZ(),
+  return getTodoListUrl(cuboid.getMinCorner().getX(),
+                        cuboid.getMinCorner().getY(),
+                        cuboid.getMinCorner().getZ(),
                         cuboid.getWidth(), cuboid.getHeight(),
                         cuboid.getDepth());
 }
@@ -1955,10 +2001,7 @@ void ZDvidUrl::setUuid(const std::string &uuid)
 
 std::string ZDvidUrl::GetBodyKey(uint64_t bodyId)
 {
-  std::ostringstream stream;
-  stream << bodyId;
-
-  return stream.str();
+  return std::to_string(bodyId);
 }
 
 std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
@@ -1969,9 +2012,68 @@ std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
   return stream.str();
 }
 
-std::string ZDvidUrl::GetMeshKey(uint64_t bodyId)
+std::string ZDvidUrl::GetBodyKey(uint64_t bodyId, int zoom)
 {
-  return GetBodyKey(bodyId);
+  std::string key = std::to_string(bodyId);
+  if (zoom > 0) {
+    key += "_" + std::to_string(zoom);
+  }
+  return key;
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, int zoom)
+{
+  return GetBodyKey(bodyId, zoom) + ".obj";
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, EMeshType type)
+{
+  std::string key = GetBodyKey(bodyId);
+
+  switch (type) {
+  case EMeshType::MERGED:
+    key += ".merge";
+    break;
+  case EMeshType::NG:
+    key += ".ngmesh";
+    break;
+  case EMeshType::DEFAULT:
+    key += ".obj";
+    break;
+  case EMeshType::DRACO:
+    key += ".drc";
+    break;
+  }
+
+  return key;
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, int zoom, EMeshType type)
+{
+  std::string key;
+
+  if (zoom == 0 || type != EMeshType::MERGED) {
+    key = GetBodyKey(bodyId, zoom);
+  }
+
+  if (!key.empty()) {
+    switch (type) {
+    case EMeshType::MERGED:
+      key += ".merge";
+      break;
+    case EMeshType::NG:
+      key += ".ngmesh";
+      break;
+    case EMeshType::DEFAULT:
+      key += ".obj";
+      break;
+    case EMeshType::DRACO:
+      key += ".drc";
+      break;
+    }
+  }
+
+  return key;
 }
 
 std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)

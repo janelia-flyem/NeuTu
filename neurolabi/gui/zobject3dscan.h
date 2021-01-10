@@ -52,7 +52,7 @@ class ZObject3dScan : public ZStackObject
 {
 public:
   ZObject3dScan();
-  virtual ~ZObject3dScan();
+  virtual ~ZObject3dScan() override;
 
   ZObject3dScan(const ZObject3dScan &obj);
   ZObject3dScan(const ZObject3dScan &&obj);
@@ -154,8 +154,8 @@ public:
   bool load(const char *filePath);
   bool load(const std::string &filePath);
 
-  bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutu::EAxis axis);
+  bool hit(double x, double y, double z) override;
+  bool hit(double x, double y, neutu::EAxis axis) override;
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
@@ -375,12 +375,15 @@ public:
 
   ZStack* toStackObjectWithMargin(int v, int margin) const;
 
+  ZStack* toStack(const ZIntCuboid &box, int v) const;
+
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
-  ZIntCuboid getBoundBox() const;
-  void getBoundBox(Cuboid_I *box) const;
-  void boundBox(ZIntCuboid *box) const;
+  ZIntCuboid getIntBoundBox() const;
+  ZCuboid getBoundBox() const override;
+  void getIntBoundBox(Cuboid_I *box) const;
+  void boundBox(ZIntCuboid *box) const override;
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllObject(
@@ -443,6 +446,7 @@ public:
 
   void translate(int dx, int dy, int dz);
   void translate(const ZIntPoint &dp);
+  void scale(int sx, int sy, int sz);
 
   /*!
    * \brief Add z value
@@ -468,7 +472,7 @@ public:
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
-      neutu::EAxis sliceAxis) const;
+      neutu::EAxis sliceAxis) const override;
 //  virtual const std::string& className() const;
 
   void dilate();

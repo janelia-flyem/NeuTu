@@ -487,7 +487,8 @@ void Z3DView::init()
     connect(m_doc, &ZStackDoc::cube3dModified, this, &Z3DView::surfaceDataChanged);
 #endif
 
-    connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
+    connect(m_doc, &ZStackDoc::objectSelectionChanged,
+            this, &Z3DView::processObjectSelectionChanged);
 //    connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
 
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
@@ -1038,6 +1039,35 @@ void Z3DView::surfaceDataChanged()
   m_docHelper.updateSurfaceData();
 }
 */
+
+void Z3DView::processObjectSelectionChanged(
+    const ZStackObjectInfoSet &selected,
+    const ZStackObjectInfoSet &deselected)
+{
+  std::set<ZStackObject::EType> typeSet = selected.getType();
+  std::set<ZStackObject::EType> deselectedTypeSet = deselected.getType();
+  typeSet.insert(deselectedTypeSet.begin(), deselectedTypeSet.end());
+
+  for (auto iter = typeSet.begin(); iter != typeSet.end(); ++iter) {
+    ZStackObject::EType  type = *iter;
+    switch (type) {
+    case ZStackObject::EType::SWC:
+      m_swcFilter->invalidate();
+      break;
+    case ZStackObject::EType::PUNCTA:
+      m_punctaFilter->invalidate();
+      break;
+    case ZStackObject::EType::FLYEM_TODO_ITEM:
+      m_todoFilter->invalidate();
+      break;
+    case ZStackObject::EType::MESH:
+      m_meshFilter->invalidate();
+      break;
+    default:
+      break;
+    }
+  }
+}
 
 void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
                                      const QList<ZStackObject*>& deselected)

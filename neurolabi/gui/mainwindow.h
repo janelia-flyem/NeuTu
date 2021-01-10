@@ -214,7 +214,7 @@ public slots:
 //  void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
-  ZProofreadWindow * startProofread();
+  ZProofreadWindow * startProofread(const QString &databaseName = "");
 //  void launchSplit(const QString &str);
 
 private:
@@ -712,7 +712,7 @@ private:
   QProgressDialog *m_progress;
   BcAdjustDialog *m_bcDlg;
   HelpDialog *m_helpDlg;
-  DiagnosisDialog *m_DiagnosisDlg;
+  DiagnosisDialog *m_DiagnosisDlg = nullptr;
   ResolutionDialog *m_resDlg;
   ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
 

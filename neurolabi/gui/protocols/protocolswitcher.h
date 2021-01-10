@@ -10,13 +10,14 @@
 #include "protocolmetadata.h"
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidwriter.h"
 
 
 class ProtocolSwitcher : public QObject
 {
     Q_OBJECT
 public:
-    explicit ProtocolSwitcher(QWidget *parent = 0);
+    explicit ProtocolSwitcher(QWidget *parent = nullptr);
 
     static QStringList protocolNames;
 
@@ -36,6 +37,7 @@ signals:
     void requestLoadProtocol(ZJsonObject data);
     void requestDisplaySavedProtocols(QStringList keyList);
     void requestDisplayPoint(int x, int y, int z);
+    void requestDisplayBody(uint64_t bodyID);
     void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
     void activateColorMap(QString colorMapName);
     void rangeChanged(ZIntPoint firstCorner, ZIntPoint lastCorner);
@@ -59,6 +61,7 @@ private slots:
     // these are slots that are used to pass signals from
     //  protocols to the main application
     void displayPointRequested(int x, int y, int z);
+    void displayBodyRequested(uint64_t bodyID);
     void updateColorMapRequested(ZFlyEmSequencerColorScheme scheme);
     void activateProtocolColorMap();
     void deactivateProtocolColorMap();
@@ -75,7 +78,8 @@ private:
     static const std::string PROTOCOL_COMPLETE_SUFFIX;
 
     QWidget * m_parent;
-    ZDvidTarget m_currentDvidTarget;
+    ZDvidWriter m_dvidWriter;
+//    ZDvidTarget m_currentDvidTarget;
     ProtocolChooser * m_chooser;
     Status m_protocolStatus;
     ProtocolDialog * m_activeProtocol;

@@ -635,7 +635,7 @@ ZIntCuboid misc::GetBoundBox(const ZArray *array)
 {
   ZIntCuboid box;
   if (array != NULL) {
-    box.setFirstCorner(array->getStartCoordinate(0),
+    box.setMinCorner(array->getStartCoordinate(0),
                        array->getStartCoordinate(1),
                        array->getStartCoordinate(2));
     box.setSize(array->getDim(0), array->getDim(1), array->getDim(2));

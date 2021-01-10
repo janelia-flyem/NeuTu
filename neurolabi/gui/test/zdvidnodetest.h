@@ -11,7 +11,7 @@
 TEST(ZDvidNode, Basic)
 {
   ZDvidNode node("127.0.0.1", "abcd", 8500);
-  ASSERT_EQ("127.0.0.1", node.getAddress());
+  ASSERT_EQ("127.0.0.1", node.getHost());
   ASSERT_EQ("abcd", node.getUuid());
   ASSERT_EQ("abcd", node.getOriginalUuid());
   ASSERT_EQ(8500, node.getPort());
@@ -54,22 +54,22 @@ TEST(ZDvidNode, Scheme)
 TEST(ZDvidNode, URL)
 {
   ZDvidNode node;
-  node.setServer("http://emdata2.int.janelia.org:9000");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  node.setHost("http://emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
   ASSERT_EQ(9000, node.getPort());
 
-  node.setServer("http://emdata2.int.janelia.org");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
-  ASSERT_EQ(9000, node.getPort());
-
-  node.clear();
-  node.setServer("http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  node.setHost("http://emdata2.int.janelia.org");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
   ASSERT_EQ(9000, node.getPort());
 
   node.clear();
-  node.setServer("http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  node.setHost("http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.clear();
+  node.setHost("http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
   ASSERT_EQ(-1, node.getPort());
 
   node.setUuid("234");
@@ -77,28 +77,28 @@ TEST(ZDvidNode, URL)
   ASSERT_EQ("emdata2.int.janelia.org", node.getAddressWithPort());
 
   node.clear();
-  node.setServer("http://emdata2.int.janelia.org:9000/api/node/23456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  node.setHost("http://emdata2.int.janelia.org:9000/api/node/23456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
   ASSERT_EQ(9000, node.getPort());
 
   node.setUuid("23456");
   ASSERT_EQ("23456", node.getUuid());
 
-  node.setServer("emdata2.int.janelia.org:9000");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  node.setHost("emdata2.int.janelia.org:9000");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
   ASSERT_EQ(9000, node.getPort());
 
   node.clear();
   node.setFromUrl_deprecated(
         "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
   ASSERT_EQ(9000, node.getPort());
   ASSERT_EQ("3456", node.getUuid());
 
   node.clear();
   node.setFromUrl_deprecated(
         "http://emdata2.int.janelia.org:9000/api/node/123456/branches/key/master");
-  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
   ASSERT_EQ(9000, node.getPort());
   ASSERT_EQ("123456", node.getUuid());
 
@@ -106,7 +106,7 @@ TEST(ZDvidNode, URL)
   obj.decodeString("{\"address\":\"hackathon.janelia.org\", \"uuid\": \"2a3\"}");
   node.loadJsonObject(obj);
 
-  ASSERT_EQ("hackathon.janelia.org", node.getAddress());
+  ASSERT_EQ("hackathon.janelia.org", node.getHost());
   ASSERT_EQ(-1, node.getPort());
   ASSERT_EQ("2a3", node.getUuid());
 
@@ -115,11 +115,19 @@ TEST(ZDvidNode, URL)
   node.loadJsonObject(obj);
 
   ZJsonObject obj2 = node.toJsonObject();
-  ASSERT_EQ("hackathon.janelia.org", ZJsonParser::stringValue(obj2["address"]));
+  ASSERT_EQ("hackathon.janelia.org", ZJsonParser::stringValue(obj2["host"]));
   ASSERT_EQ("2a3", ZJsonParser::stringValue(obj2["uuid"]));
   ASSERT_EQ(8800, ZJsonParser::integerValue(obj2["port"]));
 
-  node.print();
+  obj.decodeString("{\"host\":\"hackathon.janelia.org\", \"port\": 8800, "
+                   "\"uuid\": \"2a3\", \"scheme\": \"https\"}");
+  node.loadJsonObject(obj);
+  ASSERT_EQ("hackathon.janelia.org", node.getHost());
+  ASSERT_EQ("https", node.getScheme());
+  ASSERT_EQ(8800, node.getPort());
+  ASSERT_EQ("2a3", node.getUuid());
+
+//  node.print();
 
   ZDvidNode node2;
   node2.set("emdata2.int.janelia.org", "uuid", 8000);
@@ -184,6 +192,14 @@ TEST(ZDvidNode, URL)
   ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true, 30));
   ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true, 0));
   ASSERT_EQ("http:emdata2.int.janelia.org:9000:123456789", node.getSourceString(true, -1));
+
+  node.setFromUrl_deprecated(
+        "http://emdata2.int.janelia.org:9000/api/node/@FIB25/branches/key/master");
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:@FIB25", node.getSourceString(true));
+
+  node.setFromUrl_deprecated(
+        "http://emdata2.int.janelia.org:9000/api/node/ref>FIB25/branches/key/master");
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:", node.getSourceString(true));
 
   node.setFromUrl_deprecated(
         "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");

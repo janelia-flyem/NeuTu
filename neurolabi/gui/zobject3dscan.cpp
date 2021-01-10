@@ -34,9 +34,11 @@
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
 #include "geometry/zintcuboid.h"
+#include "geometry/zcuboid.h"
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
 #include "common/memorystream.h"
+#include "zstackfactory.h"
 
 ///////////////////////////////////////////////////
 
@@ -1111,16 +1113,16 @@ void ZObject3dScan::remove(const ZIntCuboid &box)
   canonize();
   TEvent event = EVENT_NULL;
   for (ZObject3dStripe &stripe : m_stripeArray) {
-    if (stripe.getZ() >= box.getFirstCorner().getZ() &&
-        stripe.getZ() <= box.getLastCorner().getZ()) {
-      if (stripe.getY() >= box.getFirstCorner().getY() &&
-          stripe.getY() <= box.getLastCorner().getY()) {
-        stripe.remove(box.getFirstCorner().getX(), box.getLastCorner().getX());
+    if (stripe.getZ() >= box.getMinCorner().getZ() &&
+        stripe.getZ() <= box.getMaxCorner().getZ()) {
+      if (stripe.getY() >= box.getMinCorner().getY() &&
+          stripe.getY() <= box.getMaxCorner().getY()) {
+        stripe.remove(box.getMinCorner().getX(), box.getMaxCorner().getX());
         if (stripe.isEmpty()) {
           event |= EVENT_OBJECT_UNCANONIZED;
         }
       }
-    } else if (stripe.getZ() > box.getLastCorner().getZ()) {
+    } else if (stripe.getZ() > box.getMaxCorner().getZ()) {
       break;
     }
   }
@@ -1399,8 +1401,8 @@ bool ZObject3dScan::isAdjacentTo(
   canonizeConst();
   obj.canonizeConst();
 
-  ZIntCuboid box1 = getBoundBox();
-  ZIntCuboid box2 = obj.getBoundBox();
+  ZIntCuboid box1 = getIntBoundBox();
+  ZIntCuboid box2 = obj.getIntBoundBox();
   box1.expand(1, 1, 1);
   if (!box1.hasOverlap(box2)) {
     return false;
@@ -1495,8 +1497,8 @@ bool ZObject3dScan::isAdjacentToOld(const ZObject3dScan &obj) const
   canonizeConst();
   obj.canonizeConst();
 
-  ZIntCuboid box1 = getBoundBox();
-  ZIntCuboid box2 = obj.getBoundBox();
+  ZIntCuboid box1 = getIntBoundBox();
+  ZIntCuboid box2 = obj.getIntBoundBox();
 
   box1.expand(1, 1, 1);
 
@@ -1553,17 +1555,28 @@ bool ZObject3dScan::hasOverlap(ZObject3dScan &obj) const
   return false;
 }
 
+ZStack* ZObject3dScan::toStack(const ZIntCuboid &box, int v) const
+{
+  ZStack *stack = nullptr;
+  if (!box.isEmpty()) {
+    stack = ZStackFactory::MakeZeroStack(box);
+    drawStack(stack, v);
+  }
+
+  return stack;
+}
+
 Stack* ZObject3dScan::toStack(int *offset, int v) const
 {
   if (getVoxelNumber() == 0) {
     return NULL;
   }
 
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
   if (offset != NULL) {
-    offset[0] = boundBox.getFirstCorner().getX();
-    offset[1] = boundBox.getFirstCorner().getY();
-    offset[2] = boundBox.getFirstCorner().getZ();
+    offset[0] = boundBox.getMinCorner().getX();
+    offset[1] = boundBox.getMinCorner().getY();
+    offset[2] = boundBox.getMinCorner().getZ();
   }
 
 #if 0
@@ -1582,9 +1595,9 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
 
 
   int drawingOffet[3];
-  drawingOffet[0] = -boundBox.getFirstCorner().getX();
-  drawingOffet[1] = -boundBox.getFirstCorner().getY();
-  drawingOffet[2] = -boundBox.getFirstCorner().getZ();
+  drawingOffet[0] = -boundBox.getMinCorner().getX();
+  drawingOffet[1] = -boundBox.getMinCorner().getY();
+  drawingOffet[2] = -boundBox.getMinCorner().getZ();
 
   drawStack(stack, v, drawingOffet);
 
@@ -1602,11 +1615,11 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
     return NULL;
   }
 
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
   if (offset != NULL) {
-    offset[0] = boundBox.getFirstCorner().getX() - margin;
-    offset[1] = boundBox.getFirstCorner().getY() - margin;
-    offset[2] = boundBox.getFirstCorner().getZ() - margin;
+    offset[0] = boundBox.getMinCorner().getX() - margin;
+    offset[1] = boundBox.getMinCorner().getY() - margin;
+    offset[2] = boundBox.getMinCorner().getZ() - margin;
   }
 
 #if 0
@@ -1621,9 +1634,9 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
 
 
   int drawingOffet[3];
-  drawingOffet[0] = -boundBox.getFirstCorner().getX() + margin;
-  drawingOffet[1] = -boundBox.getFirstCorner().getY() + margin;
-  drawingOffet[2] = -boundBox.getFirstCorner().getZ() + margin;
+  drawingOffet[0] = -boundBox.getMinCorner().getX() + margin;
+  drawingOffet[1] = -boundBox.getMinCorner().getY() + margin;
+  drawingOffet[2] = -boundBox.getMinCorner().getZ() + margin;
 
   drawStack(stack, v, drawingOffet);
 
@@ -1671,18 +1684,26 @@ ZStack* ZObject3dScan::toStackObjectWithMargin(int v, int margin) const
 
 ZStack* ZObject3dScan::toVirtualStack() const
 {
-  ZIntCuboid box = getBoundBox();
+  ZIntCuboid box = getIntBoundBox();
 
   ZStack *stack = new ZStack(GREY, box.getWidth(), box.getHeight(),
                              box.getDepth(), 1, true);
-  stack->setOffset(box.getFirstCorner());
+  stack->setOffset(box.getMinCorner());
 
   stack->setDsIntv(getDsIntv());
 
   return stack;
 }
 
-ZIntCuboid ZObject3dScan::getBoundBox() const
+ZCuboid ZObject3dScan::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getIntBoundBox());
+
+  return box;
+}
+
+ZIntCuboid ZObject3dScan::getIntBoundBox() const
 {
   ZIntCuboid boundBox;
 
@@ -1714,13 +1735,13 @@ ZIntCuboid ZObject3dScan::getBoundBox() const
   return boundBox;
 }
 
-void ZObject3dScan::getBoundBox(Cuboid_I *box) const
+void ZObject3dScan::getIntBoundBox(Cuboid_I *box) const
 {
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
 
-  Cuboid_I_Set_S(box, boundBox.getFirstCorner().getX(),
-                 boundBox.getFirstCorner().getY(),
-                 boundBox.getFirstCorner().getZ(),
+  Cuboid_I_Set_S(box, boundBox.getMinCorner().getX(),
+                 boundBox.getMinCorner().getY(),
+                 boundBox.getMinCorner().getZ(),
                  boundBox.getWidth(),
                  boundBox.getHeight(), boundBox.getDepth());
 }
@@ -1728,7 +1749,7 @@ void ZObject3dScan::getBoundBox(Cuboid_I *box) const
 void ZObject3dScan::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
-    *box = getBoundBox();
+    *box = getIntBoundBox();
   }
 }
 
@@ -2034,6 +2055,17 @@ void ZObject3dScan::translate(int dx, int dy, int dz)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
+void ZObject3dScan::scale(int sx, int sy, int sz)
+{
+  zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    m_stripeArray[i].scale(sx, sy, sz);
+  }
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
+}
+
 void ZObject3dScan::translate(const ZIntPoint &dp)
 {
   translate(dp.getX(), dp.getY(), dp.getZ());
@@ -2130,33 +2162,85 @@ void ZObject3dScan::displaySolid(
   //  size_t lineIndex = 0;
   //int offsetX = iround(painter.getOffset().x());
   //int offsetY = iround(painter.getOffset().y());
-  for (size_t i = 0; i < stripeNumber; i += stride) {
-    const ZObject3dStripe &stripe = slice.getStripe(i);
-    if (stripe.getZ() == z || isProj) {
-      int nseg = stripe.getSegmentNumber();
-      for (int j = 0; j < nseg; ++j) {
-        int x0 = stripe.getSegmentStart(j);// - offsetX;
-        int x1 = stripe.getSegmentEnd(j);// - offsetX;
-        int y = stripe.getY();// - offsetY;
+//  double scale = painter.getScale(neutu::EAxis::X);
 
-        if (!m_dsIntv.isZero()) {
-          x0 *= (m_dsIntv.getX() + 1);
-          x1 *= (m_dsIntv.getX() + 1);
-          y *= m_dsIntv.getY() + 1;
+//  if (scale > 0.5) {
+    ZIntCuboid box;
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      if (stripe.getZ() == z || isProj) {
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          int x0 = stripe.getSegmentStart(j);// - offsetX;
+          int x1 = stripe.getSegmentEnd(j);// - offsetX;
+          int y = stripe.getY();// - offsetY;
+
+          /*
+          if (!m_dsIntv.isZero()) {
+            x0 *= (m_dsIntv.getX() + 1);
+            x1 *= (m_dsIntv.getX() + 1);
+            y *= m_dsIntv.getY() + 1;
+          }
+          */
+
+          //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
+          //        for (int x = x0; x <= x1; ++x) {
+          //          pointArray.push_back(QPoint(x, y));
+          //          pointArray[pointIndex++] = QPoint(x, y);
+          //        }
+          box.join(x0, y, 1);
+          box.join(x1, y, 1);
+          lineArray.push_back(QLine(x0, y, x1, y));
         }
-
-        //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
-        //        for (int x = x0; x <= x1; ++x) {
-        //          pointArray.push_back(QPoint(x, y));
-        //          pointArray[pointIndex++] = QPoint(x, y);
-        //        }
-        lineArray.push_back(QLine(x0, y, x1, y));
       }
     }
+    painter.drawLines(lineArray, box.getMinX(), box.getMinY(),
+                      box.getWidth(), box.getHeight(),
+                      m_dsIntv.getX() + 1, m_dsIntv.getY() + 1);
+//    painter.drawLines(lineArray);
+#if 0
+  } else {
+    ZObject3dScan processedSlice;
+
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      if (stripe.getZ() == z || isProj) {
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          int x0 = stripe.getSegmentStart(j);// - offsetX;
+          int x1 = stripe.getSegmentEnd(j);// - offsetX;
+          int y = stripe.getY();// - offsetY;
+
+          if (!m_dsIntv.isZero()) {
+            x0 *= (m_dsIntv.getX() + 1);
+            x1 *= (m_dsIntv.getX() + 1);
+            y *= m_dsIntv.getY() + 1;
+          }
+          processedSlice.addSegment(z, y, x0, x1);
+        }
+      }
+    }
+    int intv = neutu::floor(1.0 / scale) - 1;
+    processedSlice.downsampleMax(intv, intv, 0);
+    ConstSegmentIterator iter(&processedSlice);
+    ZIntCuboid box;
+    while (iter.hasNext()) {
+      const ZObject3dScan::Segment &seg = iter.next();
+
+      lineArray.push_back(
+            QLine(seg.getStart(), seg.getY(), seg.getEnd(), seg.getY()));
+      box.join(seg.getStart(), seg.getY(), 1);
+      box.join(seg.getEnd(), seg.getY(), 1);
+    }
+    painter.drawLines(lineArray, box.getFirstX(), box.getFirstY(),
+                      box.getWidth(), box.getHeight(), intv + 1);
   }
+#endif
+#ifdef _DEBUG_
+  std::cout << "Painter scale: " << painter.getScale(neutu::EAxis::X) << std::endl;
+#endif
 
 
-  painter.drawLines(lineArray);
 #endif
 
 //  if (!lineArray.empty()) {
@@ -2256,6 +2340,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   int z = slice + painter.getZOffset();
 
   QPen pen(m_color);
+  pen.setCosmetic(false);
 
 
   if (hasVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY)) {
@@ -2285,7 +2370,13 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
       if (isSelected()) {
         displaySolid(painter, z, isProj, 1);
       } else {
+#ifdef _DEBUG_
+        tic();
+#endif
         displaySolid(painter, z, isProj, 1);
+#ifdef _DEBUG_
+        std::cout << "ZObject3dScan painting time " << toc() << std::endl;
+#endif
       }
     }
   }
@@ -2514,7 +2605,7 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         }
 
 
-        ZIntCuboid box = slice1.getBoundBox().join(slice2.getBoundBox());
+        ZIntCuboid box = slice1.getIntBoundBox().join(slice2.getIntBoundBox());
         box.expandX(1);
         box.expandY(1);
 //        box.setFirstX(box.getFirstCorner().getX() - 1);
@@ -2633,7 +2724,7 @@ void ZObject3dScan::exportImageSlice(const std::string outputFolder) const
 void ZObject3dScan::exportImageSlice(
     int minZ, int maxZ, const std::string outputFolder) const
 {
-  ZIntCuboid box = getBoundBox();
+  ZIntCuboid box = getIntBoundBox();
   if (!box.isEmpty()) {
     for (int i = minZ; i <= maxZ; ++i) {
       std::cout << "Saving " << i << std::endl;
@@ -2641,8 +2732,8 @@ void ZObject3dScan::exportImageSlice(
       path.appendNumber(i, 5);
       path += ".tif";
       ZIntCuboid sliceBox = box;
-      sliceBox.setFirstZ(i);
-      sliceBox.setLastZ(i);
+      sliceBox.setMinZ(i);
+      sliceBox.setMaxZ(i);
       ZStack *stack = ZStackFactory::MakeZeroStack(GREY, sliceBox);
       getSlice(i).drawStack(stack, 255);
       ZStackWriter writer;
@@ -3142,7 +3233,7 @@ bool ZObject3dScan::equalsLiterally(const ZObject3dScan &obj) const
 ZObject3dScan ZObject3dScan::getComplementObject()
 {
   ZObject3dScan fullObj;
-  ZObject3dFactory::MakeBoxObject3dScan(getBoundBox(), &fullObj);
+  ZObject3dFactory::MakeBoxObject3dScan(getIntBoundBox(), &fullObj);
 
 #ifdef _DEBUG_2
   fullObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
@@ -3257,7 +3348,7 @@ ZObject3dScan ZObject3dScan::findHoleObject()
       compObj.getConnectedComponent(ACTION_CANONIZE);
 
   Cuboid_I boundBox;
-  getBoundBox(&boundBox);
+  getIntBoundBox(&boundBox);
   for (std::vector<ZObject3dScan>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZObject3dScan &subobj = *iter;
@@ -3265,7 +3356,7 @@ ZObject3dScan ZObject3dScan::findHoleObject()
     subobj.print();
 #endif
     Cuboid_I subbox;
-    subobj.getBoundBox(&subbox);
+    subobj.getIntBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
       obj.unify(subobj);
@@ -3286,12 +3377,12 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
       compObj.getConnectedComponent(ACTION_NONE);
 
   Cuboid_I boundBox;
-  getBoundBox(&boundBox);
+  getIntBoundBox(&boundBox);
   for (std::vector<ZObject3dScan>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZObject3dScan &subobj = *iter;
     Cuboid_I subbox;
-    subobj.getBoundBox(&subbox);
+    subobj.getIntBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
       subobj.canonize();
@@ -4395,7 +4486,7 @@ ZObject3dScan* ZObject3dScan::subobject(
     remain->setSliceAxis(m_sliceAxis);
   }
 
-  if (box.contains(getBoundBox())) {
+  if (box.contains(getIntBoundBox())) {
     *result = *this;
     return result;
   }
@@ -4404,8 +4495,8 @@ ZObject3dScan* ZObject3dScan::subobject(
   while (iter.hasNext()) {
     const ZObject3dScan::Segment &seg = iter.next();
     if (box.containYZ(seg.getY(), seg.getZ())) {
-      int x0 = imax2(seg.getStart(), box.getFirstCorner().getX());
-      int x1 = imin2(seg.getEnd(), box.getLastCorner().getX());
+      int x0 = imax2(seg.getStart(), box.getMinCorner().getX());
+      int x1 = imin2(seg.getEnd(), box.getMaxCorner().getX());
       if (x0 <= x1) {
         result->addSegment(seg.getZ(), seg.getY(), x0, x1, false);
 
@@ -4461,7 +4552,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
 
   if (!isEmpty()) {
     Cuboid_I boundBox;
-    getBoundBox(&boundBox);
+    getIntBoundBox(&boundBox);
 
     double xMean = 0.0;
     double yMean = 0.0;

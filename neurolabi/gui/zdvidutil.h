@@ -2,7 +2,7 @@
 #define ZDVIDUTIL_H
 
 #include "dvid/libdvidheader.h"
-#include "common/zsharedpointer.h"
+//#include "common/zsharedpointer.h"
 #include "dvid/zdviddef.h"
 
 class ZJsonValue;
@@ -44,22 +44,22 @@ libdvid::BinaryDataPtr MakePostRequest(
 void MakeHeadRequest(const std::string &url, int &statusCode);
 bool HasHead(const std::string &url);
 
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> MakeDvidNodeService(
     const ZDvidTarget &target);
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> MakeDvidNodeService(
     const libdvid::DVIDNodeService *service);
 
-ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> MakeDvidConnection(
     const std::string &address, const std::string &user, const std::string &app);
-ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> MakeDvidConnection(
     const std::string &address);
-ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> MakeDvidConnection(
     const libdvid::DVIDConnection *conn);
 
 #if defined(_ENABLE_LOWTIS_)
-ZSharedPointer<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);
+std::shared_ptr<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);
 lowtis::ImageService* MakeLowtisServicePtr(const ZDvidTarget &target);
 #endif
 

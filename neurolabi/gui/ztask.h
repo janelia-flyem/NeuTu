@@ -12,9 +12,9 @@ class ZTask : public QObject, public QRunnable
 
 public:
   explicit ZTask(QObject *parent = nullptr);
-  virtual ~ZTask();
+  virtual ~ZTask() override;
 
-  void run();
+  void run() override;
   virtual void execute() = 0;
   virtual void prepare() {}
 
@@ -25,18 +25,43 @@ public:
   void setDelay(int delay);
   int getDelay() const;
 
+  bool isValid() const {
+    return m_isValid;
+  }
+
   void abort();
+  void disableAutoDelete();
+  void invalidate();
+
+  QString getName() const {
+    return m_name;
+  }
+
+  void setName(const QString &name) {
+    m_name = name;
+  }
+
+  bool skippingUponNameDuplicate() const {
+    return m_skipUponNameDuplicate;
+  }
+
+  void skipUponNameDuplicate(bool on) {
+    m_skipUponNameDuplicate = on;
+  }
 
 public slots:
   void executeSlot();
   void slotTest();
 
 signals:
-  void finished();
-  void aborted();
+  void finished(ZTask*);
+  void aborted(ZTask*);
 
 private:
   int m_delay = 0;
+  bool m_isValid = true;
+  QString m_name;
+  bool m_skipUponNameDuplicate = false;
 };
 
 namespace {
@@ -53,11 +78,15 @@ public:
       std::function<void()> f, std::function<void()> dispose = VOID_FUNC,
       QObject *parent = nullptr);
   ~ZFunctionTask() override {
-    m_dispose();
+    if (m_dispose) {
+      m_dispose();
+    }
   }
 
   void execute() override {
-    m_f();
+    if (m_f) {
+      m_f();
+    }
   }
 
 private:
@@ -73,7 +102,9 @@ class ZSquareTask : public ZTask
 public:
   ZSquareTask(QObject *parent = nullptr);
 
-  void run();
+//  void run();
+
+  void execute() override;
 
   inline void setValue(double value) {
     m_value = value;

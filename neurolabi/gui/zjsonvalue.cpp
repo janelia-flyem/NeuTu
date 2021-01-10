@@ -285,7 +285,7 @@ std::string ZJsonValue::toString() const
 
 std::string ZJsonValue::dumpString(int indent) const
 {
-  return dumpJanssonString(JSON_INDENT(indent));
+  return dumpJanssonString(JSON_INDENT(indent) | JSON_PRESERVE_ORDER);
 }
 
 std::string ZJsonValue::dumpJanssonString(size_t flags) const

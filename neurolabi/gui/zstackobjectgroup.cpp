@@ -8,6 +8,7 @@
 #include "logging/zlog.h"
 #include "logging/zqslog.h"
 #include "neutubeconfig.h"
+#include "geometry/zcuboid.h"
 
 ZStackObjectGroup::ZStackObjectGroup() : m_currentZOrder(0)
 {
@@ -152,8 +153,11 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
     ZStackObject *obj = *iter;
     getSelector()->setSelection(obj, selected);
     //obj->setSelected(selected);
-    //Bug???
-    getSelectedSetUnsync(obj->getType()).insert(obj);
+    if (selected) {
+      getSelectedSetUnsync(obj->getType()).insert(obj);
+    } else {
+      getSelectedSetUnsync(obj->getType()).remove(obj);
+    }
   }
 
   if (selected == false) {
@@ -725,6 +729,19 @@ TStackObjectSet& ZStackObjectGroup::getSelectedSetUnsync(
   }
 
   return  m_selectedSet[type];
+}
+
+ZCuboid ZStackObjectGroup::getSelectedBoundBox() const
+{
+  ZCuboid box;
+  for (const auto &objSet : m_selectedSet) {
+    auto objList = objSet.values();
+    for (const ZStackObject *obj : objList) {
+      box.join(obj->getBoundBox());
+    }
+  }
+
+  return box;
 }
 
 /*

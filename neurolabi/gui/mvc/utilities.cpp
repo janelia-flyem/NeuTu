@@ -168,8 +168,15 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
     if (axis == neutu::EAxis::ARB) {
       if (view->viewingInfo(neutu::mvc::ViewInfoFlag::DATA_COORD)) {
         dataPos = ZPositionMapper::StackToData(
-              ZPoint(stackPos.x(), stackPos.y(), view->getZ(neutu::ECoordinateSystem::STACK)),
+              ZPoint(stackPos.x(), stackPos.y(),
+                     view->getZ(neutu::ECoordinateSystem::STACK)),
               view->getViewCenter().toPoint(), view->getAffinePlane());
+#ifdef _DEBUG_
+        std::cout << "Stack pos: " << stackPos.x() << ", " << stackPos.y() << std::endl;
+        std::cout << "Data pos: " << dataPos.toString() << std::endl;
+        std::cout << "Arb plane: " << view->getAffinePlane().getOffset() << std::endl;
+        std::cout << std::endl;
+#endif
         info += QString("(%1, %2, %3)").
             arg(neutu::iround(dataPos.getX())).
             arg(neutu::iround(dataPos.getY())).
@@ -178,7 +185,7 @@ QString neutu::mvc::ComposeViewInfo(ZStackView *view, const QPoint &widgetPos)
     } else {
       dataPos = ZPositionMapper::StackToData(
             ZPositionMapper::WidgetToStack(
-              pos, vp, box.getFirstCorner().getZ()), axis);
+              pos, vp, box.getMinCorner().getZ()), axis);
       if (view->viewingInfo(neutu::mvc::ViewInfoFlag::RAW_STACK_COORD)) {
         info += QString("(%1, %2, %3)").arg(pos.x()).arg(pos.y()).arg(z);
       }
@@ -204,7 +211,7 @@ ZPoint neutu::mvc::MapWidgetPosToData(
 
   ZStackDoc *doc = view->buddyDocument().get();
   ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(*doc, axis);
-  int z0 = box.getFirstCorner().getZ();
+  int z0 = box.getMinCorner().getZ();
   ZPoint stackPos = ZPositionMapper::WidgetToStack(widgetPos, vp, z0);
 
   ZPoint dataPos;

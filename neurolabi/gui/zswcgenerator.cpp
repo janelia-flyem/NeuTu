@@ -76,7 +76,7 @@ ZSwcTree* ZSwcGenerator::createBoxSwc(const ZCuboid &box, double radius)
 ZSwcTree* ZSwcGenerator::createBoxSwc(const ZIntCuboid &box, double radius)
 {
   ZCuboid cuboid;
-  cuboid.setFirstCorner(ZPoint(box.getFirstCorner().toPoint()));
+  cuboid.setMinCorner(ZPoint(box.getMinCorner().toPoint()));
   cuboid.setSize(box.getWidth(), box.getHeight(), box.getDepth());
 
   return createBoxSwc(cuboid, radius);
@@ -492,7 +492,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
 ZSwcTree* ZSwcGenerator::createSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
-  size_t volume = obj.getBoundBox().getVolume();
+  size_t volume = obj.getIntBoundBox().getVolume();
 
   int intv = 0;
   if (volume > MAX_INT32) {

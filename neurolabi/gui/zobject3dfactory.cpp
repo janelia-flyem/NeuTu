@@ -638,11 +638,11 @@ ZObject3dScan* ZObject3dFactory::MakeObject3dScan(
 
   for (ZArray *array : labelArray) {
     ZIntCuboid box = misc::GetBoundBox(array);
-    int x0 = box.getFirstCorner().getX();
-    int y0 = box.getFirstCorner().getY();
-    int z0 = box.getFirstCorner().getZ();
-    int y1 = box.getLastCorner().getY();
-    int z1 = box.getLastCorner().getZ();
+    int x0 = box.getMinCorner().getX();
+    int y0 = box.getMinCorner().getY();
+    int z0 = box.getMinCorner().getZ();
+    int y1 = box.getMaxCorner().getY();
+    int z1 = box.getMaxCorner().getZ();
 //    int area = box.getWidth() * box.getHeight();
     size_t offset = 0;
     for (int z = z0; z <= z1; ++z) {
@@ -668,11 +668,11 @@ ZObject3dScan* ZObject3dFactory::MakeObject3dScan(
 
   for (ZArray *array : labelArray) {
     const ZIntCuboid box = misc::GetBoundBox(array);
-    int x0 = box.getFirstCorner().getX();
-    int y0 = box.getFirstCorner().getY();
-    int z0 = box.getFirstCorner().getZ();
-    int y1 = box.getLastCorner().getY();
-    int z1 = box.getLastCorner().getZ();
+    int x0 = box.getMinCorner().getX();
+    int y0 = box.getMinCorner().getY();
+    int z0 = box.getMinCorner().getZ();
+    int y1 = box.getMaxCorner().getY();
+    int z1 = box.getMaxCorner().getZ();
     size_t offset = 0;
     if (range.hasOverlap(box)) {
       if (range.contains(box)) {
@@ -687,11 +687,11 @@ ZObject3dScan* ZObject3dFactory::MakeObject3dScan(
       } else {
         ZIntCuboid newBox = box;
         newBox.intersect(range);
-        int nx0 = newBox.getFirstCorner().getX();
-        int ny0 = newBox.getFirstCorner().getY();
-        int nz0 = newBox.getFirstCorner().getZ();
-        int ny1 = newBox.getLastCorner().getY();
-        int nz1 = newBox.getLastCorner().getZ();
+        int nx0 = newBox.getMinCorner().getX();
+        int ny0 = newBox.getMinCorner().getY();
+        int nz0 = newBox.getMinCorner().getZ();
+        int ny1 = newBox.getMaxCorner().getY();
+        int nz1 = newBox.getMaxCorner().getZ();
         int area = box.getWidth() * box.getHeight();
         int dx = nx0 - x0;
         for (int z = nz0; z <= nz1; ++z) {
@@ -743,12 +743,12 @@ ZObject3dScan* ZObject3dFactory::MakeFilledMask(
 ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZIntCuboid &box)
 {
   ZObject3dScan obj;
-  int z0 = box.getFirstCorner().getZ();
-  int z1 = box.getLastCorner().getZ();
-  int y0 = box.getFirstCorner().getY();
-  int y1 = box.getLastCorner().getY();
-  int x0 = box.getFirstCorner().getX();
-  int x1 = box.getLastCorner().getX();
+  int z0 = box.getMinCorner().getZ();
+  int z1 = box.getMaxCorner().getZ();
+  int y0 = box.getMinCorner().getY();
+  int y1 = box.getMaxCorner().getY();
+  int x0 = box.getMinCorner().getX();
+  int x1 = box.getMaxCorner().getX();
   for (int z = z0; z <= z1; ++z) {
     for (int y = y0; y <= y1; ++y) {
       obj.addSegment(z, y, x0, x1, false);
@@ -766,10 +766,10 @@ ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)
   ZObject3dScan obj;
   int nSeg = rnd.rndint(box.getHeight() * box.getDepth());
   for (int i = 0; i < nSeg; ++i) {
-    int z = rnd.rndint(box.getFirstCorner().getZ(), box.getLastCorner().getZ());
-    int y = rnd.rndint(box.getFirstCorner().getY(), box.getLastCorner().getY());
-    int x1 =rnd.rndint(box.getFirstCorner().getX(), box.getLastCorner().getX());
-    int x2 =rnd.rndint(box.getFirstCorner().getX(), box.getLastCorner().getX());
+    int z = rnd.rndint(box.getMinCorner().getZ(), box.getMaxCorner().getZ());
+    int y = rnd.rndint(box.getMinCorner().getY(), box.getMaxCorner().getY());
+    int x1 =rnd.rndint(box.getMinCorner().getX(), box.getMaxCorner().getX());
+    int x2 =rnd.rndint(box.getMinCorner().getX(), box.getMaxCorner().getX());
     if (x1 > x2) {
       std::swap(x1, x2);
     }
@@ -831,13 +831,13 @@ ZObject3dScan* ZObject3dFactory::MakeBoxObject3dScan(
     obj->clear();
   }
 
-  int x0 = box.getFirstCorner().getX();
-  int y0 = box.getFirstCorner().getY();
-  int z0 = box.getFirstCorner().getZ();
+  int x0 = box.getMinCorner().getX();
+  int y0 = box.getMinCorner().getY();
+  int z0 = box.getMinCorner().getZ();
 
-  int x1 = box.getLastCorner().getX();
-  int y1 = box.getLastCorner().getY();
-  int z1 = box.getLastCorner().getZ();
+  int x1 = box.getMaxCorner().getX();
+  int y1 = box.getMaxCorner().getY();
+  int z1 = box.getMaxCorner().getZ();
 
   for (int z = z0; z <= z1; ++z) {
     for (int y = y0; y <= y1; ++y) {
@@ -858,13 +858,13 @@ ZObject3d* ZObject3dFactory::MakeBoxObject3d(
     obj->clear();
   }
 
-  int x0 = box.getFirstCorner().getX();
-  int y0 = box.getFirstCorner().getY();
-  int z0 = box.getFirstCorner().getZ();
+  int x0 = box.getMinCorner().getX();
+  int y0 = box.getMinCorner().getY();
+  int z0 = box.getMinCorner().getZ();
 
-  int x1 = box.getLastCorner().getX();
-  int y1 = box.getLastCorner().getY();
-  int z1 = box.getLastCorner().getZ();
+  int x1 = box.getMaxCorner().getX();
+  int y1 = box.getMaxCorner().getY();
+  int z1 = box.getMaxCorner().getZ();
 
   for (int z = z0; z <= z1; ++z) {
     for (int y = y0; y <= y1; ++y) {

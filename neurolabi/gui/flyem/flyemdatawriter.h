@@ -26,6 +26,9 @@ public:
       const std::string &meshFile);
   static void WriteRoiData(
       ZDvidWriter &writer, const std::string &name, const ZObject3dScan &roi);
+  static void WriteMeshMerge(
+      ZDvidWriter &writer, uint64_t targetId,
+      const std::vector<uint64_t> &bodyIdArray);
 
   /*!
    * \brief Transfer ROI from one node to another

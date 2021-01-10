@@ -94,6 +94,11 @@ public:
   bool isValid() const;
 
   void flip();
+  ZLineSegment flipped() const;
+
+  bool approxEquals(const ZLineSegment &seg) const;
+
+  friend std::ostream& operator <<(std::ostream &stream, const ZLineSegment &seg);
 
 private:
   ZPoint m_start;

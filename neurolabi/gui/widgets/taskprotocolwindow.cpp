@@ -17,9 +17,12 @@
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
 
+#include "dvid/zdvidglobal.h"
+
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemtaskhelper.h"
+#include "flyem/flyemdatareader.h"
 
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltaskfactory.h"
@@ -33,7 +36,8 @@
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
 
-TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent) :
+TaskProtocolWindow::TaskProtocolWindow(
+    ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TaskProtocolWindow)
 {
@@ -53,9 +57,10 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     //Let m_body3dDoc manage the life cycle of prefetching thread
     //because it needs to wait for the thread to quit
     m_prefetchThread = new QThread(m_body3dDoc);
+    QThread *prefetchThread = m_prefetchThread;
     m_prefetchQueue->setDocument(m_body3dDoc);
-    m_body3dDoc->addClearance([&]() {
-      m_prefetchThread->quit();
+    m_body3dDoc->addClearance([=]() {
+      prefetchThread->quit();
     });
 
     m_prefetchQueue->moveToThread(m_prefetchThread);
@@ -158,7 +163,9 @@ void TaskProtocolWindow::init() {
     }
     */
 
-    dvid::ENodeStatus status = reader.getNodeStatus();
+//    dvid::ENodeStatus status = reader.getNodeStatus();
+    dvid::ENodeStatus status =
+        ZDvidGlobal::Memo::ReadNodeStatus(reader.getDvidTarget());
     if (status == dvid::ENodeStatus::INVALID || status == dvid::ENodeStatus::OFFLINE) {
         showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
         setWindowConfiguration(LOAD_BUTTON);
@@ -1289,7 +1296,8 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(neutu::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(
+          neutu::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*

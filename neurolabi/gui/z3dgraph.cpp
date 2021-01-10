@@ -5,6 +5,7 @@
 #include "zobject3d.h"
 #include "zstackball.h"
 #include "geometry/zintpoint.h"
+#include "geometry/zcuboid.h"
 #include "zstackobjectpainter.h"
 #include "geometry/zlinesegment.h"
 #include "zpainter.h"
@@ -88,6 +89,11 @@ void Z3DGraphNode::setText(const QString &text)
 const QString& Z3DGraphNode::getText() const
 {
   return m_text;
+}
+
+ZCuboid Z3DGraphNode::getBoundBox() const
+{
+  return ZCuboid(m_center - m_radius, m_center + m_radius);
 }
 
 void Z3DGraphNode::loadJsonObject(const ZJsonObject &obj)
@@ -667,6 +673,16 @@ void Z3DGraph::load(const string &filePath)
 void Z3DGraph::save(const string &filePath)
 {
   toJsonObject().dump(filePath);
+}
+
+ZCuboid Z3DGraph::getBoundBox() const
+{
+  ZCuboid box;
+  for (const Z3DGraphNode& node : m_nodeArray) {
+    box.join(node.getBoundBox());
+  }
+
+  return box;
 }
 
 ZJsonObject Z3DGraph::toJsonObject() const

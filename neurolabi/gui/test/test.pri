@@ -4,13 +4,22 @@ HEADERS += \
     $$PWD/miscutilitytest.h \
     $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \
+  $$PWD/zaffinerecttest.h \
+  $$PWD/zcolorschemetest.h \
+  $$PWD/zdviddialogtest.h \
+  $$PWD/zdvidinfotest.h \
+  $$PWD/zdvidlabelslicetest.h \
     $$PWD/zdvidtargetfactorytest.h \
     $$PWD/zdvidtargettest.h \
+  $$PWD/zdvidurltest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \
+  $$PWD/zflyembodycolorschemetest.h \
+    $$PWD/zlocalneurosegtest.h \
+    $$PWD/zmeshtest.h \
     $$PWD/znetworkutilstest.h \
     $$PWD/zneurontracertest.h \
     $$PWD/zstackdocobjectupdatetest.h \
-    $$PWD/zstringbuildtest.h \
+#    $$PWD/zstringbuildtest.h \
     test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \

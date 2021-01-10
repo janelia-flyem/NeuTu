@@ -3,6 +3,7 @@
 #include <QMutexLocker>
 
 #include "logging/zqslog.h"
+#include "logging/zlog.h"
 
 #include "zstackobjectsourcefactory.h"
 #include "zmesh.h"
@@ -27,6 +28,11 @@ BodyPrefetchQueue::BodyPrefetchQueue(QObject *parent) : QObject(parent)
 
     clear();
 
+}
+
+BodyPrefetchQueue::~BodyPrefetchQueue()
+{
+  ZINFO << "Destroying BodyPrefetchQueue";
 }
 
 /*
@@ -63,9 +69,7 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
       LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
 
       if (!ZFlyEmBodyManager::encodesTar(bodyID)) {
-
-        int zoom = 0;
-        ZMesh *mesh = m_doc->readMesh(m_reader, bodyID, 0, &zoom);
+        ZMesh *mesh = m_doc->readMesh(m_reader, bodyID, 0);
 
         if (mesh != NULL) {
           auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(

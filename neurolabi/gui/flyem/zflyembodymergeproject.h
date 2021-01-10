@@ -208,7 +208,10 @@ private:
 
   QString getSelectionMessage() const;
 
-  void mergeBodyAnnotation(uint64_t targetId, const std::vector<uint64_t> &bodyIdArray);
+  void mergeBodyAnnotation(
+      uint64_t targetId, const std::vector<uint64_t> &bodyIdArray);
+  void uploadMeshMerge(
+      uint64_t targetId, const std::vector<uint64_t> &bodyIdArray);
   void refreshBodyAnnotationCache();
   void updateMergeMap();
   void updateAffliatedData(

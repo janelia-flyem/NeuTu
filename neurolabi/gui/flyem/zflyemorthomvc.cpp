@@ -190,3 +190,20 @@ void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
   }
 }
 
+void ZFlyEmOrthoMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
+{
+  if (/*getView()->getSliceAxis() == neutu::EAxis::Z &&*/
+      viewParam == getView()->getViewParameter() && m_autoReload) {
+    ZFlyEmOrthoDoc *doc = getCompleteDocument();
+    if (doc != NULL) {
+      ZPoint pt = doc->getCrossHairCenter();
+      pt.setZ(getView()->sliceIndex());
+      ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
+      if (!doc->getDataRange().contains(dataPos)) {
+        doc->updateStack(dataPos);
+//        updateStack(dataPos);
+      }
+    }
+  }
+}
+

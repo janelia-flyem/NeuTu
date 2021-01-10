@@ -1,7 +1,10 @@
 #include "zstringparameter.h"
 
+#include "common/utilities.h"
+
 #ifdef _QT5_
 #include <QtWidgets>
+#include <QSignalBlocker>
 #else
 #include <QtGui>
 #endif
@@ -21,11 +24,18 @@ void ZStringParameter::setContent(const QString& str)
   set(str);
 }
 
+void ZStringParameter::setContentQuietly(const QString &str)
+{
+  QSignalBlocker blocker(this);
+
+  set(str);
+}
+
 QWidget* ZStringParameter::actualCreateWidget(QWidget* parent)
 {
   auto le = new QLineEdit(parent);
   le->setText(m_value);
-  connect(le, &QLineEdit::textChanged, this, &ZStringParameter::setContent);
+  connect(le, &QLineEdit::textChanged, this, &ZStringParameter::setContentQuietly);
   connect(this, &ZStringParameter::stringChanged, le, &QLineEdit::setText);
   return le;
 }

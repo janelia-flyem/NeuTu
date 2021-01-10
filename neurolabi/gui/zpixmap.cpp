@@ -52,6 +52,11 @@ ZStTransform& ZPixmap::getProjTransform()
   return m_projTransform;
 }
 
+void ZPixmap::setProjTransform(const ZStTransform &transform)
+{
+  m_projTransform = transform;
+}
+
 void ZPixmap::updateProjTransform(
     const QRect &viewPort, const QRectF &newProjRegion)
 {

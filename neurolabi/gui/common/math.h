@@ -12,6 +12,15 @@ int iround<double>(const double &v);
 extern template
 int iround<float>(const float &v);
 
+template<typename T>
+int ifloor(const T &v);
+
+extern template
+int ifloor<double>(const double &v);
+
+extern template
+int ifloor<float>(const float &v);
+
 }
 
 

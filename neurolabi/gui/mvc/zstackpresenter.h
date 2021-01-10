@@ -399,6 +399,7 @@ public slots:
   void copyLabelId();
   void copySupervoxelId();
   void copyNeuroglancerLink();
+  void copyNeuroglancerLinkAtRectRoi();
 
   void notifyUser(const QString &msg);
 

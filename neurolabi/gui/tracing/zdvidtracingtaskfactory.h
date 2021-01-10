@@ -10,6 +10,7 @@ class ZDvidTracingTaskFactory : public ZTracingTaskFactory
 {
 public:
   ZDvidTracingTaskFactory();
+  virtual ~ZDvidTracingTaskFactory() {}
 
   ZTask* makeTask(double x, double y, double z, double r) const override;
 

@@ -103,6 +103,7 @@ public:
   bool hasOpenedRoi() const;
   int uploadRoi();
   bool createRoiData(const std::string &roiName, QWidget *parent);
+  void exportRoiData(const std::string &path);
   int uploadRoi(int z);
   void downloadRoi();
   void downloadRoi(int z);

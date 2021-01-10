@@ -39,7 +39,8 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const override;
+  ZCuboid getBoundBox() const override;
 
 public: // I/O functions
   virtual void save(const char *filePath);

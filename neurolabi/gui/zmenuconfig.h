@@ -17,7 +17,7 @@ public:
 
   void append(const QString &groupName, ZActionFactory::EAction action);
   void append(ZActionFactory::EAction action);
-  void appendSeparator();
+  void appendSeparator(const QString &groupName = "");
 
   ZActionFactory::EAction getLastAction() const;
 

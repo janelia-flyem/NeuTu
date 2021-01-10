@@ -122,10 +122,6 @@ enum class EBodyLabelType {
 std::string ToString(EBodyLabelType type);
 std::string ToString(EAxis axis);
 
-enum class EBodySplitMode {
-  NONE, ONLINE, OFFLINE
-};
-
 enum class EDataSliceUpdatePolicy {
   DIRECT, HIDDEN, LOWEST_RES, LOWRES, SMALL
 };
@@ -158,6 +154,10 @@ enum class EServerStatus {
 
 enum class EConfigSource {
   UNKNOWN, CONFILG_FILE, QSETTINGS, ENV_VAR, RUNTIME
+};
+
+enum class EBodySplitMode {
+  NONE, ONLINE, OFFLINE
 };
 
 namespace display {

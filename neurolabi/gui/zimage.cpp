@@ -36,6 +36,11 @@ ZImage::ZImage(int width, int height, QImage::Format format) :
   init();
 }
 
+ZImage::ZImage(const QSize &size, QImage::Format format) : QImage(size, format)
+{
+  init();
+}
+
 ZImage::ZImage(const ZImage &image) : QImage(image)
 {
   m_transform = image.m_transform;
@@ -842,14 +847,40 @@ void ZImage::setCData(const uint8_t *data, uint8_t alpha)
   }
 }
 
+void ZImage::setCData(const uint8_t *data, const uint8_t *alpha)
+{
+  int i, j;
+
+  for (j = 0; j < height(); j++) {
+    uchar *line = scanLine(j);
+    for (i = 0; i < width(); i++) {
+      *line++ = *data;
+      *line++ = *data;
+      *line++ = *data++;
+      *line++ = *alpha++;
+    }
+  }
+}
+
+void ZImage::drawColorField(const uint32_t *data)
+{
+  int h = height();
+  int w = width();
+  for (int j = 0; j < h; j++) {
+    uint32_t *line = (uint32_t*) scanLine(j);
+    for (int i = 0; i < w; i++) {
+      *line++ = *data++;
+    }
+  }
+}
+
 void ZImage::drawLabelField(
     uint64_t *data, const QVector<int> &colorTable, int bgColor, int selColor)
 {
   int colorCount = colorTable.size();
+  int h = height();
+  int w = width();
   if (colorCount > 0) {
-    int h = height();
-    int w = width();
-
     for (int j = 0; j < h; j++) {
       int *line = (int*) scanLine(j);
       for (int i = 0; i < w; i++) {
@@ -859,9 +890,37 @@ void ZImage::drawLabelField(
         } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
-          *line++ = colorTable[v % colorCount] ;
+          *line++ = colorTable[(v - 1) % colorCount] ;
         }
       }
+    }
+  } else {
+    for (int j = 0; j < h; j++) {
+      int *line = (int*) scanLine(j);
+      for (int i = 0; i < w; i++) {
+        uint64_t v = *data++;
+        if (v == neutu::LABEL_ID_SELECTION) {
+          *line++ = selColor;
+        } else {
+          *line++ = bgColor;
+        }
+      }
+    }
+  }
+}
+
+void ZImage::drawColorFieldTranspose(const uint32_t *data)
+{
+  int h = height();
+  int w = width();
+
+  const uint32_t *dataLine = data;
+  for (int j = 0; j < h; j++) {
+    int *line = (int*) scanLine(j);
+    dataLine = data + j;
+    for (int i = 0; i < w; i++) {
+      *line++ = *dataLine;
+      dataLine += h;
     }
   }
 }
@@ -886,13 +945,14 @@ void ZImage::drawLabelFieldTranspose(
         } else if (v == neutu::LABEL_ID_SELECTION) {
           *line++ = selColor;
         } else {
-          *line++ = colorTable[v % colorCount] ;
+          *line++ = colorTable[(v - 1) % colorCount] ;
         }
       }
     }
   }
 }
 
+#if 0
 void ZImage::drawLabelField(
     uint64_t *data, const QVector<QColor> &colorTable, uint8_t alpha)
 {
@@ -964,6 +1024,7 @@ void ZImage::drawLabelField(
     }
   }
 }
+#endif
 
 void ZImage::drawRaster(const void *data, int kind, double scale,
 			double offset, int threshold)
@@ -1938,6 +1999,16 @@ const ZStTransform& ZImage::getTransform() const
 void ZImage::setTransform(const ZStTransform &transform)
 {
   m_transform = transform;
+}
+
+ZStTransform ZImage::getWorldTransform() const
+{
+  return m_transform;
+}
+
+ZStTransform ZImage::getProjectionTransform() const
+{
+  return m_projTransform;
 }
 
 void ZImage::setScale(double sx, double sy)

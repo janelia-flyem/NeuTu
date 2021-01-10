@@ -7,7 +7,7 @@ then
 fi
 
 address=$1
-if [[ $address != http://* ]]
+if [[ $address != http://* && $address != https://* ]]
 then
   address="http://$address"
 fi

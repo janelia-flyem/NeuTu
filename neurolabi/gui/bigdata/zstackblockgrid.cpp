@@ -170,7 +170,7 @@ ZStack* ZStackBlockGrid::toStack() const
 
   ZStack *out =
       new ZStack(GREY, box, 1);
-  out->setOffset(box.getFirstCorner());
+  out->setOffset(box.getMinCorner());
   out->setZero();
 
   for (int z = 0; z < m_size.getZ(); ++z) {
@@ -179,9 +179,9 @@ ZStack* ZStackBlockGrid::toStack() const
         ZStack *stack = getStack(ZIntPoint(x, y, z));
         if (stack != NULL) {
           ZIntCuboid box = getBlockBox(ZIntPoint(x, y, z));
-          out->setBlockValue(box.getFirstCorner().getX(),
-                             box.getFirstCorner().getY(),
-                             box.getFirstCorner().getZ(), stack);
+          out->setBlockValue(box.getMinCorner().getX(),
+                             box.getMinCorner().getY(),
+                             box.getMinCorner().getZ(), stack);
         }
       }
     }

@@ -3,8 +3,11 @@
 #include "common/math.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
+
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
+#include "dvid/zdvidglobal.h"
+
 #include "mvc/zstackview.h"
 #include "flyemdatareader.h"
 
@@ -30,7 +33,8 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
   m_dvidTarget = target;
   if (m_reader.open(target)) {
     m_writer.open(target);
-    m_dvidInfo = m_reader.readGrayScaleInfo();
+    m_dvidInfo = ZDvidGlobal::Memo::ReadGrayscaleInfo(m_reader.getDvidTarget());
+//    m_dvidInfo = m_reader.readGrayScaleInfo();
     m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
   }
 }
@@ -121,12 +125,12 @@ void ZFlyEmToDoList::download(int z)
   if (currentArea > 0 && currentArea < m_maxPartialArea) {
     QRect viewPort = m_view->getViewParameter().getViewPort();
     ZIntCuboid box(
-          viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
-          viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
+          viewPort.left(), viewPort.top(), blockBox.getMinCorner().getZ(),
+          viewPort.right(), viewPort.bottom(), blockBox.getMaxCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
     update(box);
-    for (int cz = blockBox.getFirstCorner().getZ();
-         cz <= blockBox.getLastCorner().getZ(); ++cz) {
+    for (int cz = blockBox.getMinCorner().getZ();
+         cz <= blockBox.getMaxCorner().getZ(); ++cz) {
       ItemSlice &slice = getSlice(cz, ADJUST_FULL);
       slice.setDataRect(viewPort);
       slice.setStatus(STATUS_PARTIAL_READY);
@@ -142,23 +146,23 @@ void ZFlyEmToDoList::download(int z)
     int height = lastCorner.getY() - firstCorner.getY() + 1;
     ZIntCuboid box;
 
-    box.setFirstCorner(firstCorner.getX(), firstCorner.getY(),
-                       blockBox.getFirstCorner().getZ());
+    box.setMinCorner(firstCorner.getX(), firstCorner.getY(),
+                       blockBox.getMinCorner().getZ());
     box.setSize(width, height, blockBox.getDepth());
 
     box.shiftSliceAxisInverse(m_sliceAxis);
 
     box = update(box);
 
-    for (int cz = blockBox.getFirstCorner().getZ();
-         cz <= blockBox.getLastCorner().getZ(); ++cz) {
+    for (int cz = blockBox.getMinCorner().getZ();
+         cz <= blockBox.getMaxCorner().getZ(); ++cz) {
       ItemSlice &slice = getSlice(cz, ADJUST_FULL);
       if (m_dataRange.isEmpty()) {
         slice.setStatus(STATUS_READY);
       } else {
         box.shiftSliceAxisInverse(getSliceAxis());
         slice.setDataRect(
-              QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              QRect(box.getMinCorner().getX(), box.getMinCorner().getY(),
                     box.getWidth(), box.getHeight()));
         slice.setStatus(STATUS_PARTIAL_READY);
       }
@@ -371,8 +375,8 @@ void ZFlyEmToDoList::display(
       ZIntCuboid range = m_dataRange;
       range.shiftSliceAxis(getSliceAxis());
 
-      rangeRect.setTopLeft(QPoint(range.getFirstCorner().getX(),
-                                  range.getFirstCorner().getY()));
+      rangeRect.setTopLeft(QPoint(range.getMinCorner().getX(),
+                                  range.getMinCorner().getY()));
       rangeRect.setSize(QSize(range.getWidth(), m_dataRange.getHeight()));
     }
 

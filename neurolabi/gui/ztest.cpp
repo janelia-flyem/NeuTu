@@ -63,6 +63,7 @@
 #include "tz_color.h"
 #include "tz_swc_tree.h"
 
+#include "geometry/zaffinerect.h"
 #include "filesystem/utilities.h"
 #include "tr1_header.h"
 #include "zopencv_header.h"
@@ -212,10 +213,6 @@
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
-#include "dvid/zdvidreader.h"
-#include "dvid/zdvidwriter.h"
-#include "dvid/zdvidinfo.h"
-#include "dvid/zdvidroi.h"
 #include "zstringarray.h"
 #include "zflyemdvidreader.h"
 #include "zstroke2d.h"
@@ -240,8 +237,6 @@
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
 #include "zstackviewmanager.h"
-#include "dvid/zdvidtile.h"
-#include "dvid/zdvidtileinfo.h"
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "flyem/zflyemneurondensitymatcher.h"
 #include "flyem/zflyemneurondensity.h"
@@ -257,40 +252,45 @@
 #include "zswcfactory.h"
 #include "biocytin/zbiocytinprojmaskfactory.h"
 #include "zsleeper.h"
-#include "dvid/zdvidtileensemble.h"
-#include "dvid/zdvidsynapse.h"
-#include "dvid/zdvidsynapseensenmble.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "zlinesegmentobject.h"
 #include "mvc/zstackmvc.h"
 //#include "misc/zstackyzmvc.h"
 #include "dvid/zdvidlabelslice.h"
-#include "flyem/zflyemproofmvc.h"
-#include "flyem/zflyemorthomvc.h"
-#include "flyem/zflyemorthodoc.h"
-#include "flyem/zflyemorthowindow.h"
-#include "flyem/zneutuservice.h"
-#include "zdvidutil.h"
-#include "flyem/zflyemroiproject.h"
-#include "dvid/libdvidheader.h"
+
 #include "dialogs/zflyemsplituploadoptiondialog.h"
-#include "flyem/zflyemmisc.h"
-#include "flyem/dialogs/flyembodyannotationdialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
-#include "flyem/zdvidtileupdatetaskmanager.h"
+
 #include "zflyemutilities.h"
-#include "dvid/zdvidgrayslice.h"
 #include "dialogs/zcomboeditdialog.h"
-#include "dvid/zdvidneurontracer.h"
 #include "zlocalneuroseg.h"
 #include "dialogs/zflyembodycomparisondialog.h"
-#include "dvid/zdvidsparsestack.h"
 #include "zstackwriter.h"
 #include "zstackreader.h"
-#include "dvid/zdvidpath.h"
-#include "flyem/zstackwatershedcontainer.h"
-#include "flyem/zserviceconsumer.h"
+
 #include "qt/network/znetworkutils.h"
+#include "zdvidutil.h"
+#include "dvid/libdvidheader.h"
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidpath.h"
+#include "dvid/zdvidtileensemble.h"
+#include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidsynapseensenmble.h"
+#include "dvid/zdvidtile.h"
+#include "dvid/zdvidtileinfo.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
+#include "dvid/zdvidinfo.h"
+#include "dvid/zdvidroi.h"
+#include "dvid/zdvidtargetfactory.h"
+#include "dvid/zdvidneurontracer.h"
+#include "dvid/zdvidgrayslice.h"
+#include "dvid/zdvidbodyhelper.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdvidstackblockfactory.h"
+#include "dvid/zdvidneurontracer.h"
+#include "dvid/zdvidglobal.h"
+#include "dvid/zdvidstacksource.h"
 
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
@@ -302,13 +302,9 @@
 #include "zstackobjectinfo.h"
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
-#include "flyem/zflyemarbmvc.h"
 #include "zmenuconfig.h"
-#include "flyem/zglobaldvidrepo.h"
-#include  "dvid/zdvidbodyhelper.h"
 #include "zmeshutils.h"
 #include "zarrayfactory.h"
-#include "dvid/zdvidstackblockfactory.h"
 #include "zstackblocksource.h"
 #include "neutuse/taskwriter.h"
 #include "neutuse/task.h"
@@ -318,10 +314,6 @@
 #include "service/neuprintreader.h"
 #include "zjsonparser.h"
 #include "zjsonobjectparser.h"
-#include "flyem/zflyembodystatus.h"
-#include "flyem/zflyembodyannotationprotocol.h"
-#include "flyem/zflyemroimanager.h"
-#include "flyem/flyemdatawriter.h"
 #include "widgets/zoptionlistwidget.h"
 #include "dialogs/neuprintquerydialog.h"
 #include "service/cypherquery.h"
@@ -330,16 +322,38 @@
 #include "logging/neuopentracing.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
-#include "dvid/zdvidneurontracer.h"
+#include "zsysteminfo.h"
+#include "neulib/core/utilities.h"
+#include "bigdata/zblockgrid.h"
+#include "imgproc/zfilestacksource.h"
+#include "movie/zimageframeshot.h"
+#include "movie/zfileseqmovieframewriter.h"
+
+#include "flyem/zglobaldvidrepo.h"
+#include "flyem/zflyemarbmvc.h"
+#include "flyem/zflyembodystatus.h"
+#include "flyem/zflyembodyannotationprotocol.h"
+#include "flyem/zflyemroimanager.h"
+#include "flyem/flyemdatawriter.h"
 #include "flyem/zflyemmeshfactory.h"
 #include "flyem/neuroglancer/zneuroglancerlayerspecfactory.h"
 #include "flyem/neuroglancer/zneuroglancerpath.h"
 #include "flyem/neuroglancer/zneuroglancerannotationlayerspec.h"
 #include "flyem/neuroglancer/zneuroglancerpathfactory.h"
 #include "flyem/neuroglancer/zneuroglancerpathparser.h"
-#include "zsysteminfo.h"
-#include "dvid/zdvidurl.h"
-//#include "neulib/core/utilities.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemorthomvc.h"
+#include "flyem/zflyemorthodoc.h"
+#include "flyem/zflyemorthowindow.h"
+#include "flyem/zneutuservice.h"
+#include "flyem/zstackwatershedcontainer.h"
+#include "flyem/zserviceconsumer.h"
+#include "flyem/zflyemroiproject.h"
+#include "flyem/zflyemmisc.h"
+#include "flyem/dialogs/flyembodyannotationdialog.h"
+#include "flyem/zdvidtileupdatetaskmanager.h"
+#include "flyem/zflyemarbdoc.h"
+#include "flyem/zflyemrandombodycolorscheme.h"
 
 #include "ext/http/HTTPRequest.hpp"
 
@@ -26478,7 +26492,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack grayscale;
   grayscale.load(GET_TEST_DATA_DIR + "/_system/diadem/diadem_e1.tif");
 
@@ -30815,10 +30829,16 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
   writer.setAdmin(true);
   writer.deleteSkeleton(1505851998);
+<<<<<<< HEAD
 
 #endif
 
 #if 1
+=======
+#endif
+
+#if 0
+>>>>>>> c4ba7deba817c45b2cbfd0f7d9e9f1ceadc2a5cd
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/_test.swc");
 
@@ -30830,6 +30850,742 @@ void ZTest::test(MainWindow *host)
   Swc_Tree_Label_Stack(tree.data(), stack->c_stack(), &workspace);
 
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+<<<<<<< HEAD
+=======
+#endif
+
+#if 0
+  double x = 0.0;
+  double y = 0.0;
+  double z = 0.0;
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  double r = 2.0;
+  Set_Local_Neuroseg(
+        locseg,  r + r, 0.0, NEUROSEG_DEFAULT_H, 0.0, 0.0, 0.0, 0.0, 1.0,
+        x, y, z);
+  Geo3d_Scalar_Field *field = Local_Neuroseg_Field_Sp(locseg, NULL, NULL);
+  Print_Geo3d_Scalar_Field(field);
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::MakeZeroStack(512, 512, 512);
+  double x = 10.0;
+  double y = 20.0;
+  double z = 30.0;
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  double r = 5.0;
+//  Set_Local_Neuroseg(
+//        locseg,  r, 0.1, NEUROSEG_DEFAULT_H, 1.0, 1.0, 0.0, 2.0, 3.0,
+//        x, y, z);
+
+  Set_Local_Neuroseg(
+        locseg,  r, 0.0, NEUROSEG_DEFAULT_H, 0.0, 0.0, 0.0, 0.0, 1.0,
+        x, y, z);
+
+  ZLocalNeuroseg s(locseg);
+
+  tic();
+  for (size_t i = 0; i < 10000; ++i) {
+    ZPointArray points = s.sample(1.0, 1.0);
+    for (const ZPoint &pt : points) {
+      stack->getIntValue(neutu::iround(pt.x()), neutu::iround(pt.y()),
+                         neutu::iround(pt.z()));
+    }
+  }
+  ptoc();
+//  points.print();
+
+//  ZSwcTree tree;
+//  tree.forceVirtualRoot();
+//  for (ZPoint pt : points) {
+//    SwcTreeNode::MakePointer(pt.x(), pt.y(), pt.z(), 0.1, tree.root());
+//  }
+
+//  tree.save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "http://127.0.0.1:1600?uuid=c315&segmentation=segmentation&"
+        "grayscale=grayscale");
+
+  ZFlyEmArbMvc *mvc = ZFlyEmArbMvc::Make(ZDvidEnv(target));
+  mvc->getCompleteDocument()->downloadBookmark();
+//  mvc->getCompleteDocument()->downloadBookmark();
+
+  /*
+  ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+  bookmark->setCenter(1232, 1117, 1023);
+  bookmark->setZScale(4);
+  mvc->getCompleteDocument()->addObject(bookmark);
+  */
+
+  ZArbSliceViewParam viewParam;
+  viewParam.setSize(1024, 1024);
+  viewParam.setCenter(1415, 1105, 1027);
+  ZPoint v1 = ZPoint(1, 1, 0);
+  ZPoint v2 = ZPoint(-1, 1, 0);
+
+  viewParam.setPlane(v1, v2);
+  mvc->show();
+  mvc->updateViewParam(viewParam);
+#endif
+
+#if 0
+  ZAffineRect rect;
+  rect.set(ZPoint(1, 2, 3), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+  std::cout << rect << std::endl;
+#endif
+
+#if 0
+  ZAffineRect rect;
+  rect.set(ZPoint(1, 2, 3), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+
+  ZCuboid box(1, 2, 3, 11, 22, 33);
+  std::cout << zgeom::Intersects(rect, box) << std::endl;
+
+  std::cout << neutu::ToString(rect) << std::endl;
+
+  rect.set(ZPoint(1, 2, 3), ZPoint(1, 0, 0), ZPoint(0, 1, 0), 10, 20);
+#endif
+
+#if 0
+  ZDvidNode node;
+  node.setHost("https://neuroglancer.janelia.org");
+  std::cout << node.getSourceString() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid.janelia.org", "a89e", -1);
+  target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.readGrayScaleLowtis(2610, 2354, 3197, 512, 512, 1);
+
+//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid2.janelia.org", "abdd", -1);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.readLabels64Lowtis(
+          17152, 22592, 19328, 1024, 1024, 1);
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->updateMaxLabelZoom();
+
+  ZDvidInfo dvidInfo =
+      reader->readDataInfo(reader->getDvidTarget().getSegmentationName());
+
+  std::set<uint64_t> bodySet = reader->readBodyId(
+        dvidInfo.getDataRange(), 2);
+  std::cout << bodySet.size() << std::endl;
+#endif
+
+#if 0
+  QColor color(int(1));
+  std::cout << color.red() << " " <<color.green() << " "
+            << color.blue() << " " << color.alpha() << std::endl;
+#endif
+
+#if 0
+  QColor color(Qt::red);
+  uint32_t code = 0;
+  tic();
+  for (int i = 0; i < 100000; ++i) {
+    code += ZColorScheme::GetIntCode(255, 0 ,0, 255);
+  }
+  ptoc();
+  std::cout << code << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZFlyEmRandomBodyColorScheme scheme;
+  int width = 1024;
+  int height = 1024;
+  uint32_t *dst = new uint32_t[width * height];
+
+  ZArray *array = reader->readLabels64Lowtis(
+        100, 100, 1000, width, height, 0, 256, 256, false);
+
+  tic();
+  for (int i = 0; i < 1; ++i) {
+    scheme.mapColor(
+          array->getDataPointer<uint64_t>(), dst, array->getElementNumber());
+  }
+  ptoc();
+
+  delete []dst;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->updateMaxGrayscaleZoom();
+
+  ZDvidLabelSlice *slice = new ZDvidLabelSlice();
+  slice->setDvidTarget(reader->getDvidTarget());
+  int z = 1024;
+  ZStackViewParam param;
+  param.setViewPort(0, 0, 1024, 1024);
+  for (int dz = 0; dz < 1000; ++dz) {
+    std::cout << z + dz << std::endl;
+//    ZStack *stack = ZStackFactory::MakeZeroStack(1024, 1024, 1);
+//    ZStack *stack = new ZStack(GREY, 1024, 1024, 1, 1);
+//    stack->setZero();
+//    ZStack *stack = reader->readGrayScaleLowtis(0, 0, z, 1024, 1024, 0, 256, 256, false);
+//    delete stack;
+
+//    ZArray *array = reader->readLabels64Lowtis(0, 0, z, 1024, 1024, 0, 256, 256, false);
+//    delete array;
+    param.setZ(z + dz);
+//    slice->consume(array, param, 0, 256, 256, false);
+//    slice->paintBuffer();
+
+    slice->_forceUpdate(param, false);
+//    Mc_Stack *stack = C_Stack::make(GREY, 1024, 1024, 1, 1);
+//    C_Stack::kill(stack);
+
+//    int *array = new int[1024*1024];
+//    bzero(array, 1024*1024*sizeof(int));
+//    delete []array;
+
+    std::cout << "Memory usage: " << flyem::GetMemoryUsage().toStdString() << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("vnc");
+  int z = 40896;
+  for (int dz = 0; dz < 1000; ++dz) {
+    std::cout << z + dz << std::endl;
+    ZStack *stack =
+        reader->readGrayScaleLowtis(0, 0, z + dz, 42944, 54837, 5, 256, 256, false);
+    delete stack;
+  }
+#endif
+
+#if 0
+//  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_cloud");
+//  reader->getDvidTarget().setUuid("abdd");
+
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid2.janelia.org", "abdd", -1);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+
+  auto response = reader.readKeyValues("neutu_merge_opr", "progress_a", "progress_z");
+  std::cout << response.size() << std::endl;
+
+  for (const auto &entry : response) {
+    ZJsonObject obj;
+    obj.decode(entry.constData());
+    obj.print();
+  }
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  ZObject3dScan obj = reader->readRoi("AL-DC3(R)");
+  ZStack *stack = obj.toStack(ZIntCuboid(0, 0, 0, 1087, 1279, 1343), 255);
+  stack->save(GET_TEST_DATA_DIR + "/AL-DC3(R).tif");
+#endif
+
+#if 0
+  ZStackObject *obj = new ZFlyEmBookmark;
+  ZStackObject *obj2 = obj->clone();
+
+  ZFlyEmBookmark bookmark;
+  ZFlyEmBookmark* obj3 = bookmark.clone();
+#endif
+
+#if 0
+  ZMesh mesh;
+  ZMeshIO meshIO;
+
+  meshIO.load(
+        (GET_TEST_DATA_DIR + "/_benchmark/mesh/1282274661.ngmesh").c_str(), mesh);
+
+  mesh.save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_cloud");
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "5813023304.ngmesh");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "5901310807.merge");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("https://hemibrain-dvid2.janelia.org", "793a", -1);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZMesh *mesh = reader.readMesh("segmentation_meshes", "1003672833.merge");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("hemi_8300");
+  std::cout << writer->getDvidTarget().toJsonObject().dumpString(2) << std::endl;
+
+  std::vector<uint64_t> bodyArray;
+  std::ifstream f(GET_TEST_DATA_DIR + "/bodyfix.txt");
+  std::string line;
+  while (std::getline(f, line)) {
+//    std::cout << line << std::endl;
+    std::vector<std::string> tokens = ZString::ToWordArray(line);
+    for (size_t i = 0; i < tokens.size(); ++i) {
+      if (tokens[i] == "as") {
+        std::cout << tokens[i + 1] << std::endl;
+        bodyArray.push_back(ZString(tokens[i + 1]).firstUint64());
+        break;
+      }
+    }
+  }
+
+  std::cout << bodyArray.size() << std::endl;
+
+  writer->mergeBody(79355095, bodyArray);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  std::vector<uint64_t> bodyArray =
+      reader->readConsistentMergedMeshKeys("390564398.merge");
+
+  std::cout << neutu::ToString(bodyArray, ", ") << std::endl;
+
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "390564398.merge");
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+  for (uint64_t bodyId : bodyArray) {
+    ZMesh *mesh = reader->readMesh(
+          "segmentation_meshes", std::to_string(bodyId) + ".ngmesh");
+    mesh->save(
+          GET_TEST_DATA_DIR + "/tmp/meshes/" + std::to_string(bodyId) + ".obj");
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi_cloud");
+  ZMesh *mesh = reader->readMesh("segmentation_meshes", "5813023304.ngmesh");
+
+  std::cout << "#Triangles: " << mesh->numTriangles() << std::endl;
+
+  auto meshList = mesh->getSplitMeshList(400000);
+  std::cout << meshList.size() << std::endl;
+
+  size_t ntr = 0;
+  size_t index = 0;
+  for (const auto &mesh : meshList) {
+    ntr += mesh->numTriangles();
+    mesh->save(GET_TEST_DATA_DIR + "/_test" + std::to_string(index++) + ".obj");
+  }
+
+  std::cout << "#Triangles (split): " << ntr << std::endl;
+#endif
+
+#if 0
+  ZMesh mesh;
+  mesh.load((GET_BENCHMARK_DIR + "/cube.obj").c_str());
+  mesh.printVertices();
+
+  auto meshList = mesh.getSplitMeshList(6);
+  std::cout << meshList.size() << std::endl;
+  std::cout << "#Triangles: " << mesh.numTriangles() << std::endl;
+
+  size_t ntr = 0;
+  size_t index = 0;
+  for (const auto &mesh : meshList) {
+    ntr += mesh->numTriangles();
+    mesh->save(GET_TEST_DATA_DIR + "/_test" + std::to_string(index++) + ".obj");
+    mesh->printVertices();
+  }
+
+  std::cout << "#Triangles (split): " << ntr << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("local_test");
+  writer->deleteMesh(5901278576);
+#endif
+
+#if 0
+  ZMesh mesh;
+  mesh.load((GET_BENCHMARK_DIR + "/cube.obj").c_str());
+  mesh.save((GET_TEST_DATA_DIR + "/cube.ngmesh").c_str());
+
+  ZMesh mesh2;
+  mesh2.load((GET_TEST_DATA_DIR + "/cube.ngmesh").c_str());
+#endif
+
+#if 0
+  try {
+//    http::Request request("http://emdata2.int.janelia.org:2018");
+
+    http::Request request("https://hemibrain-dvid2.janelia.org/api/repos/info");
+
+    http::Response response = request.send("GET");
+    std::string str(response.body.begin(), response.body.end());
+    std::cout << "Code: " << response.code << std::endl;
+    std::cout << response.code << " " << str << std::endl;
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidVersionDag dag = reader->readVersionDag();
+  dag.print();
+
+  ZDvidGlobal::Memo::ReadVersionDag(reader->getDvidTarget());
+
+  std::cout << ZDvidGlobal::Memo::ReadMaxLabelZoom(reader->getDvidTarget())
+            << std::endl;
+  std::cout << ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(reader->getDvidTarget())
+            << std::endl;
+#endif
+
+#if 0
+  ZBlockGrid grid;
+  grid.setGridSize(3, 3, 3);
+  grid.setBlockSize(32, 32, 32);
+
+  ZAffineRect rect;
+  rect.setCenter(16, 16, 16 + 32);
+  rect.setSize(100, 100);
+  rect.setPlane(ZPoint(0, 1, 0), ZPoint(0, 0, 1));
+
+  grid.forEachIntersectedBlock(rect, [&](int i, int j, int k) {
+    ZIntCuboid box = grid.getBlockBox(ZIntPoint(i, j, k));
+    std::cout << box.toString() << std::endl;
+  });
+#endif
+
+#if 0
+  host->startProofread("local_test");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidInfo dvidInfo = reader->readGrayScaleInfo();
+
+  ZNeuroglancerPath ngpath;
+  ngpath.addLayer(ZNeuroglancerLayerSpecFactory::MakeGrayscaleLayer(
+                    reader->getDvidTarget()));
+  ZNeuroglancerNavigation nav;
+  nav.setVoxelSize(dvidInfo.getVoxelResolution());
+  nav.setZoomScale2D(2.0);
+
+  ngpath.setNavigation(nav);
+
+  std::cout << ngpath.toJsonObject().dumpString(2) << std::endl;
+  std::cout << ngpath.getPath() << std::endl;
+  std::cout << QString(QUrl(ngpath.getPath().c_str()).toEncoded()).toStdString()
+            << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidSynapse s = reader->readSynapse(
+        ZIntPoint(1159, 1137, 1023), dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+  s.addTag("test");
+  s.updatePartner();
+  s.updatePartnerProperty(*reader);
+  ZDvidSynapse s2 = s;
+  std::cout << s2.toJsonObject().dumpString(2) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  reader->readLabelBlock(10, 10, 10, 0);
+
+  ZStack *stack = reader->readGrayScaleBlock(10, 10, 10, 0);
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+
+  delete stack;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+
+  ZStack *stack = reader->readGrayScale(
+        0, 0, 40896, 1141*32, 1817*32, 1, 5);
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+
+  delete stack;
+  /*
+  for (int k = 18; k < 21; ++k) {
+    for (int j = 10; j < 30; ++j) {
+      for (int i = 10; i < 30; ++i) {
+        std::cout << i << ", " << j << ", " << k << std::endl;
+        ZStack *stack = reader->readGrayScaleBlock(i, j, k, 5);
+        stack->printInfo();
+      }
+    }
+  }
+  */
+
+//  ZStack *stack = reader->readGrayScaleLowtis(12448, 11227, 10240, 10000, 10000, 5);
+//  ZStack *stack = reader->readGrayScaleBlock(0, 0, 40896/64/32, 5);
+  //1441x1817@0, 0, 40896; zoom=5
+//  reader->setGrayCenterCut(0, 0);
+//  reader->readGrayScaleLowtis(
+//        1141*24, 1817*24, 40896, 1141*8, 1817*8, 5);
+
+//  reader->readGrayScaleLowtis(
+//        1141*16, 1817*16, 40896, 1141*8, 1817*8, 5);
+
+//  reader->readGrayScaleLowtis(
+//        1141*16, 1817*16, 40896, 1141*8, 1817*8, 5);
+
+//  ZStackWriter writer;
+//  writer.write(GET_TEST_DATA_DIR + "/_test.tif", stack);
+
+//  delete stack;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZStack *stack = reader->readGrayScaleWithBlock(0, 0, 0, 512, 512, 1, 2);
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/_test2.tif", stack);
+
+  delete stack;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZStack *stack = ZStackFactory::MakeZeroStack(256, 256, 1);
+
+
+#endif
+
+#if 0
+  ZViewProj vp;
+  vp.setCanvasRect(QRect(0, 0, 10000, 10000));
+  vp.setWidgetRect(QRect(0, 0, 1024, 1024));
+  vp.move(5000, 5000, 512, 512);
+  vp.setZoom(0.2, ZViewProj::EReference::CENTER);
+//  vp.setZoomWithFixedPoint(0.1, QPoint(512, 512));
+  qDebug() << vp.getViewPort();
+#endif
+
+#if 0
+  ZFileStackSource source;
+  source.setUrl(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+
+  auto stack = source.getStack(ZIntCuboid(0, 0, 100, 249, 249, 100), 0);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  ZDvidStackSource source;
+  source.setDvidTarget(reader->getDvidTarget());
+
+  auto stack = source.getStack(ZIntCuboid(0, 0, 0, 1023, 1023, 1), 0);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZImageFrameShot fs(800, 800);
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  auto source = std::shared_ptr<ZDvidStackSource>(new ZDvidStackSource);
+  source->setDvidTarget(reader->getDvidTarget().getGrayScaleTarget());
+  fs.setStackSource(dynamic_pointer_cast<ZStackSource>(source));
+
+  int cx = 25234;
+  int cy = 20486;
+  int z0 = 17569;
+
+  auto viewport = fs.getViewport(cx, cy, 1024, 1024);
+
+  ZFileseqMovieFrameWriter writer;
+  writer.setPathPrefix(GET_TEST_DATA_DIR + "/tmp/movie2/test_");
+
+  ZStack decor;
+  decor.load(GET_TEST_DATA_DIR + "/tmp/face2.tif");
+
+  ZStack *alpha = decor.clone();
+  uint8_t *alphaArray = alpha->array8();
+  size_t v = alpha->getVoxelNumber();
+  int defaultAlpha = 127;
+  for (size_t i = 0; i < v; ++i) {
+    if (decor.getIntValue(i) > 230) {
+      alphaArray[i] = 0;
+    } else {
+      alphaArray[i] = defaultAlpha;
+    }
+  }
+
+  ZImage di(decor.width(), decor.height());
+  di.setCData(decor.array8(), alphaArray);
+//  di.setData(decor.array8());
+//  di.save((GET_TEST_DATA_DIR + "/tmp/face2.tif").c_str());
+
+  QImage image = fs.takeShot(viewport, z0 + 235);
+  QPainter painter(&image);
+  painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+  painter.drawImage(QPoint(80, 497), di);
+  writer.write(image, 235);
+
+#endif
+
+#if 0
+  ZImageFrameShot fs(800, 800);
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("hemi");
+  auto source = std::shared_ptr<ZDvidStackSource>(new ZDvidStackSource);
+  source->setDvidTarget(reader->getDvidTarget().getGrayScaleTarget());
+
+//  auto source = std::shared_ptr<ZFileStackSource>(new ZFileStackSource);
+//  source->setUrl(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+  fs.setStackSource(dynamic_pointer_cast<ZStackSource>(source));
+
+//  ZViewProj vp;
+//  vp.setCanvasRect(QRect(0, 0, 34284, 28804));
+//  vp.setWidgetRect(QRect(0, 0, 1024, 1024));
+//  vp.move(25234, 20486, 512, 512);
+//  (25667, 20757, 17569)
+
+  ZFileseqMovieFrameWriter writer;
+  writer.setPathPrefix(GET_TEST_DATA_DIR + "/tmp/movie2/test_");
+  double zoomRatio = 0.01;
+  int i = 0;
+  int cx = 25234;
+  int cy = 20486;
+  int z0 = 17569;
+  QRect viewport = fs.getViewport(cx, cy, zoomRatio);
+  bool skip = true;
+  while (viewport.width() > 1024) {
+//    vp.setZoom(zoomRatio, ZViewProj::EReference::CENTER);
+
+//    vp.print();
+    qDebug() << viewport.center();
+    if (skip) {
+      ++i;
+    } else {
+      QImage image = fs.takeShot(viewport, z0);
+      //  image.save(QString::fromStdString(GET_TEST_DATA_DIR + "/_test2.tif"));
+
+      writer.write(image, ++i);
+    }
+    zoomRatio *= 1.1;
+    viewport = fs.getViewport(cx, cy, zoomRatio);
+  }
+
+  viewport = fs.getViewport(cx, cy, 1024, 1024);
+//  vp.setZoom(1.0, ZViewProj::EReference::CENTER);
+
+
+  ZStack decor;
+  decor.load(GET_TEST_DATA_DIR + "/tmp/face.tif");
+  uint8_t *decorArray = decor.array8();
+
+  ZStack *alpha = decor.clone();
+  uint8_t *alphaArray = alpha->array8();
+  size_t v = alpha->getVoxelNumber();
+  for (size_t i = 0; i < v; ++i) {
+    decorArray[i] /= 2;
+  }
+  decor.save(GET_TEST_DATA_DIR + "/tmp/face3.tif");
+
+  QImage di;
+  di.load((GET_TEST_DATA_DIR + "/tmp/face.png").c_str());
+  skip = false;
+  while (i < 720) {
+    std::cout << "Frame " << i << std::endl;
+    int defaultAlpha = 0;
+    if (i > 280 && i < 290) {
+      defaultAlpha = 255 - std::abs(i - 285) * 15;
+    }
+
+    if (defaultAlpha > 0) {
+      QImage image = fs.takeShot(viewport, z0++);
+      /*
+      for (size_t i = 0; i < v; ++i) {
+        if (decorArray[i] > 110) {
+          alphaArray[i] = 0;
+        } else {
+          alphaArray[i] = defaultAlpha;
+        }
+      }
+
+      ZImage di(decor.width(), decor.height());
+      di.setCData(decor.array8(), alphaArray);
+      */
+      QPainter painter(&image);
+      painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+      painter.drawImage(QPoint(80, 497), di);
+      writer.write(image, ++i);
+    } else if (skip) {
+      ++i;
+      ++z0;
+    } else {
+      QImage image = fs.takeShot(viewport, z0++);
+      writer.write(image, ++i);
+    }
+  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+  ZDvidStackSource source;
+  source.setDvidTarget(reader->getDvidTarget());
+
+  //1408, 0, 1216
+//  int z0 = 40896 / 64;
+//  for (int z = z0; z < 64; ++z) {
+    auto stack =
+        source.getStack(ZIntCuboid(1047, 0, 1216, 1050, 2, 1217), 5);
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+//  }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("cns2");
+  reader->updateMaxLabelZoom();
+  ZObject3dScan obj;
+  reader->readBody(
+        6733325345, neutu::EBodyLabelType::SUPERVOXEL, 1, ZIntCuboid(), true,
+        &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/_test.sobj");
+  ZObject3dScan obj2;
+  obj2.load(GET_TEST_DATA_DIR + "/_test2.sobj");
+
+  obj.unify(obj2);
+
+  obj.save(GET_TEST_DATA_DIR + "/nBreak-v1.sobj");
+>>>>>>> c4ba7deba817c45b2cbfd0f7d9e9f1ceadc2a5cd
 #endif
 
   std::cout << "Done." << std::endl;

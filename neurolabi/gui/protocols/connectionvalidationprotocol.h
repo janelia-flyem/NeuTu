@@ -89,6 +89,7 @@ private:
     void saveState();
     void showMessage(QString title, QString message);
     void showError(QString title, QString message);
+    void showCompleteMessage();
     void loadPoints(QJsonArray array);
     void setSitesHeaders(QStandardItemModel *model);
     void clearSitesTable();
@@ -101,6 +102,7 @@ private:
     int findFirstUnreviewed();
     int findNextUnreviewed();
     void setCurrentReviewed();
+    void presentTask(int index);
 
     void updateLabels();
     void updateCurrentLabel();
@@ -108,6 +110,7 @@ private:
     void updateCheckBoxes();
     void updateComment();
     void updateTable();
+
 };
 
 #endif // CONNECTIONVALIDATIONPROTOCOL_H

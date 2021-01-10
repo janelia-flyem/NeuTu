@@ -175,7 +175,7 @@ ZFlyEmBookmarkView* FlyEmProofControlForm::getAssignedBookmarkView() const
 }
 
 static QAction* CreateColorAction(ZFlyEmBodyColorOption::EColorOption option,
-                                  QWidget *parent)
+                                  QObject *parent)
 {
   QAction *action =
       new QAction(ZFlyEmBodyColorOption::GetColorMapName(option), parent);
@@ -188,23 +188,29 @@ void FlyEmProofControlForm::createColorMenu()
 {
   QMenu *colorMenu = m_mainMenu->addMenu("Color Map");
   QActionGroup *colorActionGroup = new QActionGroup(this);
-  QAction *normalColorAction = CreateColorAction(
-          ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, this);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, colorActionGroup);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_RANDOM, colorActionGroup);
 
   m_nameColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_NAME, this);
+        ZFlyEmBodyColorOption::BODY_COLOR_NAME, colorActionGroup);
   m_nameColorAction->setEnabled(false);
 
-  QAction *sequencerColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, this);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, colorActionGroup);
 
-  QAction *protocolColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, this);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL, colorActionGroup);
 
-  colorActionGroup->addAction(normalColorAction);
-  colorActionGroup->addAction(m_nameColorAction);
-  colorActionGroup->addAction(sequencerColorAction);
-  colorActionGroup->addAction(protocolColorAction);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, colorActionGroup);
+
+//  colorActionGroup->addAction(normalColorAction);
+//  colorActionGroup->addAction(m_nameColorAction);
+//  colorActionGroup->addAction(sequencerColorAction);
+//  colorActionGroup->addAction(sequencerNormalColorAction);
+//  colorActionGroup->addAction(protocolColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addActions(colorActionGroup->actions());

@@ -452,7 +452,7 @@ void ZObject3d::exportCsvFile(string filePath)
   fclose(fp);
 }
 
-ZObject3d* ZObject3d::clone() const
+ZObject3d *ZObject3d::clone() const
 {
   ZObject3d *obj = new ZObject3d();
 
@@ -994,8 +994,8 @@ void ZObject3d::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     if (!isEmpty()) {
-      box->setFirstCorner(getX(0), getY(0), getZ(0));
-      box->setLastCorner(getX(0), getY(0), getZ(0));
+      box->setMinCorner(getX(0), getY(0), getZ(0));
+      box->setMaxCorner(getX(0), getY(0), getZ(0));
       box->set(getX(0), getY(0), getZ(0), getX(0), getY(0), getZ(0));
     }
     for (size_t i = 1; i < size(); i++) {
@@ -1006,12 +1006,20 @@ void ZObject3d::boundBox(ZIntCuboid *box) const
   }
 }
 
-ZIntCuboid ZObject3d::getBoundBox() const
+ZIntCuboid ZObject3d::getIntBoundBox() const
 {
   ZIntCuboid cuboid;
   boundBox(&cuboid);
 
   return cuboid;
+}
+
+ZCuboid ZObject3d::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getIntBoundBox());
+
+  return box;
 }
 
 ZIntPoint ZObject3d::getCentralVoxel() const

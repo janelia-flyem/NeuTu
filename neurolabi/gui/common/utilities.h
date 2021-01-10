@@ -4,8 +4,11 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <cmath>
 #include <functional>
+
+#include "neulib/core/utilities.h"
 
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
@@ -48,32 +51,6 @@ std::ostream& operator << (
 }
 
 template<typename T>
-struct ToUnsignedType {
-};
-
-template<>
-struct ToUnsignedType<int>
-{
-  using type = unsigned int;
-};
-
-template<>
-struct ToUnsignedType<int64_t>
-{
-  using type = uint64_t;
-};
-
-template <typename T>
-typename ToUnsignedType<T>::type UnsignedCrop(const T &v)
-{
-  if (v < 0) {
-    return typename ToUnsignedType<T>::type(0);
-  }
-
-  return typename ToUnsignedType<T>::type(v);
-}
-
-template<typename T>
 void assign(T *out, const T &v);
 
 template<typename T>
@@ -108,12 +85,40 @@ int numDigits(T number)
 }
 
 bool HasEnv(const std::string &name, const std::string &value);
+std::string GetEnv(const std::string &name);
 
 std::string GetVersionString();
 
 uint64_t GetTimestamp();
 
 std::string ToString(const void *p);
+
+template<typename T>
+std::string ToString(const T &v)
+{
+  std::ostringstream stream;
+  stream << v;
+  return stream.str();
+}
+
+
+template<template<class...> class Container, typename T>
+std::string ToString(const Container<T> &container, const std::string &delimiter)
+{
+  std::string result = "";
+
+  typename Container<T>::const_iterator iter = container.begin();
+  if (iter != container.end()) {
+    result = ToString(*iter);
+    ++iter;
+  }
+
+  for (; iter != container.end(); ++iter) {
+    result += delimiter + ToString(*iter);
+  }
+
+  return result;
+}
 
 bool UsingLocalHost(const std::string &url);
 
@@ -160,6 +165,7 @@ inline bool WithinCloseRange(const T &x, const T &minv, const T &maxv)
   return (x >= minv) && (x <= maxv);
 }
 
+/*
 template<typename T>
 inline T ClipValue(const T &v, const T &lower, const T&upper)
 {
@@ -183,6 +189,7 @@ inline bool ClipRange(const T &lower, const T&upper, T &x0, T &x1)
 
   return false;
 }
+*/
 
 /*!
  * \brief Process partitions of a range

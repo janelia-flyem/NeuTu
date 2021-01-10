@@ -1808,7 +1808,7 @@ void Z3DVolumeFilter::readSparseVolume(const ZStackDoc* doc, std::vector<std::un
 //  }
 
 
-  ZIntCuboid dataBox = obj.getBoundBox();
+  ZIntCuboid dataBox = obj.getIntBoundBox();
   ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(dataBox);
 //      misc::getDsIntvFor3DVolume(doc->getStack()->getBoundBox());
 

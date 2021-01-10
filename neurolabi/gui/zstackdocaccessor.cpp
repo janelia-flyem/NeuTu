@@ -7,6 +7,8 @@
 #include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
 #include "neutubeconfig.h"
+#include "dvid/zdvidannotation.h"
+#include "dvid/zdvidsynapseensenmble.h"
 
 ZStackDocAccessor::ZStackDocAccessor()
 {
@@ -245,6 +247,24 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, const QList<ZStackObject *> &o
   }
 }
 
+void ZStackDocAccessor::UpdateSynapseDefaultRadius(
+    ZStackDoc *doc, double preRadius, double postRadius)
+{
+  ZDvidAnnotation::DEFAULT_PRE_SYN_RADIUS = preRadius;
+  ZDvidAnnotation::DEFAULT_POST_SYN_RADIUS = postRadius;
+  {
+    QMutex *mutex = doc->getObjectGroup().getMutex();
+    QMutexLocker locker(mutex);
+    QList<ZDvidSynapseEnsemble*> seList =
+        doc->getObjectList<ZDvidSynapseEnsemble>(nullptr);
+    for (ZDvidSynapseEnsemble *se : seList) {
+      se->updateRadius();
+      doc->bufferObjectModified(se);
+    }
+  }
+  doc->processObjectModified();
+}
+
 //Parse watershed results
 //Each region will be assigned an ID for finding mesh correspondence
 void ZStackDocAccessor::ParseWatershedContainer(
@@ -271,6 +291,7 @@ void ZStackDocAccessor::ParseWatershedContainer(
   }
 }
 
+/*
 void ZStackDocAccessor::UpdateSplitResult(
     ZStackDoc *doc, const QList<ZObject3dScan *> &result)
 {
@@ -282,9 +303,10 @@ void ZStackDocAccessor::UpdateSplitResult(
     ConsumeSplitResult(doc, sa);
   }
 }
+*/
 
 void ZStackDocAccessor::ConsumeSplitResult(
-    ZStackDoc *doc, ZObject3dScanArray *result)
+    ZStackDoc *doc, ZObject3dScanArray *result, bool invalidatingSplit)
 {
   if (doc) {
     doc->getDataBuffer()->addUpdate([=]() {
@@ -301,7 +323,7 @@ void ZStackDocAccessor::ConsumeSplitResult(
 #endif
 
       doc->setSegmentationReady(true);
-      doc->notifySegmentationUpdated();
+      doc->notifySegmentationUpdated(invalidatingSplit);
     });
     doc->getDataBuffer()->deliver();
   }

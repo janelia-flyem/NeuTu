@@ -177,11 +177,20 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
                 m_view, SLOT(paintObject()), Qt::AutoConnection);
+  /*
   connectAction(
         m_doc.get(), SIGNAL(objectSelectionChanged(
                               QList<ZStackObject*>,QList<ZStackObject*>)),
         m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)),
         Qt::AutoConnection);
+        */
+  connectAction(m_doc.get(),
+                SIGNAL(objectSelectionChanged(
+                         const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
+                m_view,
+                SLOT(paintObject(
+                       const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
+                Qt::AutoConnection);
   connectAction(m_doc.get(),
                 SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
                 m_view, SLOT(paintObject()), Qt::AutoConnection);
@@ -201,7 +210,7 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
   connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
                 m_view, SLOT(updateViewBox()), Qt::QueuedConnection);
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObjectInfoSet)),
-                m_presenter, SLOT(processObjectModified(ZStackObjectInfoSet)),
+                this, SLOT(processObjectModified(ZStackObjectInfoSet)),
                 Qt::AutoConnection);
 }
 
@@ -422,7 +431,7 @@ void ZStackMvc::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(neutu::GetFilePath(url).toStdString())) {
+    if (ZFileType::IsImageFile(neutu::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -446,6 +455,12 @@ void ZStackMvc::saveStack()
       }
     }
   }
+}
+
+void ZStackMvc::processObjectModified(const ZStackObjectInfoSet &objSet)
+{
+  getPresenter()->processObjectModified(objSet);
+//  getView()->paintObject(objSet.getTarget());
 }
 
 #if 0

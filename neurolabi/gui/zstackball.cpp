@@ -11,6 +11,7 @@
 
 #include "common/math.h"
 #include "geometry/zintpoint.h"
+#include "geometry/zcuboid.h"
 #include "zpainter.h"
 
 ZStackBall::ZStackBall()
@@ -80,6 +81,14 @@ void ZStackBall::setCenter(const ZIntPoint &center)
 //#endif
 //}
 
+ZCuboid ZStackBall::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getCenter() - getRadius(), getCenter() + getRadius());
+
+  return box;
+}
+
 bool ZStackBall::display(
     QPainter *painter, int z, EDisplayStyle option, EDisplaySliceMode sliceMode,
     neutu::EAxis sliceAxis) const
@@ -92,7 +101,7 @@ bool ZStackBall::display(
     slice = 0;
   }
 
-  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_PROJECTION) {
+  if (sliceMode == EDisplaySliceMode::PROJECTION) {
     slice = -1;
   }
 
@@ -101,6 +110,35 @@ bool ZStackBall::display(
   zp.detachPainter();
 
   return zp.isPainted();
+}
+
+bool ZStackBall::isSliceVisible(
+    int z, neutu::EAxis axis, const ZAffinePlane &plane) const
+{
+  if (axis == neutu::EAxis::ARB) {
+    ZStackBall alignedBall = *this;
+    alignedBall.setCenter(plane.align(getCenter()));
+//    alignedBall.setZScale(m_zScale);
+    return alignedBall.isSliceVisible(0, neutu::EAxis::Z);
+  } else {
+    return isSliceVisible(z, axis);
+  }
+}
+
+void ZStackBall::display(
+    ZPainter &painter, const DisplayConfig &config) const
+{
+#if _QT_GUI_USED_
+  if (config.sliceAxis == neutu::EAxis::ARB) {
+    ZStackBall alignedBall = *this;
+    alignedBall.setCenter(config.cutPlane.getAffinePlane().align(getCenter()));
+    DisplayConfig newConfig = config;
+    newConfig.sliceAxis = neutu::EAxis::Z;
+    alignedBall.display(painter, newConfig);
+  } else {
+    ZStackObject::display(painter, config);
+  }
+#endif
 }
 
 void ZStackBall::display(ZPainter &painter, int slice,

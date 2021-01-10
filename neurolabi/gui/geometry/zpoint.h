@@ -28,6 +28,11 @@ public:
   inline void set(const ZPoint &pt) {
     set(pt.x(), pt.y(), pt.z());
   }
+
+  inline void set(double v) {
+    set(v, v, v);
+  }
+
   inline double x() const { return m_x; }
   inline double y() const { return m_y; }
   inline double z() const { return m_z; }
@@ -155,8 +160,15 @@ public:
 
   double getSliceCoord(neutu::EAxis axis) const;
 
+  void invalidate();
+  bool isValid() const;
+
 public:
   const static double MIN_DIST;
+  const static ZPoint INVALID_POINT;
+
+private:
+  static ZPoint InvalidPoint();
 
 private:
   double m_x;

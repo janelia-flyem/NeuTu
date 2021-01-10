@@ -31,15 +31,18 @@ ZFlyEmBookmark::~ZFlyEmBookmark()
 void ZFlyEmBookmark::init()
 {
   m_type = GetType();
+  setTarget(ETarget::WIDGET_CANVAS);
 
   m_bodyId = 0;
   m_bookmarkType = EBookmarkType::LOCATION;
   m_isChecked = false;
   setCustom(false);
-//  m_bookmarkRole = ROLE_ASSIGNED;
+
   m_isInTable = true;
 
-  m_visualEffect = neutu::display::Sphere::VE_DOT_CENTER;
+  addVisualEffect(neutu::display::Sphere::VE_DOT_CENTER |
+                  neutu::display::Sphere::VE_OUT_FOCUS_DIM);
+//  m_visualEffect = neutu::display::Sphere::VE_DOT_CENTER;
   setColor(255, 0, 0);
   setRadius(5.0);
 //  setHittable(false);
@@ -65,6 +68,11 @@ void ZFlyEmBookmark::print() const
 {
   std::cout << "Body ID: " << m_bodyId << std::endl;
   std::cout << "Location: " << getLocation().toString() << std::endl;
+}
+
+ZFlyEmBookmark *ZFlyEmBookmark::clone() const
+{
+  return new ZFlyEmBookmark(*this);
 }
 
 QString ZFlyEmBookmark::getDvidKey() const
@@ -389,6 +397,7 @@ void ZFlyEmBookmark::setLocation(const ZIntPoint &pt)
   setLocation(pt.getX(), pt.getY(), pt.getZ());
 }
 
+/*
 ZFlyEmBookmark* ZFlyEmBookmark::clone() const
 {
   ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
@@ -396,5 +405,6 @@ ZFlyEmBookmark* ZFlyEmBookmark::clone() const
 
   return bookmark;
 }
+*/
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZFlyEmBookmark)

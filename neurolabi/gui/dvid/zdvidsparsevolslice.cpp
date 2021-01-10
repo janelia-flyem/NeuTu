@@ -140,7 +140,7 @@ void ZDvidSparsevolSlice::forceUpdate(
   if ((!ignoringHidden) || isVisible()) {
     QRect viewPort = viewParam.getViewPort();
     ZIntCuboid box;
-    box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
+    box.setMinCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
     box.setSize(viewPort.width(), viewPort.height(), 1);
 
     box.shiftSliceAxisInverse(m_sliceAxis);

@@ -1,9 +1,12 @@
 #include "zstackobjectsourcefactory.h"
 
 #include <iostream>
+
+#include "neulib/core/stringbuilder.h"
+
 #include "zstring.h"
 #include "zstackobjectsource.h"
-#include "common/zstringbuilder.h"
+//#include "common/zstringbuilder.h"
 
 ZStackObjectSourceFactory::ZStackObjectSourceFactory()
 {
@@ -87,9 +90,9 @@ std::string ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(uint64_t bodyId
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
     uint64_t bodyId, int zoom)
 {
-  std::string source = ZStringBuilder("#.FlyEmBody#").append(bodyId);
+  std::string source = neulib::StringBuilder("#.FlyEmBody#").append(bodyId);
   if (zoom > 0) {
-    source = ZStringBuilder(source).append("_").append(zoom);
+    source = neulib::StringBuilder(source).append("_").append(zoom);
   }
   /*
   ZString source = "#.FlyEmBody#";

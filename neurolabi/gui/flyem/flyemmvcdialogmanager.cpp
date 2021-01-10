@@ -8,6 +8,8 @@
 #include "zdialogfactory.h"
 
 #include "zflyemproofmvc.h"
+#include "service/neuprintreader.h"
+#include "dvid/zdvidannotation.h"
 
 #include "dialogs/flyemtododialog.h"
 #include "dialogs/zdvidtargetproviderdialog.h"
@@ -30,6 +32,7 @@
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/tipdetectordialog.h"
+#include "dialogs/zsynapsepropertydialog.h"
 //#include "dialogs/zstackviewrecorddialog.h"
 
 /** Implementation details
@@ -40,7 +43,12 @@
  */
 
 FlyEmMvcDialogManager::FlyEmMvcDialogManager(ZFlyEmProofMvc *parent) :
+  QObject(parent),
   m_parent(parent)
+{
+}
+
+FlyEmMvcDialogManager::~FlyEmMvcDialogManager()
 {
 }
 
@@ -271,33 +279,27 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(
   return dlg;
 }
 
+void FlyEmMvcDialogManager::detachBodyInfoDlg()
+{
+  m_bodyInfoDlg = nullptr;
+}
+
+void FlyEmMvcDialogManager::detachBodyQueryDlg()
+{
+  m_bodyQueryDlg = nullptr;
+}
+
+void FlyEmMvcDialogManager::detachNeuprintBodyDlg()
+{
+  m_neuprintBodyDlg = nullptr;
+}
+
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
 {
   if (isNull(m_bodyInfoDlg)) {
     KINFO << "Creating sequencer dialog";
     m_bodyInfoDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::SEQUENCER, false);
-
-/*
-    m_bodyInfoDlg = new FlyEmBodyInfoDialog(
-          FlyEmBodyInfoDialog::EMode::SEQUENCER, m_parent);
-    m_bodyInfoDlg->setNeuprintDataset(m_neuprintDataset);
-
-    QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-                     m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
-                     m_parent, SLOT(locateBody(uint64_t)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
-                     m_parent, SLOT(addLocateBody(uint64_t)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
-                     m_parent, SLOT(selectBody(QList<uint64_t>)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
-                     m_parent, SLOT(prepareBodyMap(ZJsonValue)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
-                     m_parent, SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
-                     m_parent, SLOT(zoomTo(int,int,int)));
-                     */
-
+    connect(m_bodyInfoDlg, SIGNAL(destroyed()), this, SLOT(detachBodyInfoDlg()));
   }
 
   return m_bodyInfoDlg;
@@ -312,6 +314,31 @@ TipDetectorDialog* FlyEmMvcDialogManager::getTipDetectorDlg() {
     return m_tipDetectorDlg;
 }
 
+ZSynapsePropertyDialog* FlyEmMvcDialogManager::getSynpasePropertyDlg()
+{
+  if (createIfNecessary(m_synapseDlg)) {
+    m_synapseDlg->setRadius(ZDvidAnnotation::DEFAULT_PRE_SYN_RADIUS,
+                            ZDvidAnnotation::DEFAULT_POST_SYN_RADIUS);
+    connect(m_synapseDlg, SIGNAL(synapseRadiusChanged(double, double)),
+            m_parent, SLOT(updateSynapseDefaultRadius(double, double)));
+  }
+
+  return m_synapseDlg;
+}
+
+void FlyEmMvcDialogManager::Show(QDialog *dlg)
+{
+  if (dlg) {
+    dlg->show();
+    dlg->raise();
+  }
+}
+
+void FlyEmMvcDialogManager::showSynpasePropertyDlg()
+{
+  Show(getSynpasePropertyDlg());
+}
+
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
 {
   if (isNull(m_bodyQueryDlg)) {
@@ -319,6 +346,8 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
     m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY, true);
     QObject::connect(m_bodyQueryDlg, SIGNAL(refreshing()),
             m_parent, SLOT(showBodyConnection()));
+    connect(m_bodyQueryDlg, SIGNAL(destroyed()),
+            this, SLOT(detachBodyQueryDlg()));
   }
 
   return m_bodyQueryDlg;
@@ -327,35 +356,44 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
 {
   if (isNull(m_neuprintBodyDlg)) {
-    getNeuprintSetupDlg()->exec();
-    m_neuprintDataset = getNeuprintSetupDlg()->getDataset().toStdString();
-    neutu::EServerStatus status = m_parent->getNeuPrintStatus();
+    if (getNeuprintSetupDlg()->exec()) {
+      std::unique_ptr<NeuPrintReader> reader =
+          getNeuprintSetupDlg()->takeNeuPrintReader();
 
-    switch (status) {
-    case neutu::EServerStatus::NORMAL:
-      m_neuprintBodyDlg = makeBodyInfoDlg(
-            FlyEmBodyInfoDialog::EMode::NEUPRINT, true);
-      m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
-      break;
-    case neutu::EServerStatus::NOSUPPORT:
-      ZDialogFactory::Error(
-            "NeuPrint Not Supported",
-            "Cannot use NeuPrint because this dataset is not supported by the server.",
-            m_parent);
-      break;
-    case neutu::EServerStatus::NOAUTH:
-      ZDialogFactory::Error(
-            "NeuPrint Not Authorized",
-            "Cannot use NeuPrint because the token is not accepted.",
-            m_parent);
-      break;
-    case neutu::EServerStatus::OFFLINE:
-      ZDialogFactory::Error(
-            "NeuPrint Not Connected",
-            "Cannot use NeuPrint because the server cannot be connected.",
-            m_parent);
-      break;
-    }
+      if (reader) {
+        neutu::EServerStatus status = reader->getStatus();
+//      m_neuprintDataset = getNeuprintSetupDlg()->getDataset().toStdString();
+        //      neutu::EServerStatus status = m_parent->getNeuPrintStatus();
+
+        switch (status) {
+        case neutu::EServerStatus::NORMAL:
+          m_neuprintBodyDlg = makeBodyInfoDlg(
+                FlyEmBodyInfoDialog::EMode::NEUPRINT, true);
+          m_neuprintBodyDlg->setNeuPrintReader(std::move(reader));
+          connect(m_neuprintBodyDlg, SIGNAL(destroyed()),
+                  this, SLOT(detachNeuprintBodyDlg()));
+          //        m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
+          break;
+        case neutu::EServerStatus::NOSUPPORT:
+          ZDialogFactory::Error(
+                "NeuPrint Not Supported",
+                "Cannot use NeuPrint because this dataset is not supported by the server.",
+                m_parent);
+          break;
+        case neutu::EServerStatus::NOAUTH:
+          ZDialogFactory::Error(
+                "NeuPrint Not Authorized",
+                "Cannot use NeuPrint because the token is not accepted.",
+                m_parent);
+          break;
+        case neutu::EServerStatus::OFFLINE:
+          ZDialogFactory::Error(
+                "NeuPrint Not Connected",
+                "Cannot use NeuPrint because the server cannot be connected.",
+                m_parent);
+          break;
+        }
+      }
 
     /*
     neutu::EServerStatus status = m_parent->getNeuPrintStatus();
@@ -381,6 +419,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
       break;
     }
     */
+    }
   }
 
   return m_neuprintBodyDlg;

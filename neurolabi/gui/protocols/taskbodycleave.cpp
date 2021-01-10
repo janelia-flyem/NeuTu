@@ -34,6 +34,7 @@
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
 #include "zdialogfactory.h"
+#include "zglobal.h"
 
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
@@ -1625,22 +1626,18 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   if (m_bodyDoc->usingOldMeshesTars()) {
     requestJson["mesh-instance"] =
         ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   } else {
     requestJson["mesh-instance"] =
         ZDvidData::GetName(ZDvidData::ERole::TAR_SUPERVOXELS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   }
 
   requestJson["request-number"] = int(requestNumber);
 
-  // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
-  if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
-    server = serverOverride;
-  }
+  QString server = ZGlobal::GetInstance().getCleaveServer();
 
   QUrl url(server);
   QNetworkRequest request(url);

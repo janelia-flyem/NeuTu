@@ -29,7 +29,7 @@ ZJsonObject ZNeuroglancerPathParser::ParseDataSpec(const QString &url)
 
   if (dataString.startsWith(ZNeuroglancerPath::DATA_START_TAG)) {
     dataString = dataString.mid(strlen(ZNeuroglancerPath::DATA_START_TAG));
-    obj.decode(dataString.toStdString());
+    obj.decode(dataString.toStdString(), true);
   }
 
   return obj;

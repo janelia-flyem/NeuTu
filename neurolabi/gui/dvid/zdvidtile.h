@@ -24,7 +24,7 @@ class ZDvidTile : public ZStackObject
 {
 public:
   ZDvidTile();
-  ~ZDvidTile();
+  ~ZDvidTile() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::DVID_TILE;
@@ -32,7 +32,7 @@ public:
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
   void clear();
 
   void update(int z);
@@ -72,7 +72,8 @@ public:
 
 //  void attachView(ZStackView *view);
 
-  ZRect2d getBoundBox() const;
+  ZCuboid getBoundBox() const override;
+//  ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
 //  void setImageData(const uint8_t *data, int width, int height);

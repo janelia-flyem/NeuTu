@@ -24,6 +24,8 @@ TEST(ZFlyEmBodyColorOption, Basic)
             ZFlyEmBodyColorOption::GetColorOption("Name"));
   ASSERT_EQ(ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER,
             ZFlyEmBodyColorOption::GetColorOption("Sequencer"));
+  ASSERT_EQ(ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL,
+            ZFlyEmBodyColorOption::GetColorOption("Sequencer+Normal"));
   ASSERT_EQ(ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL,
             ZFlyEmBodyColorOption::GetColorOption("Protocol"));
 

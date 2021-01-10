@@ -284,7 +284,7 @@ TEST(ZStack, Shape)
   stack.reshape(8, 4, 2);
 
   ZIntCuboid box2 = stack.getBoundBox();
-  ASSERT_EQ(ZIntPoint(1, 2, 3), box2.getFirstCorner());
+  ASSERT_EQ(ZIntPoint(1, 2, 3), box2.getMinCorner());
   ASSERT_EQ(8, box2.getWidth());
   ASSERT_EQ(4, box2.getHeight());
   ASSERT_EQ(2, box2.getDepth());

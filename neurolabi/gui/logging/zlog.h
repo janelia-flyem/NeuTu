@@ -138,6 +138,14 @@ public:
     Window(const std::string &value) : Tag("window", value) {}
   };
 
+  struct User: public Tag {
+    User(const std::string &value): Tag("user", value) {}
+  };
+
+  struct AnonymousUser: public User {
+    AnonymousUser(): User("****") {}
+  };
+
   ZLog& operator << (const Tag &tag);
   ZLog& operator << (const std::function<void(ZLog&)> f);
 
@@ -225,6 +233,11 @@ public:
 #define ZINFO KInfo(ZLog::EDestination::AUTO)
 #define ZWARN KWarn(ZLog::EDestination::AUTO)
 #define ZERROR KError(ZLog::EDestination::AUTO)
+#if defined(_DEBUG_)
+#  define ZDEBUG ZINFO
+#else
+#  define ZDEBUG if (1) {} else ZINFO
+#endif
 
 #if defined(_DEBUG_)
 #  define KDEBUG KLog()

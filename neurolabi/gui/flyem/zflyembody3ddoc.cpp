@@ -23,6 +23,7 @@
 #include "dvid/zdvidurl.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidlabelslice.h"
+#include "dvid/zdvidglobal.h"
 
 #include "zswcfactory.h"
 #include "zstackobjectsourcefactory.h"
@@ -508,10 +509,12 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
+/*
 bool ZFlyEmBody3dDoc::isAdmin() const
 {
   return getDataDocument()->isAdmin();
 }
+*/
 
 const ZFlyEmBodyAnnotationProtocal& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
 {
@@ -1328,6 +1331,64 @@ void ZFlyEmBody3dDoc::showMeshForSplitOnly(bool on)
   }
 }
 
+ZMesh* ZFlyEmBody3dDoc::getRoiMesh(const QString &name) const
+{
+  return getObject<ZMesh>(
+        ZStackObjectSourceFactory::MakeFlyEmRoiSource(name.toStdString()));
+
+}
+
+void ZFlyEmBody3dDoc::updateRoiMeshList(
+    const QList<QString> &nameList, const QList<bool> &visibleList,
+    const QList<QColor> &colorList)
+{
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+
+  for (int i = 0; i < nameList.size(); ++i) {
+    updateRoiMesh(nameList[i], visibleList[i], colorList[i]);
+  }
+
+  endObjectModifiedMode();
+
+  processObjectModified();
+}
+
+void ZFlyEmBody3dDoc::updateRoiMesh(
+    const QString &name, bool visible, const QColor &color)
+{
+  ZMesh *mesh = getRoiMesh(name);
+
+  if (mesh == nullptr) {
+    mesh = getDataDocument()->makeRoiMesh(name);
+    if (mesh) {
+      mesh->setVisible(visible);
+      if (color != mesh->getColor()) {
+        mesh->pushObjectColor(color);
+      }
+      addObject(mesh);
+    }
+  } else if (mesh) {
+    mesh->setVisible(visible);
+    if (color != mesh->getColor()) {
+      mesh->pushObjectColor(color);
+    }
+    processObjectModified(mesh);
+  }
+}
+
+/*
+void ZFlyEmBody3dDoc::updateRoiMesh(const QString &name)
+{
+  ZMesh *mesh = getRoiMesh(name);
+
+  if (mesh == nullptr) {
+    mesh = getDataDocument()->makeRoiMesh(name);
+    if (mesh) {
+      addObject(mesh);
+    }
+  }
+}
+*/
 
 void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
 {
@@ -2125,14 +2186,15 @@ void ZFlyEmBody3dDoc::addBodyFunc(ZFlyEmBodyConfig &config)
       tree = makeBodyModel(bodyId, config.getDsLevel(), bodyType);
     }
 
-//    int resLevel = config.getDsLevel();
-
     if (tree != NULL) {
       if (ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
             tree->getSource()) == flyem::EBodyType::SPHERE) {
         int resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
               tree->getSource());
         config.setDsLevel(resLevel);
+        if (ZStackObjectHelper::IsOverSize(*tree)) {
+          config.disableNextDsLevel();
+        }
       }
       notifyBodyUpdated(bodyId, config.getDsLevel());
     } else {
@@ -3546,11 +3608,10 @@ ZMesh* ZFlyEmBody3dDoc::readSupervoxelMesh(
 #endif
 
 ZMesh *ZFlyEmBody3dDoc::readMesh(
-    const ZDvidReader &reader, const ZFlyEmBodyConfig &config,
-    int *acturalMeshZoom)
+    const ZDvidReader &reader, ZFlyEmBodyConfig &config)
 {
   int zoom = config.getDsLevel();
-  *acturalMeshZoom = zoom;
+//  *acturalMeshZoom = zoom;
 
   ZMesh *mesh = NULL;
 
@@ -3567,7 +3628,8 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         }
       }
     }
-    *acturalMeshZoom = 0;
+    config.setDsLevel(0);
+//    *acturalMeshZoom = 0;
 
     return mesh;
   }
@@ -3576,13 +3638,52 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
     if (!isCoarseLevel(zoom)) {
       mesh = readSupervoxelMesh(reader, config.getBodyId());
       if (mesh != NULL) {
-        *acturalMeshZoom = 0;
+        config.setDsLevel(0);
+//        *acturalMeshZoom = 0;
       }
     }
   } else {
-    mesh = reader.readMesh(config.getBodyId(), zoom);
-    if (mesh != NULL) {
-      *acturalMeshZoom = zoom;
+    bool usingNgMesh = false; //Temporary fix: Disable ng mesh to avoid mesh inconsistency
+    if (!isCoarseLevel(zoom) && usingNgMesh) { //Skip coarse Level
+      //Checking order: merged mesh -> ngmesh -> normal mesh
+      std::string mergeKey =
+          ZDvidUrl::GetMeshKey(config.getBodyId(), ZDvidUrl::EMeshType::MERGED);
+      mesh = reader.readMesh(mergeKey);
+      if (mesh) {
+        config.setDsLevel(0);
+//        *acturalMeshZoom = 0;
+      } else {
+        //Skip ngmesh if the merge key exists but is broken
+        if (!reader.hasKey(getDvidTarget().getMeshName().c_str(), mergeKey.c_str())) {
+          mesh = reader.readMesh(
+                ZDvidUrl::GetMeshKey(config.getBodyId(), ZDvidUrl::EMeshType::NG));
+          if (mesh) {
+            config.setDsLevel(0);
+//            *acturalMeshZoom = 0;
+          } else {
+            mesh = reader.readMesh(
+                  ZDvidUrl::GetMeshKey(
+                    config.getBodyId(), zoom, ZDvidUrl::EMeshType::NG));
+          }
+        }
+      }
+
+      if (mesh == nullptr) {
+        mesh = reader.readMesh(config.getBodyId(), zoom);
+        /*
+        if (mesh != NULL) {
+          *acturalMeshZoom = zoom;
+        }
+        */
+      }
+    }
+  }
+
+  if (mesh && config.getDsLevel() > 0) {
+    ZIntCuboid box = reader.readBodyBoundBox(config.getBodyId());
+    if (ZStackObjectHelper::IsOverSize(box, zoom)) {
+      ZStackObjectHelper::SetOverSize(mesh);
+//      config.disableNextDsLevel();
     }
   }
 
@@ -3618,12 +3719,54 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         }
 //        helper.setLowresZoom(config.getLocalDsLevel());
 //        helper.setCoarse(true);
-        ZObject3dScanArray objArray = helper.readHybridBody(
-              config.getDecodedBodyId());
+        std::vector<std::shared_ptr<ZObject3dScan>> objArray =
+            helper.readHybridBody(config.getDecodedBodyId());
         ZMeshFactory mf;
         QElapsedTimer timer;
         timer.start();
         mesh = mf.makeMesh(objArray);
+
+        if (mesh && !config.isHybrid() &&
+            config.getLabelType() == neutu::EBodyLabelType::BODY) {
+          std::shared_ptr<ZMesh> meshClone(mesh->clone());
+          getDataDocument()->addUploadTask([=](ZDvidWriter &writer) {
+            {
+              QByteArray data = meshClone->writeToMemory("obj");
+              writer.writeDataToKeyValue(
+                    writer.getDvidTarget().getMeshName(),
+                    ZDvidUrl::GetMeshKey(config.getBodyId(), zoom), data);
+#ifdef _DEBUG_
+              std::cout << ZDvidUrl::GetMeshKey(config.getBodyId(), zoom)
+                        << " uploaded" << std::endl;
+#endif
+            }
+
+            {
+              ZDvidInfo info = writer.getDvidReader().readLabelInfo();
+              ZResolution res = info.getVoxelResolution();
+              double sx = res.getVoxelSize(neutu::EAxis::X, res.getUnit());
+              double sy = res.getVoxelSize(neutu::EAxis::Y, res.getUnit());
+              double sz = res.getVoxelSize(neutu::EAxis::Z, res.getUnit());
+              meshClone->scale(sx, sy, sz);
+              QByteArray data = meshClone->writeToMemory("ngmesh");
+              writer.writeDataToKeyValue(
+                    writer.getDvidTarget().getMeshName(),
+                    ZDvidUrl::GetMeshKey(
+                      config.getBodyId(), zoom, ZDvidUrl::EMeshType::NG), data);
+#ifdef _DEBUG_
+              std::cout << ZDvidUrl::GetMeshKey(
+                             config.getBodyId(), zoom, ZDvidUrl::EMeshType::NG)
+                        << " uploaded" << std::endl;
+#endif
+            }
+          });
+          /*
+          QByteArray data = mesh->writeToMemory("obj");
+          getDataDocument()->addUploadTask(
+                getWorkDvidReader().getDvidTarget().getMeshName(),
+                ZDvidUrl::GetMeshKey(config.getBodyId(), zoom), data);
+                */
+        }
 
         neutu::LogProfileInfo(
               timer.elapsed(),
@@ -3641,20 +3784,25 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
     }
   }
 
+  if (mesh) {
+    if (IsOverSize(mesh) && config.getDsLevel() <= 2) {
+      config.disableNextDsLevel();
+    }
+  }
+
   return mesh;
 }
 
-ZMesh *ZFlyEmBody3dDoc::readMesh(const ZFlyEmBodyConfig &config, int *actualMeshZoom)
+ZMesh *ZFlyEmBody3dDoc::readMesh(ZFlyEmBodyConfig &config)
 {
-  return readMesh(getWorkDvidReader(), config, actualMeshZoom);
+  return readMesh(getWorkDvidReader(), config);
 }
 
-ZMesh *ZFlyEmBody3dDoc::readMesh(
-    const ZDvidReader &reader, uint64_t bodyId, int zoom, int *acturalZoom)
+ZMesh *ZFlyEmBody3dDoc::readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom)
 {
   ZFlyEmBodyConfig config(bodyId);
   config.setDsLevel(zoom);
-  return readMesh(reader, config, acturalZoom);
+  return readMesh(reader, config);
 }
 
 namespace {
@@ -3752,7 +3900,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
 {
   std::vector<ZMesh*> result;
 
-  int zoom = config.getDsLevel();
+//  int zoom = config.getDsLevel();
 
   if (!config.isHybrid() && config.getBodyId() > 0) {
     result = getCachedMeshes(config.getBodyId(), config.getDsLevel());
@@ -3772,24 +3920,22 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(
                 config.getBodyId(), 0, flyem::EBodyType::MESH));
         mesh = dynamic_cast<ZMesh*>(obj);
+        if (mesh) {
+          config.setDsLevel(0);
+        }
       }
       if (mesh == NULL) {
-        mesh = readMesh(config, &zoom);
+        mesh = readMesh(config);
         if (mesh != NULL) {
           mesh->setLabel(config.getBodyId());
-          if (IsOverSize(mesh) && zoom <= 2) {
-            zoom = 0;
-          }       
         }
-      } else {
-        zoom = 0;
       }
       if (mesh != NULL) {
         uint64_t parentId = config.getBodyId();
         if (config.getLabelType() != neutu::EBodyLabelType::SUPERVOXEL) {
           parentId = decode(parentId);
         }
-        finalizeMesh(mesh, parentId, zoom, t);
+        finalizeMesh(mesh, parentId, config.getDsLevel(), t);
         result.push_back(mesh);
       }
     }
@@ -3916,6 +4062,11 @@ const ZDvidReader& ZFlyEmBody3dDoc::getMainDvidReader() const
   return m_mainDvidWriter.getDvidReader();
 }
 
+ZDvidWriter& ZFlyEmBody3dDoc::getMainDvidWriter()
+{
+  return m_mainDvidWriter;
+}
+
 const ZDvidReader& ZFlyEmBody3dDoc::getWorkDvidReader() const
 {
   if (!m_workDvidReaderIndices.hasLocalData()) {
@@ -3937,7 +4088,8 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
   m_dvidInfo.clear();
 
   if (getMainDvidReader().isReady()) {
-    m_dvidInfo = getMainDvidReader().readLabelInfo();
+//    m_dvidInfo = getMainDvidReader().readLabelInfo();
+    m_dvidInfo = ZDvidGlobal::Memo::ReadSegmentationInfo(getDvidTarget());
     setMaxDsLevel(zgeom::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {

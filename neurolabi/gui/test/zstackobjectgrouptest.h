@@ -389,10 +389,14 @@ TEST(ZStackObjectGroup, Selection) {
 
   objectGroup.resetSelector();
   objectGroup.setSelected(obj, true);
+  ASSERT_TRUE(obj->isSelected());
+  ASSERT_TRUE(objectGroup.hasSelected());
   ASSERT_TRUE(objectGroup.getSelector()->isInSelectedSet(obj));
   ASSERT_FALSE(objectGroup.getSelector()->isInDeselectedSet(obj));
 
   objectGroup.setSelected(obj, false);
+  ASSERT_FALSE(obj->isSelected());
+  ASSERT_FALSE(objectGroup.hasSelected());
   ASSERT_FALSE(objectGroup.getSelector()->isInSelectedSet(obj));
   ASSERT_FALSE(objectGroup.getSelector()->isInDeselectedSet(obj));
 

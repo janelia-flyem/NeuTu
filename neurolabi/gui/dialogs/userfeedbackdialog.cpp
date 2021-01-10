@@ -4,6 +4,8 @@
 
 #include "ui_userfeedbackdialog.h"
 
+#include "logging/zlog.h"
+
 UserFeedbackDialog::UserFeedbackDialog(QWidget *parent) :
   QDialog(parent),
   ui(new Ui::UserFeedbackDialog)
@@ -25,4 +27,27 @@ QString UserFeedbackDialog::getFeedback() const
 QString UserFeedbackDialog::getAction() const
 {
   return "complain";
+}
+
+bool UserFeedbackDialog::isAnonymous() const
+{
+  return ui->anonymousCheckBox->isChecked();
+}
+
+bool UserFeedbackDialog::send(
+    std::function<void(const QString&)> msgHandler) const
+{
+  QString fb = getFeedback();
+  if (!fb.isEmpty()) {
+    KLog() << ZLog::Feedback() << ZLog::Action(getAction().toStdString())
+           << ZLog::Description(fb.toStdString())
+           << (isAnonymous() ? ZLog::AnonymousUser() : ZLog::Tag());
+
+    msgHandler(isAnonymous() ? "Thank you for your anonymous feedback!" :
+                               "Thank you for your feedback!");
+
+    return true;
+  }
+
+  return false;
 }

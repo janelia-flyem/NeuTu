@@ -23,3 +23,8 @@ QString NeuprintDatasetDialog::getDataset() const
 {
   return ui->datasetComboBox->currentText();
 }
+
+void NeuprintDatasetDialog::setHintLabel(const QString &label)
+{
+  ui->hintLabel->setText(label);
+}

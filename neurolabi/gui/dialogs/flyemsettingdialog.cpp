@@ -4,6 +4,7 @@
 
 #include "ui_flyemsettingdialog.h"
 #include "neutubeconfig.h"
+#include "zdialogfactory.h"
 #include "flyem/flyemdef.h"
 
 FlyEmSettingDialog::FlyEmSettingDialog(QWidget *parent) :
@@ -115,6 +116,14 @@ void FlyEmSettingDialog::connectSignalSlot()
           this, SLOT(updateDefaultNeuTuServerChecked(bool)));
   connect(ui->defaultTaskServerCheckBox, SIGNAL(toggled(bool)),
           this, SLOT(updateDefaultTaskServerChecked(bool)));
+  connect(ui->configPushButton, SIGNAL(clicked()),
+          this, SLOT(onConfigPushButton()));
+}
+
+void FlyEmSettingDialog::onConfigPushButton()
+{
+  ui->configLineEdit->setText(
+        ZDialogFactory::GetOpenFileName("Config File", "", this));
 }
 
 bool FlyEmSettingDialog::usingDefaultConfig() const

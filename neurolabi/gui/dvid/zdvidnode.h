@@ -15,7 +15,7 @@ public:
   void clear();
 
   void set(const std::string &address, const std::string &uuid, int port = -1);
-  void setServer(const std::string &address);
+  void setHost(const std::string &address);
   void setUuid(const std::string &uuid);
   void setPort(int port);
 
@@ -53,9 +53,12 @@ public:
    */
   bool hasPort() const;
 
-  inline const std::string& getAddress() const {
-    return m_address;
+  inline const std::string& getHost() const {
+    return m_host;
   }
+
+  std::string getHostWithScheme() const;
+  std::string getRootUrl() const;
 
   /*!
    * \brief Get the address with port
@@ -99,6 +102,13 @@ public:
 
   /*!
    * \brief Load json object
+   *
+   * {
+   *   "scheme": ...
+   *   "address"/"host": ...
+   *   "port": ...
+   *   "uuid": ...
+   * }
    */
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
@@ -109,17 +119,21 @@ public:
   std::string getScheme() const;
   void setScheme(const std::string &scheme);
 
+  std::string getSchemePrefix() const;
+
 private:
-  std::string m_address;
+  std::string m_host;
   std::string m_uuid;
   std::string m_originalUuid;
   int m_port = -1;
   std::string m_scheme;
 //  bool m_isMocked = false; //Mocked node if true
 
-  const static char* m_addressKey;
+  const static char* m_addressKey; //obsolete
+  const static char* m_hostKey;
   const static char* m_portKey;
   const static char* m_uuidKey;
+  const static char* m_schemeKey;
 };
 
 #endif // ZDVIDNODE_H

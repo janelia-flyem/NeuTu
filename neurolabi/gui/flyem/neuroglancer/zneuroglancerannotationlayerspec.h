@@ -9,6 +9,7 @@
 #include "zjsonobject.h"
 
 class ZIntPoint;
+class ZCuboid;
 
 /*!
  * \brief The class for annotation layer specification
@@ -24,6 +25,7 @@ public:
   void setLinkedSegmentation(const std::string &layerName);
   void setOpacity(double opacity);
   void addAnnotation(const ZJsonObject &obj);
+  void addAnnotation(const ZCuboid &box);
   void setColor(uint8_t r, uint8_t g, uint8_t b);
 
   ZJsonObject toJsonObject() const override;

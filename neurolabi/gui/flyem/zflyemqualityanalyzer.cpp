@@ -17,7 +17,7 @@ bool ZFlyEmQualityAnalyzer::isExitingOrphanBody(const ZObject3dScan &obj)
 {
   //Expand bottom blocks
   Cuboid_I objBox;
-  obj.getBoundBox(&objBox);
+  obj.getIntBoundBox(&objBox);
 
   //Test if the body touches the boundary
   ZObject3dScan tmpObj = obj;
@@ -47,7 +47,7 @@ bool ZFlyEmQualityAnalyzer::isExitingOrphanBody(const ZObject3dScan &obj)
 bool ZFlyEmQualityAnalyzer::isOrphanBody(const ZObject3dScan &obj)
 {
   Cuboid_I objBox;
-  obj.getBoundBox(&objBox);
+  obj.getIntBoundBox(&objBox);
 
   int boxIndex = m_substackRegion.hitInternalTest(
         objBox.cb[0], objBox.cb[1], objBox.cb[2]);
@@ -68,7 +68,7 @@ bool ZFlyEmQualityAnalyzer::isStitchedOrphanBody(const ZObject3dScan &obj)
   }
 
   Cuboid_I objBox;
-  obj.getBoundBox(&objBox);
+  obj.getIntBoundBox(&objBox);
 
   ZIntCuboidArray roi = m_substackRegion;
   roi.intersect(objBox);
@@ -573,7 +573,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
 bool ZFlyEmQualityAnalyzer::isInternalFaceOrphan(const ZObject3dScan &obj)
 {
   Cuboid_I objBox;
-  obj.getBoundBox(&objBox);
+  obj.getIntBoundBox(&objBox);
 
   bool isLocalOrphan = false;
 

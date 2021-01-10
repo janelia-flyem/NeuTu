@@ -3,8 +3,8 @@
  * @author Ting Zhao
  */
 
-#ifndef _ZSWCTREE_H_
-#define _ZSWCTREE_H_
+#ifndef ZSWCTREE_H_
+#define ZSWCTREE_H_
 
 #include "zqtheader.h"
 
@@ -125,7 +125,7 @@ public:
   /*!
    * \brief Deconstructor.
    */
-  ~ZSwcTree();
+  ~ZSwcTree() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::SWC;
@@ -174,7 +174,7 @@ public:
   /*!
    * \brief Clone an SWC tree
    */
-  ZSwcTree *clone() const;
+  ZSwcTree *clone() const override;
 
   /*!
    * \brief Clone a raw SWC tree
@@ -218,7 +218,7 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis axis) const;
+                       neutu::EAxis axis) const override;
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -393,10 +393,12 @@ public:
    *
    * \return The bound box.
    */
-   ZCuboid getBoundBox() const;
+   ZCuboid getBoundBox() const override;
 //   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
 
-   void boundBox(ZIntCuboid *box) const;
+   void boundBox(ZIntCuboid *box) const override;
+
+   ZCuboid getSelectedNodeBoundBox() const;
 
   static ZSwcTree* CreateCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -431,8 +433,8 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
   /*!
    * \brief Selecte a node
@@ -933,4 +935,4 @@ void ZSwcTree::selectNode(
     selectNode(tn, true);
   }
 }
-#endif /* _ZSWCTREE_H_ */
+#endif /* ZSWCTREE_H_ */

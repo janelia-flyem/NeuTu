@@ -25,6 +25,11 @@ public:
       const ZDvidTarget &target, ZDvidData::ERole dataRole,
       const std::string &linkedSegmentationLayer);
 
+  static std::shared_ptr<ZNeuroglancerAnnotationLayerSpec>
+  MakeLocalAnnotationLayer(const std::string &name);
+
+  //Make local annotaiton layer
+
 };
 
 #endif // ZNEUROGLANCERLAYERSPECFACTORY_H

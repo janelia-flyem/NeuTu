@@ -1,5 +1,10 @@
 #include "zblockgrid.h"
+
+#include <queue>
+#include <unordered_map>
+
 #include "geometry/zgeometry.h"
+#include "geometry/zaffinerect.h"
 
 ZBlockGrid::ZBlockGrid()
 {
@@ -79,7 +84,7 @@ int ZBlockGrid::getHashIndex(const ZIntPoint &blockIndex) const
 ZIntCuboid ZBlockGrid::getBlockBox(const ZIntPoint &blockIndex) const
 {
   ZIntCuboid cuboid;
-  cuboid.setFirstCorner(getBlockPosition(blockIndex));
+  cuboid.setMinCorner(getBlockPosition(blockIndex));
   cuboid.setSize(m_blockSize.getX(), m_blockSize.getY(), m_blockSize.getZ());
 
   return cuboid;
@@ -115,6 +120,51 @@ int ZBlockGrid::getSpatialHeight() const
 ZIntPoint ZBlockGrid::getBlockIndex(int x, int y, int z) const
 {
   return getLocation(x, y, z).getBlockIndex();
+}
+
+ZIntPoint ZBlockGrid::getBlockIndex(const ZIntPoint &pos) const
+{
+  return getBlockIndex(pos.getX(), pos.getY(), pos.getZ());
+}
+
+bool ZBlockGrid::containsBlock(int i, int j, int k) const
+{
+  return (i >= 0) && (j >= 0) && (k >= 0) && (i < m_size.getX()) &&
+      (j < m_size.getY()) && (k < m_size.getZ());
+}
+
+bool ZBlockGrid::containsBlock(const ZIntPoint &index) const
+{
+  return containsBlock(index.getX(), index.getY(), index.getZ());
+}
+
+void ZBlockGrid::forEachIntersectedBlock(
+    const ZAffineRect &plane, std::function<void(int i, int j, int k)> f)
+{
+  std::queue<ZIntPoint> blockQueue;
+  ZIntPoint seedBlock = getBlockIndex(plane.getCenter().toIntPoint());
+  blockQueue.push(seedBlock);
+  std::unordered_map<std::string, bool> checked;
+  while (!blockQueue.empty()) {
+    ZIntPoint block = blockQueue.front();
+    if (zgeom::Intersects(plane, getBlockBox(block))) {
+      if (containsBlock(block)) {
+        f(block.getX(), block.getY(), block.getZ());
+      }
+      zgeom::raster::ForEachNeighbor<3>(
+            block.getX(), block.getY(), block.getZ(), [&](int x, int y, int z) {
+        std::string key =
+            std::to_string(x) + "_" + std::to_string(y) + "_" + std::to_string(z);
+        if (!checked[key]) {
+          if (zgeom::Intersects(plane, getBlockBox(ZIntPoint(x, y, z)))) {
+            blockQueue.push(ZIntPoint(x, y, z));
+            checked[key] = true;
+          }
+        }
+      });
+    }
+    blockQueue.pop();
+  }
 }
 
 /**********************ZDvidBlockGrid::Location**********************/

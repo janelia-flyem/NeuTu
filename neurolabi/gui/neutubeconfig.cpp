@@ -172,7 +172,7 @@ void NeutubeConfig::updateUserInfo()
     ZNetBufferReader reader;
     reader.read(url.c_str(), true);
     ZJsonObject obj;
-    obj.decode(reader.getBuffer().toStdString());
+    obj.decode(reader.getBuffer().toStdString(), false);
     if (obj.hasKey("config")) {
       ZJsonObject configObj(obj.value("config"));
       m_userInfo.setOrganization(ZJsonParser::stringValue(configObj["organization"]));
@@ -572,6 +572,9 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   case EConfigItem::NEUPRINT_AUTH:
     return ZString::fullPath(NeutubeConfig::getInstance().getPath(
           NeutubeConfig::EConfigItem::WORKING_DIR), "neuprint_auth.json");
+  case EConfigItem::FLYEM_SERVICES_AUTH:
+    return ZString::fullPath(NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::WORKING_DIR), "flyem_services_auth.json");
   case EConfigItem::CONFIG_DIR:
     return ZString::fullPath(getApplicatinDir(), _CONFIG_FOLDER_);
   default:

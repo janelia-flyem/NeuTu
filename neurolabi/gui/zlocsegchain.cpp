@@ -5,6 +5,7 @@
 #include "tz_geo3d_utils.h"
 #include "tz_workspace.h"
 #include "tz_stack_attribute.h"
+#include "geometry/zcuboid.h"
 
 ZLocsegChain::ZLocsegChain(Locseg_Chain *chain)
 {
@@ -113,6 +114,12 @@ void ZLocsegChain::updateBufferChain()
       m_bufferChain[m_bufferChain.size()-1].asyncGenerateFilterStack();
     }
   }
+}
+
+ZCuboid ZLocsegChain::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
 }
 
 void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,

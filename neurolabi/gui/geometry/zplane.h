@@ -37,6 +37,19 @@ public:
   ZPoint getNormal() const;
   bool onSamePlane(const ZPlane &p) const;
   bool contains(const ZPoint &pt) const;
+  double computeSignedDistance(const ZPoint &pt) const;
+  double computeSignedDistance(double x, double y, double z) const;
+
+  /*!
+   * \brief Align a point with plane
+   *
+   * It aligns a point by tranforming it to the plane coordinate system.
+   *
+   * \return Transformed point.
+   */
+  ZPoint align(const ZPoint &pt) const;
+
+  friend std::ostream& operator<<(std::ostream& stream, const ZPlane &p);
 
 private:
   static bool IsValid(const ZPoint &v1, const ZPoint &v2);

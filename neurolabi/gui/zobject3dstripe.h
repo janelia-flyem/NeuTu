@@ -91,6 +91,7 @@ public:
   void clearSegment();
 
   void translate(int dx, int dy, int dz);
+  void scale(int sx, int sy, int sz);
 
   /*!
    * \brief Add z value

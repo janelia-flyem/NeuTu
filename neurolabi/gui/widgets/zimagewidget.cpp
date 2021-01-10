@@ -30,6 +30,7 @@ ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 
 ZImageWidget::~ZImageWidget()
 {
+  delete m_widgetCanvas;
 }
 
 void ZImageWidget::init()
@@ -161,13 +162,13 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       }
     }
 
-/*
-    if (m_widgetCanvas != NULL) {
+    /*
+    if (m_widgetCanvas) {
       if (m_widgetCanvas->isVisible()) {
         painter.drawPixmap(*m_widgetCanvas);
       }
     }
-*/
+    */
 
     //tic();
     if (m_objectCanvas != NULL) {
@@ -198,6 +199,8 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     painter.end();
 
     paintObject();
+//    paintDynamicObject();
+
     if (m_showingZoomHint) {
       paintZoomHint();
     } else {
@@ -411,17 +414,174 @@ void ZImageWidget::zoom(double zoomRatio)
   updateView();
 }
 
+template<typename ZStackObjectPtr>
+void ZImageWidget::paintObjectTmpl(
+    ZPainter &painter, const QList<ZStackObjectPtr> &objList)
+{
+  double zoomRatio = m_viewProj.getZoom();
+  ZStackObjectPainter paintHelper;
+
+  painter.setCanvasRange(viewPort());
+  painter.setRenderHints(QPainter::Antialiasing);
+
+  QTransform transform;
+  int sliceIndex = m_paintBundle->sliceIndex();
+  int zOffset = m_paintBundle->getStackOffset().getZ();
+  neutu::EAxis sliceAxis = m_sliceAxis;
+  if (m_paintBundle->getSliceAxis() == neutu::EAxis::ARB) {
+    sliceIndex = 0;
+    zOffset = 0;
+    painter.normalizeCanvasRange();
+    sliceAxis = neutu::EAxis::Z;
+    QRect viewPort = m_viewProj.getViewPort();
+    transform.translate(viewPort.width() * 0.5 * zoomRatio,
+                        viewPort.height() * 0.5 * zoomRatio);
+    transform.scale(zoomRatio, zoomRatio);
+  } else {
+    transform.translate((0.5 - m_viewProj.getX0())*zoomRatio,
+                        (0.5 - m_viewProj.getY0())*zoomRatio);
+    transform.scale(zoomRatio, zoomRatio);
+  }
+  painter.setTransform(transform);
+  painter.setZOffset(zOffset);
+
+  for (auto obj : objList) {
+    if (obj->getType() == ZStackObject::EType::CROSS_HAIR) {
+      ZPainter rawPainter(this);
+      rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
+      obj->display(rawPainter, m_paintBundle->sliceIndex(),
+                   ZStackObject::EDisplayStyle::NORMAL, sliceAxis);
+    } else {
+      paintHelper.paint(
+            obj, painter, sliceIndex, m_paintBundle->displayStyle(), sliceAxis);
+    }
+  }
+}
+
+void ZImageWidget::paintObject(
+    ZPainter &painter, const QList<std::shared_ptr<ZStackObject>> &objList)
+{
+  paintObjectTmpl(painter, objList);
+}
+
+void ZImageWidget::paintObject(
+    ZPainter &painter, const QList<ZStackObject*> &objList)
+{
+  paintObjectTmpl(painter, objList);
+}
+
+bool ZImageWidget::paintWidgetCanvas(ZImage *canvas)
+{
+  bool painted = false;
+  if (m_paintBundle && canvas) {
+    ZPainter painter;
+    if (painter.begin(canvas)) {
+      QList<std::shared_ptr<ZStackObject>> objList =
+          m_paintBundle->getVisibleDynamicObjectList();
+      if (m_paintBundle->getSliceAxis() == neutu::EAxis::ARB) {
+        m_paintBundle->alignToCutPlane(objList);
+      }
+      paintObject(painter, objList);
+      painted = painter.isPainted();
+      painter.end();
+
+#ifdef _DEBUG_2
+      canvas->save((GET_TEST_DATA_DIR + "/_test.tif").c_str());
+#endif
+    } else {
+      std::cout << "......failed to begin painter" << std::endl;
+      return false;
+    }
+  }
+
+  return painted;
+}
+
+ZImage *ZImageWidget::makeWidgetCanvas() const
+{
+  return new ZImage(size());
+//  canvas->fill(Qt::transparent);
+}
+
+void ZImageWidget::updateWidgetCanvas(ZPixmap *canvas)
+{
+  if (m_widgetCanvas != canvas) {
+    delete m_widgetCanvas;
+    m_widgetCanvas = canvas;
+#ifdef _DEBUG_2
+    if (m_widgetCanvas) {
+      m_widgetCanvas->save((GET_TEST_DATA_DIR + "/_test.tif").c_str());
+    }
+#endif
+    update();
+  }
+}
+
+/*
+void ZImageWidget::paintDynamicObject()
+{
+  if (m_paintBundle) {
+    ZPainter painter;
+    if (m_widgetCanvas == nullptr) {
+      m_widgetCanvas = new ZPixmap(size());
+    }
+    m_widgetCanvas->fill(Qt::transparent);
+
+    if (!painter.begin(m_widgetCanvas)) {
+      std::cout << "......failed to begin painter" << std::endl;
+     return;
+    }
+
+    QList<ZStackObject*> visibleObject =
+        m_paintBundle->getVisibleDynamicObjectList();
+    paintObject(painter, visibleObject);
+
+    painter.end();
+
+    QPainter widgetPainter(this);
+    widgetPainter.drawPixmap(0, 0, *m_widgetCanvas);
+  }
+}
+*/
+
 void ZImageWidget::paintObject()
 {
   if (m_paintBundle) {
+    ZPainter painter;
+    if (!painter.begin(this)) {
+      std::cout << "......failed to begin painter" << std::endl;
+      return;
+    }
+
+    QList<ZStackObject*> visibleObject = m_paintBundle->getVisibleObjectList();
+    paintObject(painter, visibleObject);
+
+    if (m_widgetCanvas) {
+      QPainter widgetPainter(this);
+      widgetPainter.drawPixmap(0, 0, *m_widgetCanvas);
+    }
+
+#if 0
     double zoomRatio = m_viewProj.getZoom();
 //    double zoomRatio =  double(projectSize()).width() / m_viewPort.width();
-    ZPainter painter;
+
     ZStackObjectPainter paintHelper;
 
     painter.setCanvasRange(viewPort());
 
-    if (!painter.begin(this)) {
+    if (m_widgetCanvas) {
+      if (m_widgetCanvas->size() != this->size()) {
+        delete m_widgetCanvas;
+        m_widgetCanvas = nullptr;
+      }
+    }
+
+    if (m_widgetCanvas == nullptr) {
+      m_widgetCanvas = new ZPixmap(size());
+    }
+    m_widgetCanvas->fill(Qt::transparent);
+
+    if (!painter.begin(m_widgetCanvas)) {
       std::cout << "......failed to begin painter" << std::endl;
       return;
     }
@@ -442,7 +602,10 @@ void ZImageWidget::paintObject()
     painter.setZOffset(m_paintBundle->getStackOffset().getZ());
     //.getSliceCoord(getSliceAxis()));
 
+
+
 //    painter.setStackOffset(m_paintBundle->getStackOffset());
+#if 0
     std::vector<const ZStackObject*> visibleObject;
     ZPaintBundle::const_iterator iter = m_paintBundle->begin();
 #ifdef _DEBUG_2
@@ -458,16 +621,16 @@ void ZImageWidget::paintObject()
         }
       }
     }
+#endif
 
 #ifdef _DEBUG_2
     std::cout << "---" << std::endl;
     std::cout << m_paintBundle->sliceIndex() << std::endl;
 #endif
-    std::sort(visibleObject.begin(), visibleObject.end(),
-              ZStackObject::ZOrderLessThan());
-    for (std::vector<const ZStackObject*>::const_iterator
-         iter = visibleObject.begin(); iter != visibleObject.end(); ++iter) {
-      const ZStackObject *obj = *iter;
+//    std::sort(visibleObject.begin(), visibleObject.end(),
+//              ZStackObject::ZOrderLessThan());
+    for (ZStackObject *obj : visibleObject) {
+//      const ZStackObject *obj = *iter;
 #ifdef _DEBUG_2
       std::cout << obj << std::endl;
 #endif
@@ -486,22 +649,25 @@ void ZImageWidget::paintObject()
                    */
     }
 
-    for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
-      const ZStackObject *obj = *iter;
-      if (obj->getTarget() == ZStackObject::ETarget::WIDGET &&
-          obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
-        if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
-          paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
-                            m_paintBundle->displayStyle(), m_sliceAxis);
-          /*
-          obj->display(painter, m_paintBundle->sliceIndex(),
-                       m_paintBundle->displayStyle());
-                       */
-        }
-      }
-    }
-
+//    for (iter = m_paintBundle->begin();iter != m_paintBundle->end(); ++iter) {
+//      const ZStackObject *obj = *iter;
+//      if (obj->getTarget() == ZStackObject::ETarget::WIDGET &&
+//          obj->isSliceVisible(m_paintBundle->getZ(), m_sliceAxis)) {
+//        if (obj->getSource() == ZStackObjectSourceFactory::MakeNodeAdaptorSource()) {
+//          paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
+//                            m_paintBundle->displayStyle(), m_sliceAxis);
+//          /*
+//          obj->display(painter, m_paintBundle->sliceIndex(),
+//                       m_paintBundle->displayStyle());
+//                       */
+//        }
+//      }
+//    }
+#endif
     painter.end();
+
+//    QPainter widgetPainter(this);
+//    widgetPainter.drawPixmap(0, 0, *m_widgetCanvas);
   }
 
 

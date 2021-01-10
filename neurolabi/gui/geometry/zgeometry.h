@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <utility>
+#include <functional>
+#include <cmath>
 
 #include "zgeo3dtransform.h"
 #include "zgeo3dscalarfield.h"
@@ -12,11 +14,15 @@ class ZPoint;
 class ZAffineRect;
 class ZIntCuboid;
 class ZIntPoint;
+class ZCuboid;
+class ZPlane;
+class ZLineSegment;
 
 namespace zgeom
 {
 
 std::vector<ZAffineRect> Partition(const ZAffineRect &rect, int row, int col);
+std::vector<ZAffineRect> IntPartition(const ZAffineRect &rect, int row, int col);
 
 /*!
  * \brief Transform a 3D field
@@ -43,6 +49,57 @@ int GetZoomScale(int zoom);
 int GetZoomLevel(int scale);
 
 void CopyToArray(const ZIntPoint &pt, int v[]);
+
+/*!
+ * \brief Compute intersection point
+ *
+ * \param plane
+ * \param seg
+ * \return
+ */
+ZPoint ComputeIntersectionPoint(
+    const ZPlane &plane, const ZLineSegment &seg);
+
+bool Intersects(
+    const ZAffineRect &rect, double x, double y, double z, double r);
+bool Intersects(const ZAffineRect &rect, const ZCuboid &box);
+bool Intersects(const ZAffineRect &rect, const ZIntCuboid &box);
+bool Intersects(const ZAffineRect &rect, const ZLineSegment &seg);
+bool Intersects(const ZAffineRect &r1, const ZAffineRect &r2);
+
+namespace raster {
+
+void ForEachNeighbor(
+    int x, int y, int z, int nsx, int nsy, int nsz,
+    std::function<void(int,int,int)> f);
+
+template<int N>
+void ForEachNeighbor(int x, int y, int z, std::function<void(int,int,int)> f);
+
+template<>
+void ForEachNeighbor<1>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+template<>
+void ForEachNeighbor<2>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+template<>
+void ForEachNeighbor<3>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+extern template
+void ForEachNeighbor<1>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+extern template
+void ForEachNeighbor<2>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+
+extern template
+void ForEachNeighbor<3>(
+    int x, int y, int z, std::function<void(int,int,int)> f);
+}
 
 }
 

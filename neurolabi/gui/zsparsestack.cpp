@@ -228,7 +228,7 @@ bool ZSparseStack::DownsampleRequired(const ZIntCuboid &box)
 bool ZSparseStack::downsampleRequired() const
 {
   if (m_objectMask != NULL) {
-    return DownsampleRequired(m_objectMask->getBoundBox());
+    return DownsampleRequired(m_objectMask->getIntBoundBox());
   }
 
   return false;
@@ -257,7 +257,7 @@ ZStack* ZSparseStack::makeDsStack(
 //  const ZStackBlockGrid *stackGrid = getStackGrid(zoom);
 
   if (m_objectMask != NULL) {
-    ZIntCuboid cuboid = m_objectMask->getBoundBox();
+    ZIntCuboid cuboid = m_objectMask->getIntBoundBox();
 
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
       ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
@@ -276,7 +276,7 @@ ZStack* ZSparseStack::makeDsStack(
 
         ZStackBlockGrid *dsGrid = makeDownsampleGrid(xintv, yintv, zintv);
 //            stackGrid->makeDownsample((dsIntv + 1) / scale - 1);
-        out =  new ZStack(GREY, obj->getBoundBox(), 1);
+        out =  new ZStack(GREY, obj->getIntBoundBox(), 1);
         out->setZero();
         assignStackValue(out, *obj, *dsGrid, m_baseValue);
         out->setDsIntv(dsIntv);
@@ -298,7 +298,7 @@ ZStack* ZSparseStack::makeIsoDsStack(size_t maxVolume, bool preservingGap)
 {
   ZStack *out = NULL;
   if (m_objectMask != NULL && getStackGrid() != NULL) {
-    ZIntCuboid cuboid = m_objectMask->getBoundBox();
+    ZIntCuboid cuboid = m_objectMask->getIntBoundBox();
 
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
 //      ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
@@ -434,7 +434,7 @@ ZStack* ZSparseStack::makeStack(
 {
   ZStack *out = NULL;
   if (m_objectMask != NULL) {
-    ZIntCuboid cuboid = m_objectMask->getBoundBox();
+    ZIntCuboid cuboid = m_objectMask->getIntBoundBox();
     if (!box.isEmpty()) {
       cuboid.intersect(box);
     }
@@ -465,7 +465,7 @@ ZStack* ZSparseStack::makeStack(
 #ifdef _DEBUG_2
   return NULL;
 #endif
-        out =  new ZStack(GREY, obj->getBoundBox(), 1);
+        out =  new ZStack(GREY, obj->getIntBoundBox(), 1);
         out->setZero();
         assignStackValue(out, *obj, border, *dsGrid, m_baseValue);
         out->setDsIntv(tmpDsIntv);
@@ -535,7 +535,7 @@ ZStack* ZSparseStack::getStack()
   }
 
   if (isDeprecated(STACK)) {
-    ZIntCuboid cuboid = m_objectMask->getBoundBox();
+    ZIntCuboid cuboid = m_objectMask->getIntBoundBox();
     if (!m_objectMask->isEmpty()) {
       size_t volume = cuboid.getVolume();
       double dsRatio = (double) volume / GetMaxStackVolume();
@@ -556,7 +556,7 @@ ZStack* ZSparseStack::getStack()
 #ifdef _DEBUG_2
         return NULL;
 #endif
-        m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
+        m_stack =  new ZStack(GREY, obj.getIntBoundBox(), 1);
         m_stack->setZero();
         assignStackValue(m_stack, obj, *dsGrid, m_baseValue);
         m_stack->setDsIntv(getDsIntv());
@@ -618,7 +618,7 @@ void ZSparseStack::shakeOff()
 ZStack* ZSparseStack::getSlice(int z) const
 {
   ZObject3dScan slice = m_objectMask->getSlice(z);
-  ZIntCuboid box = slice.getBoundBox();
+  ZIntCuboid box = slice.getIntBoundBox();
   ZStack *stack = new ZStack(GREY, box, 1);
   stack->setZero();
   assignStackValue(stack, slice, *getStackGrid(), 1);
@@ -630,9 +630,9 @@ ZStack* ZSparseStack::getMip() const
 {
   ZStack *stack = NULL;
   if (m_objectMask != NULL) {
-    ZIntCuboid box = m_objectMask->getBoundBox();
-    box.setFirstZ(0);
-    box.setLastZ(0);
+    ZIntCuboid box = m_objectMask->getIntBoundBox();
+    box.setMinZ(0);
+    box.setMaxZ(0);
     stack = new ZStack(GREY, box, 1);
     ZObject3dScan::ConstSegmentIterator iterator(m_objectMask);
     while (iterator.hasNext()) {
@@ -764,7 +764,7 @@ ZIntCuboid ZSparseStack::getBoundBox() const
 {
   ZIntCuboid box;
   if (m_objectMask != NULL) {
-    box = m_objectMask->getBoundBox();
+    box = m_objectMask->getIntBoundBox();
   }
 
   return box;

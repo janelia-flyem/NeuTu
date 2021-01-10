@@ -195,6 +195,8 @@ public:
 
   void clear();
 
+  ZCuboid getBoundBox() const override;
+
 private:
   ZSharedPointer<ZMesh> m_mesh;
 };

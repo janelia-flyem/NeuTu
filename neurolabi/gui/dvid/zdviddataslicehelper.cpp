@@ -3,6 +3,7 @@
 #include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
 #include "zarbsliceviewparam.h"
+#include "zdvidglobal.h"
 
 ZDvidDataSliceHelper::ZDvidDataSliceHelper(ZDvidData::ERole role) :
   m_dataRole(role)
@@ -29,12 +30,16 @@ void ZDvidDataSliceHelper::setMaxZoom(int maxZoom)
 void ZDvidDataSliceHelper::updateMaxZoom()
 {
   switch (m_dataRole) {
-  case ZDvidData::ERole::GRAY_SCALE:
-    m_reader.updateMaxGrayscaleZoom();
+  case ZDvidData::ERole::GRAYSCALE:
+    m_reader.updateMaxGrayscaleZoom(
+          ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(m_reader.getDvidTarget()));
+//    m_reader.updateMaxGrayscaleZoom();
     break;
-  case ZDvidData::ERole::LABEL_BLOCK:
-  case ZDvidData::ERole::BODY_LABEL:
-    m_reader.updateMaxLabelZoom();
+  case ZDvidData::ERole::SEGMENTATION:
+  case ZDvidData::ERole::SPARSEVOL:
+    m_reader.updateMaxLabelZoom(
+          ZDvidGlobal::Memo::ReadMaxLabelZoom(m_reader.getDvidTarget()));
+//    m_reader.updateMaxLabelZoom();
     break;
   default:
     break;
@@ -44,10 +49,10 @@ void ZDvidDataSliceHelper::updateMaxZoom()
 int ZDvidDataSliceHelper::getMaxZoom() const
 {
   switch (m_dataRole) {
-  case ZDvidData::ERole::GRAY_SCALE:
+  case ZDvidData::ERole::GRAYSCALE:
     return getDvidTarget().getMaxGrayscaleZoom();
-  case ZDvidData::ERole::LABEL_BLOCK:
-  case ZDvidData::ERole::BODY_LABEL:
+  case ZDvidData::ERole::SEGMENTATION:
+  case ZDvidData::ERole::SPARSEVOL:
     return getDvidTarget().getMaxLabelZoom();
   case ZDvidData::ERole::MULTISCALE_2D:
     return m_maxZoom;
@@ -71,10 +76,10 @@ void ZDvidDataSliceHelper::setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy)
 void ZDvidDataSliceHelper::updateCenterCut()
 {
   switch (m_dataRole) {
-  case ZDvidData::ERole::GRAY_SCALE:
+  case ZDvidData::ERole::GRAYSCALE:
     m_reader.setGrayCenterCut(m_centerCutWidth, m_centerCutHeight);
     break;
-  case ZDvidData::ERole::LABEL_BLOCK:
+  case ZDvidData::ERole::SEGMENTATION:
     m_reader.setLabelCenterCut(m_centerCutWidth, m_centerCutHeight);
     break;
   default:
@@ -408,7 +413,7 @@ void ZDvidDataSliceHelper::invalidateViewParam()
 ZIntCuboid ZDvidDataSliceHelper::GetBoundBox(const QRect &viewPort, int z)
 {
   ZIntCuboid box;
-  box.setFirstCorner(viewPort.left(), viewPort.top(), z);
+  box.setMinCorner(viewPort.left(), viewPort.top(), z);
   box.setSize(viewPort.width(), viewPort.height(), 1);
 
   return box;

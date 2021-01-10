@@ -159,9 +159,9 @@ ZIntCuboid Z3DBoundedFilter::cutBox()
 
 void Z3DBoundedFilter::setCutBox(const ZIntCuboid& box)
 {
-  m_xCut.set(glm::vec2(box.getFirstCorner().getX(), box.getLastCorner().getX()));
-  m_yCut.set(glm::vec2(box.getFirstCorner().getY(), box.getLastCorner().getY()));
-  m_zCut.set(glm::vec2(box.getFirstCorner().getZ(), box.getLastCorner().getZ()));
+  m_xCut.set(glm::vec2(box.getMinCorner().getX(), box.getMaxCorner().getX()));
+  m_yCut.set(glm::vec2(box.getMinCorner().getY(), box.getMaxCorner().getY()));
+  m_zCut.set(glm::vec2(box.getMinCorner().getZ(), box.getMaxCorner().getZ()));
 }
 
 void Z3DBoundedFilter::updateBoundBox()

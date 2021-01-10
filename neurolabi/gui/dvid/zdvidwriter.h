@@ -53,10 +53,19 @@ public:
     return m_reader;
   }
 
+  ZDvidReader& getDvidReader() {
+    return m_reader;
+  }
+
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 
   void writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom);
+
+  /*!
+   * \brief Delete all related mesh data
+   */
+  void deleteMesh(uint64_t bodyId);
 
   void writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId);
 
@@ -134,7 +143,7 @@ public:
                  const QString &minKey, const QString &maxKey);
 
   void deleteSkeleton(uint64_t bodyId);
-  void deleteMesh(uint64_t bodyId);
+//  void deleteMesh(uint64_t bodyId);
   void deleteBodyAnnotation(uint64_t bodyId);
 
   void invalidateBody(uint64_t bodyId);
@@ -313,7 +322,7 @@ private:
 
   void parseStandardOutput();
   void init();
-  bool startService();
+//  bool startService();
 
 private:
 //  QEventLoop *m_eventLoop;

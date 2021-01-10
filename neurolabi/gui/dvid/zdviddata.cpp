@@ -48,9 +48,9 @@ ZDvidData::ZDvidData()
 std::string ZDvidData::GetName(ERole role)
 {
   switch (role) {
-  case ERole::GRAY_SCALE:
+  case ERole::GRAYSCALE:
     return m_grayScaleName;
-  case ERole::BODY_LABEL:
+  case ERole::SPARSEVOL:
     return m_bodyLabelName;
   case ERole::ROI_CURVE:
     return m_roiCurveName;
@@ -82,7 +82,7 @@ std::string ZDvidData::GetName(ERole role)
     return m_mergeTestBodyLabelName;
   case ERole::MAX_BODY_ID:
     return m_maxBodyIdName;
-  case ERole::LABEL_BLOCK:
+  case ERole::SEGMENTATION:
     return m_labelBlockName;
   case ERole::MULTISCALE_2D:
     return m_multiscale2dName;
@@ -196,13 +196,13 @@ bool ZDvidData::IsDefaultName(ERole role, const std::string &name)
     return false;
   }
 
-  if (role == ZDvidData::ERole::BODY_LABEL) { //For backfward compability
+  if (role == ZDvidData::ERole::SPARSEVOL) { //For backfward compability
     if (name == "bodies") {
       return true;
     }
   }
 
-  if (role == ZDvidData::ERole::LABEL_BLOCK) {
+  if (role == ZDvidData::ERole::SEGMENTATION) {
     if (name == "labels") {
       return true;
     }

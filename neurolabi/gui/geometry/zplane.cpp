@@ -91,6 +91,11 @@ bool ZPlane::onSamePlane(const ZPlane &p) const
   return false;
 }
 
+ZPoint ZPlane::align(const ZPoint &pt) const
+{
+  return ZPoint(pt.dot(m_v1), pt.dot(m_v2), pt.dot(getNormal()));
+}
+
 bool ZPlane::contains(const ZPoint &pt) const
 {
   if (pt.isApproxOrigin()) {
@@ -98,4 +103,22 @@ bool ZPlane::contains(const ZPoint &pt) const
   }
 
   return getNormal().isPendicularTo(pt);
+}
+
+double ZPlane::computeSignedDistance(double x, double y, double z) const
+{
+  return computeSignedDistance(ZPoint(x, y, z));
+}
+
+double ZPlane::computeSignedDistance(const ZPoint &pt) const
+{
+  ZPoint normal = getNormal();
+  return pt.dot(normal);
+}
+
+std::ostream& operator<<(std::ostream& stream, const ZPlane &p)
+{
+  stream << p.getV1() << " x " << p.getV2();
+
+  return stream;
 }

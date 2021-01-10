@@ -20,6 +20,7 @@
 
 #include "ui_mainwindow.h"
 
+#include "mylib/array.h"
 #include "logging/zlog.h"
 
 #include "mvc/zstackframe.h"
@@ -137,7 +138,7 @@
 
 #include "dialogs/dvidoperatedialog.h"
 #include "dialogs/synapseimportdialog.h"
-#include "dialogs/flyembodymergeprojectdialog.h"
+//#include "dialogs/flyembodymergeprojectdialog.h"
 #include "dialogs/zsegmentationprojectdialog.h"
 #include "dialogs/zsubtractswcsdialog.h"
 #include "dialogs/zautotracedialog.h"
@@ -412,7 +413,7 @@ void MainWindow::initDialog()
   connect(m_bcDlg, SIGNAL(autoAdjustTriggered()), this, SLOT(autoBcAdjust()));
 
   m_helpDlg = new HelpDialog(this);
-  m_DiagnosisDlg = new DiagnosisDialog(this);
+//  m_DiagnosisDlg = new DiagnosisDialog(this);
   m_penWidthDialog = new PenWidthDialog(this);
   m_resDlg = new ResolutionDialog(this);
 
@@ -1544,7 +1545,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
   foreach (const QString &fileName, fileList){
     emit progressStarted("Opening " + fileName + " ...", 100);
     ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
-    if (ZFileType::isNeutubeOpenable(fileType)) {
+    if (ZFileType::IsNeutubeOpenable(fileType)) {
       neutu::Document::ETag tag = neutu::Document::ETag::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
         tag = neutu::Document::ETag::BIOCYTIN_STACK;
@@ -1573,7 +1574,7 @@ void MainWindow::openFileFunc(const QString &fileName)
 {
   ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
-  if (ZFileType::isNeutubeOpenable(fileType)) {
+  if (ZFileType::IsNeutubeOpenable(fileType)) {
     neutu::Document::ETag tag = neutu::Document::ETag::NORMAL;
     if (GET_APPLICATION_NAME == "Biocytin") {
       tag = neutu::Document::ETag::BIOCYTIN_STACK;
@@ -4416,13 +4417,12 @@ void MainWindow::on_actionMask_triggered()
 
 void MainWindow::on_actionShortcut_triggered()
 {
-  if (GET_APPLICATION_NAME == "Biocytin" ||
-      GET_APPLICATION_NAME == "FlyEM") {
-//    m_helpDlg->show();
-//    m_helpDlg->raise();
-
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    m_helpDlg->show();
+    m_helpDlg->raise();
+  } else if (GET_APPLICATION_NAME == "FlyEM") {
     ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
-    bo->open("https://app.gitbook.com/@janelia-flyem/s/neutu/");
+    bo->open("https://janelia-flyem.gitbook.io/neutu/");
   } else if (GET_APPLICATION_NAME == "General") {
     QString title = QString("<h2> %1 Help </h2").
         arg(NeutubeConfig::getInstance().getSoftwareName().c_str());
@@ -4925,6 +4925,10 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 
 void MainWindow::on_actionDiagnosis_triggered()
 {
+  if (m_DiagnosisDlg == nullptr) {
+    m_DiagnosisDlg = new DiagnosisDialog(this);
+  }
+
   m_DiagnosisDlg->show();
   QStringList info;
 
@@ -4932,6 +4936,7 @@ void MainWindow::on_actionDiagnosis_triggered()
   info << "Memory usage: " + flyem::GetMemoryUsage();
   info << QString("Stack usage: %1").arg(C_Stack::stackUsage());
   info << QString("Mc_Stack usage: %1").arg(C_Stack::McStackUsage());
+  info << QString("Array usage %1").arg(mylib::Array_Usage());
 #endif
 
   info.append(Z3DGpuInfo::instance().gpuInfo());
@@ -5683,9 +5688,9 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
   boundBox.expand(10);
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
+  ZStack *stack = reader.readGrayScale(boundBox.getMinCorner().x(),
+                                       boundBox.getMinCorner().y(),
+                                       boundBox.getMinCorner().z(),
                                        boundBox.width() + 1,
                                        boundBox.height() + 1,
                                        boundBox.depth() + 1);
@@ -5824,9 +5829,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   ZCuboid boundBox = hotSpotArray.toPointArray().getBoundBox();
   boundBox.expand(10);
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
+  ZStack *stack = reader.readGrayScale(boundBox.getMinCorner().x(),
+                                       boundBox.getMinCorner().y(),
+                                       boundBox.getMinCorner().z(),
                                        boundBox.width() + 1,
                                        boundBox.height() + 1,
                                        boundBox.depth() + 1);
@@ -7035,7 +7040,7 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), neutu::EMessageType::INFORMATION);
 }
 
-ZProofreadWindow *MainWindow::startProofread()
+ZProofreadWindow *MainWindow::startProofread(const QString &databaseName)
 {
   ZProofreadWindow *window = ZProofreadWindow::Make();
 
@@ -7055,6 +7060,10 @@ ZProofreadWindow *MainWindow::startProofread()
                          neutube::EMessageType::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
   }
 #endif
+
+  if (!databaseName.isEmpty()) {
+    window->loadDatabaseFromName(databaseName);
+  }
 
   return window;
 }
@@ -7181,10 +7190,10 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
       obj->setColor(255, 255, 255, 255);
       frame->document()->addObject(obj);
 
-      ZIntCuboid cuboid = obj->getBoundBox();
+      ZIntCuboid cuboid = obj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
-      stack->setOffset(cuboid.getFirstCorner());
+      stack->setOffset(cuboid.getMinCorner());
       frame->document()->loadStack(stack);
 
       addStackFrame(frame);

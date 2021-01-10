@@ -198,8 +198,8 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
       break;
     }
 
-    mvc->getView()->setZ(mappedCrossCenter.getSliceCoord(slaveAxis));
     mvc->getView()->setViewProj(newViewProj);
+    mvc->getView()->setZ(mappedCrossCenter.getSliceCoord(slaveAxis));
     mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 
 #ifdef _DEBUG_2

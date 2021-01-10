@@ -79,7 +79,7 @@ ZSwcTree* ZSwcFactory::CreateBoxSwc(const ZCuboid &box, double radius)
 ZSwcTree* ZSwcFactory::CreateBoxSwc(const ZIntCuboid &box, double radius)
 {
   ZCuboid cuboid;
-  cuboid.setFirstCorner(ZPoint(box.getFirstCorner().toPoint()));
+  cuboid.setMinCorner(ZPoint(box.getMinCorner().toPoint()));
   cuboid.setSize(box.getWidth(), box.getHeight(), box.getDepth());
 
   return CreateBoxSwc(cuboid, radius);
@@ -524,7 +524,7 @@ ZSwcTree* ZSwcFactory::CreateSwc(const ZObject3dScan &obj)
 ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     const ZObject3dScan &obj, int sparseLevel)
 {
-  ZIntCuboid box = obj.getBoundBox();
+  ZIntCuboid box = obj.getIntBoundBox();
 
   int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
                                     ZObject3dScan::MAX_SPAN_HINT)));
@@ -632,7 +632,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
     const ZObject3dScan &obj, int sparseLevel, ZSwcTree *tree)
 {
-  ZIntCuboid box = obj.getBoundBox();
+  ZIntCuboid box = obj.getIntBoundBox();
 //  size_t voxelNumber = obj.getVoxelNumber();
 
   int intv = neutu::iround(std::cbrt(round(double(obj.getSegmentNumber()) /
@@ -703,8 +703,8 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
 std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
       const ZObject3dScan &obj1, const ZObject3dScan &obj2)
 {
-  ZIntCuboid box = obj1.getBoundBox();
-  box.join(obj2.getBoundBox());
+  ZIntCuboid box = obj1.getIntBoundBox();
+  box.join(obj2.getIntBoundBox());
 
   int segNumber = obj1.getSegmentNumber() + obj2.getSegmentNumber();
 
@@ -716,8 +716,8 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
   ZObject3dScan obj4 = obj2;
   obj4.downsampleMax(intv, intv, intv);
 
-  box = obj3.getBoundBox();
-  box.join(obj4.getBoundBox());
+  box = obj3.getIntBoundBox();
+  box.join(obj4.getIntBoundBox());
   box.expand(1, 1, 1);
 
   ZStack *stack = ZStackFactory::MakeZeroStack(GREY, box);

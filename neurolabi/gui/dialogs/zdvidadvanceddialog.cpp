@@ -118,6 +118,13 @@ void ZDvidAdvancedDialog::updateWidgetForEdit(bool editable)
 void ZDvidAdvancedDialog::UpdateWidget(QLabel *label, QLineEdit *lineEdit,
     const QString &labelText, const QString &dataText, QWidget *hintWidget)
 {
+  lineEdit->setVisible(dataText.isEmpty());
+  label->setText(labelText + (dataText.isEmpty() ? "" : (": " + dataText)));
+  if (hintWidget) {
+    hintWidget->setVisible(dataText.isEmpty());
+  }
+
+  /*
   if (!dataText.isEmpty()) {
     lineEdit->setVisible(false);
     label->setText(labelText + ": " + dataText);
@@ -131,6 +138,7 @@ void ZDvidAdvancedDialog::UpdateWidget(QLabel *label, QLineEdit *lineEdit,
       hintWidget->setVisible(true);
     }
   }
+  */
 }
 
 void ZDvidAdvancedDialog::UpdateWidget(

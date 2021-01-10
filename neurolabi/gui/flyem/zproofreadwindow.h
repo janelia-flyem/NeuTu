@@ -23,6 +23,8 @@ class FlyEmSplitControlForm;
 class ZStressTestOptionDialog;
 class ZFlyEmBodyScreenshotDialog;
 class ZFlyEmBodySplitDialog;
+class FlyEmAuthTokenDialog;
+class ProtocolAssignmentDialog;
 class ZActionLibrary;
 
 /*!
@@ -94,8 +96,13 @@ public slots:
 
   void showAndRaise();
 
+  void loadDatabaseFromName(const QString &name);
   void loadDatabase();
   void loadDatabaseFromUrl();
+
+  void showAuthTokenDialog();
+  void updateAuthTokenIcon();
+  void showProtocolAssignmentDialog();
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
@@ -121,10 +128,10 @@ private:
 //  void logMessage(const ZWidgetMessage &msg);
 
   void displayActiveHint(bool on);
-  void sendFeedback(const QString &fb, const QString &action);
 
 private slots:
   void processFeedback();
+  void postDvidReady();
 
 private:
   ZFlyEmProofMvc *m_mainMvc;
@@ -153,6 +160,8 @@ private:
   QAction *m_neuprintAction = nullptr;
   QAction *m_loadDvidAction = nullptr;
   QAction *m_loadDvidUrlAction = nullptr;
+  QAction *m_openAuthDialogAction = nullptr;
+  QAction *m_openProtocolAssignmentDialogAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
@@ -184,6 +193,10 @@ private:
   ZStressTestOptionDialog *m_stressTestOptionDlg;
   ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
   ZFlyEmBodySplitDialog *m_bodySplitDlg;
+  FlyEmAuthTokenDialog *m_authTokenDlg;
+  ProtocolAssignmentDialog * m_protocolAssignmentDlg;
+
+
 };
 
 

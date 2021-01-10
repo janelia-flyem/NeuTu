@@ -790,6 +790,9 @@ public:
   QList<T*> getObjectList() const;
 
   template<typename T>
+  QList<T*> getObjectList(QMutex *mutex) const;
+
+  template<typename T>
   void processObjectList(std::function<void(T*)> proc);
 
   inline const ZDocPlayerList& getPlayerList() const {
@@ -862,6 +865,8 @@ public:
   ZRect2d getRect2dRoi() const;
   ZIntCuboid getCuboidRoi() const;
 
+  ZCuboid getSelectedBoundBox() const;
+
   virtual void selectSwcNode(const ZRect2d &roi);
 
   void setStackBc(double factor, double offset, int channel);
@@ -913,12 +918,12 @@ public:
     m_hadSegmentationDownsampled = on;
   }
 
-  void notifySegmentationUpdated();
+  void notifySegmentationUpdated(bool invalidatingSplit);
 
 public:
   void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg) const;
-  void emitMessage(const QString &msg, neutu::EMessageType type) const;
+  void emitWarning(const QString &msg);
+  void emitMessage(const QString &msg, neutu::EMessageType type);
 
 public:
   ZNeuronTracer& getNeuronTracer();
@@ -1103,6 +1108,7 @@ public:
   }
 
   void addTask(ZTask *task);
+  void addTask(std::function<void()> f);
 
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
@@ -1266,6 +1272,7 @@ public slots: //undoable commands
   //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
 public slots:
+  void updateStack(ZStack *stack);
   void selectAllSwcTreeNode();
   void autoSaveSlot();
   bool saveSwc(const std::string &filePath);
@@ -1316,10 +1323,11 @@ public slots:
   void addMessageTask(const ZWidgetMessage &msg);
 
 signals:
+  void updatingStack(ZStack *stack);
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
-  void messageGenerated(const QString &message, bool appending = true) const;
+  void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
-  void messageGenerated(const ZWidgetMessage&) const;
+  void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
@@ -1327,7 +1335,7 @@ signals:
   void stackRangeChanged();
   void sparseStackModified();
   void labelFieldModified();
-  void segmentationUpdated();
+  void segmentationUpdated(bool invalidatingSplit);
   void stackReadDone();
   void stackLoaded();
   void punctaModified();
@@ -1353,8 +1361,10 @@ signals:
   void swcNetworkModified();
   void activeViewModified();
 
-  void objectSelectionChanged(QList<ZStackObject*> selected,
-                              QList<ZStackObject*> deselected);
+  void objectSelectionChanged(const ZStackObjectInfoSet &selected,
+                              const ZStackObjectInfoSet &deselected);
+//  void objectSelectionChanged(QList<ZStackObject*> selected,
+//                              QList<ZStackObject*> deselected);
   void punctaSelectionChanged(QList<ZPunctum*> selected,
                               QList<ZPunctum*> deselected);
   void meshSelectionChanged(QList<ZMesh*> selected,
@@ -1409,6 +1419,7 @@ protected:
   void addTaskSlot(ZTask *task);
   void endWorkThread();
   void clearToDestroy();
+  void requestStackUpdate(ZStack *stack);
 
   virtual bool _loadFile(const QString &filePath);
 
@@ -1677,6 +1688,12 @@ template<typename T>
 QList<T*> ZStackDoc::getObjectList() const
 {
   return m_objectGroup.getObjectList<T>();
+}
+
+template<typename T>
+QList<T*> ZStackDoc::getObjectList(QMutex *mutex) const
+{
+  return m_objectGroup.getObjectList<T>(mutex);
 }
 
 template<typename T>

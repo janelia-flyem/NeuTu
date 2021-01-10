@@ -15,10 +15,25 @@
 #include "zdvidutil.h"
 
 const char* ZDvidAnnotation::KEY_COMMENT = "comment";
+double ZDvidAnnotation::DEFAULT_PRE_SYN_RADIUS = 7.0;
+double ZDvidAnnotation::DEFAULT_POST_SYN_RADIUS = 3.0;
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
   init();
+}
+
+ZDvidAnnotation::ZDvidAnnotation(const ZDvidAnnotation &annotation)
+{
+  m_position = annotation.m_position;
+  m_kind = annotation.m_kind;
+  m_radius = annotation.m_radius;
+  m_bodyId = annotation.m_bodyId;
+  m_status = annotation.m_status;
+  m_partnerHint = annotation.m_partnerHint;
+  m_tagSet = annotation.m_tagSet;
+  m_propertyJson = ZJsonObject(annotation.m_propertyJson.clone());
+  m_relJson = ZJsonArray(annotation.m_relJson.clone());
 }
 
 void ZDvidAnnotation::init()
@@ -30,6 +45,11 @@ void ZDvidAnnotation::init()
   m_status = EStatus::NORMAL;
   setDefaultRadius();
   setDefaultColor();
+}
+
+ZDvidAnnotation* ZDvidAnnotation::clone() const
+{
+  return new ZDvidAnnotation(*this);
 }
 
 void ZDvidAnnotation::setRadius(double r)
@@ -158,14 +178,14 @@ double ZDvidAnnotation::GetDefaultRadius(EKind kind)
 {
   switch (kind) {
   case EKind::KIND_POST_SYN:
-    return 3.0;
+    return DEFAULT_POST_SYN_RADIUS;
   case EKind::KIND_PRE_SYN:
-    return 7.0;
+    return DEFAULT_PRE_SYN_RADIUS;
   default:
     break;
   }
 
-  return 7.0;
+  return DEFAULT_PRE_SYN_RADIUS;
 }
 
 void ZDvidAnnotation::setDefaultRadius()
@@ -998,8 +1018,8 @@ bool ZDvidAnnotation::AddRelation(
 ZCuboid ZDvidAnnotation::getBoundBox() const
 {
   ZCuboid box;
-  box.setFirstCorner(getPosition().toPoint() - getRadius());
-  box.setLastCorner(getPosition().toPoint() + getRadius());
+  box.setMinCorner(getPosition().toPoint() - getRadius());
+  box.setMaxCorner(getPosition().toPoint() + getRadius());
 
   return box;
 }

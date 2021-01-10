@@ -1,17 +1,18 @@
 #ifndef ZDVIDLABELSLICE_H
 #define ZDVIDLABELSLICE_H
 
+#include <unordered_set>
+#include <memory>
+
 #include <QCache>
 #include <QMutex>
 
-#include "common/zsharedpointer.h"
 #include "zuncopyable.h"
 #include "neutube.h"
 #include "zstackobject.h"
 #include "zdvidtarget.h"
 #include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
-#include "zobjectcolorscheme.h"
 #include "zimage.h"
 #include "zselector.h"
 
@@ -27,6 +28,7 @@ class ZArbSliceViewParam;
 class ZTask;
 class ZStackDoc;
 class ZDvidDataSliceTaskFactory;
+class ZFlyEmBodyIdColorScheme;
 
 class ZDvidLabelSlice : public ZStackObject, ZUncopyable
 {
@@ -84,18 +86,49 @@ public:
   void addSelection(const InputIterator &begin, const InputIterator &end,
                     neutu::ELabelSource labelType);
 
+  template<template<class...> class Container>
+  void addSelection(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
+
   template <typename InputIterator>
   void setSelection(const InputIterator &begin, const InputIterator &end,
                     neutu::ELabelSource labelType);
+  template<template<class...> class Container>
+  void setSelection(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
 
-
+  /*! xor selection on a group of bodies
+   *
+   * Note that when \a labelType is ORIGINAL, the labels will be mapped to the
+   * final labels and then apply xor selection on the mapped labels in the
+   * MAPPED mode in order to avoid partial selection of a merged body.
+   */
   template <typename InputIterator>
   void xorSelection(const InputIterator &begin, const InputIterator &end,
                     neutu::ELabelSource labelType);
 
+  template<template<class...> class Container>
+  void xorSelection(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
+
   template <typename InputIterator>
   void xorSelectionGroup(const InputIterator &begin, const InputIterator &end,
                          neutu::ELabelSource labelType);
+
+  // The difference between xorSelection and xorSelectionGroup is that
+  // xorSelection updates selection on the input group of bodies one by one
+  // independently, while xorSelectionGroup treat them as whole. In
+  // xorSelectionGroup, if any body in the input is not selected, then the whole
+  // group is treated as unselected, meaning that xor leads to seleting all
+  // the bodies in the group. Only when all the bodies are selected in the group,
+  // xorSelectionGroup deselects all of them. Another difference between them
+  // is how they treat original labels. xorSelection will map every original
+  // label to its final label and operate on the final label to keep the integrity
+  // of body merges, while xorSelectionGroup treats a original label as it is.
+  template<template<class...> class Container>
+  void xorSelectionGroup(
+      const Container<uint64_t> &bodyList, neutu::ELabelSource labelType);
+
 
   inline const std::set<uint64_t>& getSelectedOriginal() const {
     return m_selectedOriginal;
@@ -108,12 +141,29 @@ public:
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);
   void updateLabelColor();
 
-  const ZObjectColorScheme& getColorScheme() const {
-    return m_objColorSheme;
+  const std::shared_ptr<ZFlyEmBodyColorScheme> getColorScheme() const {
+    return m_defaultColorSheme;
   }
 
   QColor getLabelColor(uint64_t label, neutu::ELabelSource labelType) const;
   QColor getLabelColor(int64_t label, neutu::ELabelSource labelType) const;
+
+  bool setLabelColor(uint64_t label, const QColor &color, size_t rank);
+
+  /*!
+   * \brief Set the label color by specifing a string code.
+   *
+   * When the code is non-empty, it is taken as the name of color passed to
+   * QColor directly; otherwise it means no special color for the label and
+   * if it has one, the existing one will be removed.
+   */
+  bool setLabelColor(uint64_t label, const QString &colorCode, size_t rank);
+  bool setLabelColor(uint64_t label, const char *colorCode, size_t rank);
+  bool setLabelColor(uint64_t label, const std::string &colorCode, size_t rank);
+
+  bool removeLabelColor(uint64_t label, size_t rank);
+
+  bool resetLabelColor(size_t rank);
 
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
   uint64_t getMappedLabel(uint64_t label) const;
@@ -121,6 +171,9 @@ public:
       uint64_t label, neutu::ELabelSource labelType) const;
 
   std::set<uint64_t> getOriginalLabelSet(uint64_t mappedLabel) const;
+
+  bool setSelectedLabelColor(const QColor &color);
+  bool resetSelectedLabelColor();
 
   uint64_t getHitLabel() const;
   std::set<uint64_t> getHitLabelSet() const;
@@ -147,7 +200,7 @@ public:
     return m_selector;
   }
 
-  void setCustomColorMap(const ZSharedPointer<ZFlyEmBodyColorScheme> &colorMap);
+  void setCustomColorMap(const std::shared_ptr<ZFlyEmBodyColorScheme> &colorMap);
   void removeCustomColorMap();
   bool hasCustomColorMap() const;
   void assignColorMap();
@@ -172,6 +225,12 @@ public:
   void setTaskFactory(std::unique_ptr<ZDvidDataSliceTaskFactory> &&factory);
 
   void allowBlinking(bool on);
+
+public:
+  void _forceUpdate(
+      const ZStackViewParam &viewParam, bool ignoringHidden) {
+    forceUpdate(viewParam, ignoringHidden);
+  }
 
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
@@ -223,11 +282,17 @@ private:
 
   bool hasValidPaintBuffer() const;
 
+  std::shared_ptr<ZFlyEmBodyColorScheme> getBaseColorScheme() const;
+  void updateColorField();
+
+  ZFlyEmBodyIdColorScheme* getIndividualColorScheme(size_t rank) const;
+
 private:
   ZObject3dScanArray m_objArray;
 
-  ZObjectColorScheme m_objColorSheme;
-  ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
+  std::shared_ptr<ZFlyEmBodyColorScheme> m_defaultColorSheme;
+  std::vector<std::shared_ptr<ZFlyEmBodyIdColorScheme>> m_individualColorScheme;
+  std::shared_ptr<ZFlyEmBodyColorScheme> m_customColorScheme;
 
   QVector<int> m_rgbTable;
 
@@ -238,6 +303,7 @@ private:
 
   ZArray *m_labelArray;
   ZArray *m_mappedLabelArray;
+  std::vector<uint32_t> m_colorField;
   QMutex m_updateMutex;
 
   std::set<uint64_t> m_prevSelectedOriginal;
@@ -268,6 +334,13 @@ void ZDvidLabelSlice::xorSelection(
   }
 }
 
+template<template<class...> class Container>
+void ZDvidLabelSlice::xorSelection(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  xorSelection(bodyList.begin(), bodyList.end(), labelType);
+}
+
 template <typename InputIterator>
 void ZDvidLabelSlice::addSelection(
     const InputIterator &begin, const InputIterator &end,
@@ -285,6 +358,13 @@ void ZDvidLabelSlice::addSelection(
   }
 }
 
+template<template<class...> class Container>
+void ZDvidLabelSlice::addSelection(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  addSelection(bodyList.begin(), bodyList.end(), labelType);
+}
+
 template <typename InputIterator>
 void ZDvidLabelSlice::setSelection(
     const InputIterator &begin, const InputIterator &end,
@@ -293,6 +373,13 @@ void ZDvidLabelSlice::setSelection(
   clearSelection();
   addSelection(begin, end, labelType);
   paintBuffer();
+}
+
+template<template<class...> class Container>
+void ZDvidLabelSlice::setSelection(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  setSelection(bodyList.begin(), bodyList.end(), labelType);
 }
 
 template <typename InputIterator>
@@ -341,5 +428,11 @@ void ZDvidLabelSlice::xorSelectionGroup(
   }
 }
 
+template<template<class...> class Container>
+void ZDvidLabelSlice::xorSelectionGroup(
+    const Container<uint64_t> &bodyList, neutu::ELabelSource labelType)
+{
+  xorSelectionGroup(bodyList.begin(), bodyList.end(), labelType);
+}
 
 #endif // ZDVIDLABELSLICE_H

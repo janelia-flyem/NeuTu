@@ -26,7 +26,7 @@ QString SynapsePredictionInputDialog::getRoI() {
 
 ZIntCuboid SynapsePredictionInputDialog::getVolume() {
   ZIntCuboid box;
-  box.setFirstCorner(
+  box.setMinCorner(
         ui->x1spinBox->value(), ui->y1spinBox->value(), ui->z1spinBox->value());
   box.setSize(ui->widthSpinBox->value(), ui->heightSpinBox->value(),
               ui->depthSpinBox->value());
@@ -35,9 +35,9 @@ ZIntCuboid SynapsePredictionInputDialog::getVolume() {
 }
 
 void SynapsePredictionInputDialog::setVolume(ZIntCuboid volume) {
-  ui->x1spinBox->setValue(volume.getFirstCorner().getX());
-  ui->y1spinBox->setValue(volume.getFirstCorner().getY());
-  ui->z1spinBox->setValue(volume.getFirstCorner().getZ());
+  ui->x1spinBox->setValue(volume.getMinCorner().getX());
+  ui->y1spinBox->setValue(volume.getMinCorner().getY());
+  ui->z1spinBox->setValue(volume.getMinCorner().getZ());
   ui->widthSpinBox->setValue(volume.getWidth());
   ui->heightSpinBox->setValue(volume.getHeight());
   ui->depthSpinBox->setValue(volume.getDepth());

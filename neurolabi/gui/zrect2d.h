@@ -11,7 +11,7 @@ class ZRect2d : public ZStackObject
 public:
   ZRect2d();
   ZRect2d(int x0, int y0, int width, int height);
-  virtual ~ZRect2d();
+  virtual ~ZRect2d() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::RECT2D;
@@ -24,19 +24,21 @@ public:
   inline int getWidth() const { return m_width; }
   inline int getHeight() const { return m_height; }
 
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  ZIntPoint getCenter() const;
+
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
   bool contains(double x, double y) const;
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const override;
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
+               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
 
 //  virtual const std::string& className() const;
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
   }
@@ -62,18 +64,18 @@ public:
   /*!
    * \brief Set the last corner of the rectable
    */
-  void setLastCorner(int x, int y);
-  void setFirstCorner(int x, int y);
+  void setMaxCorner(int x, int y);
+  void setMinCorner(int x, int y);
 
   /*!
     * \brief Set size by fixing the first corner.
     */
   void setSize(int width, int height);
 
-  int getFirstX() const;
-  int getFirstY() const;
-  int getLastX() const;
-  int getLastY() const;
+  int getMinX() const;
+  int getMinY() const;
+  int getMaxX() const;
+  int getMaxY() const;
 
   inline void setZ(int z) { m_z = z; }
   inline int getZ() const { return m_z; }
@@ -86,6 +88,9 @@ public:
   static QRectF CropRect(
       const QRectF &sourceRectIn, const QRectF &sourceRectOut,
       const QRectF &targetRectIn);
+
+  ZCuboid getBoundBox() const override;
+  ZIntCuboid getIntBoundBox() const;
 
 private:
   void init(int x0, int y0, int width, int height);

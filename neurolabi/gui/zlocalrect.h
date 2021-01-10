@@ -19,24 +19,25 @@ public:
 
 public:
   void toLocalNeuroseg(Local_Neuroseg *locseg) const;
-  Local_Neuroseg* toLocalNeuroseg() const;
+  Local_Neuroseg* toLocalNeuroseg() const override;
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
+  ZCuboid getBoundBox() const override;
 
 public:
-    virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws);
-    virtual double fittingScore(const Stack *stack,
-                        ZDirectionalTemplate::FittingScoreOption option,
-                        Stack *mask = NULL);
-    virtual ZDirectionalTemplate* extend(Dlist_Direction_e direction = DL_FORWARD,
-                                         double step = 0.5);
-    virtual void flip();
-    virtual bool hitTest(double x, double y, double z);
-    virtual ZPoint bottom();
-    virtual ZPoint center();
-    virtual ZPoint top();
+    void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws) override;
+    double fittingScore(const Stack *stack,
+                ZDirectionalTemplate::FittingScoreOption option,
+                Stack *mask = NULL) override;
+    ZDirectionalTemplate* extend(Dlist_Direction_e direction = DL_FORWARD,
+                                 double step = 0.5) override;
+    void flip() override;
+    bool hitTest(double x, double y, double z) override;
+    ZPoint bottom() override;
+    ZPoint center() override;
+    ZPoint top() override;
 
 private:
     double setFittingScoreOption(Stack_Fit_Score *fs,

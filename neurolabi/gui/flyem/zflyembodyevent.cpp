@@ -191,7 +191,7 @@ ZFlyEmBodyEvent ZFlyEmBodyEvent::MakeHighResEvent(
 {
   ZFlyEmBodyEvent event(EAction::UPDATE, config);
 
-  if (event.getDsLevel() > minDsLevel) {
+  if (config.hasNextDsLevel(minDsLevel)) {
     event.decDsLevel();
     event.addUpdateFlag(UPDATE_MULTIRES);
   } else {

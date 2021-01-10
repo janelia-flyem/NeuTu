@@ -4,12 +4,17 @@
 #include <QtConcurrentRun>
 #endif
 
+#include "tz_3dgeom.h"
+#include "tz_geo3d_point_array.h"
 #include "tz_voxel_graphics.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_attribute.h"
 #include "common/math.h"
 #include "zpainter.h"
 #include "c_stack.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zpointarray.h"
+#include "zstack.hxx"
 
 ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
 {
@@ -503,6 +508,36 @@ void ZLocalNeuroseg::updateProfile(const Stack *stack, int option)
   }
 }
 
+bool ZLocalNeuroseg::hitMask(const ZStack *stack) const
+{
+  if (stack) {
+    ZPointArray ptArray = sample(1.0, 1.0);
+    for (const ZPoint &pt : ptArray) {
+      if (stack->getIntValue(neutu::iround(pt.x()), neutu::iround(pt.y()),
+                             neutu::iround(pt.z())) > 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool ZLocalNeuroseg::hitMask(const Stack *stack) const
+{
+  if (stack) {
+    ZPointArray ptArray = sample(1.0, 1.0);
+    for (const ZPoint &pt : ptArray) {
+      if (C_Stack::value(stack, neutu::iround(pt.x()), neutu::iround(pt.y()),
+                         neutu::iround(pt.z())) > 0.0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 void ZLocalNeuroseg::topPosition(double pos[]) const
 {
   Neuroseg_Top(&(m_locseg->seg), pos);
@@ -530,6 +565,12 @@ void ZLocalNeuroseg::asyncGenerateFilterStack() const
 #endif
 }
 
+ZCuboid ZLocalNeuroseg::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
+}
+
 void ZLocalNeuroseg::generateFilterStack()
 {
   double bottom_position[3];
@@ -554,6 +595,96 @@ void ZLocalNeuroseg::generateFilterStack()
 #ifdef _DEBUG_2
   C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test.tif", m_filterStack);
 #endif
+}
+
+void ZLocalNeuroseg::transform(coordinate_3d_t *points, size_t count) const
+{
+  if (m_locseg) {
+    if (m_locseg->seg.alpha != 0.0) {
+      Rotate_Z(Coordinate_3d_Double_Array(points),
+               Coordinate_3d_Double_Array(points),
+               count, m_locseg->seg.alpha, 0);
+    }
+
+    if (m_locseg->seg.curvature >= NEUROSEG_MIN_CURVATURE) {
+      double curvature = m_locseg->seg.curvature;
+      if (curvature > NEUROSEG_MAX_CURVATURE) {
+        curvature = NEUROSEG_MAX_CURVATURE;
+      }
+
+      Geo3d_Point_Array_Bend(
+            points, count, m_locseg->seg.h / curvature);
+    }
+
+    if ((m_locseg->seg.theta != 0.0) || (m_locseg->seg.psi != 0.0)) {
+      Rotate_XZ((double *) points, (double *) points, count,
+                m_locseg->seg.theta, m_locseg->seg.psi, 0);
+    }
+
+    double pos[2][3];
+    Neuroseg_Bottom(&(m_locseg->seg), pos[0]);
+    Local_Neuroseg_Bottom(m_locseg, pos[1]);
+    double offset[3];
+    offset[0] = pos[1][0] - pos[0][0];
+    offset[1] = pos[1][1] - pos[0][1];
+    offset[2] = pos[1][2] - pos[0][2];
+
+    Geo3d_Point_Array_Translate(points, count, offset[0], offset[1], offset[2]);
+  }
+}
+
+double ZLocalNeuroseg::getHeight() const
+{
+  if (m_locseg) {
+    return m_locseg->seg.h;
+  }
+
+  return 0.0;
+}
+
+double ZLocalNeuroseg::getRadius(double z) const
+{
+  if (m_locseg) {
+    return NEUROSEG_RADIUS(&(m_locseg->seg), z);
+  }
+
+  return 0.0;
+}
+
+ZPointArray ZLocalNeuroseg::sample(double xyStep, double zStep) const
+{
+  ZPointArray points;
+
+  if (xyStep > 0.0 && zStep > 0.0) {
+    double height = getHeight();
+    for (double z = 0; z <= height; z += zStep) {
+      double radius = getRadius(z);
+      if (radius > xyStep * 0.1) {
+        for (double y = -radius; y <= radius; y += xyStep) {
+          for (double x = -radius; x <= radius; x += xyStep) {
+            if ((x * x + y * y) / (radius * radius) < 1.001) {
+              points.append(x, y, z);
+            }
+          }
+        }
+      }
+    }
+
+    if (!points.isEmpty()) {
+      coordinate_3d_t *coordArray = new coordinate_3d_t[points.size()];
+      for (size_t i = 0; i < points.size(); ++i) {
+        coordArray[i][0] = points[i].x();
+        coordArray[i][1] = points[i].y();
+        coordArray[i][2] = points[i].z();
+      }
+      transform(coordArray, points.size());
+      for (size_t i = 0; i < points.size(); ++i) {
+        points[i].set(coordArray[i][0], coordArray[i][1], coordArray[i][2]);
+      }
+    }
+  }
+
+  return points;
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)

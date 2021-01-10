@@ -24,7 +24,7 @@ ZDvidGraySlice::ZDvidGraySlice()
 //  m_maxWidth = 512;
 //  m_maxHeight = 512;
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAY_SCALE);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAYSCALE);
   getHelper()->useCenterCut(false);
 }
 
@@ -402,7 +402,7 @@ void ZDvidGraySlice::setCenterCut(int width, int height)
 void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
 {
   ZIntCuboid box;
-  box.setFirstCorner(viewPort.left(), viewPort.top(), z);
+  box.setMinCorner(viewPort.left(), viewPort.top(), z);
   box.setSize(viewPort.width(), viewPort.height(), 1);
 
   int cx = getHelper()->getCenterCutWidth();
@@ -421,7 +421,7 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
     int scale = zgeom::GetZoomScale(zoom);
     int remain = z % scale;
     stack = getDvidReader().readGrayScaleLowtis(
-          box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+          box.getMinCorner().getX(), box.getMinCorner().getY(),
           z, box.getWidth(), box.getHeight(),
           getZoom(), cx, cy, true);
     if (scale > 1) {
@@ -429,7 +429,7 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
         //        int z1 = z + scale - remain;
         int z1 = z - remain + scale;
         ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+              box.getMinCorner().getX(), box.getMinCorner().getY(),
               z1, box.getWidth(), box.getHeight(), getZoom(), cx, cy,
               true);
         //        double lambda = double(remain) / scale;
@@ -470,6 +470,7 @@ bool ZDvidGraySlice::consume(
       getHelper()->setViewParam(viewParam);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       updateImage(stack);
+      delete stack;
       succ = true;
     } else {
       delete stack;
@@ -488,9 +489,10 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
     task->setViewParam(getHelper()->getViewParam());
     task->setZoom(getHelper()->getZoom());
     task->useCenterCut(false);
-    task->setDelay(100);
+    task->setDelay(50);
     task->setDoc(doc);
     task->setHandle(getSource());
+    task->setName(this->getSource().c_str());
   }
 
   return task;
@@ -576,6 +578,14 @@ void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
 //  getDvidReader().open(target);
 }
 
+ZCuboid ZDvidGraySlice::getBoundBox() const
+{
+  return ZCuboid::FromIntCuboid(
+        ZIntCuboid(getX(), getY(), getZ(),
+                   getX() + getWidth(), getY() + getHeight(), getZ()));
+}
+
+/*
 ZRect2d ZDvidGraySlice::getBoundBox() const
 {
   ZRect2d rect;
@@ -583,3 +593,4 @@ ZRect2d ZDvidGraySlice::getBoundBox() const
 
   return rect;
 }
+*/

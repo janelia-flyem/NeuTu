@@ -340,6 +340,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_SPLIT_START:
     action = new QAction("Launch Split", parent);
     break;
+  case ACTION_BODY_CHANGE_COLOR:
+    action = new QAction("Change Body Color", parent);
+    break;
+  case ACTION_BODY_RESET_COLOR:
+    action = new QAction("Reset Body Color", parent);
+    break;
   case ACTION_BODY_ANNOTATION:
     action = new QAction("Annotate", parent);
     break;
@@ -411,6 +417,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QFontIcon::icon(10697));
     break;
   case ACTION_COPY_NEUROGLANCER_LINK:
+  case ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI:
     action = new QAction("Copy Neuroglancer Link", parent);
     action->setIcon(QFontIcon::icon(10697));
     break;
@@ -531,7 +538,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_CANCEL_RECT_ROI:
     action = new QAction("Cancel", parent);
     action->setToolTip("Cancel the current rectangle ROI");
-    action->setIcon(QIcon(":/images/cancel.png"));
+//    action->setIcon(QIcon(":/images/cancel.png"));
+    action->setIcon(QFontIcon::icon(8998, Qt::red));
     break;
   case ACTION_PUNCTA_CHANGE_COLOR:
     action = new QAction("Change Color of Selected Puncta", parent);
@@ -658,6 +666,14 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = CreateColorAction(
           ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, parent);
     break;
+  case ACTION_BODY_COLOR_SEQUENCER_NORMAL:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL, parent);
+    break;
+  case ACTION_BODY_COLOR_RANDOM:
+    action = CreateColorAction(
+          ZFlyEmBodyColorOption::BODY_COLOR_RANDOM, parent);
+    break;
   case ACTION_BODY_COLOR_PROTOCOL:
     action = CreateColorAction(
           ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, parent);
@@ -731,6 +747,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_USER_FEEDBACK:
     action = new QAction("User Feedback", parent);
     action->setIcon(QFontIcon::icon(0xf086, Qt::darkGreen));
+    break;
+  case ACTION_PROFILE:
+    action = new QAction("Profile", parent);
+    action->setIcon(QFontIcon::icon(0xf080, Qt::darkGreen));
     break;
   default:
     break;

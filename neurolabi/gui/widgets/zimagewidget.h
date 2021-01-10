@@ -2,9 +2,10 @@
  * @brief Image widget
  * @author Ting Zhao
  */
-#ifndef _ZIMAGEWIDGET_H_
-#define _ZIMAGEWIDGET_H_
+#ifndef ZIMAGEWIDGET_H_
+#define ZIMAGEWIDGET_H_
 
+#include <memory>
 #include <QImage>
 #include <QWidget>
 #include <QMenu>
@@ -19,6 +20,8 @@ class ZPaintBundle;
 class ZImage;
 class ZPixmap;
 class ZWidgetMessage;
+class ZPainter;
+class ZStackObject;
 
 /** A class of widget for image display.
  *  Sample usage:
@@ -35,7 +38,7 @@ class ZImageWidget : public QWidget {
 
 public:
   ZImageWidget(QWidget *parent);
-  virtual ~ZImageWidget();
+  virtual ~ZImageWidget() override;
 
   inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
 
@@ -133,8 +136,8 @@ public:
   void setCanvasRegion(int x0, int y0, int w, int h);
 
   //void setData(const uchar *data, int width, int height, QImage::Format format);
-  QSize minimumSizeHint() const;
-  QSize sizeHint() const;
+  QSize minimumSizeHint() const override;
+  QSize sizeHint() const override;
 //  bool isColorTableRequired();
   void addColorTable();
 
@@ -157,7 +160,7 @@ public:
   QPointF canvasCoordinate(QPoint widgetCoord) const;
 
 
-  void paintEvent(QPaintEvent *event);
+  void paintEvent(QPaintEvent *event) override;
 
   bool popLeftMenu(const QPoint &pos);
   bool popRightMenu(const QPoint &pos);
@@ -226,19 +229,22 @@ public:
   void maximizeViewPort();
 
   void enableOffsetAdjustment(bool on);
+  bool paintWidgetCanvas(ZImage *canvas);
+  ZImage* makeWidgetCanvas() const;
+  void updateWidgetCanvas(ZPixmap *canvas);
 
 public:
-  virtual void mouseReleaseEvent(QMouseEvent *event);
-  virtual void mouseMoveEvent(QMouseEvent *event);
-  virtual void mousePressEvent(QMouseEvent *event);
-  virtual void mouseDoubleClickEvent(QMouseEvent *event);
-  virtual void wheelEvent(QWheelEvent *event);
-  virtual void resizeEvent(QResizeEvent *event);
+  void mouseReleaseEvent(QMouseEvent *event) override;
+  void mouseMoveEvent(QMouseEvent *event) override;
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseDoubleClickEvent(QMouseEvent *event) override;
+  void wheelEvent(QWheelEvent *event) override;
+  void resizeEvent(QResizeEvent *event) override;
 
 protected:
-  void keyPressEvent(QKeyEvent *event);
-  bool event(QEvent *event);
-  void showEvent(QShowEvent *event);
+  void keyPressEvent(QKeyEvent *event) override;
+  bool event(QEvent *event) override;
+  void showEvent(QShowEvent *event) override;
 
 public slots:
   void updateView();
@@ -285,6 +291,13 @@ private:
   void adjustProjRegion(const QRect &viewPort);
   QSize getMaskSize() const;
   void paintObject();
+//  void paintDynamicObject();
+  void paintObject(ZPainter &painter,
+      const QList<std::shared_ptr<ZStackObject>> &objList);
+  void paintObject(ZPainter &painter,
+      const QList<ZStackObject*> &objList);
+  template<typename ZStackObjectPtr>
+  void paintObjectTmpl(ZPainter &painter, const QList<ZStackObjectPtr> &objList);
   void paintZoomHint();
   void paintCrossHair();
 
@@ -297,7 +310,7 @@ private:
   ZPixmap *m_tileCanvas = nullptr;
   ZPixmap *m_dynamicObjectCanvas = nullptr;
   ZPixmap *m_activeDecorationCanvas = nullptr;
-//  ZPixmap *m_widgetCanvas;
+  ZPixmap *m_widgetCanvas = nullptr;
 
 //  QRect m_viewPort; /* viewport, in world coordinates */
 //  QRectF m_projRegion; /* projection region */

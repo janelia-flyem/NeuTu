@@ -9,13 +9,17 @@ int ZRandomGenerator::count = 0;
 
 ZRandomGenerator::ZRandomGenerator()
 {
-  srand((unsigned)time(0) + count);
-  count++;
+  srand(UniqueSeed());
 }
 
 ZRandomGenerator::ZRandomGenerator(int seed)
 {
   srand(seed);
+}
+
+int ZRandomGenerator::UniqueSeed()
+{
+  return (unsigned)time(0) + count++;
 }
 
 void ZRandomGenerator::setSeed(int seed) const

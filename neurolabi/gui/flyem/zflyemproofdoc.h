@@ -42,6 +42,7 @@ class ZStackArray;
 class ZFlyEmRoiManager;
 class ZStackBlockGrid;
 class ZDvidEnv;
+class ZRoiProvider;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -62,6 +63,7 @@ public:
 
 //  virtual void setDvidTarget(const ZDvidTarget &target);
   virtual bool setDvid(const ZDvidEnv &env);
+  virtual bool supervisorNeeded() const;
 
 //  virtual void updateTileData();
 
@@ -236,7 +238,7 @@ public:
 
   void downloadSynapseFunc();
 
-  void recordAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+  void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
   void removeSelectedAnnotation(uint64_t bodyId);
   template <typename InputIterator>
   void removeSelectedAnnotation(
@@ -245,8 +247,8 @@ public:
 
   void verifyBodyAnnotationMap();
 
-  ZFlyEmBodyAnnotation getFinalAnnotation(
-      const std::vector<uint64_t> &bodyList);
+  ZFlyEmBodyAnnotation getFinalAnnotation(const std::vector<uint64_t> &bodyList,
+      std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
   /*!
    * \brief Remove unselected bodies from annotation map.
@@ -255,7 +257,7 @@ public:
    */
   void clearBodyAnnotationMap();
 
-  void activateBodyColorMap(const QString &colorMapName);
+  void activateBodyColorMap(const QString &colorMapName, bool updating);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
 
   ZDvidReader& getDvidReader();
@@ -266,6 +268,7 @@ public:
   }
 
   const ZDvidReader &getWorkReader();
+  ZDvidWriter& getWorkWriter();
 
   ZDvidReader* getSparseVolReader() {
     return &m_sparseVolReader;
@@ -484,7 +487,21 @@ public:
   }
 
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
-  void updateBodyColor(ZSharedPointer<ZFlyEmBodyColorScheme> colorMap);
+  void updateBodyColor(
+      ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating);
+  void setSelectedBodyColor(const QColor &color);
+  void resetSelectedBodyColor();
+  void setBodyColor(uint64_t bodyId, const std::string &colorCode);
+  void setBodyColor(uint64_t bodyId, const QColor &color);
+  void setBodyColorFromStatus(uint64_t bodyId, const std::string &colorCode);
+
+
+  void setBodyColor(
+    const std::vector<uint64_t> &bodyList,
+    const std::vector<std::string> &colorList);
+  void setBodyColorFromStatus(
+    const std::vector<uint64_t> &bodyList,
+    const std::vector<std::string> &colorList);
 
   ZJsonArray getMergeOperation() const;
 
@@ -507,6 +524,7 @@ public:
 
   const ZContrastProtocol& getContrastProtocol() const;
   const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
+  bool isMergable(const ZFlyEmBodyAnnotation &annot) const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
@@ -518,6 +536,8 @@ public:
   ZDvidReader* getCurrentGrayscaleReader() const;
   ZDvidReader* getCurrentBodyGrayscaleReader();
 
+  ZMesh* makeRoiMesh(const QString &name);
+
   bool test();
 
 public:
@@ -527,6 +547,13 @@ public:
   virtual void executeRemoveTodoCommand() override;
 
   void toggleGrayscale(neutu::EAxis axis);
+
+  std::shared_ptr<ZRoiProvider> initRoiProvider();
+  std::shared_ptr<ZRoiProvider> getRoiProvider() const;
+
+  void addUploadTask(
+      const std::string &dataName, const std::string &key, const QByteArray &data);
+  void addUploadTask(std::function<void(ZDvidWriter &writer)> f);
 
 signals:
   void bodyMerged();
@@ -611,7 +638,6 @@ public slots:
   void updateDvidLabelObjectSliently();
   void updateDvidLabelObject(neutu::EAxis axis);
 
-
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
@@ -619,6 +645,7 @@ public slots:
   void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
   void refreshSynapse();
+  void updateSynapseDefaultRadius(double preRadius, double postRadius);
 
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
@@ -701,6 +728,18 @@ protected:
 
   bool _loadFile(const QString &filePath) override;
 
+  template<template<class...> class Container>
+  void setBodyColorT(
+      const Container<uint64_t> &bodyList, const QColor &color, size_t rank);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColorT(
+      const C1<uint64_t> &bodyList, const C2<QColor> &colorList, size_t rank);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColorT(
+      const C1<uint64_t> &bodyList, const C2<std::string> &colorList, size_t rank);
+
+  void setBodyColorR(uint64_t bodyId, const std::string &colorCode, size_t rank);
+
 private:
   void connectSignalSlot();
 
@@ -757,7 +796,8 @@ private:
       const ZFlyEmSequencerColorScheme &colorScheme,
       ZFlyEmBodyColorOption::EColorOption option);
 
-  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option);
+  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option,
+                            bool updating);
 
   QString getAnnotationNameWarningDetail(
       const QMap<uint64_t, QVector<QString> > &nameMap) const;
@@ -848,6 +888,8 @@ protected:
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
 
+  std::shared_ptr<ZRoiProvider> m_roiProvider;
+
   static const char *THREAD_SPLIT;
 };
 
@@ -868,7 +910,6 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
     removeSelectedAnnotation(*iter);
   }
 }
-
 
 
 #endif // ZFLYEMPROOFDOC_H

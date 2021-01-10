@@ -1,6 +1,7 @@
 #ifndef ZJSONOBJECTPARSER_H
 #define ZJSONOBJECTPARSER_H
 
+#include <vector>
 #include <string>
 #include "zjsonparser.h"
 
@@ -25,6 +26,23 @@ public:
   T getValue(const ZJsonObject &obj, const char *key,
              const T &defaultValue) const;
 
+  /*!
+   * \brief Get value from a list of candidate keys
+   *
+   * The first existing key in \a cadidateKeys will be retrieved first even
+   * if the value is not valid.
+   */
+  template<typename T>
+  T getValue(
+      const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
+      const T &defaultValue);
+
+  std::string getValue(
+      const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
+      const char* defaultValue);
+//  std::string getValue(
+//      const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
+//      const std::string &defaultValue);
 
   std::string getValue(const ZJsonObject &obj, const char *key,
                        const char *defaultValue);
@@ -57,25 +75,23 @@ T ZJsonObjectParser::getValue(
   return defaultValue;
 }
 
+template<typename T>
+T ZJsonObjectParser::getValue(
+    const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
+    const T &defaultValue)
+{
+  for (const std::string &key : candidateKeys) {
+    if (obj.hasKey(key)) {
+      return getValue(obj, key, defaultValue);
+    }
+  }
+
+  return defaultValue;
+}
 
 //template<>
 //std::string ZJsonObjectParser::getValue(
-//        const ZJsonObject &obj, const std::string &key,
-//        const std::string &defaultValue) const;
-
-//template<>
-//std::string ZJsonObjectParser::getValue(
-//        const ZJsonObject &obj, const char *key,
-//        const std::string &defaultValue) const;
-
-//template<>
-//int ZJsonObjectParser::getValue(
-//        const ZJsonObject &obj, const std::string &key,
-//        const int &defaultValue) const;
-
-//template<>
-//int ZJsonObjectParser::getValue(
-//        const ZJsonObject &obj, const char *key,
-//        const int &defaultValue) const;
+//    const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
+//    const std::string &defaultValue);
 
 #endif // ZJSONOBJECTPARSER_H

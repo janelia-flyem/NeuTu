@@ -31,6 +31,7 @@ class ZNeu3SliceViewDialog;
 class ZFlyEmMessageWidget;
 class ZWidgetMessage;
 class ZFlyEmBodyColorScheme;
+class InformationDialog;
 
 #if defined(_USE_WEBENGINE_)
 class QWebEngineView;
@@ -49,7 +50,7 @@ public:
 
   void initialize();
   void initOpenglContext();
-  bool loadDvidTarget();
+  bool loadDvidTarget(const QString &name);
 
   ZFlyEmBody3dDoc* getBodyDocument() const;
   ZFlyEmProofDoc* getDataDocument() const;
@@ -115,6 +116,8 @@ public slots:
 
   bool allowingSplit(uint64_t bodyId) const;
   bool cleaving() const;
+
+  void gotoPosition(double x, double y, double z);
 
 signals:
   void bodySelected(uint64_t bodyId);
@@ -239,6 +242,7 @@ private:
   QProgressDialog *m_progressDialog = nullptr;
   FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
   ZNeu3SliceViewDialog *m_browseOptionDlg = nullptr;
+  InformationDialog *m_infoDlg = nullptr;
 
   QDockWidget *m_webSliceDock = nullptr;
 #if defined(_USE_WEBENGINE_)

@@ -145,6 +145,7 @@ public:
 
   const ZDvidReader& getMainDvidReader() const;
   const ZDvidReader& getWorkDvidReader() const;
+  ZDvidWriter& getMainDvidWriter();
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -155,7 +156,7 @@ public:
 //  void updateFrame();
 
   ZFlyEmProofDoc* getDataDocument() const;
-  bool isAdmin() const;
+//  bool isAdmin() const;
   const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
@@ -205,11 +206,10 @@ public:
   void enableGarbageLifetimeLimit(bool on);
   bool garbageLifetimeLimitEnabled() const;
 
+  ZMesh *readMesh(const ZDvidReader &reader, ZFlyEmBodyConfig &config);
   ZMesh *readMesh(
-      const ZDvidReader &reader, const ZFlyEmBodyConfig &config,
-      int *acturalMeshZoom);
-  ZMesh *readMesh(
-      const ZDvidReader &reader, uint64_t bodyId, int zoom, int *acturalZoom);
+      const ZDvidReader &reader, uint64_t bodyId, int zoom);
+  ZMesh *readMesh(ZFlyEmBodyConfig &config);
 //  ZMesh *readSupervoxelMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
 #if 0
@@ -344,6 +344,8 @@ public:
   void addSynapseSelection(const QString &filter);
   void addSynapseSelection(const QStringList &filter);
 
+  ZMesh* getRoiMesh(const QString &name) const;
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;
@@ -396,6 +398,12 @@ public slots:
 
   void startBodyAnnotation();
   void showMeshForSplitOnly(bool on);
+
+//  void updateRoiMesh(const QString &name);
+  void updateRoiMesh(const QString &name, bool visible, const QColor &color);
+  void updateRoiMeshList(
+      const QList<QString> &nameList, const QList<bool> &visibleList,
+      const QList<QColor> &colorList);
 //  void updateCurrentTask(const QString &taskType);
 
 signals:
@@ -422,8 +430,6 @@ private:
   ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
   ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
-
-  ZMesh *readMesh(const ZFlyEmBodyConfig &config, int *actualMeshZoom);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);

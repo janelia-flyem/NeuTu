@@ -57,8 +57,8 @@ public:
    */
   static void RemoveSideSplitSeed(ZStackDoc *doc);
 
-  static void UpdateSplitResult(
-      ZStackDoc *doc, const QList<ZObject3dScan *> &result);
+//  static void UpdateSplitResult(
+//      ZStackDoc *doc, const QList<ZObject3dScan *> &result);
 
   /*!
    * \brief Consume split result
@@ -67,7 +67,10 @@ public:
    * the call.
    */
   static void ConsumeSplitResult(
-      ZStackDoc *doc, ZObject3dScanArray *result);
+      ZStackDoc *doc, ZObject3dScanArray *result, bool invalidatingSplit);
+
+  static void UpdateSynapseDefaultRadius(
+      ZStackDoc *doc, double preRadius, double postRadius);
 
 private:
   static ZStackDocObjectUpdate::EAction GetRemoveAction(bool deleteObject);

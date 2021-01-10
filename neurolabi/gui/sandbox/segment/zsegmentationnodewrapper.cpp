@@ -1,12 +1,29 @@
-#include"zsegmentationnodewrapper.h"
-#include"zpainter.h"
-
+#include "zsegmentationnodewrapper.h"
+#include "zpainter.h"
+#include "geometry/zcuboid.h"
 
 bool ZSegmentationNodeWrapper::hit(double x, double y, double z){
   if(!isSelectable()){
     return false;
   }
   return m_tree->contains(m_id,x,y,z);
+}
+
+ZCuboid ZSegmentationNodeWrapper::getBoundBox() const
+{
+  ZIntCuboid box;
+
+  vector<shared_ptr<ZSegmentationEncoder>> vec_encoders;
+
+  for(auto id: m_tree->getLeavesIDs(m_id)){
+    vec_encoders.push_back(m_tree->getEncoder(id));
+  }
+
+  for(auto encoder: vec_encoders){
+    box.join(encoder->getBoundBox());
+  }
+
+  return ZCuboid::FromIntCuboid(box);
 }
 
 
@@ -52,7 +69,7 @@ void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplaySty
   }
 
   if(box.getWidth() <= 0 || box.getHeight() <= 0 || box.getDepth() <= 0||
-     z < box.getFirstCorner().getZ() || z > box.getLastCorner().getZ()){
+     z < box.getMinCorner().getZ() || z > box.getMaxCorner().getZ()){
     return;
   }
 
@@ -62,14 +79,14 @@ void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplaySty
     const ZSegmentationEncoder* encoder = p_encoder.get();
     if(option == ZStackObject::EDisplayStyle::BOUNDARY){
       ZIntCuboid box = encoder->getBoundBox();
-      box.setFirstZ(z);
-      box.setLastZ(z);
+      box.setMinZ(z);
+      box.setMaxZ(z);
       shared_ptr<ZStack> stack = shared_ptr<ZStack>(new ZStack(GREY,box,1));
       uint8_t* p = stack->array8();
 
-      int y0 = box.getFirstCorner().getY();
-      int y1 = box.getLastCorner().getY();
-      int x0 = box.getFirstCorner().getX();
+      int y0 = box.getMinCorner().getY();
+      int y1 = box.getMaxCorner().getY();
+      int x0 = box.getMinCorner().getX();
 
       int width = box.getWidth();
       int height = box.getHeight();
@@ -113,8 +130,8 @@ void ZSegmentationNodeWrapper::display(ZPainter &painter, int slice, EDisplaySty
     } else {
       box = encoder->getBoundBox();
       std::vector<QLine> lineArray;
-      int y0 = box.getFirstCorner().getY();
-      int y1 = box.getLastCorner().getY();
+      int y0 = box.getMinCorner().getY();
+      int y1 = box.getMaxCorner().getY();
       int stride = 1;
       for(int y = y0; y <= y1; y += stride){
         const vector<int>& segments = encoder->getSegment(z,y);

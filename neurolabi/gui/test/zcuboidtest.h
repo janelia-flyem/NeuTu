@@ -16,36 +16,36 @@
 TEST(ZIntCuboid, compare)
 {
   ZIntCuboid box1;
-  box1.setFirstCorner(1, 2, 3);
-  box1.setLastCorner(100, 200, 300);
+  box1.setMinCorner(1, 2, 3);
+  box1.setMaxCorner(100, 200, 300);
 
   ZIntCuboid box2;
-  box2.setFirstCorner(1, 2, 3);
-  box2.setLastCorner(100, 200, 300);
+  box2.setMinCorner(1, 2, 3);
+  box2.setMaxCorner(100, 200, 300);
 
   ASSERT_EQ(box1, box2);
 
-  box2.setFirstX(2);
+  box2.setMinX(2);
   ASSERT_NE(box1, box2);
-  box2.setFirstCorner(1, 2, 3);
-  box2.setLastZ(2);
+  box2.setMinCorner(1, 2, 3);
+  box2.setMaxZ(2);
   ASSERT_NE(box1, box2);
 }
 
 TEST(ZIntCuboid, size)
 {
   ZIntCuboid box;
-  box.setFirstCorner(0, 0, 0);
-  box.setLastCorner(0, 0, 0);
+  box.setMinCorner(0, 0, 0);
+  box.setMaxCorner(0, 0, 0);
   ASSERT_EQ(1, int(box.getVolume()));
 
-  box.setLastCorner(1, 0, 0);
+  box.setMaxCorner(1, 0, 0);
   ASSERT_EQ(2, int(box.getVolume()));
 
-  box.setLastCorner(-1, 0, 0);
+  box.setMaxCorner(-1, 0, 0);
   ASSERT_EQ(0, int(box.getVolume()));
 
-  box.setLastCorner(1, 2, 3);
+  box.setMaxCorner(1, 2, 3);
   ASSERT_EQ(24, int(box.getVolume()));
 
   ASSERT_EQ(4, int(box.getDsMaxVolume(1, 1, 1)));
@@ -377,30 +377,30 @@ TEST(ZIntCuboid, basic)
 {
   ZIntCuboid box;
   box.set(1, 2, 3, 10, 20, 30);
-  ASSERT_EQ(1, box.getFirstCorner().getX());
-  ASSERT_EQ(2, box.getFirstCorner().getY());
-  ASSERT_EQ(3, box.getFirstCorner().getZ());
+  ASSERT_EQ(1, box.getMinCorner().getX());
+  ASSERT_EQ(2, box.getMinCorner().getY());
+  ASSERT_EQ(3, box.getMinCorner().getZ());
 
-  ASSERT_EQ(10, box.getLastCorner().getX());
-  ASSERT_EQ(20, box.getLastCorner().getY());
-  ASSERT_EQ(30, box.getLastCorner().getZ());
+  ASSERT_EQ(10, box.getMaxCorner().getX());
+  ASSERT_EQ(20, box.getMaxCorner().getY());
+  ASSERT_EQ(30, box.getMaxCorner().getZ());
 
   ASSERT_EQ(10, box.getWidth());
   ASSERT_EQ(19, box.getHeight());
   ASSERT_EQ(28, box.getDepth());
 
   box.setWidth(5);
-  ASSERT_EQ(1, box.getFirstCorner().getX());
+  ASSERT_EQ(1, box.getMinCorner().getX());
   ASSERT_EQ(5, box.getWidth());
 
   box.setHeight(10);
 
 #if 0
-  std::cout << box.getFirstCorner().toString() << std::endl;
-  std::cout << box.getLastCorner().toString() << std::endl;
+  std::cout << box.getMinCorner().toString() << std::endl;
+  std::cout << box.getMaxCorner().toString() << std::endl;
 #endif
 
-  ASSERT_EQ(2, box.getFirstCorner().getY());
+  ASSERT_EQ(2, box.getMinCorner().getY());
   ASSERT_EQ(10, box.getHeight());
 
 }
@@ -427,88 +427,88 @@ TEST(ZIntCuboid, dist)
 TEST(ZIntCuboid, hasOverlap)
 {
   ZIntCuboid box;
-  box.setFirstCorner(ZIntPoint(0, 1, 2));
-  box.setLastCorner(ZIntPoint(4, 6, 9));
+  box.setMinCorner(ZIntPoint(0, 1, 2));
+  box.setMaxCorner(ZIntPoint(4, 6, 9));
 
   ZIntCuboid box2;
-  box2.setFirstCorner(ZIntPoint(0, 1, 2));
-  box2.setLastCorner(ZIntPoint(4, 6, 9));
+  box2.setMinCorner(ZIntPoint(0, 1, 2));
+  box2.setMaxCorner(ZIntPoint(4, 6, 9));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(0, 1, 2));
-  box2.setLastCorner(ZIntPoint(4, 6, 9));
+  box2.setMinCorner(ZIntPoint(0, 1, 2));
+  box2.setMaxCorner(ZIntPoint(4, 6, 9));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(0, 1, 2));
-  box2.setLastCorner(ZIntPoint(3, 4, 5));
+  box2.setMinCorner(ZIntPoint(0, 1, 2));
+  box2.setMaxCorner(ZIntPoint(3, 4, 5));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(0, 0, 0));
-  box2.setLastCorner(ZIntPoint(3, 4, 9));
+  box2.setMinCorner(ZIntPoint(0, 0, 0));
+  box2.setMaxCorner(ZIntPoint(3, 4, 9));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(1, 0, 0));
-  box2.setLastCorner(ZIntPoint(3, 4, 9));
+  box2.setMinCorner(ZIntPoint(1, 0, 0));
+  box2.setMaxCorner(ZIntPoint(3, 4, 9));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(-2, -3, -5));
-  box2.setLastCorner(ZIntPoint(-1, 0, 0));
+  box2.setMinCorner(ZIntPoint(-2, -3, -5));
+  box2.setMaxCorner(ZIntPoint(-1, 0, 0));
   ASSERT_FALSE(box.hasOverlap(box2));
   ASSERT_FALSE(box2.hasOverlap(box));
 
-  box.setFirstCorner(ZIntPoint(5, 6, 7));
-  box.setLastCorner(ZIntPoint(10, 12, 14));
+  box.setMinCorner(ZIntPoint(5, 6, 7));
+  box.setMaxCorner(ZIntPoint(10, 12, 14));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(1, 0, 0));
-  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(1, 0, 0));
+  box2.setMinCorner(ZIntPoint(5, 6, 7) + ZIntPoint(1, 0, 0));
+  box2.setMaxCorner(ZIntPoint(10, 12, 14) + ZIntPoint(1, 0, 0));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(10, 0, 0));
-  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(10, 0, 0));
+  box2.setMinCorner(ZIntPoint(5, 6, 7) + ZIntPoint(10, 0, 0));
+  box2.setMaxCorner(ZIntPoint(10, 12, 14) + ZIntPoint(10, 0, 0));
   ASSERT_FALSE(box.hasOverlap(box2));
   ASSERT_FALSE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(0, 1, 0));
-  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(0, 1, 0));
+  box2.setMinCorner(ZIntPoint(5, 6, 7) + ZIntPoint(0, 1, 0));
+  box2.setMaxCorner(ZIntPoint(10, 12, 14) + ZIntPoint(0, 1, 0));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(0, 10, 0));
-  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(0, 10, 0));
+  box2.setMinCorner(ZIntPoint(5, 6, 7) + ZIntPoint(0, 10, 0));
+  box2.setMaxCorner(ZIntPoint(10, 12, 14) + ZIntPoint(0, 10, 0));
   ASSERT_FALSE(box.hasOverlap(box2));
   ASSERT_FALSE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 8));
-  box2.setLastCorner(ZIntPoint(10, 12, 15));
+  box2.setMinCorner(ZIntPoint(5, 6, 8));
+  box2.setMaxCorner(ZIntPoint(10, 12, 15));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 17));
-  box2.setLastCorner(ZIntPoint(10, 12, 24));
+  box2.setMinCorner(ZIntPoint(5, 6, 17));
+  box2.setMaxCorner(ZIntPoint(10, 12, 24));
   ASSERT_FALSE(box.hasOverlap(box2));
   ASSERT_FALSE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(1, 1, 1));
-  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(2, 2, 2));
+  box2.setMinCorner(ZIntPoint(5, 6, 7) + ZIntPoint(1, 1, 1));
+  box2.setMaxCorner(ZIntPoint(10, 12, 14) + ZIntPoint(2, 2, 2));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(-1, -1, -1));
-  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(2, -2, -2));
+  box2.setMinCorner(ZIntPoint(5, 6, 7) + ZIntPoint(-1, -1, -1));
+  box2.setMaxCorner(ZIntPoint(10, 12, 14) + ZIntPoint(2, -2, -2));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 
-  box.setFirstCorner(ZIntPoint(231, 150, 291));
-  box.setLastCorner(ZIntPoint(246, 158, 291));
+  box.setMinCorner(ZIntPoint(231, 150, 291));
+  box.setMaxCorner(ZIntPoint(246, 158, 291));
 
-  box2.setFirstCorner(ZIntPoint(232, 144, 291));
-  box2.setLastCorner(ZIntPoint(242, 159, 291));
+  box2.setMinCorner(ZIntPoint(232, 144, 291));
+  box2.setMaxCorner(ZIntPoint(242, 159, 291));
   ASSERT_TRUE(box.hasOverlap(box2));
   ASSERT_TRUE(box2.hasOverlap(box));
 }

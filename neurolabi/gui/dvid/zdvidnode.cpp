@@ -14,14 +14,16 @@
 #include "zjsonparser.h"
 
 const char* ZDvidNode::m_addressKey = "address";
+const char* ZDvidNode::m_hostKey = "host";
 const char* ZDvidNode::m_portKey = "port";
 const char* ZDvidNode::m_uuidKey = "uuid";
+const char* ZDvidNode::m_schemeKey = "scheme";
 
 /* Implementation details
  *
  * The member m_uuid in this class can be
  *   > explicit, which is just a normal DVID UUID
- *   > reference, which starts with "ref:", it is
+ *   > reference, which starts with "ref:" or "ref>", it is
  *       expected to followed by a link where the actual UUID is stored
  *   > alias, which starts with "@", referring to the master node of the root
  *       alias configured in the flyem configuration file.
@@ -44,7 +46,8 @@ ZDvidNode::ZDvidNode(
 bool ZDvidNode::hasDvidUuid() const
 {
   if (!m_uuid.empty()) {
-    if (m_uuid[0] == '@' || ZString(m_uuid).startsWith("ref:")) {
+    if (m_uuid[0] == '@' || ZString(m_uuid).startsWith("ref:") ||
+        ZString(m_uuid).startsWith("ref>")) {
       return false;
     }
   }
@@ -55,6 +58,11 @@ bool ZDvidNode::hasDvidUuid() const
 std::string ZDvidNode::getScheme() const
 {
   return m_scheme.empty() ? "http" : m_scheme;
+}
+
+std::string ZDvidNode::getSchemePrefix() const
+{
+  return getScheme() + "://";
 }
 
 void ZDvidNode::setScheme(const std::string &scheme)
@@ -77,17 +85,17 @@ std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
 {
   std::string source;
 
-  if (!getAddress().empty()) {
+  if (!getHost().empty()) {
     std::string uuid = getUuid();
-    if (uuidBrief > 0 && int(uuid.size()) > uuidBrief) {
+    if (uuidBrief > 0 && uuid.size() > uuidBrief && hasDvidUuid()) {
       uuid = uuid.substr(0, uuidBrief);
-    } else if (int(uuid.size()) < uuidBrief) {
+    } else if (uuid.size() < uuidBrief) {
 #if defined(_QT_APPLICATION_)
       LWARN() << "Out-of-bound uuid brief (" << uuidBrief << ") for" << uuid;
 #endif
     }
 
-    source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + uuid;
+    source = getHost() + ":" + ZString::num2str(getPort()) + ":" + uuid;
     if (withScheme) {
       source = getScheme() + ":" + source;
     }
@@ -98,13 +106,13 @@ std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
 
 bool ZDvidNode::operator ==(const ZDvidNode &node) const
 {
-  return m_address == node.m_address && m_port == node.m_port &&
+  return m_host == node.m_host && m_port == node.m_port &&
       m_uuid == node.m_uuid && getScheme() == node.getScheme();
 }
 
 bool ZDvidNode::operator !=(const ZDvidNode &node) const
 {
-  return m_address != node.m_address || m_port != node.m_port ||
+  return m_host != node.m_host || m_port != node.m_port ||
       m_uuid != node.m_uuid || getScheme() != node.getScheme();
 }
 
@@ -115,17 +123,20 @@ void ZDvidNode::set(
   ZString s(address);
   std::string pureAddress = address;
   if (port < 0) { //parsing address
-    bool hasPrefix = false;
+    size_t prefixLength = 0;
     if (s.startsWith("http://", ZString::CASE_INSENSITIVE)) {
-      hasPrefix = true;
+      prefixLength = 7;
       setScheme("http");
     } else if (s.startsWith("mock://", ZString::CASE_INSENSITIVE)) {
-      hasPrefix = true;
+      prefixLength = 7;
       setScheme("mock");
 //      setMock(true);
+    } else if (s.startsWith("https://", ZString::CASE_INSENSITIVE)) {
+      prefixLength = 8;
+      setScheme("https");
     }
-    if (hasPrefix) {
-      s = s.substr(7);
+    if (prefixLength > 0) {
+      s = s.substr(prefixLength);
       std::vector<std::string> tokenArray = s.tokenize(':');
       if (tokenArray.empty()) {
         pureAddress = "";
@@ -153,7 +164,7 @@ void ZDvidNode::set(
     }
   }
 
-  setServer(pureAddress);
+  setHost(pureAddress);
   setPort(port);
   setUuid(uuid);
 }
@@ -167,14 +178,35 @@ void ZDvidNode::clear()
   */
 }
 
-void ZDvidNode::setServer(const std::string &address)
+std::string ZDvidNode::getHostWithScheme() const
 {
-  m_address = address;
+  if (m_scheme.empty()) {
+    return getHost();
+  }
+
+  return m_scheme + "://" + getHost();
+}
+
+std::string ZDvidNode::getRootUrl() const
+{
+//  if (m_scheme.empty()) {
+//    return getAddressWithPort();
+//  }
+
+  return getSchemePrefix() + getAddressWithPort();
+}
+
+void ZDvidNode::setHost(const std::string &address)
+{
+  m_host = address;
 
   if (!address.empty()) {
     ZString addressObj(address);
 
-    if (addressObj.startsWith("http://")) {
+    if (addressObj.startsWith("https://")) {
+      addressObj = address.substr(8);
+      setScheme("https");
+    } else if (addressObj.startsWith("http://")) {
       addressObj = address.substr(7);
       setScheme("http");
     } else if (addressObj.startsWith("mock://")) {
@@ -199,10 +231,16 @@ void ZDvidNode::setServer(const std::string &address)
       }
     }
 
-    m_address = strArray[0];
+    m_host = strArray[0];
+
+#ifdef _DEBUG_
+    if (m_host == "https") {
+      std::cout << "Invalid host" << std::endl;
+    }
+#endif
 
 #if defined(_FLYEM_)
-    m_address = GET_FLYEM_CONFIG.mapAddress(m_address);
+    m_host = GET_FLYEM_CONFIG.mapAddress(m_host);
 #endif
   }
 }
@@ -224,7 +262,7 @@ void ZDvidNode::setUuid(const std::string &uuid)
   m_uuid.clear();
   m_originalUuid = uuid;
 
-  if (ZString(uuid).startsWith("ref:")) {
+  if (ZString(uuid).startsWith("ref:") || ZString(uuid).startsWith("ref>")) {
 #if _QT_APPLICATION_
     std::string uuidLink = uuid.substr(4);
     ZDvidBufferReader reader;
@@ -306,7 +344,8 @@ bool ZDvidNode::setFromSourceToken(const std::vector<std::string> &tokens)
 
  clear();
 
-  if (tokens.size() >= 4 && (tokens[0] == "http" || tokens[0] == "mock")) {
+  if (tokens.size() >= 4 &&
+      (tokens[0] == "http" || tokens[0] == "mock" || tokens[0] == "https")) {
     int port = -1;
     if (!tokens[2].empty()) {
       port = ZString::FirstInteger(tokens[2]);
@@ -329,15 +368,15 @@ bool ZDvidNode::hasPort() const
 
 bool ZDvidNode::isValid() const
 {
-  return !getAddress().empty() && !getUuid().empty();
+  return !getHost().empty() && !getUuid().empty();
 }
 
 std::string ZDvidNode::getAddressWithPort() const
 {
   std::string address;
 
-  if (!getAddress().empty()) {
-    address = getAddress();
+  if (!getHost().empty()) {
+    address = getHost();
     if (hasPort()) {
       address += ":" + ZString::num2str(getPort());
     }
@@ -350,7 +389,7 @@ std::string ZDvidNode::getUrl() const
 {
   ZString url = "";
   if (isValid()) {
-    url = getScheme() + "://" + m_address;
+    url = getScheme() + "://" + m_host;
     if (m_port >= 0) {
       url += ":";
       url.appendNumber(m_port);
@@ -375,13 +414,18 @@ void ZDvidNode::loadJsonObject(const ZJsonObject &obj)
 
 
   if (isValidJson) {
-    setServer(ZJsonParser::stringValue(obj[m_addressKey]));
+    if (obj.hasKey(m_hostKey)) {
+      setHost(ZJsonParser::stringValue(obj[m_hostKey]));
+    } else {
+      setHost(ZJsonParser::stringValue(obj[m_addressKey]));
+    }
     if (obj.hasKey(m_portKey)) {
       setPort(int(ZJsonParser::integerValue(obj[m_portKey])));
     } else {
       setPort(-1);
     }
     setUuid(ZJsonParser::stringValue(obj[m_uuidKey]));
+    setScheme(ZJsonParser::stringValue(obj[m_schemeKey]));
   }
 }
 
@@ -392,8 +436,11 @@ ZJsonObject ZDvidNode::toJsonObject() const
     obj.setEntry(m_portKey, m_port);
   }
 
-  obj.setEntry(m_addressKey, m_address);
+  obj.setEntry(m_hostKey, m_host);
   obj.setEntry(m_uuidKey, m_uuid);
+  if (!m_scheme.empty()) {
+    obj.setEntry(m_schemeKey, m_scheme);
+  }
 
   return obj;
 }

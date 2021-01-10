@@ -15,7 +15,7 @@ public:
 
   typedef uint64_t TState;
 
-  static const TState STATE_UNKNOWN = 0;
+  static const TState STATE_UNKNOWN = 0xFFFFFFFFFFFFFFFF;
   static const TState STATE_MODIFIED = BIT_FLAG(1);
   static const TState STATE_ADDED = BIT_FLAG(2);
   static const TState STATE_REMOVED = BIT_FLAG(3);
@@ -90,6 +90,8 @@ public:
 
   bool onlyVisibilityChanged(ZStackObject::EType type) const;
 
+  bool hasDataModified(ZStackObject::EType type) const;
+  bool hasDataModified(ZStackObjectRole::TRole role) const;
 
   void add(const ZStackObject &obj);
 

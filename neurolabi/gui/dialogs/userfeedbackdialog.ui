@@ -7,11 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>495</width>
-    <height>415</height>
+    <height>418</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Any Feedback Is Welcome</string>
+  </property>
+  <property name="toolTip">
+   <string/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -29,6 +32,20 @@ You can send the same comment again and again to emphasize your need. </string>
     <widget class="QPlainTextEdit" name="feedbackTextEdit">
      <property name="placeholderText">
       <string>Type any comments here, e.g. I hate to remember too many shortcuts.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="anonymousCheckBox">
+     <property name="toolTip">
+      <string>Send the message without revealing your identity.
+But if you expect follow-up from the developers, please check it off.</string>
+     </property>
+     <property name="text">
+      <string>Anonymous</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
