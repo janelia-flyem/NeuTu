@@ -4,6 +4,7 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <cmath>
 #include <functional>
 
@@ -84,12 +85,40 @@ int numDigits(T number)
 }
 
 bool HasEnv(const std::string &name, const std::string &value);
+std::string GetEnv(const std::string &name);
 
 std::string GetVersionString();
 
 uint64_t GetTimestamp();
 
 std::string ToString(const void *p);
+
+template<typename T>
+std::string ToString(const T &v)
+{
+  std::ostringstream stream;
+  stream << v;
+  return stream.str();
+}
+
+
+template<template<class...> class Container, typename T>
+std::string ToString(const Container<T> &container, const std::string &delimiter)
+{
+  std::string result = "";
+
+  typename Container<T>::const_iterator iter = container.begin();
+  if (iter != container.end()) {
+    result = ToString(*iter);
+    ++iter;
+  }
+
+  for (; iter != container.end(); ++iter) {
+    result += delimiter + ToString(*iter);
+  }
+
+  return result;
+}
 
 bool UsingLocalHost(const std::string &url);
 

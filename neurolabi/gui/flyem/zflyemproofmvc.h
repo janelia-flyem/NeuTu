@@ -108,6 +108,8 @@ public:
   void setDvidFromUrl(const QString &url);
   virtual void setDvid(const ZDvidEnv &env);
 
+  void setDvidFromName(const std::string &name);
+
   void clear();
 
   void exitCurrentDoc();
@@ -406,6 +408,7 @@ public slots:
 
   void changeColorMap(const QString &option);
   void changeColorMap(QAction *action);
+  void updateRandomColorMap();
 
   void removeLocalBookmark(ZFlyEmBookmark *bookmark);
   void addLocalBookmark(ZFlyEmBookmark *bookmark);
@@ -418,7 +421,7 @@ public slots:
 
 //  void syncMergeWithDvid();
 
-  void retrieveRois();
+//  void retrieveRois();
   void updateLatencyWidget(int t);
 
   void suppressObjectVisible();
@@ -438,6 +441,8 @@ public slots:
   void endTestTask();
 
   void configureRecorder();
+
+  void processObjectModified(const ZStackObjectInfoSet &objSet) override;
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -495,6 +500,14 @@ protected slots:
 //  void notifyBookmarkDeleted();
 
 protected:
+  enum class EViewButton {
+    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
+  };
+
+  virtual void makeViewButtons();
+  void makeViewButton(EViewButton option);
+  void initViewButton();
+  QPushButton* getViewButton(EViewButton option);
   void customInit() override;
   void createPresenter() override;
 //  virtual void dropEvent(QDropEvent *event);
@@ -539,7 +552,7 @@ private:
 
 //  void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
-  void loadROIFunc();
+//  void loadROIFunc();
   void loadRoi(
       const ZDvidReader &reader, const std::string &roiName,
       const std::string &key, const std::string &source);
@@ -547,8 +560,8 @@ private:
       const ZDvidReader &reader, const std::string &roiName,
       const std::vector<std::string> &keyList, const std::string &source);
 
-  void loadRoiFromRoiData(const ZDvidReader &reader);
-  void loadRoiFromRefData(const ZDvidReader &reader, const std::string &roiName);
+//  void loadRoiFromRoiData(const ZDvidReader &reader);
+//  void loadRoiFromRefData(const ZDvidReader &reader, const std::string &roiName);
   void loadRoiMesh(ZMesh *mesh, const std::string &roiName);
 
   void makeCoarseBodyWindow();
@@ -642,14 +655,7 @@ private:
   void warnAbouBodyLockFail(uint64_t bodyId);
 //  NeuPrintReader *getNeuPrintReader();
 
-  enum class EViewButton {
-    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
-  };
-
-  QPushButton* getViewButton(EViewButton option);
-  void makeViewButton(EViewButton option);
   void makeViewButton(EViewButton option, const QString &name, const char *slot);
-  void initViewButton();
   void updateViewButton();
 
   void updateRoiWidget(Z3DWindow *win) const;
@@ -668,12 +674,7 @@ protected:
   m_assignedBookmarkModel;
   QMap<flyem::EProofreadingMode, ZFlyEmBookmarkListModel*>
   m_userBookmarkModel;
-//  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
-//  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
-//  QSortFilterProxyModel *m_assignedBookmarkProxy;
-//  QSortFilterProxyModel *m_userBookmarkProxy;
-//  ZFlyEmBookmarkArray m_bookmarkArray;
 
   ZThreadFutureMap m_futureMap;
 
@@ -688,28 +689,9 @@ protected:
 
   FlyEmMvcDialogManager *m_dlgManager = nullptr; //Using raw pointer is fine because it's not exposed anyway
 
-//  ZDvidTargetProviderDialog *m_dvidDlg;
-//  FlyEmBodyInfoDialog *m_bodyInfoDlg;
-//  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
-//  FlyEmBodyInfoDialog *m_neuprintBodyDlg = nullptr;
-//  ZFlyEmSplitCommitDialog *m_splitCommitDlg;
-//  FlyEmTodoDialog *m_todoDlg;
-//  ZFlyEmRoiToolDialog *m_roiDlg;
-//  ZFlyEmSplitUploadOptionDialog *m_splitUploadDlg;
-//  ZFlyEmBodyChopDialog *m_bodyChopDlg;
-//  ZInfoDialog *m_infoDlg;
-//  ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
-//  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
-//  FlyEmBodyIdDialog *m_bodyIdDialog;
-//  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
-//  ZFlyEmProofSettingDialog *m_settingDlg;
-//  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
-//  NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
-//  NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
-//  ZContrastProtocalDialog *m_contrastDlg = nullptr;
-
   QAction *m_prevColorMapAction = nullptr;
   QAction *m_currentColorMapAction = nullptr;
+  QAction *m_randomColorAction = nullptr;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

@@ -95,6 +95,7 @@ public:
   bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
 
   void trim();
+  ZString trimmed() const;
 
   void toLower();
   void toUpper();

@@ -49,9 +49,13 @@ void ZRect2d::set(int x0, int y0, int width, int height)
 
 ZCuboid ZRect2d::getBoundBox() const
 {
-  return ZCuboid::FromIntCuboid(
-        ZIntCuboid(getFirstX(), getFirstY(), getZ(),
-                   getLastX(), getLastY(), getZ()));
+  return ZCuboid::FromIntCuboid(getIntBoundBox());
+}
+
+ZIntCuboid ZRect2d::getIntBoundBox() const
+{
+  return ZIntCuboid(getMinX(), getMinY(), getZ() - m_zSpan,
+                    getMaxX(), getMaxY(), getZ() + m_zSpan);
 }
 
 bool ZRect2d::isValid() const
@@ -110,8 +114,8 @@ void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
     color.setAlpha(128);
     pen.setColor(color);
     painter.setPen(pen);
-    painter.drawLine(getFirstX(), getFirstY(), getLastX(), getLastY());
-    painter.drawLine(getFirstX(), getLastY(), getLastX(), getFirstY());
+    painter.drawLine(getMinX(), getMinY(), getMaxX(), getMaxY());
+    painter.drawLine(getMinX(), getMaxY(), getMaxX(), getMinY());
   }
 }
 
@@ -156,13 +160,13 @@ bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
   return true;
 }
 
-void ZRect2d::setLastCorner(int x, int y)
+void ZRect2d::setMaxCorner(int x, int y)
 {
   m_width = x - m_x0 + 1;
   m_height = y - m_y0 + 1;
 }
 
-void ZRect2d::setFirstCorner(int x, int y)
+void ZRect2d::setMinCorner(int x, int y)
 {
   m_x0 = x;
   m_y0 = y;
@@ -193,22 +197,22 @@ bool ZRect2d::makeValid()
   return true;
 }
 
-int ZRect2d::getFirstX() const
+int ZRect2d::getMinX() const
 {
   return m_x0;
 }
 
-int ZRect2d::getFirstY() const
+int ZRect2d::getMinY() const
 {
   return m_y0;
 }
 
-int ZRect2d::getLastX() const
+int ZRect2d::getMaxX() const
 {
   return m_width + m_x0 - 1;
 }
 
-int ZRect2d::getLastY() const
+int ZRect2d::getMaxY() const
 {
   return m_height + m_y0 - 1;
 }
@@ -217,6 +221,11 @@ bool ZRect2d::contains(double x, double y) const
 {
   return ((x >= m_x0 && y >= m_y0 &&
        x < m_x0 + m_width && y < m_y0 + m_height));
+}
+
+ZIntPoint ZRect2d::getCenter() const
+{
+  return ZIntPoint(m_x0 + m_width / 2, m_y0 + m_height / 2, m_z);
 }
 
 bool ZRect2d::hit(double x, double y, neutu::EAxis axis)

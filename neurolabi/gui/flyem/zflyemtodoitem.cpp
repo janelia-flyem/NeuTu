@@ -319,6 +319,11 @@ void ZFlyEmToDoItem::PaintOutline(
   }
 }
 
+void ZFlyEmToDoItem::display(ZPainter &painter, const DisplayConfig &config) const
+{
+
+}
+
 void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
                            neutu::EAxis sliceAxis) const
 {

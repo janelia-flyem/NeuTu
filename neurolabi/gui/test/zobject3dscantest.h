@@ -828,13 +828,13 @@ TEST(ZObject3dScan, TestGetProperty) {
 //  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   ZIntCuboid box = obj.getIntBoundBox();
-  ASSERT_EQ(box.getFirstCorner().getX(), 0);
-  ASSERT_EQ(box.getFirstCorner().getY(), 0);
-  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
+  ASSERT_EQ(box.getMinCorner().getX(), 0);
+  ASSERT_EQ(box.getMinCorner().getY(), 0);
+  ASSERT_EQ(box.getMinCorner().getZ(), 0);
 
-  ASSERT_EQ(box.getLastCorner().getX(), 8);
-  ASSERT_EQ(box.getLastCorner().getY(), 1);
-  ASSERT_EQ(box.getLastCorner().getZ(), 0);
+  ASSERT_EQ(box.getMaxCorner().getX(), 8);
+  ASSERT_EQ(box.getMaxCorner().getY(), 1);
+  ASSERT_EQ(box.getMaxCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
   ASSERT_EQ(64, (int) obj.getByteCount());
@@ -842,13 +842,13 @@ TEST(ZObject3dScan, TestGetProperty) {
   obj.canonize();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getIntBoundBox();
-  ASSERT_EQ(box.getFirstCorner().getX(), 0);
-  ASSERT_EQ(box.getFirstCorner().getY(), 0);
-  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
+  ASSERT_EQ(box.getMinCorner().getX(), 0);
+  ASSERT_EQ(box.getMinCorner().getY(), 0);
+  ASSERT_EQ(box.getMinCorner().getZ(), 0);
 
-  ASSERT_EQ(box.getLastCorner().getX(), 8);
-  ASSERT_EQ(box.getLastCorner().getY(), 1);
-  ASSERT_EQ(box.getLastCorner().getZ(), 0);
+  ASSERT_EQ(box.getMaxCorner().getX(), 8);
+  ASSERT_EQ(box.getMaxCorner().getY(), 1);
+  ASSERT_EQ(box.getMaxCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 12);
   ASSERT_EQ(64, (int) obj.getByteCount());
@@ -857,13 +857,13 @@ TEST(ZObject3dScan, TestGetProperty) {
 //  obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getIntBoundBox();
-  ASSERT_EQ(box.getFirstCorner().getX(), 0);
-  ASSERT_EQ(box.getFirstCorner().getY(), 0);
-  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
+  ASSERT_EQ(box.getMinCorner().getX(), 0);
+  ASSERT_EQ(box.getMinCorner().getY(), 0);
+  ASSERT_EQ(box.getMinCorner().getZ(), 0);
 
-  ASSERT_EQ(box.getLastCorner().getX(), 8);
-  ASSERT_EQ(box.getLastCorner().getY(), 1);
-  ASSERT_EQ(box.getLastCorner().getZ(), 0);
+  ASSERT_EQ(box.getMaxCorner().getX(), 8);
+  ASSERT_EQ(box.getMaxCorner().getY(), 1);
+  ASSERT_EQ(box.getMaxCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
   ASSERT_EQ(48, (int) obj.getByteCount());
@@ -873,13 +873,13 @@ TEST(ZObject3dScan, TestGetProperty) {
   obj.print();
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getIntBoundBox();
-  ASSERT_EQ(box.getFirstCorner().getX(), 0);
-  ASSERT_EQ(box.getFirstCorner().getY(), 0);
-  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
+  ASSERT_EQ(box.getMinCorner().getX(), 0);
+  ASSERT_EQ(box.getMinCorner().getY(), 0);
+  ASSERT_EQ(box.getMinCorner().getZ(), 0);
 
-  ASSERT_EQ(box.getLastCorner().getX(), 8);
-  ASSERT_EQ(box.getLastCorner().getY(), 1);
-  ASSERT_EQ(box.getLastCorner().getZ(), 0);
+  ASSERT_EQ(box.getMaxCorner().getX(), 8);
+  ASSERT_EQ(box.getMaxCorner().getY(), 1);
+  ASSERT_EQ(box.getMaxCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
   ASSERT_EQ(48, (int) obj.getByteCount());
@@ -887,13 +887,13 @@ TEST(ZObject3dScan, TestGetProperty) {
   createObject3(&obj);
   ASSERT_EQ((int) obj.getStripeNumber(), 2);
   box = obj.getIntBoundBox();
-  ASSERT_EQ(box.getFirstCorner().getX(), 0);
-  ASSERT_EQ(box.getFirstCorner().getY(), 0);
-  ASSERT_EQ(box.getFirstCorner().getZ(), 0);
+  ASSERT_EQ(box.getMinCorner().getX(), 0);
+  ASSERT_EQ(box.getMinCorner().getY(), 0);
+  ASSERT_EQ(box.getMinCorner().getZ(), 0);
 
-  ASSERT_EQ(box.getLastCorner().getX(), 8);
-  ASSERT_EQ(box.getLastCorner().getY(), 1);
-  ASSERT_EQ(box.getLastCorner().getZ(), 0);
+  ASSERT_EQ(box.getMaxCorner().getX(), 8);
+  ASSERT_EQ(box.getMaxCorner().getY(), 1);
+  ASSERT_EQ(box.getMaxCorner().getZ(), 0);
 
   ASSERT_EQ((int) obj.getVoxelNumber(), 15);
   ASSERT_EQ(48, (int) obj.getByteCount());
@@ -2368,8 +2368,8 @@ TEST(ZObject3dScan, Mainpulate)
   obj.addSegment(1, 1);
 
   ZIntCuboid box;
-  box.setFirstCorner(0, 0, 0);
-  box.setLastCorner(1, 1, 1);
+  box.setMinCorner(0, 0, 0);
+  box.setMaxCorner(1, 1, 1);
 
   ZObject3dScan subobj;
   ZObject3dScan remain;
@@ -2386,8 +2386,8 @@ TEST(ZObject3dScan, Mainpulate)
   obj.addSegment(0, 3, 0, 3);
   obj.addSegment(0, 4, 2, 4);
 
-  box.setFirstCorner(1, 1, 0);
-  box.setLastCorner(3, 3, 0);
+  box.setMinCorner(1, 1, 0);
+  box.setMaxCorner(3, 3, 0);
 
   obj.subobject(box, &remain, &subobj);
 //  subobj.print();
@@ -2399,8 +2399,8 @@ TEST(ZObject3dScan, Mainpulate)
   ASSERT_TRUE(obj.equalsLiterally(subobj));
 
   obj.load(GET_BENCHMARK_DIR + "/29.sobj");
-  box.setFirstCorner(210, 759, 348);
-  box.setLastCorner(694, 1001, 480);
+  box.setMinCorner(210, 759, 348);
+  box.setMaxCorner(694, 1001, 480);
   obj.subobject(box, &remain, &subobj);
 
 //  remain.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -2456,14 +2456,14 @@ TEST(ZObject3dScan, remove)
   ASSERT_EQ(1, int(obj.getVoxelNumber()));
 
   obj.addSegment(0, 1, 0, 2);
-  box.setFirstCorner(0, 0, 0);
-  box.setLastCorner(1, 0, 0);
+  box.setMinCorner(0, 0, 0);
+  box.setMaxCorner(1, 0, 0);
   obj.remove(box);
 //  obj.print();
   ASSERT_EQ(1, int(obj.getStripeNumber()));
   ASSERT_EQ(3, int(obj.getVoxelNumber()));
 
-  box.setLastCorner(2, 1, 2);
+  box.setMaxCorner(2, 1, 2);
   obj.remove(box);
   obj.print();
   ASSERT_TRUE(obj.isEmpty());

@@ -44,12 +44,14 @@
 #include "dvid/zdvidgraysliceensemble.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidenv.h"
+#include "dvid/zdvidglobal.h"
 
 #include "zflyembookmark.h"
 #include "zsynapseannotationarray.h"
 #include "zflyemproofdockeyprocessor.h"
 #include "zflyemnamebodycolorscheme.h"
 #include "zflyemsequencercolorscheme.h"
+#include "zflyemrandombodycolorscheme.h"
 #include "zflyemproofdoccommand.h"
 #include "zflyembodymanager.h"
 #include "zflyembodystatus.h"
@@ -145,13 +147,18 @@ void ZFlyEmProofDoc::startTimer()
   }
 }
 
-const ZDvidReader& ZFlyEmProofDoc::getWorkReader()
+ZDvidWriter& ZFlyEmProofDoc::getWorkWriter()
 {
   if (!m_workWriter.good()) {
     m_workWriter.open(getDvidTarget());
   }
 
-  return m_workWriter.getDvidReader();
+  return m_workWriter;
+}
+
+const ZDvidReader& ZFlyEmProofDoc::getWorkReader()
+{
+  return getWorkWriter().getDvidReader();
 }
 
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) const
@@ -164,16 +171,30 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) cons
 }
 
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
-    const std::vector<uint64_t> &bodyList)
+    const std::vector<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation)
 {
   ZFlyEmBodyAnnotation finalAnnotation;
   if (getDvidReader().isReady()) {
+//    std::pair<std::vector<uint64_t>, std::vector<QColor>> coloringList;
     for (std::vector<uint64_t>::const_iterator iter = bodyList.begin();
          iter != bodyList.end(); ++iter) {
       uint64_t bodyId = *iter;
       ZFlyEmBodyAnnotation annotation =
           FlyEmDataReader::ReadBodyAnnotation(getDvidReader(), bodyId);
-      recordAnnotation(bodyId, annotation);
+      recordBodyAnnotation(bodyId, annotation);
+
+      if (processAnnotation) {
+        processAnnotation(bodyId, annotation);
+      }
+      /*
+      std::string color = getBodyStatusProtocol().getColorCode(
+            annotation.getStatus());
+      if (color.empty() == false) {
+        coloringList.first.push_back(bodyId);
+        coloringList.second.push_back(QColor(color.c_str()));
+      }
+      */
 
       if (!annotation.isEmpty()) {  
         if (finalAnnotation.isEmpty()) {
@@ -186,6 +207,7 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
         }
       }
     }
+//    setBodyColor(coloringList.first, coloringList.second);
   }
 
   return finalAnnotation;
@@ -541,7 +563,7 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(uint64_t bodyId)
   m_annotationMap.remove(bodyId);
 }
 
-void ZFlyEmProofDoc::recordAnnotation(
+void ZFlyEmProofDoc::recordBodyAnnotation(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &anno)
 {
   m_annotationMap[bodyId] = anno;
@@ -873,8 +895,14 @@ void ZFlyEmProofDoc::annotateBody(
   }
   if (writer.getStatusCode() == 200) {
     if (getSelectedBodySet(neutu::ELabelSource::ORIGINAL).count(bodyId) > 0) {
-      m_annotationMap[bodyId] = annotation;
+      recordBodyAnnotation(bodyId, annotation);
+//      m_annotationMap[bodyId] = annotation;
     }
+
+    std::string color = getBodyStatusProtocol().getColorCode(
+          annotation.getStatus());
+    setBodyColorFromStatus(bodyId, color);
+
     emit messageGenerated(
           ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
   } else {
@@ -1180,7 +1208,9 @@ void ZFlyEmProofDoc::prepareGrayscaleReader(
     ZDvidReader *reader = new ZDvidReader;
     std::string key = target.getGrayscaleSourceString();
     if (reader->open(target)) {
-      reader->updateMaxGrayscaleZoom();
+      reader->updateMaxGrayscaleZoom(
+            ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(reader->getDvidTarget()));
+//      reader->updateMaxGrayscaleZoom();
       setGrayscaleReader(readerMap, key, reader, updatingMainReader);
 //      setGrayscaleReader(key, reader);
       if (updatingMainReader) {
@@ -1223,6 +1253,11 @@ void ZFlyEmProofDoc::prepareGrayscaleReader()
     ++index;
   }
 #endif
+}
+
+bool ZFlyEmProofDoc::supervisorNeeded() const
+{
+  return true;
 }
 
 bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
@@ -1272,7 +1307,7 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(getDvidReader().getDvidTarget());
 
-    if (getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
+    if (supervisorNeeded()) {
       flowInfo << "->Prepare DVID data instances";
       initData(getDvidTarget());
       if (getSupervisor() != NULL) {
@@ -1541,9 +1576,15 @@ const ZFlyEmBodyAnnotationProtocal& ZFlyEmProofDoc::getBodyStatusProtocol() cons
   return m_dataConfig.getBodyStatusProtocol();
 }
 
+bool ZFlyEmProofDoc::isMergable(const ZFlyEmBodyAnnotation &annot) const
+{
+  return getBodyStatusProtocol().getBodyStatus(annot.getStatus()).isMergable();
+}
+
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
-  getDvidReader().updateMaxLabelZoom();
+  getDvidReader().updateMaxLabelZoom(
+        ZDvidGlobal::Memo::ReadMaxLabelZoom(getDvidReader().getDvidTarget()));
 //  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
@@ -1557,7 +1598,14 @@ void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
 void ZFlyEmProofDoc::readInfo()
 {
   for (const auto &p : m_grayscaleReaderMap) {
-    m_dvidInfoMap[p.first] = p.second->readGrayScaleInfo();
+    m_dvidInfoMap[p.first] =ZDvidGlobal::Memo::ReadGrayscaleInfo(
+          p.second->getDvidTarget());
+    std::string altKey = get_grayscale_key(p.second->getDvidTarget());
+    if (altKey != p.first) {
+      m_dvidInfoMap[altKey] = m_dvidInfoMap.at(p.first);
+    }
+
+//    m_dvidInfoMap[p.first] = p.second->readGrayScaleInfo();
   }
 
 
@@ -1567,8 +1615,11 @@ void ZFlyEmProofDoc::readInfo()
   }
   */
 //  m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
-  m_labelInfo = getDvidReader().readLabelInfo();
-  m_versionDag = getDvidReader().readVersionDag();
+//  m_labelInfo = getDvidReader().readLabelInfo();
+//  m_versionDag = getDvidReader().readVersionDag();
+  m_labelInfo = ZDvidGlobal::Memo::ReadDataInfo(
+        getDvidTarget(), getDvidTarget().getSegmentationName());
+  m_versionDag = ZDvidGlobal::Memo::ReadVersionDag(getDvidTarget());
 
 #ifdef _DEBUG_2
   std::cout << "Label Info:" << std::endl;
@@ -1579,7 +1630,8 @@ void ZFlyEmProofDoc::readInfo()
   m_versionDag.print();
 #endif
 
-  m_infoJson = getDvidReader().readInfo();
+  m_infoJson = ZDvidGlobal::Memo::ReadInfo(getDvidReader().getDvidTarget());
+//  m_infoJson = getDvidReader().readInfo();
 
   std::string startLog = "Start using UUID " +
       getDvidTarget().getUuid() + "@" +
@@ -1621,7 +1673,6 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
       m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
       m_dataBuffer->deliver();
 
-
       ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
       mesh->setSource(obj->getSource());
       m_dataBuffer->addUpdate(mesh, ZStackDocObjectUpdate::EAction::ADD_UNIQUE);
@@ -1636,6 +1687,7 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
 
 void ZFlyEmProofDoc::loadRoiFunc()
 {
+  //For loading ROI in 2D view
   if (!getDvidTarget().getRoiName().empty()) {
     if (!m_roiReader.isReady()) {
       m_roiReader.open(getDvidTarget());
@@ -3146,8 +3198,8 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
 
       if (!box.isEmpty()) {
         array = reader->readLabels64Lowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              box.getMinCorner().getX(), box.getMinCorner().getY(),
+              box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
               zoom, centerCutX, centerCutY, usingCenterCut);
       }
     }
@@ -3181,8 +3233,8 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
               viewParam.getViewPort(), viewParam.getZ());
 
         array = workReader.readGrayScaleLowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+              box.getMinCorner().getX(), box.getMinCorner().getY(),
+              box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
               zoom, centerCutX, centerCutY, usingCenterCut);
       }
     }
@@ -4482,7 +4534,7 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
     }
   }
 
-  m_workWriter.getDvidReader().refreshLabelBuffer();
+  getWorkReader().refreshLabelBuffer();
 }
 
 void ZFlyEmProofDoc::updateMeshForSelected()
@@ -4709,7 +4761,7 @@ void ZFlyEmProofDoc::runSplitFunc(
     ZObject3dScanArray *result = new ZObject3dScanArray;
 
     container.makeSplitResult(1, result, NULL);
-    ZStackDocAccessor::ConsumeSplitResult(this, result);
+    ZStackDocAccessor::ConsumeSplitResult(this, result, true);
 #if 0
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
@@ -4825,10 +4877,10 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
     if (rect->isValid()) {
       int sz = neutu::iround(sqrt(rect->getWidth() * rect->getWidth() +
                                   rect->getHeight() * rect->getHeight()) / 2.0);
-      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ() - sz);
-      roi->setLastCorner(rect->getLastX(), rect->getLastY(), rect->getZ() + sz);
+      roi->setFirstCorner(rect->getMinX(), rect->getMinY(), rect->getZ() - sz);
+      roi->setLastCorner(rect->getMaxX(), rect->getMaxY(), rect->getZ() + sz);
     } else if (appending) {
-      roi->setFirstCorner(rect->getFirstX(), rect->getFirstY(), rect->getZ());
+      roi->setFirstCorner(rect->getMinX(), rect->getMinY(), rect->getZ());
       roi->setLastCorner(roi->getFirstCorner());
     }
   }
@@ -5053,8 +5105,9 @@ void ZFlyEmProofDoc::updateSequencerBodyMap(
 {
   ZSharedPointer<ZFlyEmSequencerColorScheme> colorMap =
       getColorScheme<ZFlyEmSequencerColorScheme>(option);
-  if (colorMap.get() != NULL) {
-    *(colorMap.get()) = colorScheme;
+  if (colorMap) {
+    colorMap->setMainColorScheme(colorScheme);
+//    *(colorMap.get()) = colorScheme;
     if (isActive(option)) {
       updateBodyColor(option);
     }
@@ -5066,6 +5119,8 @@ void ZFlyEmProofDoc::updateSequencerBodyMap(
 {
   updateSequencerBodyMap(colorScheme,
                          ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER);
+  updateSequencerBodyMap(
+        colorScheme, ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL);
 }
 
 void ZFlyEmProofDoc::updateProtocolColorMap(
@@ -5102,16 +5157,137 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 }
 #endif
 
+template<template<class...> class Container>
+void ZFlyEmProofDoc::setBodyColorT(
+    const Container<uint64_t> &bodyList, const QColor &color, size_t rank)
+{
+  if (!bodyList.empty()) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+    for (auto slice : sliceList) {
+      for (uint64_t body : bodyList) {
+        slice->setLabelColor(body, color, rank);
+      }
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+template<template<class...> class C1, template<class...> class C2>
+void ZFlyEmProofDoc::setBodyColorT(
+    const C1<uint64_t> &bodyList, const C2<QColor> &colorList, size_t rank)
+{
+  if (bodyList.size() == colorList.size() && !bodyList.empty()) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+    for (auto slice : sliceList) {
+      for (size_t i = 0; i < bodyList.size(); ++i) {
+        slice->setLabelColor(bodyList[i], colorList[i], rank);
+      }
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+template<template<class...> class C1, template<class...> class C2>
+void ZFlyEmProofDoc::setBodyColorT(
+    const C1<uint64_t> &bodyList, const C2<std::string> &colorList, size_t rank)
+{
+  if (bodyList.size() == colorList.size() && !bodyList.empty()) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+    for (auto slice : sliceList) {
+      bool changed = false;
+      for (size_t i = 0; i < bodyList.size(); ++i) {
+        changed = slice->setLabelColor(bodyList[i], colorList[i], rank);
+      }
+      if (changed) {
+        slice->paintBuffer();
+        processObjectModified(slice);
+      }
+    }
+  }
+}
+
+void ZFlyEmProofDoc::setBodyColor(
+  const std::vector<uint64_t> &bodyList,
+  const std::vector<std::string> &colorList)
+{
+  setBodyColorT<std::vector, std::vector>(bodyList, colorList, 0);
+}
+
+void ZFlyEmProofDoc::setBodyColorFromStatus(
+  const std::vector<uint64_t> &bodyList,
+  const std::vector<std::string> &colorList)
+{
+  setBodyColorT<std::vector, std::vector>(bodyList, colorList, 1);
+}
+
+void ZFlyEmProofDoc::setBodyColorR(
+    uint64_t bodyId, const std::string &colorCode, size_t rank)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    if (slice->setLabelColor(bodyId, QString::fromStdString(colorCode), rank)) {
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const std::string &colorCode)
+{
+  setBodyColorR(bodyId, colorCode, 0);
+}
+
+void ZFlyEmProofDoc::setBodyColorFromStatus(
+    uint64_t bodyId, const std::string &colorCode)
+{
+  setBodyColorR(bodyId, colorCode, 1);
+}
+
+void ZFlyEmProofDoc::setBodyColor(uint64_t bodyId, const QColor &color)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    if (slice->setLabelColor(bodyId, color, 0)) {
+      slice->paintBuffer();
+      processObjectModified(slice);
+    }
+  }
+}
+
+void ZFlyEmProofDoc::setSelectedBodyColor(const QColor &color)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    slice->setSelectedLabelColor(color);
+    slice->paintBuffer();
+    processObjectModified(slice);
+  }
+}
+
+void ZFlyEmProofDoc::resetSelectedBodyColor()
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  for (auto slice : sliceList) {
+    slice->resetSelectedLabelColor();
+    slice->paintBuffer();
+    processObjectModified(slice);
+  }
+}
+
 void ZFlyEmProofDoc::updateBodyColor(
-    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap)
+    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
-    if (colorMap.get() != NULL) {
-      colorMap->update();
+    if (colorMap) {
+      if (updating) {
+        colorMap->update();
+      }
       slice->setCustomColorMap(colorMap);
     } else {
       slice->removeCustomColorMap();
@@ -5127,7 +5303,7 @@ void ZFlyEmProofDoc::updateBodyColor(
 void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
 {
   ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
-  updateBodyColor(colorMap);
+  updateBodyColor(colorMap, true);
 }
 
 bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
@@ -5169,7 +5345,7 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
     ZDvidReader &reader = getDvidReader();
     if (reader.good()) {
       std::set<uint64_t> bodySet = reader.readBodyId(
-            rect.getFirstX(), rect.getFirstY(), z,
+            rect.getMinX(), rect.getMinY(), z,
             rect.getWidth(), rect.getHeight(), 1);
       if (appending) {
         addSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
@@ -5211,6 +5387,10 @@ ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
     case ZFlyEmBodyColorOption::BODY_COLOR_NORMAL:
       m_colorMapConfig[type] = ZSharedPointer<ZFlyEmBodyColorScheme>();
       break;
+    case ZFlyEmBodyColorOption::BODY_COLOR_RANDOM:
+      m_colorMapConfig[type] = ZSharedPointer<ZFlyEmRandomBodyColorScheme>(
+            new ZFlyEmRandomBodyColorScheme);
+      break;
     case ZFlyEmBodyColorOption::BODY_COLOR_NAME:
     {
       ZFlyEmNameBodyColorScheme *colorScheme = new ZFlyEmNameBodyColorScheme;
@@ -5219,6 +5399,17 @@ ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
           ZSharedPointer<ZFlyEmBodyColorScheme>(colorScheme);
     }
       break;
+    case ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL:
+    {
+      auto scheme =new ZFlyEmSequencerColorScheme;
+
+      auto defaultScheme = std::shared_ptr<ZFlyEmBodyColorScheme>(
+            new ZFlyEmRandomBodyColorScheme());
+      scheme->setDefaultColorScheme(defaultScheme);
+      m_colorMapConfig[type] = ZSharedPointer<ZFlyEmBodyColorScheme>(scheme);
+    }
+
+      break;
     case ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER:
     case ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL:
       m_colorMapConfig[type] =
@@ -5226,6 +5417,12 @@ ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
       break;
     }
   }
+
+#ifdef _DEBUG_2
+  if (m_colorMapConfig[ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER]->getColorNumber() < 65535) {
+    std::cout << "debug here" << m_colorMapConfig[type]->getColorNumber() << std::endl;
+  }
+#endif
 
   return m_colorMapConfig[type];
 }
@@ -5242,15 +5439,16 @@ ZSharedPointer<T> ZFlyEmProofDoc::getColorScheme(
   return ZSharedPointer<T>();
 }
 
-void ZFlyEmProofDoc::activateBodyColorMap(const QString &colorMapName)
+void ZFlyEmProofDoc::activateBodyColorMap(const QString &colorMapName, bool updating)
 {
-  activateBodyColorMap(ZFlyEmBodyColorOption::GetColorOption(colorMapName));
+  activateBodyColorMap(
+        ZFlyEmBodyColorOption::GetColorOption(colorMapName), updating);
 }
 
 void ZFlyEmProofDoc::activateBodyColorMap(
-    ZFlyEmBodyColorOption::EColorOption option)
+    ZFlyEmBodyColorOption::EColorOption option, bool updating)
 {
-  if (!isActive(option)) {
+  if (!isActive(option) || updating) {
     updateBodyColor(option);
     m_activeBodyColorMap = getColorScheme(option);
     emit bodyColorUpdated(this);
@@ -5925,6 +6123,24 @@ void ZFlyEmProofDoc::makeKeyProcessor()
 std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::getRoiProvider() const
 {
   return m_roiProvider;
+}
+
+void ZFlyEmProofDoc::addUploadTask(
+    const std::string &dataName, const std::string &key, const QByteArray &data)
+{
+  ZFunctionTask *task = new ZFunctionTask([dataName, key, data, this] {
+    QMutexLocker locker(&m_workWriterMutex);
+    getWorkWriter().writeDataToKeyValue(dataName, key, data);
+  });
+  addTask(task);
+}
+
+void ZFlyEmProofDoc::addUploadTask(std::function<void(ZDvidWriter &writer)> f)
+{
+  addTask([f, this] {
+    QMutexLocker locker(&m_workWriterMutex);
+    f(getWorkWriter());
+  });
 }
 
 void ZFlyEmProofDoc::exportGrayscale(

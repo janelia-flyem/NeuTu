@@ -21,32 +21,32 @@ bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutu::EAxis /*sliceAxis*/) const
 
 const ZIntPoint& ZIntCuboidObj::getFirstCorner() const
 {
-  return m_cuboid.getFirstCorner();
+  return m_cuboid.getMinCorner();
 }
 
 const ZIntPoint& ZIntCuboidObj::getLastCorner() const
 {
-  return m_cuboid.getLastCorner();
+  return m_cuboid.getMaxCorner();
 }
 
 void ZIntCuboidObj::setFirstCorner(const ZIntPoint &firstCorner)
 {
-  m_cuboid.setFirstCorner(firstCorner);
+  m_cuboid.setMinCorner(firstCorner);
 }
 
 void ZIntCuboidObj::setLastCorner(const ZIntPoint &lastCorner)
 {
-  m_cuboid.setLastCorner(lastCorner);
+  m_cuboid.setMaxCorner(lastCorner);
 }
 
 void ZIntCuboidObj::setFirstCorner(int x, int y, int z)
 {
-  m_cuboid.setFirstCorner(x, y, z);
+  m_cuboid.setMinCorner(x, y, z);
 }
 
 void ZIntCuboidObj::setLastCorner(int x, int y, int z)
 {
-  m_cuboid.setLastCorner(x, y, z);
+  m_cuboid.setMaxCorner(x, y, z);
 }
 
 int ZIntCuboidObj::getWidth() const

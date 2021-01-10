@@ -1,5 +1,7 @@
 #include "zaffineplane.h"
 
+#include <sstream>
+
 ZAffinePlane::ZAffinePlane()
 {
 
@@ -46,6 +48,27 @@ ZPlane ZAffinePlane::getPlane() const
   return m_plane;
 }
 
+void ZAffinePlane::translate(double dx, double dy, double dz)
+{
+  m_offset.translate(dx, dy, dz);
+}
+
+void ZAffinePlane::translate(const ZPoint &dv)
+{
+  m_offset.translate(dv);
+}
+
+double ZAffinePlane::computeSignedDistance(const ZPoint &pt) const
+{
+  ZPoint newPt = pt - m_offset;
+  return m_plane.computeSignedDistance(newPt);
+}
+
+double ZAffinePlane::computeSignedDistance(double x, double y, double z) const
+{
+  return computeSignedDistance(ZPoint(x, y, z));
+}
+
 bool ZAffinePlane::contains(const ZPoint &pt) const
 {
   return m_plane.contains(pt - m_offset);
@@ -58,4 +81,23 @@ bool ZAffinePlane::onSamePlane(const ZAffinePlane &ap) const
   }
 
   return false;
+}
+
+ZPoint ZAffinePlane::align(const ZPoint &pt) const
+{
+  return m_plane.align(pt - m_offset);
+}
+
+std::string ZAffinePlane::toString() const
+{
+  std::ostringstream stream;
+  stream << *this;
+  return stream.str();
+}
+
+std::ostream& operator<<(std::ostream& stream, const ZAffinePlane &p)
+{
+  stream << p.m_plane << " @ " << p.m_offset;
+
+  return stream;
 }

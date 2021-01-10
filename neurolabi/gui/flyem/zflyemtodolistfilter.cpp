@@ -107,8 +107,8 @@ void ZFlyEmTodoListFilter::addSelectionLines()
   for (auto item : m_itemList) {
     if (item->isVisible() && item->isSelected()) {
       ZCuboid bound = item->getBoundBox();
-      bb.setMinCorner(glm::dvec3(bound.firstCorner().x(), bound.firstCorner().y(), bound.firstCorner().z()));
-      bb.setMaxCorner(glm::dvec3(bound.lastCorner().x(), bound.lastCorner().y(), bound.lastCorner().z()));
+      bb.setMinCorner(glm::dvec3(bound.getMinCorner().x(), bound.getMinCorner().y(), bound.getMinCorner().z()));
+      bb.setMaxCorner(glm::dvec3(bound.getMaxCorner().x(), bound.getMaxCorner().y(), bound.getMaxCorner().z()));
       appendBoundboxLines(bb, m_selectionLines);
     }
   }

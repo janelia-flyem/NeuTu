@@ -35,6 +35,14 @@ void ZStackObjectPainter::paint(
 }
 
 void ZStackObjectPainter::paint(
+    const std::shared_ptr<ZStackObject> &obj,
+    ZPainter &painter, int slice, ZStackObject::EDisplayStyle option,
+    neutu::EAxis sliceAxis) const
+{
+  paint(obj.get(), painter, slice, option, sliceAxis);
+}
+
+void ZStackObjectPainter::paint(
     const ZStackObject *obj, ZPainter &painter, int slice)
 {
   paint(obj, painter, slice, m_style, m_axis);

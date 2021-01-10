@@ -11,6 +11,21 @@
 
 #ifdef _USE_GTEST_
 
+TEST(ZDvidAnnotation, Basic)
+{
+  ZDvidAnnotation annot;
+  annot.setPosition(1, 2, 3);
+  annot.addProperty("test", "t1");
+  ASSERT_EQ("t1", annot.getProperty<std::string>("test"));
+
+  ZDvidAnnotation annot2 = annot;
+  ASSERT_EQ("t1", annot2.getProperty<std::string>("test"));
+
+  annot.addProperty("test2", "t2");
+  ASSERT_EQ("t2", annot.getProperty<std::string>("test2"));
+  ASSERT_EQ("", annot2.getProperty<std::string>("test2"));
+}
+
 TEST(ZDvidAnnotation, Property)
 {
   ZDvidAnnotation annot;

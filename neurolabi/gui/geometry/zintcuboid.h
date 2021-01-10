@@ -23,25 +23,25 @@ public:
 
   //ZIntCuboid(const ZIntCuboid &cuboid);
 
-  inline const ZIntPoint& getFirstCorner() const { return m_firstCorner; }
-  inline const ZIntPoint& getLastCorner() const { return m_lastCorner; }
+  inline const ZIntPoint& getMinCorner() const { return m_minCorner; }
+  inline const ZIntPoint& getMaxCorner() const { return m_maxCorner; }
 
-  inline void setFirstCorner(const ZIntPoint &corner) {
-    m_firstCorner = corner;
+  inline void setMinCorner(const ZIntPoint &corner) {
+    m_minCorner = corner;
   }
 
-  inline void setFirstCorner(int x, int y, int z) {
-    m_firstCorner.set(x, y, z);
+  inline void setMinCorner(int x, int y, int z) {
+    m_minCorner.set(x, y, z);
   }
 
   ZIntPoint getCorner(int index) const;
 
-  inline void setLastCorner(const ZIntPoint &corner) {
-    m_lastCorner = corner;
+  inline void setMaxCorner(const ZIntPoint &corner) {
+    m_maxCorner = corner;
   }
 
-  inline void setLastCorner(int x, int y, int z) {
-    m_lastCorner.set(x, y, z);
+  inline void setMaxCorner(int x, int y, int z) {
+    m_maxCorner.set(x, y, z);
   }
 
   /*!
@@ -53,19 +53,19 @@ public:
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   //void set(const int *corner);
 
-  int getFirstX() const;
-  int getLastX() const;
-  int getFirstY() const;
-  int getLastY() const;
-  int getFirstZ() const;
-  int getLastZ() const;
+  int getMinX() const;
+  int getMaxX() const;
+  int getMinY() const;
+  int getMaxY() const;
+  int getMinZ() const;
+  int getMaxZ() const;
 
-  void setFirstX(int x);
-  void setLastX(int x);
-  void setFirstY(int y);
-  void setLastY(int y);
-  void setFirstZ(int z);
-  void setLastZ(int z);
+  void setMinX(int x);
+  void setMaxX(int x);
+  void setMinY(int y);
+  void setMaxY(int y);
+  void setMinZ(int z);
+  void setMaxZ(int z);
 
   void translateX(int dx);
 
@@ -183,6 +183,14 @@ public:
   ZIntPoint getCenter() const;
   void setCenter(const ZIntPoint &center);
 
+  /*!
+   * \brief Downscale the cuboid.
+   *
+   * The coordinates of the corners are divided by (sx, sy, sz).
+   * The cuboid stays the same if any scale is less than 1.
+   */
+  void downScale(int sx, int sy, int sz);
+  void downScale(int s);
 
   /*!
    * \brief Turn the cuboid into a JSON array
@@ -205,8 +213,8 @@ public:
   bool operator != (const ZIntCuboid &box) const;
 
 private:
-  ZIntPoint m_firstCorner;
-  ZIntPoint m_lastCorner;
+  ZIntPoint m_minCorner;
+  ZIntPoint m_maxCorner;
 };
 
 #endif // ZINTCUBOID_H

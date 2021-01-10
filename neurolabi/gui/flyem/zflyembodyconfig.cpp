@@ -55,7 +55,27 @@ void ZFlyEmBodyConfig::decDsLevel()
 //    return false;
 //  }
 
-  --m_dsLevel;
+  if (m_nextDsLevel >= 0) {
+    m_dsLevel = m_nextDsLevel;
+    m_nextDsLevel = -1;
+  } else if (m_nextDsLevel == -1) {
+    --m_dsLevel;
+  }
+}
+
+void ZFlyEmBodyConfig::disableNextDsLevel()
+{
+  setNextDsLevel(-2);
+}
+
+void ZFlyEmBodyConfig::setNextDsLevel(int level)
+{
+  m_nextDsLevel = level;
+}
+
+bool ZFlyEmBodyConfig::hasNextDsLevel(int minLevel) const
+{
+  return (m_dsLevel > minLevel) && (m_nextDsLevel >= -1);
 }
 
 ZIntCuboid ZFlyEmBodyConfig::getRange() const

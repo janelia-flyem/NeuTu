@@ -274,8 +274,6 @@ ZIntPoint ZJsonParser::toIntPoint(const json_t *value)
   return pt;
 }
 
-
-
 /*
 template<>
 std::string ZJsonParser::getValue<std::string>(const json_t *value) const

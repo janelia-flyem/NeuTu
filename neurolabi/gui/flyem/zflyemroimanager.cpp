@@ -13,6 +13,7 @@
 #include "zjsonobject.h"
 #include "zjsondef.h"
 #include "zjsonparser.h"
+#include "dvid/zdvidglobal.h"
 
 namespace {
 
@@ -152,7 +153,9 @@ void ZFlyEmRoiManager::loadRoiList()
   m_source = ESource::REF_DATA;
 
   if (m_roiList.isEmpty()) {
-    ZJsonObject meta = getDvidReader().readInfo();
+    ZJsonObject meta = ZDvidGlobal::Memo::ReadInfo(
+          getDvidReader().getDvidTarget());
+//    ZJsonObject meta = getDvidReader().readInfo();
 
     //
     ZJsonValue datains = meta.value("DataInstances");

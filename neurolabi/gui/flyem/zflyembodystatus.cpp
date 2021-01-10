@@ -14,6 +14,7 @@ const char *ZFlyEmBodyStatus::KEY_FINAL = "final";
 const char *ZFlyEmBodyStatus::KEY_MERGABLE = "mergable";
 const char *ZFlyEmBodyStatus::KEY_ADMIN_LEVEL = "admin_level";
 const char *ZFlyEmBodyStatus::KEY_PRESERVING_ID = "preserving_id";
+const char *ZFlyEmBodyStatus::KEY_COLOR = "color";
 
 /** Implementation details
  *
@@ -85,6 +86,7 @@ void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
   m_isMergable = parser.getValue(obj, KEY_MERGABLE, true);
   m_adminLevel = parser.getValue<int>(obj, KEY_ADMIN_LEVEL, 0);
   m_preservingId = parser.getValue(obj, KEY_PRESERVING_ID, false);
+  m_colorCode = parser.getValue(obj, KEY_COLOR, "");
 }
 
 ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
@@ -100,6 +102,7 @@ ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
      obj.setEntry(KEY_ADMIN_LEVEL, m_adminLevel);
    }
    obj.setEntry(KEY_PRESERVING_ID, m_preservingId);
+   obj.setNonEmptyEntry(KEY_COLOR, m_colorCode);
 
    return obj;
 }
@@ -107,6 +110,11 @@ ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
 std::string ZFlyEmBodyStatus::getName() const
 {
   return m_status;
+}
+
+std::string ZFlyEmBodyStatus::getColorCode() const
+{
+  return m_colorCode;
 }
 
 bool ZFlyEmBodyStatus::isAdminAccessible() const

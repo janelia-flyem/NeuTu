@@ -584,6 +584,14 @@ void ZString::trim()
   free(str);
 }
 
+ZString ZString::trimmed() const
+{
+  ZString result = *this;
+  result.trim();
+
+  return result;
+}
+
 bool ZString::isAbsolutePath(const string &path)
 {
 #if defined(_WIN32) || defined(_WIN64)

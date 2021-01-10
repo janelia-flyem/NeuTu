@@ -19,6 +19,7 @@
 #include "zgeometry.h"
 
 const double ZPoint::MIN_DIST = 1e-5;
+const ZPoint ZPoint::INVALID_POINT = ZPoint::InvalidPoint();
 
 ZPoint::ZPoint()
 {
@@ -442,6 +443,23 @@ double ZPoint::getSliceCoord(neutu::EAxis axis) const
   }
 
   return m_z;
+}
+
+bool ZPoint::isValid() const
+{
+  return std::isnan(m_x) == false;
+}
+
+void ZPoint::invalidate()
+{
+  m_x = std::numeric_limits<double>::quiet_NaN();
+}
+
+ZPoint ZPoint::InvalidPoint()
+{
+  ZPoint pt;
+  pt.invalidate();
+  return pt;
 }
 
 std::ostream &operator<<(std::ostream &stream, const ZPoint &pt)

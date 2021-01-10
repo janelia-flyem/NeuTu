@@ -25,6 +25,7 @@ TEST(ZLocalNeuroseg, Field)
   ZPointArray points = s.sample(1.0, 1.0);
 
   locseg->seg.r1 = 5.1;
+  locseg->seg.h = 12.1;
   for (const ZPoint &pt : points) {
     ASSERT_TRUE(Local_Neuroseg_Hit_Test(locseg, pt.x(), pt.y(), pt.z()))
         << pt.toString();

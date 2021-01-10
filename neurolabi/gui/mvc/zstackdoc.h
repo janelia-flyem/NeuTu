@@ -918,12 +918,12 @@ public:
     m_hadSegmentationDownsampled = on;
   }
 
-  void notifySegmentationUpdated();
+  void notifySegmentationUpdated(bool invalidatingSplit);
 
 public:
   void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg) const;
-  void emitMessage(const QString &msg, neutu::EMessageType type) const;
+  void emitWarning(const QString &msg);
+  void emitMessage(const QString &msg, neutu::EMessageType type);
 
 public:
   ZNeuronTracer& getNeuronTracer();
@@ -1108,6 +1108,7 @@ public:
   }
 
   void addTask(ZTask *task);
+  void addTask(std::function<void()> f);
 
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
@@ -1324,9 +1325,9 @@ public slots:
 signals:
   void updatingStack(ZStack *stack);
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
-  void messageGenerated(const QString &message, bool appending = true) const;
+  void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
-  void messageGenerated(const ZWidgetMessage&) const;
+  void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
@@ -1334,7 +1335,7 @@ signals:
   void stackRangeChanged();
   void sparseStackModified();
   void labelFieldModified();
-  void segmentationUpdated();
+  void segmentationUpdated(bool invalidatingSplit);
   void stackReadDone();
   void stackLoaded();
   void punctaModified();

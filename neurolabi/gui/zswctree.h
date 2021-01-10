@@ -176,7 +176,7 @@ public:
   /*!
    * \brief Clone an SWC tree
    */
-  ZSwcTree *clone() const;
+  ZSwcTree *clone() const override;
 
   /*!
    * \brief Clone a raw SWC tree

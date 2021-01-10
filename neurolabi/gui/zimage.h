@@ -34,6 +34,8 @@ public:
   ZImage();
   ZImage(int width, int height,
          QImage::Format format = QImage::Format_ARGB32_Premultiplied);
+  ZImage(const QSize &size,
+         QImage::Format format = QImage::Format_ARGB32_Premultiplied);
 
   ZImage(const ZImage &image);
 
@@ -75,6 +77,7 @@ public:
   void setCData(const color_t *data, double scale, double offset);
   void setCData(const uint16_t *data, uint8_t alpha);
   void setCData(const uint8_t *data, uint8_t alpha);
+  void setCData(const uint8_t *data, const uint8_t* alpha);
   void setData(const uint8 *data, double scale, double offset,
                int threshold = -1);
   void setDataIndexed8(const uint8 *data, double scale, double offset,
@@ -150,14 +153,17 @@ public:
 
   void drawRaster(const void *data, int kind, double scale = 1.0,
                   double offset = 0.0, int threshold = -1);
-  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
-                      uint8_t alpha);
+//  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+//                      uint8_t alpha);
   void drawLabelField(uint64_t *data, const QVector<int> &colorTable,
                       int bgColor, int selColor);
   void drawLabelFieldTranspose(uint64_t *data, const QVector<int> &colorTable,
                                int bgColor, int selColor);
-  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
-                      uint8_t alpha, const std::set<uint64_t> &selected);
+
+  void drawColorField(const uint32_t *data);
+  void drawColorFieldTranspose(const uint32_t *data);
+//  void drawLabelField(uint64_t *data, const QVector<QColor> &colorTable,
+//                      uint8_t alpha, const std::set<uint64_t> &selected);
 
   void setBackground();
 
@@ -202,6 +208,9 @@ public:
   bool isVisible() const;
 
   bool isIndexed8() const;
+
+  ZStTransform getWorldTransform() const;
+  ZStTransform getProjectionTransform() const;
 
 
 private:

@@ -65,10 +65,10 @@ void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                           const ZStackViewParam &viewParam, bool visible = true);
 void Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                                const ZStackViewParam &viewParam, bool visible = true);
-void Decorate3dBodyWindowRoi(Z3DWindow *window, const ZDvidInfo &dvidInfo,
-                             const ZDvidTarget &dvidTarget);
-void Decorate3dBodyWindowRoiCube(Z3DWindow *window, const ZDvidInfo &dvidInfo,
-                             const ZDvidTarget &dvidTarget);
+//void Decorate3dBodyWindowRoi(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+//                             const ZDvidTarget &dvidTarget);
+//void Decorate3dBodyWindowRoiCube(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+//                             const ZDvidTarget &dvidTarget);
 
 void SubtractBodyWithBlock(
     ZObject3dScan *body, const ZObject3dScan &coarsePart,

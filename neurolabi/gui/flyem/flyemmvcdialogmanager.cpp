@@ -300,27 +300,6 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
     KINFO << "Creating sequencer dialog";
     m_bodyInfoDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::SEQUENCER, false);
     connect(m_bodyInfoDlg, SIGNAL(destroyed()), this, SLOT(detachBodyInfoDlg()));
-/*
-    m_bodyInfoDlg = new FlyEmBodyInfoDialog(
-          FlyEmBodyInfoDialog::EMode::SEQUENCER, m_parent);
-    m_bodyInfoDlg->setNeuprintDataset(m_neuprintDataset);
-
-    QObject::connect(m_parent, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-                     m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
-                     m_parent, SLOT(locateBody(uint64_t)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
-                     m_parent, SLOT(addLocateBody(uint64_t)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
-                     m_parent, SLOT(selectBody(QList<uint64_t>)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
-                     m_parent, SLOT(prepareBodyMap(ZJsonValue)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
-                     m_parent, SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
-    QObject::connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
-                     m_parent, SLOT(zoomTo(int,int,int)));
-                     */
-
   }
 
   return m_bodyInfoDlg;

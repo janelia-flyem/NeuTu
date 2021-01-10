@@ -66,9 +66,9 @@ cd $downloadDir
 if [ ! -d $condaDir ]
 then
   if [ `uname` = 'Darwin' ]; then
-    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-x86_64.sh
+    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-x86_64.sh
   else
-    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh > Miniconda-latest-x86_64.sh
+    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh > Miniconda-latest-x86_64.sh
   fi
   bash Miniconda-latest-x86_64.sh -b -p $condaDir
 fi
@@ -94,9 +94,27 @@ fi
 
 envName='neutu-env'
 source $condaDir/bin/activate root
-conda create -n $envName $package -y
+set +e
+conda activate $envName
+if [[ $? -eq 0 ]]
+then
+  set -e
+  conda install $package -y
+else
+  set -e
+  conda create -n $envName $package -y
+fi
 
+appName=neutu
 updateFile=$bindir/ntupd
+formalName=NeuTu
+if [[ $package == neu3* ]]
+then
+  updateFile=$bindir/n3upd
+  appName=neu3
+  formalName=Neu3
+fi
+
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
 echo "source  $condaDir/bin/activate $envName" >> $updateFile
@@ -105,12 +123,12 @@ chmod u+x $updateFile
 
 if [ `uname` = 'Darwin' ]
 then
-  neutu_bin_dir=$condaDir'/envs/neutu-env/bin/neutu.app/Contents/MacOS'
+  neutu_bin_dir=$condaDir"/envs/neutu-env/bin/${appName}.app/Contents/MacOS"
 else
   neutu_bin_dir=$condaDir'/envs/neutu-env/bin'
 fi
 
-run_script=$bindir/neutu
+run_script=$bindir/$appName
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo ''
@@ -119,7 +137,7 @@ if curl -X HEAD -I http://config.int.janelia.org/config/workday | grep '200 OK';
   echo 'export NEUPRINT=https://emdata1.int.janelia.org:11000' >> $run_script
   echo 'NEUTU_USER_INFO_ENTRY=http://config.int.janelia.org/config/workday' >> $run_script
 fi
-#echo "source $condaDir/bin/activate $envName" >> $run_script
-echo $neutu_bin_dir'/neutu $*' >> $run_script
+echo "source $condaDir/bin/activate $envName" >> $run_script
+echo ${neutu_bin_dir}/${appName}' $*' >> $run_script
 chmod a+x $run_script
-echo "Congratuations! Now you can launch NeuTu by running '$run_script'"
+echo "Congratuations! Now you can launch $formalName by running '$run_script'"

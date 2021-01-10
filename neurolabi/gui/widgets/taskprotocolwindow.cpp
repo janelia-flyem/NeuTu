@@ -17,9 +17,12 @@
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
 
+#include "dvid/zdvidglobal.h"
+
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemtaskhelper.h"
+#include "flyem/flyemdatareader.h"
 
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltaskfactory.h"
@@ -160,7 +163,9 @@ void TaskProtocolWindow::init() {
     }
     */
 
-    dvid::ENodeStatus status = reader.getNodeStatus();
+//    dvid::ENodeStatus status = reader.getNodeStatus();
+    dvid::ENodeStatus status =
+        ZDvidGlobal::Memo::ReadNodeStatus(reader.getDvidTarget());
     if (status == dvid::ENodeStatus::INVALID || status == dvid::ENodeStatus::OFFLINE) {
         showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
         setWindowConfiguration(LOAD_BUTTON);
@@ -1291,7 +1296,8 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(neutu::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(
+          neutu::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*

@@ -115,7 +115,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
   if (reader) {
     if (reader->isReady()) {
       ZIntCuboid box;
-      box.setFirstCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
+      box.setMinCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
       box.setSize(m_width, m_height, m_depth);
       ZStack *stack = ZStackFactory::MakeVirtualStack(box);
       loadStack(stack);

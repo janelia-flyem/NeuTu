@@ -98,9 +98,33 @@ void sync_log_dir(const std::string &srcDir, const std::string &destDir)
     }
 }
 
+
+struct MainConfig {
+  bool isGuiEnabled() const
+  {
+    return !(debugging || runCommandLine);
+  }
+
+  bool debugging = false;
+  bool unitTest = false;
+  bool runCommandLine = false;
+
+  bool guiEnabled = true;
+  bool advanced = false;
+  bool showingVersion = false;
+  bool autoTestingTask = false;
+
+  std::string userName;
+  QStringList fileList;
+  QString configPath;
+  bool defaultConfigPathUsed = true;
+  QString databaseName;
+};
+
 #ifdef _FLYEM_
 void SetFlyEmConfigpath(
-    const QString &rootConfigPath, const ZJsonObject configObj)
+    const QString &rootConfigPath, const ZJsonObject configObj,
+    bool defaultConfigPathUsed)
 {
   ZJsonArray defaultConfigCandidate(configObj.value("flyem"));
 
@@ -120,6 +144,9 @@ void SetFlyEmConfigpath(
   if (configFileInfo.exists()) {
     GET_FLYEM_CONFIG.setDefaultConfigPath(
           configFileInfo.absoluteFilePath().toStdString());
+    if (!defaultConfigPathUsed) {
+      NeutubeConfig::UseDefaultFlyEmConfig(true);
+    }
   }
 
   QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
@@ -129,18 +156,18 @@ void SetFlyEmConfigpath(
 
 #ifdef _FLYEM_
 void LoadFlyEmConfig(
-    const QString &configPath, NeutubeConfig &/*config*/, bool usingConfig)
+    const MainConfig &config, bool usingConfig)
 {
   ZJsonObject configObj;
-  if (!configPath.isEmpty()) {
-    configObj.load(configPath.toStdString());
+  if (!config.configPath.isEmpty()) {
+    configObj.load(config.configPath.toStdString());
   }
 
-  GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
   GET_FLYEM_CONFIG.useDefaultNeuTuServer(NeutubeConfig::UsingDefaultNeuTuServer());
   GET_FLYEM_CONFIG.useDefaultTaskServer(NeutubeConfig::UsingDefaultTaskServer());
 
-  SetFlyEmConfigpath(configPath, configObj);
+  SetFlyEmConfigpath(config.configPath, configObj, config.defaultConfigPathUsed);
+  GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
 
   GET_FLYEM_CONFIG.loadConfig();
   GET_FLYEM_CONFIG.loadUserSettings();
@@ -215,25 +242,6 @@ void init_log()
   }
 }
 
-struct MainConfig {
-  bool isGuiEnabled() const
-  {
-    return !(debugging || runCommandLine);
-  }
-
-  bool debugging = false;
-  bool unitTest = false;
-  bool runCommandLine = false;
-
-  bool guiEnabled = true;
-  bool advanced = false;
-  bool showingVersion = false;
-  bool autoTestingTask = false;
-
-  std::string userName;
-  QStringList fileList;
-  QString configPath;
-};
 
 MainConfig get_program_config(int argc, char *argv[])
 {
@@ -283,8 +291,20 @@ MainConfig get_program_config(int argc, char *argv[])
       }
     }
 
-    if (QString(argv[1]).endsWith(".json")) {
-      config.configPath = argv[1];
+    if (!config.fileList.isEmpty()) {
+      for (const QString &input : config.fileList) {
+        if (input.startsWith("config:")) {
+          config.configPath = input.mid(7);
+          config.defaultConfigPathUsed = false;
+        } else if (input.startsWith("dname:")) {
+          config.databaseName = input.mid(6);
+        }
+      }
+      if (config.configPath.isEmpty()) {
+        if (config.fileList.front().endsWith(".json")) {
+          config.configPath = config.fileList.front();
+        }
+      }
     }
   }
 //  if (config.debugging || config.runCommandLine) {
@@ -303,8 +323,8 @@ int run_command_line(int argc, char *argv[])
   std::string appDir = app.applicationDirPath().toStdString();
   config.setApplicationDir(appDir);
 
-  #if defined(_FLYEM_)
-  LoadFlyEmConfig("", config, false);
+#if defined(_FLYEM_)
+  LoadFlyEmConfig(MainConfig(), false);
 #endif
 
   init_log();
@@ -351,7 +371,8 @@ void configure(MainConfig &mainConfig)
   }
 
 #ifdef _FLYEM_
-  LoadFlyEmConfig(mainConfig.configPath, config, true);
+//  config.UseDefaultFlyEmConfig(mainConfig.defaultConfigPathUsed);
+  LoadFlyEmConfig(mainConfig, true);
   /*
   if (mainConfig.isGuiEnabled()) {
     GET_FLYEM_CONFIG.activateNeuTuServer();

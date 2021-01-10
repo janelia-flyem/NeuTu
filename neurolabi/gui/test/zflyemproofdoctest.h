@@ -233,19 +233,19 @@ TEST(ZFlyEmProofDoc, ColorMap)
 {
   ZFlyEmProofDoc doc;
   doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
-                             ZFlyEmBodyColorOption::BODY_COLOR_NORMAL));
+                             ZFlyEmBodyColorOption::BODY_COLOR_NORMAL), false);
   ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_NORMAL));
 
   doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
-                             ZFlyEmBodyColorOption::BODY_COLOR_NAME));
+                             ZFlyEmBodyColorOption::BODY_COLOR_NAME), false);
   ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_NAME));
 
   doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
-                             ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER));
+                             ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER), false);
   ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER));
 
   doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
-                             ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL));
+                             ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL), false);
   ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL));
 }
 

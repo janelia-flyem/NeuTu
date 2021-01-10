@@ -37,6 +37,7 @@ signals:
     void requestLoadProtocol(ZJsonObject data);
     void requestDisplaySavedProtocols(QStringList keyList);
     void requestDisplayPoint(int x, int y, int z);
+    void requestDisplayBody(uint64_t bodyID);
     void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
     void activateColorMap(QString colorMapName);
     void rangeChanged(ZIntPoint firstCorner, ZIntPoint lastCorner);
@@ -60,6 +61,7 @@ private slots:
     // these are slots that are used to pass signals from
     //  protocols to the main application
     void displayPointRequested(int x, int y, int z);
+    void displayBodyRequested(uint64_t bodyID);
     void updateColorMapRequested(ZFlyEmSequencerColorScheme scheme);
     void activateProtocolColorMap();
     void deactivateProtocolColorMap();

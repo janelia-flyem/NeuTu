@@ -22,8 +22,8 @@ TEST(ZMouseEventProcessor, MapPoint)
   ZIntCuboid box = ZStackDocUtil::GetStackSpaceRange(&doc, neutu::EAxis::Z);
 
   ZViewProj viewProj;
-  viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
-                               box.getFirstCorner().getY(),
+  viewProj.setCanvasRect(QRect(box.getMinCorner().getX(),
+                               box.getMinCorner().getY(),
                                box.getWidth(), box.getHeight()));
   viewProj.setWidgetRect(QRect(0, 0, 100, 200));
 

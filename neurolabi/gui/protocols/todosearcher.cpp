@@ -19,7 +19,7 @@ void ToDoSearcher::setBodyID(uint64_t bodyID) {
 
 }
 
-void ToDoSearcher::search(ZDvidReader reader) {
+void ToDoSearcher::search(ZDvidReader /*reader*/) {
 
     // placeholder; will do a search and return a list of items
 

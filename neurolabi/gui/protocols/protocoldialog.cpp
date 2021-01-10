@@ -37,6 +37,7 @@
  *
  * other signals you can use:
  * -- emit requestDisplayPoint(x, y, z) to have the 2d view move to a point
+ * -- emit requestDisplayBody(body ID) to have the 2d view display and select a body
  *
  * notes:
  * -- the protocol class does not know its name!  names are managed by

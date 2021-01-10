@@ -17,7 +17,7 @@ TEST(ZDvidDataSliceHelper, Basic)
   viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
 
   helper.setViewParam(viewParam);
-  qDebug() << helper.getViewPort();
+//  qDebug() << helper.getViewPort();
   ASSERT_EQ(512, helper.getWidth());
   ASSERT_EQ(512, helper.getHeight());
 

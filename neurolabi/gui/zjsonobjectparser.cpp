@@ -53,3 +53,18 @@ std::string ZJsonObjectParser::getValue(
 {
    return getValue(obj, key.c_str(), defaultValue);
 }
+
+std::string ZJsonObjectParser::getValue(
+    const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
+    const char* defaultValue)
+{
+  return getValue(obj, candidateKeys, std::string(defaultValue));
+}
+
+//std::string ZJsonObjectParser::getValue(
+//    const ZJsonObject &obj, const std::vector<const char*> &candidateKeys,
+//    const char* defaultValue)
+//{
+//  return getValue(obj, candidateKeys, std::string(defaultValue));
+//}
+

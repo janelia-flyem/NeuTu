@@ -114,7 +114,7 @@ void ZStackDocReader::loadStack(const QString &filePath)
       ZIntCuboid cuboid = sobj->getIntBoundBox();
       m_stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
-      m_stack->setOffset(cuboid.getFirstCorner());
+      m_stack->setOffset(cuboid.getMinCorner());
     }
   } else {
     m_stackSource.import(filePath.toStdString());

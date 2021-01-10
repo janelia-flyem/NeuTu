@@ -58,22 +58,24 @@ void ZDvidWriter::init()
   m_statusErrorMessage.clear();
 }
 
+/*
 bool ZDvidWriter::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
     m_service = dvid::MakeDvidNodeService(getDvidTarget());
     m_connection = dvid::MakeDvidConnection(
-          getDvidTarget().getAddressWithPort());
+          getDvidTarget().getRootUrl());
   } catch (std::exception &e) {
     m_service.reset();
-    std::cout << e.what() << std::endl;
+    LKWARN << e.what();
     return false;
   }
 #endif
 
   return true;
 }
+*/
 
 bool ZDvidWriter::open(
     const QString &serverAddress, const QString &uuid, int port)
@@ -95,9 +97,12 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   std::cout << "Opening dvid writer." << std::endl;
 #endif
 
-  m_reader.open(target);
+  bool succ = m_reader.open(target);
 
-  return startService();
+  m_service = m_reader.getService();
+  m_connection = m_reader.getConnection();
+
+  return succ;
 }
 
 bool ZDvidWriter::openRaw(const ZDvidTarget &target)
@@ -106,9 +111,14 @@ bool ZDvidWriter::openRaw(const ZDvidTarget &target)
     return false;
   }
 
-  m_reader.openRaw(target);
+  bool succ = m_reader.openRaw(target);
 
-  return startService();
+  m_service = m_reader.getService();
+  m_connection = m_reader.getConnection();
+
+  return succ;
+
+//  return startService();
 }
 
 void ZDvidWriter::clear()
@@ -168,11 +178,33 @@ void ZDvidWriter::writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom)
     QByteArray payload = mesh.writeToMemory("obj");
     post(url, payload, false);
 
+    /*
     url = ZDvidUrl::GetMeshInfoUrl(url);
     ZJsonObject infoJson;
     infoJson.setEntry("format", "obj");
     post(url, infoJson.dumpString(0), true);
+    */
   }
+}
+
+void ZDvidWriter::deleteMesh(uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  dvidUrl.setAdmin(m_admin);
+
+  std::string meshName = getDvidTarget().getMeshName();
+  QStringList keyList = getDvidReader().readKeys(
+        meshName.c_str(),
+        (std::to_string(bodyId) + "_0").c_str(),
+        (std::to_string(bodyId) + "_z").c_str());
+
+  for (const QString &key : keyList) {
+    deleteKey(meshName, key.toStdString());
+  }
+
+  deleteKey(meshName, ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::DEFAULT));
+  deleteKey(meshName, ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::NG));
+  deleteKey(meshName, ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::MERGED));
 }
 
 void ZDvidWriter::writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId)
@@ -318,8 +350,10 @@ void ZDvidWriter::writeData(const std::string &dest, const QByteArray &data)
 void ZDvidWriter::writeDataToKeyValue(
     const std::string &dataName, const std::string &key, const QByteArray &data)
 {
-  ZDvidUrl url(getDvidTarget(), m_admin);
-  writeData(url.getKeyUrl(dataName, key), data);
+  if (!dataName.empty() && !key.empty()) {
+    ZDvidUrl url(getDvidTarget(), m_admin);
+    writeData(url.getKeyUrl(dataName, key), data);
+  }
 }
 
 #if 0
@@ -469,12 +503,12 @@ void ZDvidWriter::mergeBody(
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
 {
   ZJsonArray obj;
-  obj.append(cuboid.getFirstCorner().getX());
-  obj.append(cuboid.getFirstCorner().getY());
-  obj.append(cuboid.getFirstCorner().getZ());
-  obj.append(cuboid.getLastCorner().getX());
-  obj.append(cuboid.getLastCorner().getY());
-  obj.append(cuboid.getLastCorner().getZ());
+  obj.append(cuboid.getMinCorner().getX());
+  obj.append(cuboid.getMinCorner().getY());
+  obj.append(cuboid.getMinCorner().getZ());
+  obj.append(cuboid.getMaxCorner().getX());
+  obj.append(cuboid.getMaxCorner().getY());
+  obj.append(cuboid.getMaxCorner().getZ());
 
   std::string url = ZDvidUrl(getDvidTarget(), m_admin).getBoundBoxUrl(z);
   writeJson(url, obj);
@@ -625,21 +659,6 @@ void ZDvidWriter::createData(
   std::cout << obj.dumpString(2) << std::endl;
 #endif
 
-#if 0
-  QString command = QString(
-        "curl -i -X POST -H \"Content-Type: application/json\" -d \"%1\" %2").
-      arg(getJsonStringForCurl(obj).c_str()).
-      arg(url.c_str());
-  /*
-  qDebug() << command;
-
-  QProcess::execute(command);
-  */
-
-
-  runCommand(command);
-#endif
-
   if (isStatusOk()) {
     if (type == "annotation") {
       syncAnnotationToLabel(name);
@@ -697,11 +716,13 @@ void ZDvidWriter::deleteSkeleton(uint64_t bodyId)
             ZDvidUrl::GetSkeletonKey(bodyId));
 }
 
+/*
 void ZDvidWriter::deleteMesh(uint64_t bodyId)
 {
   deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshKey(bodyId));
   deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshInfoKey(bodyId));
 }
+*/
 
 void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
 {
@@ -931,7 +952,7 @@ std::string ZDvidWriter::request(
 
 #ifdef _DEBUG_
   if (!response.empty()) {
-    std::cout << "Post resonse: " << response << std::endl;
+    std::cout << "Post response: " << response << std::endl;
   }
 #endif
 
@@ -1912,12 +1933,12 @@ void ZDvidWriter::changeLabel(
   if (reader.good()) {
     ZDvidInfo dvidInfo = reader.readLabelInfo();
     ZIntCuboid alignedBox;
-    alignedBox.setFirstCorner(
+    alignedBox.setMinCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-    alignedBox.setLastCorner(
+            dvidInfo.getBlockIndex(box.getMinCorner())).getMinCorner());
+    alignedBox.setMaxCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+            dvidInfo.getBlockIndex(box.getMaxCorner())).getMaxCorner());
 
     ZArray *label = reader.readLabels64(alignedBox);
 
@@ -1946,12 +1967,12 @@ void ZDvidWriter::refreshLabel(const ZIntCuboid &box, uint64_t bodyId)
   if (reader.open(getDvidTarget())) {
     ZDvidInfo dvidInfo = reader.readLabelInfo();
     ZIntCuboid alignedBox;
-    alignedBox.setFirstCorner(
+    alignedBox.setMinCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-    alignedBox.setLastCorner(
+            dvidInfo.getBlockIndex(box.getMinCorner())).getMinCorner());
+    alignedBox.setMaxCorner(
           dvidInfo.getBlockBox(
-            dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+            dvidInfo.getBlockIndex(box.getMaxCorner())).getMaxCorner());
 
     ZArray *label = reader.readLabels64(alignedBox);
 
@@ -2002,12 +2023,12 @@ void ZDvidWriter::refreshLabel(
     if (reader.open(getDvidTarget())) {
       ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
       ZIntCuboid alignedBox;
-      alignedBox.setFirstCorner(
+      alignedBox.setMinCorner(
             dvidInfo.getBlockBox(
-              dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
-      alignedBox.setLastCorner(
+              dvidInfo.getBlockIndex(box.getMinCorner())).getMinCorner());
+      alignedBox.setMaxCorner(
             dvidInfo.getBlockBox(
-              dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+              dvidInfo.getBlockIndex(box.getMaxCorner())).getMaxCorner());
 
       ZArray *label = reader.readLabels64(alignedBox);
 

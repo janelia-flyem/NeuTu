@@ -18,7 +18,7 @@ ZFlyEmNameBodyColorScheme::ZFlyEmNameBodyColorScheme()
   m_colorMap["MB-DPM"] = QColor(140, 255, 0);
   m_isMapReady = false;
 
-  m_defaultColor = QColor(0, 0, 0, 0);
+//  m_defaultColor = 0;
 
   buildColorTable();
 }
@@ -37,14 +37,30 @@ void ZFlyEmNameBodyColorScheme::buildColorTable()
   int index = 1;
   for (QHash<QString, QColor>::const_iterator iter = m_colorMap.begin();
        iter != m_colorMap.end(); ++iter, ++index) {
-    m_colorTable[index] = iter.value();
+    m_colorTable[index] = iter.value().rgba();
+    m_nameIndexMap[iter.key()] = index;
   }
+
+//  m_indexMap = getColorIndexMap();
 }
+
+int ZFlyEmNameBodyColorScheme::getBodyColorIndex(uint64_t bodyId) const
+{
+  return m_indexMap[bodyId];
+}
+
+/*
+QColor ZFlyEmNameBodyColorScheme::getBodyColorFromIndex(int index) const
+{
+  return m_colorTable[index];
+}
+*/
 
 QHash<uint64_t, int> ZFlyEmNameBodyColorScheme::getColorIndexMap() const
 {
+  return m_indexMap;
+  /*
   QHash<QString, int> nameIndexMap;
-
 
   QHash<uint64_t, int> indexMap;
   int index = 1;
@@ -59,6 +75,16 @@ QHash<uint64_t, int> ZFlyEmNameBodyColorScheme::getColorIndexMap() const
   }
 
   return indexMap;
+  */
+}
+
+bool ZFlyEmNameBodyColorScheme::hasExplicitColor(uint64_t bodyId) const
+{
+  if (m_indexMap.contains(bodyId)) {
+    return true;
+  }
+
+  return false;
 }
 
 QColor ZFlyEmNameBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotation)
@@ -72,7 +98,8 @@ QColor ZFlyEmNameBodyColorScheme::getColor(const ZFlyEmBodyAnnotation &annotatio
   return color;
 }
 
-QColor ZFlyEmNameBodyColorScheme::getBodyColor(uint64_t bodyId)
+/*
+QColor ZFlyEmNameBodyColorScheme::getBodyColor(uint64_t bodyId) const
 {
   QColor color(0, 0, 0, 0);
 
@@ -86,7 +113,7 @@ QColor ZFlyEmNameBodyColorScheme::getBodyColor(uint64_t bodyId)
 
   return color;
 }
-
+*/
 
 void ZFlyEmNameBodyColorScheme::setDvidTarget(const ZDvidTarget &target)
 {
@@ -151,6 +178,9 @@ void ZFlyEmNameBodyColorScheme::updateNameMap(uint64_t bodyId, const QString &na
       finalName = "PPL1";
     }
 
-    m_nameMap[bodyId] = finalName;
+    if (m_colorMap.contains(finalName)) {
+      m_nameMap[bodyId] = finalName;
+      m_indexMap[bodyId] = m_nameIndexMap[finalName];
+    }
   }
 }

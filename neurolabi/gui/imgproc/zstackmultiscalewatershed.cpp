@@ -472,9 +472,9 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
     return recovered;
   }
 
-  int s_x=box.getFirstCorner().getX();
-  int s_y=box.getFirstCorner().getY();
-  int s_z=box.getFirstCorner().getZ();
+  int s_x=box.getMinCorner().getX();
+  int s_y=box.getMinCorner().getY();
+  int s_z=box.getMinCorner().getZ();
 
 
   uint8_t *pres=result->array8();

@@ -122,15 +122,30 @@ void ZArray::setZero()
   }
 }
 
+size_t ZArray::getBytePerElement() const
+{
+  return getValueTypeSize(valueType());
+}
+
 size_t ZArray::getByteNumber() const
 {
-  return getElementNumber() * getValueTypeSize(valueType());
+  return getElementNumber() * getBytePerElement();
 }
 
 void ZArray::copyDataFrom(const void *data)
 {
   if (data != NULL) {
     memcpy(m_data->data, data, getByteNumber());
+  }
+}
+
+void ZArray::copyDataFrom(
+    const void *data, size_t elementOffset, size_t elementCount)
+{
+  if (data && (elementOffset < getElementNumber())) {
+    elementCount = std::min(elementCount, getElementNumber() - elementOffset);
+    memcpy((char*)(m_data->data) + elementOffset * getBytePerElement(),
+           data, elementCount * getBytePerElement());
   }
 }
 
@@ -199,7 +214,7 @@ void ZArray::print() const
 
 uint64_t ZArray::getUint64Value(size_t index) const
 {
-  if (index > getElementNumber()) {
+  if (index >= getElementNumber()) {
     return 0;
   }
 

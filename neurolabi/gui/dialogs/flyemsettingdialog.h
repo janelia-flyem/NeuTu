@@ -23,6 +23,9 @@ public slots:
   void updateDefaultNeuTuServerChecked(bool on);
   void updateDefaultTaskServerChecked(bool on);
 
+private slots:
+  void onConfigPushButton();
+
 private:
   std::string getNeuTuServer() const;
   std::string getTaskServer() const;

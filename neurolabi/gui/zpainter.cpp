@@ -245,6 +245,15 @@ QRectF ZPainter::getCanvasRange() const
   return m_canvasRange;
 }
 
+void ZPainter::normalizeCanvasRange()
+{
+  if (!m_canvasRange.isEmpty()) {
+    m_canvasRange.moveTo(
+          -m_canvasRange.size().width() * 0.5,
+          -m_canvasRange.size().height() * 0.5);
+  }
+}
+
 double ZPainter::getScale(neutu::EAxis axis) const
 {
   return m_transform.getScale(axis);

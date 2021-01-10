@@ -141,7 +141,7 @@ public:
   void exportSwcFile(std::string filePath);
   void exportCsvFile(std::string filePath);
 
-  ZObject3d *clone() const;
+  ZObject3d* clone() const override;
 
   double averageIntensity(const Stack *stack) const;
 

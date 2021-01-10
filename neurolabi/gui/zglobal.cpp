@@ -1,10 +1,13 @@
 #include "zglobal.h"
 
-#include <QUrl>
 #include <map>
+#include <mutex>
+
+#include <QUrl>
 #include <QClipboard>
 #include <QApplication>
 
+#include "common/utilities.h"
 #include "logging/zqslog.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
@@ -19,6 +22,11 @@
 #include "flyem/zglobaldvidrepo.h"
 #include "service/neuprintreader.h"
 #include "logging/neuopentracing.h"
+#include "logging/zlog.h"
+#include "qt/network/znetbufferreader.h"
+#include "qt/network/znetworkutils.h"
+#include "dvid/zdvidglobal.h"
+
 
 class ZGlobalData {
 public:
@@ -57,7 +65,6 @@ ZGlobal::ZGlobal()
   m_data = new ZGlobalData;
   m_browserOpener = ZSharedPointer<ZBrowserOpener>(new ZBrowserOpener);
   m_browserOpener->setChromeBrowser();
-//  m_browserOpener->setBrowserPath(ZBrowserOpener::INTERNAL_BROWSER);
 }
 
 ZGlobal::~ZGlobal()
@@ -117,6 +124,22 @@ QMainWindow* ZGlobal::getMainWindow() const
   return m_mainWin;
 }
 
+ZJsonObject ZGlobal::readJsonObjectFromUrl(const std::string& url)
+{
+  return ZNetworkUtils::ReadJsonObjectMemo(url);
+}
+
+QString ZGlobal::getCleaveServer() const
+{
+  QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
+  std::string serverOverride = GET_FLYEM_CONFIG.getCleaveServer();
+  if (!serverOverride.empty()) {
+    server = serverOverride.c_str();
+  }
+
+  return server;
+}
+
 QString ZGlobal::getNeuPrintServer() const
 {
   return qgetenv("NEUPRINT");
@@ -160,13 +183,17 @@ QString ZGlobal::getNeuPrintToken(const std::string &key) const
 //    LINFO() << "NeuPrint auth path:" << auth;
 //  }
 
-  ZJsonObject obj;
-  obj.decode(getNeuPrintAuth().toStdString());
   std::string token;
-  if (obj.hasKey(key)) {
-    token = ZJsonParser::stringValue(obj[key.c_str()]);
+
+  ZJsonObject obj;
+  if (obj.decode(getNeuPrintAuth().toStdString(), true)) {
+    if (obj.hasKey(key)) {
+      token = ZJsonParser::stringValue(obj[key.c_str()]);
+    } else {
+      token = ZJsonParser::stringValue(obj["token"]);
+    }
   } else {
-    token = ZJsonParser::stringValue(obj["token"]);
+    LKERROR << "Invalid token: " + key;
   }
 
   return QString::fromStdString(token);
@@ -242,12 +269,17 @@ T* ZGlobal::getIODevice(
 
     if (io == NULL) {
       ZDvidTarget target;
-      target.setFromSourceString(name);
-      if (target.isValid()) {
-        io = new T;
-        if (!io->open(target)) {
-          delete io;
-          io = NULL;
+      ZJsonObject obj;
+      if (obj.decode(name, false)) {
+        target.loadJsonObject(obj);
+      } else {
+        target.setFromSourceString(name);
+        if (target.isValid()) {
+          io = new T;
+          if (!io->open(target)) {
+            delete io;
+            io = NULL;
+          }
         }
       }
     }

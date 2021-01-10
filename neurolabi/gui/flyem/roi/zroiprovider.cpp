@@ -26,6 +26,7 @@ ZRoiProvider::~ZRoiProvider()
   endWorkThread();
 }
 
+/*
 void ZRoiProvider::endWorkThread()
 {
   if (m_workThread) {
@@ -44,6 +45,7 @@ void ZRoiProvider::startWorkThread()
     m_workThread->start();
   }
 }
+*/
 
 void ZRoiProvider::setRoiFactory(ZAbstractRoiFactory *factory)
 {
@@ -211,6 +213,7 @@ void ZRoiProvider::emitRoiLoaded(const QString &name)
   emit roiLoaded(name);
 }
 
+/*
 void ZRoiProvider::addTask(ZTask *task)
 {
   if (m_workThread) {
@@ -219,6 +222,7 @@ void ZRoiProvider::addTask(ZTask *task)
     delete task;
   }
 }
+*/
 
 void ZRoiProvider::requestRoi(const std::shared_ptr<ZRoiMesh> &roiMesh)
 {

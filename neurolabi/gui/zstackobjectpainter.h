@@ -1,6 +1,8 @@
 #ifndef ZSTACKOBJECTPAINTER_H
 #define ZSTACKOBJECTPAINTER_H
 
+#include <memory>
+
 #include "zstackobject.h"
 
 class ZPainter;
@@ -13,6 +15,10 @@ public:
 
   void paint(
       const ZStackObject *obj,
+      ZPainter &painter, int slice, ZStackObject::EDisplayStyle option,
+      neutu::EAxis sliceAxis) const;
+  void paint(
+      const std::shared_ptr<ZStackObject> &obj,
       ZPainter &painter, int slice, ZStackObject::EDisplayStyle option,
       neutu::EAxis sliceAxis) const;
 

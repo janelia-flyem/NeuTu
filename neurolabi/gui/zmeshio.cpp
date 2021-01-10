@@ -18,6 +18,7 @@
 #include "zioutils.h"
 #include "qt/core/zexception.h"
 #include "logging/zqslog.h"
+#include "common/memorystream.h"
 
 namespace {
 
@@ -307,18 +308,35 @@ ZMeshIO::ZMeshIO()
   m_readExts = exts.split(";", QString::SkipEmptyParts);
   m_readExts.push_back("msh");
   m_readExts.push_back("drc");
+  m_readExts.push_back("ngmesh");
 
   m_readFilter = QString("All Mesh files (*.") + m_readExts.join(" *.") + QString(")");
 
   Assimp::Exporter exporter;
   for (size_t i = 0; i < exporter.GetExportFormatCount(); ++i) {
     const aiExportFormatDesc* format = exporter.GetExportFormatDescription(i);
+    addWriteFormat(format->id, format->fileExtension, format->description);
+    /*
     m_writeExts.push_back(format->fileExtension);
     m_writeFormats.push_back(format->id);
     QString filter = format->description;
     filter += QString(" (*.%1)").arg(format->fileExtension);
     m_writeFilters.push_back(filter);
+    */
   }
+  addWriteFormat("ngmesh", "ngmesh", "NG Mesh");
+//  m_writeExts.push_back("ngmesh");
+//  m_writeFormats.push_back("ngmesh");
+}
+
+void ZMeshIO::addWriteFormat(
+    const std::string &format, const std::string &ext,
+    const std::string &description)
+{
+  m_writeFormats.push_back(format);
+  m_writeExts.push_back(ext.c_str());
+  m_writeFilters.push_back(
+        QString("%1 (*.%2").arg(description.c_str()).arg(ext.c_str()));
 }
 
 bool ZMeshIO::canReadFile(const QString& filename)
@@ -350,8 +368,10 @@ void ZMeshIO::loadMesh(const aiScene *scene, ZMesh &mesh) const
   aiMesh* msh = scene->mMeshes[0];
   mesh.m_vertices.resize(msh->mNumVertices);
   mesh.m_normals.resize(msh->mNumVertices);
-  memcpy(mesh.m_vertices.data(), msh->mVertices, sizeof(float) * 3 * mesh.m_vertices.size());
-  memcpy(mesh.m_normals.data(), msh->mNormals, sizeof(float) * 3 * mesh.m_vertices.size());
+  memcpy(mesh.m_vertices.data(), msh->mVertices,
+         sizeof(float) * 3 * mesh.m_vertices.size());
+  memcpy(mesh.m_normals.data(), msh->mNormals,
+         sizeof(float) * 3 * mesh.m_vertices.size());
 
   for (size_t i = 0; i < msh->mNumFaces; ++i) {
     if (msh->mFaces[i].mNumIndices != 3)
@@ -414,6 +434,8 @@ void ZMeshIO::loadFromMemory(
   try {
     if (format == "drc") {
       readDracoMeshFromMemory(buffer.constData(), buffer.size(), mesh);
+    } else if (format == "ngmesh") {
+      readNgMeshFromMemory(buffer.constData(), buffer.size(), mesh);
     } else {
       mesh.clear();
       mesh.setType(GL_TRIANGLES);
@@ -461,6 +483,8 @@ void ZMeshIO::load(const QString& filename, ZMesh& mesh) const
       readAllenAtlasMesh(filename, mesh.m_normals, mesh.m_vertices, mesh.m_indices);
     } else if (filename.endsWith(".drc", Qt::CaseInsensitive)) {
       readDracoMesh(filename, mesh);
+    } else if (filename.endsWith(".ngmesh", Qt::CaseInsensitive)) {
+      readNgMesh(filename, mesh);
     } else {
       Assimp::Importer importer;
       initImporter(importer);
@@ -507,14 +531,22 @@ void ZMeshIO::save(const ZMesh& mesh, const QString& filename, std::string forma
         format = "drc";
       } else {
         for (int i = 0; i < m_writeExts.size(); ++i) {
-          if (filename.endsWith(QString(".%1").arg(m_writeExts[i]), Qt::CaseInsensitive))
+          if (filename.endsWith("." + m_writeExts[i], Qt::CaseInsensitive)) {
             format = m_writeFormats[i];
+            break;
+          }
         }
       }
     }
 
     if (format == "drc") {
       writeDracoMesh(filename, mesh);
+    } else if (format == "ngmesh") {
+      QByteArray data = mesh.writeToMemory(format);
+      QFile file(filename);
+      file.open(QIODevice::WriteOnly);
+      file.write(data);
+      file.close();
     } else {
       CHECK(m_writeFormats.contains(format));
 
@@ -563,6 +595,41 @@ QByteArray ZMeshIO::writeToMemory(const ZMesh& mesh, std::string format) const
         encoder.EncodeMeshToBuffer(*dmesh, &buffer);
         result.append(buffer.data(), buffer.size());
         delete dmesh;
+      }
+    } else if (format == "ngmesh") {
+      if (mesh.type() == GL_TRIANGLES) { //only support GL_TRIANGLES for now
+        QDataStream stream(&result, QIODevice::WriteOnly);
+        //The stream operator doesn't work as expected
+//        stream.setByteOrder(QDataStream::LittleEndian); //QDataStream uses BigEndian by default!
+        const std::vector<glm::vec3> &vertices = mesh.vertices();
+        uint32_t numVertices = uint32_t(vertices.size());
+        stream.writeRawData(reinterpret_cast<char*>(&numVertices), 4);
+//        stream << numVertices;
+        for (const auto &vertex : vertices) {
+          float x = vertex[0];
+          float y = vertex[1];
+          float z = vertex[2];
+
+          stream.writeRawData(reinterpret_cast<char*>(&x), 4);
+          stream.writeRawData(reinterpret_cast<char*>(&y), 4);
+          stream.writeRawData(reinterpret_cast<char*>(&z), 4);
+//          stream << float(vertex[0]) << float(vertex[1]) << float(vertex[2]);
+        }
+
+        const std::vector<GLuint> &indices = mesh.indices();
+        if (indices.empty()) {
+          for(uint32_t i = 0; i < vertices.size(); ++i) {
+            stream << i;
+          }
+        } else {
+          for (auto index : indices) {
+            uint32_t v = index;
+            stream.writeRawData(reinterpret_cast<char*>(&v), 4);
+//            stream << uint32_t(index);
+          }
+        }
+      } else {
+        throw std::runtime_error("Unsupported mesh type.");
       }
     } else {
       CHECK(m_writeFormats.contains(format));
@@ -662,6 +729,82 @@ void ZMeshIO::readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>
       }
     }
   }
+}
+
+void ZMeshIO::readNgMesh(std::istream &stream, ZMesh &mesh) const
+{
+  try {
+    uint32_t numVertices = 0;
+    stream.read(reinterpret_cast<char*>(&numVertices), 4);
+    std::vector<glm::dvec3> vertices;
+    for (uint32_t i = 0; i < numVertices; ++i) {
+      float x = 0;
+      float y = 0;
+      float z = 0;
+      stream.read(reinterpret_cast<char*>(&x), 4);
+      stream.read(reinterpret_cast<char*>(&y), 4);
+      stream.read(reinterpret_cast<char*>(&z), 4);
+      vertices.emplace_back(x, y, z);
+    }
+
+    std::vector<GLuint> indices;
+    while (stream.good()) {
+      uint32_t index = 0;
+      stream.read(reinterpret_cast<char*>(&index), 4);
+      if (stream.good()) {
+        indices.push_back(index);
+      }
+    }
+
+    mesh.setVertices(vertices);
+    mesh.setIndices(indices);
+  } catch (std::exception &e) {
+    LERROR() << e.what();
+    throw std::runtime_error("Failed to decode NG mesh");
+  }
+}
+
+/*NG mesh format
+ * 4B: #vertices
+ * #vertices * 4 * 3B: vertices with float for each coordinate.
+ *    (x,y,z), (x,y,z), (x,y,z), ...
+ * Remain: indices, each 4 bytes as uint32
+ */
+void ZMeshIO::readNgMeshFromMemory(
+    const char *data, size_t size, ZMesh &mesh) const
+{
+  ZMemoryInputStream stream(data, size);
+  readNgMesh(stream, mesh);
+
+  /*
+  try {
+    ZMemoryInputStream stream(data, size);
+    uint32_t numVertices = 0;
+    stream >> numVertices;
+    std::vector<glm::dvec3> vertices;
+    for (uint32_t i = 0; i < numVertices; ++i) {
+      float x = 0;
+      float y = 0;
+      float z = 0;
+      stream >> x >> y >> z;
+      vertices.emplace_back(x, y, z);
+    }
+
+    size_t numIndices = (size - numVertices * 12 - 4) / 4;
+    std::vector<GLuint> indices(numIndices);
+    for (size_t i = 0; i < numIndices; ++i) {
+      uint32_t index = 0;
+      stream >> index;
+      indices[i] = index;
+    }
+
+    mesh.setVertices(vertices);
+    mesh.setIndices(indices);
+  } catch (std::exception &e) {
+    LERROR() << e.what();
+    throw std::runtime_error("Failed to decode NG mesh");
+  }
+  */
 }
 
 void ZMeshIO::readDracoMeshFromMemory(
@@ -790,4 +933,12 @@ void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
   inputFileStream.close();
 
   readDracoMeshFromMemory(data.data(), data.size(), mesh);
+}
+
+void ZMeshIO::readNgMesh(const QString &filename, ZMesh &mesh) const
+{
+  std::ifstream stream;
+  openFileStream(stream, filename, std::ios::in | std::ios::binary);
+
+  readNgMesh(stream, mesh);
 }

@@ -1,22 +1,26 @@
 #include "zneuroglancerannotationlayerspec.h"
 
-#include "zjsonarray.h"
-#include "geometry/zintpoint.h"
-
 #include "neulib/core/stringbuilder.h"
+#include "geometry/zintpoint.h"
+#include "geometry/zcuboid.h"
+#include "zjsonarray.h"
+#include "zjsonfactory.h"
+
 //#include "common/zstringbuilder.h"
 
 ZNeuroglancerAnnotationLayerSpec::ZNeuroglancerAnnotationLayerSpec()
 {
-  setType("annotation");
+  setType(ZNeuroglancerLayerSpec::TYPE_ANNOTATION);
 }
 
 ZJsonObject ZNeuroglancerAnnotationLayerSpec::toJsonObject() const
 {
   ZJsonObject rootObj = ZNeuroglancerLayerSpec::toJsonObject();
-  rootObj.setEntry("voxelSize", m_voxelSize, 3);
+//  rootObj.setEntry("voxelSize", m_voxelSize, 3);
   rootObj.setNonEmptyEntry("tool", m_tool);
-  rootObj.setNonEmptyEntry("linkedSegmentationLayer", m_linkedSegmentationLayer);
+  ZJsonObject linkedSegObject;
+  linkedSegObject.setNonEmptyEntry("segmentation", m_linkedSegmentationLayer);
+  rootObj.setNonEmptyEntry("linkedSegmentationLayer", linkedSegObject);
   rootObj.setEntry("annotationFillOpacity", m_opacity);
   if (m_color.size() == 3) {
 
@@ -78,5 +82,20 @@ void ZNeuroglancerAnnotationLayerSpec::addAnnotation(const ZJsonObject &obj)
 {
   if (!obj.isEmpty()) {
     m_annotationList.push_back(obj);
+  }
+}
+
+void ZNeuroglancerAnnotationLayerSpec::addAnnotation(const ZCuboid &box)
+{
+  if (box.isValid()) {
+    ZJsonObject boxObj;
+    boxObj.setNonEmptyEntry(
+          "pointA", ZJsonFactory::MakeJsonArray(box.getMinCorner()));
+    boxObj.setNonEmptyEntry(
+          "pointB", ZJsonFactory::MakeJsonArray(box.getMaxCorner()));
+    boxObj.setEntry("type", "axis_aligned_bounding_box");
+    boxObj.setEntry(
+          "id", "box:" + box.getMinCorner().toString() + box.getMaxCorner().toString());
+    addAnnotation(boxObj);
   }
 }

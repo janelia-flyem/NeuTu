@@ -56,6 +56,7 @@
 #include "zstring.h"
 #include "zpunctum.h"
 #include "flyemdatareader.h"
+#include "flyemdatawriter.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -620,6 +621,32 @@ QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
   return msg;
 }
 
+void ZFlyEmBodyMergeProject::uploadMeshMerge(
+    uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
+{
+  /*
+  const ZDvidReader &reader = m_writer.getDvidReader();
+  if (reader.isReady()) {
+    std::vector<uint64_t> meshBodyArray = reader.readMergedMeshKeys(targetId);
+    if (meshBodyArray.empty()) {
+      meshBodyArray.push_back(targetId);
+    }
+    for (uint64_t bodyId : bodyIdArray) {
+      std::vector<uint64_t> subArray = reader.readMergedMeshKeys(bodyId);
+      if (subArray.empty()) {
+        meshBodyArray.push_back(bodyId);
+      } else {
+        meshBodyArray.insert(
+              meshBodyArray.end(), subArray.begin(), subArray.end());
+      }
+    }
+      }
+    */
+
+  FlyEmDataWriter::WriteMeshMerge(m_writer, targetId, bodyIdArray);
+
+}
+
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
 {
@@ -697,34 +724,6 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray,
     ZWidgetMessage &warnMsg)
 {
-  /*
-  if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
-    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-          getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
-        ZNeutuService::REQUEST_FAILED) {
-      warnMsg.setMessage("Computing service failed");
-    }
-
-    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-          getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
-        ZNeutuService::REQUEST_FAILED) {
-      warnMsg.setMessage("Computing service failed");
-    }
-  } else {
-    for (uint64_t bodyId : bodyArray) {
-      m_writer.deleteBodyAnnotation(bodyId);
-      m_writer.deleteSkeleton(bodyId);
-    }
-
-    if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
-      neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
-            "skeletonize", getDvidTarget(), targetId, true);
-      task.setPriority(5);
-      GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
-    }
-  }
-  */
-
   for (uint64_t bodyId : bodyArray) {
     m_writer.deleteBodyAnnotation(bodyId);
     m_writer.deleteSkeleton(bodyId);
@@ -742,7 +741,7 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
   }
 
   //Temporary fix for mesh update, which should be moved the remote service
-  m_writer.deleteMesh(targetId);
+//  m_writer.deleteMesh(targetId);
 }
 
 void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySet)
@@ -947,6 +946,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
                   ZWidgetMessage::TARGET_TEXT_APPENDING |
                   ZWidgetMessage::TARGET_KAFKA));
         } else {
+          uploadMeshMerge(newTargetId, newMerged);
           mergeBodyAnnotation(newTargetId, newMerged);
 
           updateAffliatedData(newTargetId, newMerged, warnMsg);

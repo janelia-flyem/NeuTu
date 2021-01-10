@@ -137,6 +137,17 @@ void Z3DMeshRenderer::prepareMesh()
         m_splitMeshes.push_back(*((*m_meshPt)[i]));
         m_splitCount[i] = 1;
       } else {
+        std::vector<std::shared_ptr<ZMesh>> res =
+            (*m_meshPt)[i]->getSplitMeshList(numTriThre);
+        m_splitCount[i] = res.size();
+        if (!res.empty()) {
+          size_t start = m_splitMeshes.size();
+          m_splitMeshes.resize(start + res.size());
+          for (auto splitMesh : res) {
+            m_splitMeshes[start++] = *splitMesh;
+          }
+        }
+        /*
         std::vector<ZMesh> res = (*m_meshPt)[i]->split(numTriThre);
         m_splitCount[i] = res.size();
         if (i == 0) {
@@ -147,6 +158,7 @@ void Z3DMeshRenderer::prepareMesh()
           for (size_t j = 0; j < res.size(); ++j)
             m_splitMeshes[j + start].swap(res[j]);
         }
+        */
       }
     }
     m_splitMeshesWrapper.clear();

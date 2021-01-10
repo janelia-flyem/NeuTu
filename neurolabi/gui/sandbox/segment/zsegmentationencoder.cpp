@@ -185,12 +185,12 @@ void ZSegmentationEncoder::unify(const ZSegmentationEncoder &encoder){
 
   ZIntCuboid boxt = boxa;
   boxt.join(boxb);
-  ZSegmentationEncoder tmp(boxt.getFirstCorner());
+  ZSegmentationEncoder tmp(boxt.getMinCorner());
 
-  int z0 = boxa.getFirstCorner().getZ();
-  int z1 = boxa.getLastCorner().getZ();
-  int y0 = boxa.getFirstCorner().getY();
-  int y1 = boxa.getLastCorner().getY();
+  int z0 = boxa.getMinCorner().getZ();
+  int z1 = boxa.getMaxCorner().getZ();
+  int y0 = boxa.getMinCorner().getY();
+  int y1 = boxa.getMaxCorner().getY();
 
   for(int z = z0; z <= z1; ++z){
     for(int y = y0; y <= y1; ++y){
@@ -201,10 +201,10 @@ void ZSegmentationEncoder::unify(const ZSegmentationEncoder &encoder){
     }
   }
 
-  z0 = boxb.getFirstCorner().getZ();
-  z1 = boxb.getLastCorner().getZ();
-  y0 = boxb.getFirstCorner().getY();
-  y1 = boxb.getLastCorner().getY();
+  z0 = boxb.getMinCorner().getZ();
+  z1 = boxb.getMaxCorner().getZ();
+  y0 = boxb.getMinCorner().getY();
+  y1 = boxb.getMaxCorner().getY();
 
   for(int z = z0; z <= z1; ++z){
     for(int y = y0; y <= y1; ++y){
@@ -242,10 +242,10 @@ void ZSegmentationEncoder::labelStack(ZStack &stack, T* array, int value) const{
   int ofy = stack.getOffset().getY();
   int ofz = stack.getOffset().getZ();
 
-  int min_y = getBoundBox().getFirstCorner().getY();
-  int max_y = getBoundBox().getLastCorner().getY();
-  int min_z = getBoundBox().getFirstCorner().getZ();
-  int max_z = getBoundBox().getLastCorner().getZ();
+  int min_y = getBoundBox().getMinCorner().getY();
+  int max_y = getBoundBox().getMaxCorner().getY();
+  int min_z = getBoundBox().getMinCorner().getZ();
+  int max_z = getBoundBox().getMaxCorner().getZ();
 
   for(int z = min_z; z <= max_z; ++z){
     for(int y = min_y; y <= max_y; ++y){

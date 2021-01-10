@@ -101,6 +101,8 @@ public:
   ZIntPoint getBlockSize() const;
   ZIntPoint getGridSize() const;
 
+  int getBlockLevel() const;
+
   bool isValidBlockIndex(const ZIntPoint &pt);
 
   int getMinZ() const;
@@ -145,6 +147,11 @@ public:
     return m_dvidUuid;
   }
 
+  bool isJpegCompression() const;
+  bool isLz4Compression() const;
+
+  void setCompression(const std::string &compression);
+
 private:
   static int CoordToBlockIndex(int x, int s);
   /*!
@@ -162,6 +169,7 @@ private:
   ZIntPoint m_startBlockIndex;
   ZIntPoint m_endBlockIndex;
   std::vector<int> m_blockSize;
+  std::string m_compression;
 
   std::string m_dvidAddress;
   int m_dvidPort;
@@ -170,13 +178,14 @@ private:
   const static int m_defaultBlockSize;
 
   //Json keys
-  const static char* m_minPointKey;
-  const static char* m_maxPointKey;
+  const static char* KEY_MIN_POINT;
+  const static char* KEY_MAX_POINT;
   const static char* m_blockSizeKey;
   const static char* m_voxelSizeKey;
   const static char* m_voxelUnitKey;
   const static char* m_blockMinIndexKey;
   const static char* m_blockMaxIndexKey;
+  const static char* KEY_COMPRESSION;
 };
 
 #endif // ZDVIDINFO_H

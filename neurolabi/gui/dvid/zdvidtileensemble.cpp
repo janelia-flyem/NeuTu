@@ -535,9 +535,9 @@ void ZDvidTileEnsemble::display(
 #endif
 
   if (m_patch != NULL) {
-    if (m_patchRange.getFirstCorner().getZ() == painter.getZOffset() + slice) {
-      painter.drawImage(m_patchRange.getFirstCorner().getX(),
-                        m_patchRange.getFirstCorner().getY(),
+    if (m_patchRange.getMinCorner().getZ() == painter.getZOffset() + slice) {
+      painter.drawImage(m_patchRange.getMinCorner().getX(),
+                        m_patchRange.getMinCorner().getY(),
                         *m_patch);
     }
   }

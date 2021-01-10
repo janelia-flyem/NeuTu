@@ -145,6 +145,7 @@ public:
 
   const ZDvidReader& getMainDvidReader() const;
   const ZDvidReader& getWorkDvidReader() const;
+  ZDvidWriter& getMainDvidWriter();
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -205,11 +206,10 @@ public:
   void enableGarbageLifetimeLimit(bool on);
   bool garbageLifetimeLimitEnabled() const;
 
+  ZMesh *readMesh(const ZDvidReader &reader, ZFlyEmBodyConfig &config);
   ZMesh *readMesh(
-      const ZDvidReader &reader, const ZFlyEmBodyConfig &config,
-      int *acturalMeshZoom);
-  ZMesh *readMesh(
-      const ZDvidReader &reader, uint64_t bodyId, int zoom, int *acturalZoom);
+      const ZDvidReader &reader, uint64_t bodyId, int zoom);
+  ZMesh *readMesh(ZFlyEmBodyConfig &config);
 //  ZMesh *readSupervoxelMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
 #if 0
@@ -430,8 +430,6 @@ private:
   ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
   ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
-
-  ZMesh *readMesh(const ZFlyEmBodyConfig &config, int *actualMeshZoom);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);

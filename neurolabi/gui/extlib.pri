@@ -122,12 +122,12 @@ LIBS *= -lboost_system -lboost_filesystem
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
-        LIBS *= -llowtis
-#        CONFIG(debug, debug|release) {
-#            LIBS *= -llowtis-g
-#        } else {
-#            LIBS *= -llowtis
-#        }
+#        LIBS *= -llowtis
+        CONFIG(debug, debug|release) {
+            LIBS *= -llowtis-g
+        } else {
+            LIBS *= -llowtis
+        }
     }
 
     !contains(DEFINES, _LIBDVIDCPP_OLD_) {
@@ -153,6 +153,21 @@ exists($${CONDA_ENV}) {
   INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
   LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive -lrdkafka++
   INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
+
+  !CONFIG(NO_CONDA_LIB_CHECK) {
+    unix {
+      message("Checking libs ...")
+      libError = $$system(./check_conda_lib $${CONDA_ENV})
+      w=$${member(libError, 0)}
+      !isEmpty(libError) {
+        equals(w, "WARNING:") {
+          warning($${libError})
+        } else {
+          error("Library error: $${libError}")
+        }
+      }
+    }
+  }
 } else {
   INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
   LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp -L$$PWD/ext/draco/lib -ldracoenc -ldracodec -ldraco

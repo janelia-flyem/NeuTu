@@ -19,6 +19,8 @@ std::string zstackobject::ToString(ZStackObject::ETarget target)
     return "3D canvas";
   case ZStackObject::ETarget::STACK_CANVAS:
     return "stack canvas";
+  case ZStackObject::ETarget::WIDGET_CANVAS:
+    return "widget canvas";
   }
 
   return std::to_string(neutu::EnumValue(target));

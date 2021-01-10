@@ -5,6 +5,10 @@
 #include <QCoreApplication>
 #endif
 
+#if defined(_QT_GUI_USED_)
+#include "zpainter.h"
+#endif
+
 #include "geometry/zintcuboid.h"
 #include "common/utilities.h"
 #include "geometry/zcuboid.h"
@@ -12,16 +16,10 @@
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
 
-ZStackObject::ZStackObject() : m_hitProtocal(EHitProtocol::HIT_DATA_POS),
-  m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
-  m_zScale(1.0),
-  m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutu::display::VE_NONE)
+ZStackObject::ZStackObject()
 {
-  m_type = EType::UNIDENTIFIED;
   setSliceAxis(neutu::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
-  m_timeStamp = 0;
 }
 
 ZStackObject::~ZStackObject()
@@ -46,9 +44,7 @@ ZStackObject::~ZStackObject()
 }
 
 #define RETURN_TYPE_NAME(v, t) \
-  if (v == EType::t) { \
-    return NT_STR(t); \
-  }
+  if (v == EType::t) return NT_STR(t)
 
 std::string ZStackObject::GetTypeName(EType type)
 {
@@ -97,6 +93,11 @@ std::string ZStackObject::getTypeName() const
   return GetTypeName(getType());
 }
 
+ZStackObject* ZStackObject::clone() const
+{
+  return nullptr;
+}
+
 bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
                            neutu::EAxis /*sliceAxis*/) const
@@ -114,12 +115,12 @@ void ZStackObject::setSelected(bool selected)
   m_selected = selected;
 
   if(m_selected) {
-    for(auto callback: m_callbacks_on_selection)
+    for(auto callback: m_selectionCallbacks)
     {
       callback(this);
     }
   } else {
-    for(auto callback: m_callbacks_on_deselection)
+    for(auto callback: m_deselectionCallbacks)
     {
       callback(this);
     }
@@ -243,9 +244,23 @@ double ZStackObject::getPenWidth() const
   return width;
 }
 
+void ZStackObject::display(ZPainter &painter, const DisplayConfig &config) const
+{
+#if defined(_QT_GUI_USED_)
+  int slice = config.cutSlice - painter.getZOffset();
+  display(painter, slice, config.style, config.sliceAxis);
+#endif
+}
+
 bool ZStackObject::isSliceVisible(int /*z*/, neutu::EAxis /*axis*/) const
 {
   return isVisible();
+}
+
+bool ZStackObject::isSliceVisible(
+    int z, neutu::EAxis axis, const ZAffinePlane &/*plane*/) const
+{
+  return isSliceVisible(z, axis);
 }
 
 bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
@@ -349,22 +364,6 @@ bool ZStackObject::IsSameClass(const std::string &s1, const std::string &s2)
   return IsSameSource(s1, s2);
 }
 
-/*
-bool ZStackObject::isEmptyTree(const ZStackObject *obj)
-{
-  bool passed = false;
-  if (obj != NULL) {
-    if (obj->getType() == EType::SWC) {
-      const ZSwcTree *tree = dynamic_cast<const ZSwcTree*>(obj);
-      if (tree != NULL) {
-        passed = tree->isEmpty();
-      }
-    }
-  }
-
-  return passed;
-}
-*/
 
 bool ZStackObject::IsSelected(const ZStackObject *obj)
 {

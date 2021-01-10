@@ -23,7 +23,8 @@ public:
   ZFlyEmToDoItem(int x, int y, int z);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
+  void display(ZPainter &painter, const DisplayConfig &config) const override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::FLYEM_TODO_ITEM;

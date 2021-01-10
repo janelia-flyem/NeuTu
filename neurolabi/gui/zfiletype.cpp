@@ -143,7 +143,7 @@ std::string ZFileType::TypeName(EFileType type)
   }
 }
 
-bool ZFileType::isImageFile(EFileType type)
+bool ZFileType::IsImageFile(EFileType type)
 {
   return (type == EFileType::TIFF) ||
       (type == EFileType::LSM) ||
@@ -156,12 +156,12 @@ bool ZFileType::isImageFile(EFileType type)
       (type == EFileType::MC_STACK_RAW);
 }
 
-bool ZFileType::isImageFile(const std::string &filePath)
+bool ZFileType::IsImageFile(const std::string &filePath)
 {
-  return isImageFile(FileType(filePath));
+  return IsImageFile(FileType(filePath));
 }
 
-bool ZFileType::isObjectFile(EFileType type)
+bool ZFileType::IsObjectFile(EFileType type)
 {
   return (type == EFileType::SWC) ||
       (type == EFileType::SWC_NETWORK) ||
@@ -180,21 +180,21 @@ bool ZFileType::isObjectFile(EFileType type)
       (type == EFileType::GRAPH_3D);
 }
 
-bool ZFileType::isObjectFile(const std::string &filePath)
+bool ZFileType::IsObjectFile(const std::string &filePath)
 {
-  return isObjectFile(FileType(filePath));
+  return IsObjectFile(FileType(filePath));
 }
 
-bool ZFileType::isNeutubeOpenable(const std::string &filePath)
+bool ZFileType::IsNeutubeOpenable(const std::string &filePath)
 {
-  return isNeutubeOpenable(FileType(filePath));
+  return IsNeutubeOpenable(FileType(filePath));
 }
 
-bool ZFileType::isNeutubeOpenable(EFileType type)
+bool ZFileType::IsNeutubeOpenable(EFileType type)
 {
-  bool openable = isImageFile(type);
+  bool openable = IsImageFile(type);
   if (!openable) {
-    openable = isObjectFile(type);
+    openable = IsObjectFile(type);
   }
   return openable;
 }

@@ -75,7 +75,7 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
   }else if (m_interactiveContext.rectEditMode() ==
             ZInteractiveContext::RECT_DRAW) {
     if (m_mouseLeftButtonPressed == true) {
-      m_rect.setLastCorner(event->x(), event->y());
+      m_rect.setMaxCorner(event->x(), event->y());
 //      m_rect.makeValid();
     }
 
@@ -178,7 +178,7 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftButtonPressed = true;
     if (isStateOn(STATE_DRAW_RECT)) {
-      m_rect.setFirstCorner(event->x(), event->y());
+      m_rect.setMinCorner(event->x(), event->y());
       m_rect.setSize(0, 0);
     }
   } else if (event->button() == Qt::RightButton) {

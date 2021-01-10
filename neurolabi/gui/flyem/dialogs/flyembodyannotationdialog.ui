@@ -201,7 +201,7 @@
        <item>
         <widget class="QLabel" name="primaryNeuritelabel">
          <property name="text">
-          <string>Primary neurite:</string>
+          <string>Cell body fiber:</string>
          </property>
         </widget>
        </item>
@@ -325,7 +325,7 @@
        <item>
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Synonym:</string>
+          <string>Notes:</string>
          </property>
         </widget>
        </item>

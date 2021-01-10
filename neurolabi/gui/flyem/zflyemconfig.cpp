@@ -31,6 +31,9 @@ const char* ZFlyEmConfig::MB6_KEY = "mb6_paper";
 const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
 const char* ZFlyEmConfig::NEUTU_SERVER_KEY = "neutu_server";
 const char* ZFlyEmConfig::NEUROGLANCER_KEY = "neuroglancer server";
+const char* ZFlyEmConfig::AUTHENTICATION_SERVER_KEY = "authentication server";
+const char* ZFlyEmConfig::CLEAVE_SERVER_KEY = "cleave server";
+const char* ZFlyEmConfig::ASSIGNMENT_MANAGER_KEY = "assignment manager";
 const char* ZFlyEmConfig::CENTERCUT_KEY = "flyem::centercut";
 const char* ZFlyEmConfig::UI_KEY = "ui";
 const char* ZFlyEmConfig::STYLE_KEY = "style";
@@ -86,7 +89,8 @@ void ZFlyEmConfig::print() const
   std::cout << "  " << "Neutu server to use: " << getNeuTuServer() << std::endl;
   std::cout << "  " << "Default task server: " << m_defaultTaskServer << std::endl;
   std::cout << "  " << "Task server to use: " << getTaskServer() << std::endl;
-
+  std::cout << "  " << "Authentication server: " << getDefaultAuthenticationServer() << std::endl;
+  std::cout << "  " << "Assignment manager: " << getDefaultAssignmentManager() << std::endl;
 }
 
 std::string ZFlyEmConfig::getActiveConfigPath() const
@@ -137,6 +141,26 @@ void ZFlyEmConfig::loadConfig()
 
       if (obj.hasKey(TASK_SERVER_KEY)) {
         setDefaultTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
+      }
+
+      std::string cleaveServer = neutu::GetEnv("NEU3_CLEAVE_SERVER");
+      if (cleaveServer.empty()) {
+        cleaveServer = ZJsonParser::stringValue(obj[CLEAVE_SERVER_KEY]);
+      }
+      setDefaultCleaveServer(cleaveServer);
+
+      if (const char *authServer = std::getenv("AUTHENTICATION_SERVER")) {
+        setDefaultAuthenticationServer(authServer);
+      } else if (obj.hasKey(AUTHENTICATION_SERVER_KEY)) {
+        setDefaultAuthenticationServer(
+              ZJsonParser::stringValue(obj[AUTHENTICATION_SERVER_KEY]));
+      }
+
+      if (const char *assigmentManager = std::getenv("ASSIGNMENT_MANAGER")) {
+        setDefaultAssignmentManager(assigmentManager);
+      } else if (obj.hasKey(ASSIGNMENT_MANAGER_KEY)) {
+        setDefaultAssignmentManager(
+              ZJsonParser::stringValue(obj[ASSIGNMENT_MANAGER_KEY]));
       }
 
       if (obj.hasKey(NEUTU_SERVER_KEY)) {
@@ -255,6 +279,19 @@ void ZFlyEmConfig::setDefaultTaskServer(const std::string &taskServer)
   m_defaultTaskServer = taskServer;
 }
 
+void ZFlyEmConfig::setDefaultCleaveServer(const std::string &server)
+{
+  m_defaultCleaveServer = server;
+}
+
+void ZFlyEmConfig::setDefaultAssignmentManager(const std::string &server) {
+  m_defaultAssignmentManager = server;
+}
+
+void ZFlyEmConfig::setDefaultAuthenticationServer(const std::string &server) {
+    m_defaultAuthenticationServer = server;
+}
+
 bool ZFlyEmConfig::hasDefaultTaskServer() const
 {
   return !m_defaultTaskServer.empty();
@@ -355,6 +392,11 @@ std::string ZFlyEmConfig::getNeuTuServer() const
 {
   return getNeuTuServer(usingDefaultNeuTuServer());
 //  return m_remoteServer;
+}
+
+std::string ZFlyEmConfig::getCleaveServer() const
+{
+  return m_defaultCleaveServer;
 }
 
 void ZFlyEmConfig::setCustomNeuTuServer(const std::string &server)

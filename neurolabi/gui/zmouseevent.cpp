@@ -43,9 +43,14 @@ void ZMouseEvent::setStackPosition(const ZPoint &pt)
   m_stackPosition = pt;
 }
 
-void ZMouseEvent::setDataPositoin(const ZPoint &pt)
+void ZMouseEvent::setDataPosition(const ZPoint &pt)
 {
   m_dataPosition = pt;
+#ifdef _DEBUG_
+  if (getAction() == ZMouseEvent::EAction::RELEASE) {
+    std::cout << "setDataPosition: " << m_dataPosition.toString() << std::endl;
+  }
+#endif
 }
 
 void ZMouseEvent::set(QMouseEvent *event, int z)

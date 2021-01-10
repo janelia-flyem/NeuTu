@@ -86,7 +86,7 @@ ZStack* ZStackFactory::MakeVirtualStack(const ZIntCuboid &box)
   ZStack *stack =
       MakeVirtualStack(box.getWidth(), box.getHeight(), box.getDepth());
   if (stack != NULL) {
-    stack->setOffset(box.getFirstCorner());
+    stack->setOffset(box.getMinCorner());
   }
 
   return stack;
@@ -148,7 +148,7 @@ ZStack* ZStackFactory::MakeZeroStack(const ZIntCuboid box, int nchannel)
 {
   ZStack *stack = MakeZeroStack(
         box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
-  stack->setOffset(box.getFirstCorner());
+  stack->setOffset(box.getMinCorner());
 
   return stack;
 }
@@ -158,7 +158,7 @@ ZStack* ZStackFactory::MakeZeroStack(
 {
   ZStack *stack = MakeZeroStack(
         kind, box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
-  stack->setOffset(box.getFirstCorner());
+  stack->setOffset(box.getMinCorner());
 
   return stack;
 }
@@ -194,19 +194,19 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
   ZCuboid box = curve.getBoundBox();
   //box.expand(2.0);
 
-  ZIntCuboid stackBox(neutu::iround(box.firstCorner().x()),
-                      neutu::iround(box.firstCorner().y()),
-                      neutu::iround(box.firstCorner().z()),
-                      neutu::iround(box.lastCorner().x()),
-                      neutu::iround(box.lastCorner().y()),
-                      neutu::iround(box.lastCorner().z()));
+  ZIntCuboid stackBox(neutu::iround(box.getMinCorner().x()),
+                      neutu::iround(box.getMinCorner().y()),
+                      neutu::iround(box.getMinCorner().z()),
+                      neutu::iround(box.getMaxCorner().x()),
+                      neutu::iround(box.getMaxCorner().y()),
+                      neutu::iround(box.getMaxCorner().z()));
 
   QPixmap *pix = new QPixmap(stackBox.getWidth(), stackBox.getHeight());
   pix->fill(Qt::black);
   QPainter *painter = new QPainter(pix);
   QTransform transform;
-  transform.translate(-stackBox.getFirstCorner().getX(),
-                      -stackBox.getFirstCorner().getY());
+  transform.translate(-stackBox.getMinCorner().getX(),
+                      -stackBox.getMinCorner().getY());
   painter->setTransform(transform);
   painter->setPen(Qt::white);
   painter->setBrush(Qt::white);
@@ -256,8 +256,8 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
 #ifdef _DEBUG_2
   ptoc();
 #endif
-  stack->setOffset(stackBox.getFirstCorner().getX(),
-                   stackBox.getFirstCorner().getY(), curve.getZ());
+  stack->setOffset(stackBox.getMinCorner().getX(),
+                   stackBox.getMinCorner().getY(), curve.getZ());
 
 #ifdef _DEBUG_
   stack->printInfo();
@@ -277,10 +277,10 @@ ZStack* ZStackFactory::MakeDensityMap(const ZPointArray &ptArray, double sigma)
 {
   ZCuboid boundBox = ptArray.getBoundBox();
   double radius = sigma * 2;
-  ZPoint pt1 = boundBox.firstCorner();
+  ZPoint pt1 = boundBox.getMinCorner();
   pt1 -= radius;
 
-  ZPoint pt2 = boundBox.lastCorner();
+  ZPoint pt2 = boundBox.getMaxCorner();
   pt2 += radius;
 
 
@@ -297,13 +297,13 @@ ZStack* ZStackFactory::MakeDensityMap(const ZPointArray &ptArray, double sigma)
 
     double *array = stack->array64();
 
-    int x0 = stackBox.getFirstCorner().getX();
-    int y0 = stackBox.getFirstCorner().getY();
-    int z0 = stackBox.getFirstCorner().getZ();
+    int x0 = stackBox.getMinCorner().getX();
+    int y0 = stackBox.getMinCorner().getY();
+    int z0 = stackBox.getMinCorner().getZ();
 
-    int x1 = stackBox.getLastCorner().getX();
-    int y1 = stackBox.getLastCorner().getY();
-    int z1 = stackBox.getLastCorner().getZ();
+    int x1 = stackBox.getMaxCorner().getX();
+    int y1 = stackBox.getMaxCorner().getY();
+    int z1 = stackBox.getMaxCorner().getZ();
 
 
     for (int z = z0; z <= z1; ++z) {
@@ -381,10 +381,10 @@ ZStack* ZStackFactory::MakeDensityMap(
 {
   ZCuboid boundBox = ptArray.getBoundBox();
   double radius = sigma * 2;
-  ZPoint pt1 = boundBox.firstCorner();
+  ZPoint pt1 = boundBox.getMinCorner();
   pt1 -= radius;
 
-  ZPoint pt2 = boundBox.lastCorner();
+  ZPoint pt2 = boundBox.getMaxCorner();
   pt2 += radius;
 
 
@@ -401,13 +401,13 @@ ZStack* ZStackFactory::MakeDensityMap(
 
     double *array = stack->array64();
 
-    int x0 = stackBox.getFirstCorner().getX();
-    int y0 = stackBox.getFirstCorner().getY();
-    int z0 = stackBox.getFirstCorner().getZ();
+    int x0 = stackBox.getMinCorner().getX();
+    int y0 = stackBox.getMinCorner().getY();
+    int z0 = stackBox.getMinCorner().getZ();
 
-    int x1 = stackBox.getLastCorner().getX();
-    int y1 = stackBox.getLastCorner().getY();
-    int z1 = stackBox.getLastCorner().getZ();
+    int x1 = stackBox.getMaxCorner().getX();
+    int y1 = stackBox.getMaxCorner().getY();
+    int z1 = stackBox.getMaxCorner().getZ();
 
 
     for (int z = z0; z <= z1; ++z) {
@@ -492,8 +492,8 @@ ZStack* ZStackFactory::makeAlphaBlend(const ZStack &/*stack1*/, const ZStack &/*
 ZStack* ZStackFactory::MakeSeedStack(const ZWeightedPointArray &ptArray)
 {
   ZCuboid boundBox = ptArray.getBoundBox();
-  ZPoint pt1 = boundBox.firstCorner();
-  ZPoint pt2 = boundBox.lastCorner();
+  ZPoint pt1 = boundBox.getMinCorner();
+  ZPoint pt2 = boundBox.getMaxCorner();
 
   ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
   ZStack *stack = MakeZeroStack(GREY, stackBox);
@@ -556,12 +556,12 @@ ZStack* ZStackFactory::MakeColorStack(
 
   size_t i = 0;
 
-  int minX = boundBox.getFirstCorner().getX();
-  int minY = boundBox.getFirstCorner().getY();
-  int minZ = boundBox.getFirstCorner().getZ();
-  int maxX = boundBox.getLastCorner().getX();
-  int maxY = boundBox.getLastCorner().getY();
-  int maxZ = boundBox.getLastCorner().getZ();
+  int minX = boundBox.getMinCorner().getX();
+  int minY = boundBox.getMinCorner().getY();
+  int minZ = boundBox.getMinCorner().getZ();
+  int maxX = boundBox.getMaxCorner().getX();
+  int maxY = boundBox.getMaxCorner().getY();
+  int maxZ = boundBox.getMaxCorner().getZ();
 
 
   for (int z = minZ; z <= maxZ; ++z) {
@@ -601,12 +601,12 @@ ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, const ZStack &labelFi
 
   size_t i = 0;
 
-  int minX = boundBox.getFirstCorner().getX();
-  int minY = boundBox.getFirstCorner().getY();
-  int minZ = boundBox.getFirstCorner().getZ();
-  int maxX = boundBox.getLastCorner().getX();
-  int maxY = boundBox.getLastCorner().getY();
-  int maxZ = boundBox.getLastCorner().getZ();
+  int minX = boundBox.getMinCorner().getX();
+  int minY = boundBox.getMinCorner().getY();
+  int minZ = boundBox.getMinCorner().getZ();
+  int maxX = boundBox.getMaxCorner().getX();
+  int maxY = boundBox.getMaxCorner().getY();
+  int maxZ = boundBox.getMaxCorner().getZ();
 
 
   for (int z = minZ; z <= maxZ; ++z) {
@@ -825,8 +825,8 @@ ZStack* ZStackFactory::MakeStrokeProjMask(const std::vector<ZStroke2d *> strokeL
     box.join(subbox);
   }
   if (!box.isEmpty()) {
-    box.setFirstZ(0);
-    box.setLastZ(0);
+    box.setMinZ(0);
+    box.setMaxZ(0);
     box.expandX(1);
     box.expandY(1);
     stack = MakeZeroStack(GREY, box);
@@ -852,8 +852,8 @@ ZStack* ZStackFactory::MakeStrokeProjMask(
     box.join(subbox);
   }
   if (!box.isEmpty()) {
-    box.setFirstZ(0);
-    box.setLastZ(0);
+    box.setMinZ(0);
+    box.setMaxZ(0);
     box.expandX(1);
     box.expandY(1);
     stack = MakeZeroStack(GREY, box);
@@ -881,8 +881,8 @@ ZStack* ZStackFactory::MakeStrokeMask(
     }
   }
   if (!box.isEmpty()) {
-    box.setFirstZ(z);
-    box.setLastZ(z);
+    box.setMinZ(z);
+    box.setMaxZ(z);
     box.expandX(1);
     box.expandY(1);
     stack = MakeZeroStack(GREY, box);

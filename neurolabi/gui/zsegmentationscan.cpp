@@ -209,8 +209,8 @@ ZIntCuboid ZSegmentationScan::getStackForegroundBoundBox(ZStack *stack)
       }
     }
   }
-  box.setFirstCorner(min_x,min_y,min_z);
-  box.setLastCorner(max_x,max_y,max_z);
+  box.setMinCorner(min_x,min_y,min_z);
+  box.setMaxCorner(max_x,max_y,max_z);
   box.translate(stack->getOffset());
   return box;
 }
@@ -220,7 +220,7 @@ void ZSegmentationScan::fromObject3DScan(ZObject3dScan *obj)
 {
   ZIntCuboid box = obj->getIntBoundBox();
   ZStack * stack = new ZStack(GREY,box.getWidth(),box.getHeight(),box.getDepth(),1);
-  stack->setOffset(obj->getIntBoundBox().getFirstCorner());
+  stack->setOffset(obj->getIntBoundBox().getMinCorner());
   obj->drawStack(stack,1);
   //stack->save((QString("/home/deli/")+QString::number(i++)+".tif").toStdString());
   fromStack(stack);
@@ -251,7 +251,7 @@ ZStack* ZSegmentationScan::toStack()
   }
   ZIntCuboid box = getBoundBox();
   ZStack* rv = new ZStack(GREY, box.getWidth(), box.getHeight(), box.getDepth(), 1);
-  rv->setOffset(box.getFirstCorner());
+  rv->setOffset(box.getMinCorner());
   labelStack(rv);
   return rv;
 }
@@ -280,12 +280,12 @@ void ZSegmentationScan::fromStack(ZStack* stack)
   int ofz = stack->getOffset().m_z;
   m_offset = stack->getOffset();
 
-  m_sz = box.getFirstCorner().m_z;
-  m_sy = box.getFirstCorner().m_y;
-  m_sx = box.getFirstCorner().m_x;
-  m_ez = box.getLastCorner().m_z;
-  m_ey = box.getLastCorner().m_y;
-  m_ex = box.getLastCorner().m_x;
+  m_sz = box.getMinCorner().m_z;
+  m_sy = box.getMinCorner().m_y;
+  m_sx = box.getMinCorner().m_x;
+  m_ez = box.getMaxCorner().m_z;
+  m_ey = box.getMaxCorner().m_y;
+  m_ex = box.getMaxCorner().m_x;
 
   preprareData(box.getDepth(), box.getHeight());
 

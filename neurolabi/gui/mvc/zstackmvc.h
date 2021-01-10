@@ -22,6 +22,7 @@ class QMainWindow;
 class ZIntPoint;
 class ZPoint;
 class ZStressTestOptionDialog;
+class ZStackObjectInfoSet;
 
 /*!
  * \brief The MVC class for stack operation
@@ -102,7 +103,7 @@ public slots:
   void processViewChange(const ZStackViewParam &viewParam);
   void processViewChange();
 
-  void zoomTo(const ZIntPoint &pt);
+  virtual void zoomTo(const ZIntPoint &pt);
   void zoomTo(int x, int y, int z);
   void zoomToL1(int x, int y, int z);
   void zoomTo(int x, int y, int z, int width);
@@ -123,6 +124,7 @@ public slots:
   void saveStack();
 
   virtual bool processKeyEvent(QKeyEvent *event);
+  virtual void processObjectModified(const ZStackObjectInfoSet &objSet);
 
   virtual void testSlot();
 

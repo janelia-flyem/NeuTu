@@ -27,7 +27,7 @@ TEST(ZDvidSparseStack, loadBody) {
       if (1) {
         ZStack *stack = spStack.getStack();
         ZIntCuboid box = stack->getBoundBox();
-        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getFirstCorner());
+        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getMinCorner());
         ASSERT_EQ(ZIntPoint(48, 74, 69), box.getSize());
 //        stack->save(GET_TEST_DATA_DIR + "/test.tif");
       }
@@ -42,7 +42,7 @@ TEST(ZDvidSparseStack, loadBody) {
 
         ZStack *stack = spStack.getStack();
         ZIntCuboid box = stack->getBoundBox();
-        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getFirstCorner());
+        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getMinCorner());
         ASSERT_EQ(ZIntPoint(48, 74, 69), box.getSize());
 //        stack->save(GET_TEST_DATA_DIR + "/test2.tif");
       }
@@ -52,7 +52,7 @@ TEST(ZDvidSparseStack, loadBody) {
 
         ZStack *stack = spStack.getStack();
         ZIntCuboid box = stack->getBoundBox();
-        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getFirstCorner());
+        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getMinCorner());
         ASSERT_EQ(ZIntPoint(48, 74, 69), box.getSize());
 //        stack->save(GET_TEST_DATA_DIR + "/test3.tif");
       }
@@ -60,7 +60,7 @@ TEST(ZDvidSparseStack, loadBody) {
       {
         ZStack* slice = spStack.makeSlice(1050);
         ZIntCuboid box = slice->getBoundBox();
-        ASSERT_EQ(ZIntPoint(673, 897, 1050), box.getFirstCorner());
+        ASSERT_EQ(ZIntPoint(673, 897, 1050), box.getMinCorner());
         ASSERT_EQ(ZIntPoint(36, 23, 1), box.getSize());
         slice->save(GET_TEST_DATA_DIR + "/test.tif");
       }
@@ -89,7 +89,7 @@ TEST(ZDvidSparseStack, loadBodyAsync) {
       if (1) {
         ZStack *stack = spStack.getStack();
         ZIntCuboid box = stack->getBoundBox();
-        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getFirstCorner());
+        ASSERT_EQ(ZIntPoint(671, 847, 1043), box.getMinCorner());
         ASSERT_EQ(ZIntPoint(48, 74, 69), box.getSize());
         stack->save(GET_TEST_DATA_DIR + "/test.tif");
       }

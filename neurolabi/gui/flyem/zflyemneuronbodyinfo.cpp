@@ -29,9 +29,9 @@ ZJsonObject ZFlyEmNeuronBodyInfo::toJsonObject() const
   obj.setEntry("volume", uint64_t(m_bodySize));
 
   ZJsonArray boundBoxOffsetJson;
-  boundBoxOffsetJson.append(m_boundBox.getFirstCorner().getX());
-  boundBoxOffsetJson.append(m_boundBox.getFirstCorner().getY());
-  boundBoxOffsetJson.append(m_boundBox.getFirstCorner().getZ());
+  boundBoxOffsetJson.append(m_boundBox.getMinCorner().getX());
+  boundBoxOffsetJson.append(m_boundBox.getMinCorner().getY());
+  boundBoxOffsetJson.append(m_boundBox.getMinCorner().getZ());
   obj.setEntry("bound_offset", boundBoxOffsetJson);
 
   ZJsonArray boundBoxSizeJson;
@@ -80,7 +80,7 @@ void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
     std::vector<int64_t> array =
         ZJsonParser::integerArray(obj["bound_offset"]);
     if (array.size() == 3) {
-      m_boundBox.setFirstCorner(array[0], array[1], array[2]);
+      m_boundBox.setMinCorner(array[0], array[1], array[2]);
     }
   }
 

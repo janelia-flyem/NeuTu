@@ -7,7 +7,7 @@
 #include <QDockWidget>
 
 #include "flyem/zflyemproofdoc.h"
-#include "zcolorscheme.h"
+//#include "zcolorscheme.h"
 #include "zobjsmodel.h"
 #include "z3dsurfacefilter.h"
 

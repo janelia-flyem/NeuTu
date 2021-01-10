@@ -141,6 +141,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       std::set<uint64_t> selectedOriginal =
           doc->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
 
+      const QString bodyGroup("Body");
+
       if (!selectedOriginal.empty()) {
         if (!doc->getDvidTarget().readOnly()) {
           if (selectedOriginal.size() == 1) {
@@ -172,22 +174,30 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           }
 
           if (ZStackDocHelper::AllowingBodyLock(doc)) {
-            config.append(ZActionFactory::ACTION_BODY_CHECKOUT);
-            config.append(ZActionFactory::ACTION_BODY_CHECKIN);
+            config.append(bodyGroup, ZActionFactory::ACTION_BODY_CHECKOUT);
+            config.append(bodyGroup, ZActionFactory::ACTION_BODY_CHECKIN);
             if (isAdmin()) {
-              config.append(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
+              config.append(bodyGroup, ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
             }
           }
-        }
+        } //targrt read only
 
-        config.append(ZActionFactory::ACTION_BODY_PROFILE);
+        config.appendSeparator(bodyGroup);
+        config.append(bodyGroup, ZActionFactory::ACTION_BODY_CHANGE_COLOR);
+        config.append(bodyGroup, ZActionFactory::ACTION_BODY_RESET_COLOR);
+        config.appendSeparator(bodyGroup);
+        config.append(bodyGroup, ZActionFactory::ACTION_BODY_PROFILE);
 
         if (!doc->getDvidTarget().getSynapseName().empty()) {
-          config.append(ZActionFactory::ACTION_BODY_CONNECTION);
-          config.appendSeparator();
+          config.append(bodyGroup, ZActionFactory::ACTION_BODY_CONNECTION);
         }
-      }
-    }
+
+        if (doc->getDvidTarget().hasSupervoxel()) {
+          config.append(bodyGroup, ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
+        }
+        config.appendSeparator();
+      } //any body selected
+    } //Not for accecpting rect
   }
 
   if (!presenter->interactiveContext().acceptingRect()) {
@@ -258,10 +268,6 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     }
     config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK);
 
-    if (doc->getDvidTarget().hasSupervoxel()) {
-      config.append(ZActionFactory::ACTION_SHOW_SUPERVOXEL_LIST);
-    }
-
     config.appendSeparator();
 
     if (doc->hasStackData()) {
@@ -282,16 +288,16 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 //  addAction(actionList, presenter, menu);
 
   if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
-    /* Bookmark actions */
-    const TStackObjectSet& bookmarkSet =
-        doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
-    if (!bookmarkSet.isEmpty()) {
-      QString groupName("Bookmarks");
-      config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
-      config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
-    }
-
     if (!presenter->interactiveContext().acceptingRect()) {
+      /* Bookmark actions */
+      const TStackObjectSet& bookmarkSet =
+          doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
+      if (!bookmarkSet.isEmpty()) {
+        QString groupName("Bookmarks");
+        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
+        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+      }
+
       //    QList<ZActionFactory::EAction> swcActionList;
       //SWC actions (submenu has to be added separately)
       QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();
@@ -301,6 +307,9 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
                << ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH
                << ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH;
       }
+    } else {
+      config.appendSeparator();
+      config.append(ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI);
     }
   }
 

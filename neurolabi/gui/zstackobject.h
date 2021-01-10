@@ -3,10 +3,9 @@
 
 #include "common/neutudefs.h"
 #include "zqtheader.h"
-//#include "zpainter.h"
 #include "zstackobjectrole.h"
 #include "geometry/zintpoint.h"
-//#include "common/zsharedpointer.h"
+#include "geometry/zaffinerect.h"
 
 class ZPainter;
 class ZIntCuboid;
@@ -86,6 +85,7 @@ public:
     DVID_ANNOTATION,
     FLYEM_TODO_ITEM,
     FLYEM_TODO_LIST,
+    FLYEM_TODO_ENSEMBLE,
     CROSS_HAIR,
     SEGMENTATION_ENCODER
   };
@@ -103,12 +103,12 @@ public:
   enum class ETarget {
     NONE,
     STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS,
-    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D
+    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D, WIDGET_CANVAS
   };
 
   enum class EDisplaySliceMode {
-    DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
-    DISPLAY_SLICE_SINGLE      //Display a cross section of the object
+    PROJECTION, //Display Z-projection of the object
+    SINGLE      //Display a cross section of the object
   };
 
   enum class EHitProtocol {
@@ -121,6 +121,10 @@ public:
    * This function is mainly used for debugging.
    */
   std::string getTypeName() const;
+
+  virtual ZStackObject* clone() const;
+  template<typename T>
+  static T* Clone(T *obj);
 
 //  virtual const std::string& className() const = 0;
 
@@ -141,10 +145,10 @@ public:
   typedef void(*CallBack)(ZStackObject*);
 
   void addCallBackOnSelection(CallBack callback){
-    m_callbacks_on_selection.push_back(callback);}
+    m_selectionCallbacks.push_back(callback);}
 
   void addCallBackOnDeselection(CallBack callback){
-    m_callbacks_on_deselection.push_back(callback);}
+    m_deselectionCallbacks.push_back(callback);}
 
   /*!
    * \brief Display an object to widget
@@ -172,6 +176,16 @@ public:
       QPainter *painter, int z, EDisplayStyle option,
       EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
 
+  struct DisplayConfig {
+     neutu::EAxis sliceAxis = neutu::EAxis::Z;
+     ZAffineRect cutPlane;
+     int cutSlice = 0;
+     EDisplayStyle style = EDisplayStyle::SOLID;
+     EDisplaySliceMode sliceMode = EDisplaySliceMode::SINGLE;
+  };
+
+  virtual void display(ZPainter &painter, const DisplayConfig &config) const;
+
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
   inline void toggleVisible() { m_isVisible = !m_isVisible; }
@@ -183,6 +197,8 @@ public:
   inline void setTarget(ETarget target) { m_target = target; }
 
   virtual bool isSliceVisible(int z, neutu::EAxis axis) const;
+  virtual bool isSliceVisible(
+      int z, neutu::EAxis axis, const ZAffinePlane &plane) const;
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
@@ -301,7 +317,8 @@ public:
       return (obj1.getZOrder() < obj2.getZOrder());
     }
 
-    bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
+    template<typename ZStackObjectPtr>
+    bool operator() (const ZStackObjectPtr &obj1, const ZStackObjectPtr &obj2) {
       return (obj1->getZOrder() < obj2->getZOrder());
     }
   };
@@ -392,33 +409,34 @@ public:
   static T* CastVoidPointer(void *p);
 
 protected:
-  EHitProtocol m_hitProtocal;
-  EDisplayStyle m_style;
-  QColor m_color;
-  ETarget m_target;
   static double m_defaultPenWidth;
+
+protected:
+  EHitProtocol m_hitProtocal = EHitProtocol::HIT_DATA_POS;
+  EDisplayStyle m_style = EDisplayStyle::SOLID;
+  QColor m_color;
+  ETarget m_target = ETarget::WIDGET;
+  EType m_type = EType::UNIDENTIFIED;
   double m_basePenWidth;
 
-  double m_zScale;
+  double m_zScale = 1.0;
   std::string m_source;
   std::string m_objectClass;
   std::string m_objectId;
   uint64_t m_uLabel = 0;
 //  int m_label = -1;
-  int m_zOrder;
-  int m_timeStamp;
-  EType m_type;
-  ZStackObjectRole m_role;
+  int m_zOrder = 1;
+  int m_timeStamp = 0;
+  ZStackObjectRole m_role = ZStackObjectRole::ROLE_NONE;
   ZIntPoint m_hitPoint;
   neutu::EAxis m_sliceAxis;
 
-  neutu::display::TVisualEffect m_visualEffect;
+  neutu::display::TVisualEffect m_visualEffect = neutu::display::VE_NONE;
+
+  std::vector<CallBack> m_selectionCallbacks;
+  std::vector<CallBack> m_deselectionCallbacks;
 
   mutable int m_prevDisplaySlice = -1;
-//  static const char *m_nodeAdapterId;
-
-  std::vector<CallBack> m_callbacks_on_selection;
-  std::vector<CallBack> m_callbacks_on_deselection;
 
   bool m_selected = false;
   bool m_isSelectable = true;
@@ -427,6 +445,15 @@ protected:
   bool m_usingCosmeticPen = false;
 };
 
+template <typename T>
+T* ZStackObject::Clone(T *obj)
+{
+  if (obj) {
+    return dynamic_cast<T*>(obj->clone());
+  }
+
+  return nullptr;
+}
 
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)

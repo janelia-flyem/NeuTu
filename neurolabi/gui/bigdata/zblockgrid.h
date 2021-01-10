@@ -1,8 +1,12 @@
 #ifndef ZBLOCKGRID_H
 #define ZBLOCKGRID_H
 
+#include <functional>
+
 #include "geometry/zintpoint.h"
 #include "geometry/zintcuboid.h"
+
+class ZAffineRect;
 
 /*!
  * \brief The class of block grid
@@ -54,6 +58,7 @@ public:
   Location getLocation(int x, int y, int z) const;
 
   ZIntPoint getBlockIndex(int x, int y, int z) const;
+  ZIntPoint getBlockIndex(const ZIntPoint &pos) const;
 
   void setMinPoint(int x, int y, int z);
   void setMinPoint(const ZIntPoint &pt);
@@ -93,6 +98,12 @@ public:
   int getSpatialWidth() const;
   int getSpatialHeight() const;
   int getSpatialDepth() const;
+
+  bool containsBlock(int i, int j, int k) const;
+  bool containsBlock(const ZIntPoint &index) const;
+
+  void forEachIntersectedBlock(
+      const ZAffineRect &plane, std::function<void(int i, int j, int k)> f);
 
 protected:
   ZIntPoint m_size; //Grid size

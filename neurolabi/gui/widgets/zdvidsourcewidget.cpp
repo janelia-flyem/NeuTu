@@ -39,7 +39,7 @@ ZDvidNode ZDvidSourceWidget::getNode() const
 
 void ZDvidSourceWidget::setNode(const ZDvidNode &node)
 {
-  setAddress(node.getHost());
+  setAddress(node.getHostWithScheme());
   setPort(node.getPort());
   setUuid(node.getUuid());
 }

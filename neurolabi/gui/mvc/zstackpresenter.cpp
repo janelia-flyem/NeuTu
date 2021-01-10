@@ -448,6 +448,10 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK:
       connect(action, SIGNAL(triggered()), this, SLOT(copyNeuroglancerLink()));
       break;
+    case ZActionFactory::ACTION_COPY_NEUROGLANCER_LINK_AT_RECT_ROI:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(copyNeuroglancerLinkAtRectRoi()));
+      break;
     default:
       connected = false;
       break;
@@ -2837,7 +2841,17 @@ void ZStackPresenter::copyLink(const QString &/*option*/) const
 
 void ZStackPresenter::copyNeuroglancerLink()
 {
-  copyLink("neuroglancer");
+  ZJsonObject obj;
+  obj.setEntry("type", "neuroglancer");
+  copyLink(obj.dumpString(0).c_str());
+}
+
+void ZStackPresenter::copyNeuroglancerLinkAtRectRoi()
+{
+  ZJsonObject obj;
+  obj.setEntry("type", "neuroglancer");
+  obj.setEntry("location", "rectroi");
+  copyLink(obj.dumpString(0).c_str());
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()
@@ -3667,8 +3681,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
       int x1 = std::max(grabPosition.x(), shiftedStackPos.x());
       int y1 = std::max(grabPosition.y(), shiftedStackPos.y());
 
-      rect->setFirstCorner(x0, y0);
-      rect->setLastCorner(x1, y1);
+      rect->setMinCorner(x0, y0);
+      rect->setMaxCorner(x1, y1);
       buddyDocument()->bufferObjectModified(rect);
       buddyDocument()->processObjectModified();
 //      buddyDocument()->processObjectModified(rect);
@@ -3871,7 +3885,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
 void ZStackPresenter::acceptActiveStroke()
 {
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_STROKE);
-  ZStroke2d *newStroke = stroke->clone();
+  ZStroke2d *newStroke = dynamic_cast<ZStroke2d*>(stroke->clone());
   if (!newStroke->isEraser()) {
     if (newStroke->getPointNumber() == 1 &&
         m_mouseEventProcessor.getLatestMouseEvent().getModifiers() ==

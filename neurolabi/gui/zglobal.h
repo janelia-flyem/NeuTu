@@ -17,6 +17,7 @@ class ZDvidTarget;
 class ZBrowserOpener;
 class QMainWindow;
 class NeuPrintReader;
+class ZJsonObject;
 
 class ZGlobal
 {
@@ -81,6 +82,8 @@ public:
 
   static void InitKafkaTracer(std::string serviceName = "");
 
+  QString getCleaveServer() const;
+
 public:
   static ZDvidReader* GetDvidReader(
       const std::string &name, const std::string &key = "");
@@ -100,6 +103,8 @@ public:
   ZBrowserOpener* getBrowserOpener() const;
 
   static void CopyToClipboard(const std::string &str);
+
+  ZJsonObject readJsonObjectFromUrl(const std::string& url);
 
 private:
   /*

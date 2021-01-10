@@ -17,7 +17,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
-
+#include "zglobal.h"
 #include "zmeshfactory.h"
 
 #include "logging/zlog.h"
@@ -27,6 +27,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidversiondag.h"
 
 #include "zdvidutil.h"
 
@@ -71,7 +72,7 @@ ZFlyEmNeuronBodyInfo FlyEmDataReader::ReadBodyInfo(
                            reader.getDvidTarget().getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
   if (!byteArray.isEmpty()) {
-    obj.decode(byteArray.constData());
+    obj.decode(byteArray.constData(), false);
   }
 
   ZFlyEmNeuronBodyInfo bodyInfo;
@@ -343,6 +344,7 @@ bool FlyEmDataReader::IsSkeletonSynced(
 
   return true;
 }
+
 
 #if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(

@@ -144,6 +144,11 @@ double ZResolution::getVoxelSize(neutu::EAxis axis, EUnit unit) const
   return m_voxelSize[neutu::EnumValue(axis)] * getUnitVoxelSize(unit);
 }
 
+ZPoint ZResolution::getVoxelDims(EUnit unit) const
+{
+  return m_voxelSize * getUnitVoxelSize(unit);
+}
+
 double ZResolution::getPlaneVoxelSize(neutu::EPlane plane) const
 {
   double v = 1.0;

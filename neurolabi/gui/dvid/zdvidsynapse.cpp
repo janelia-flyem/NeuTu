@@ -34,6 +34,16 @@ void ZDvidSynapse::init()
   setDefaultColor();
 }
 
+/*
+ZDvidSynapse::ZDvidSynapse(const ZDvidSynapse &synapse)
+  : ZDvidAnnotation(synapse)
+{
+  m_isPartnerVerified = synapse.m_isPartnerVerified;
+  m_partnerKind = synapse.m_partnerKind;
+  m_partnerStatus = synapse.m_partnerStatus;
+}
+*/
+
 bool ZDvidSynapse::hasConfidenceProperty() const
 {
   return (m_propertyJson.hasKey("confidence")) || m_propertyJson.hasKey("conf");
@@ -604,7 +614,7 @@ ZVaa3dMarker ZDvidSynapse::toVaa3dMarker(double radius) const
   return marker;
 }
 
-void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
+void ZDvidSynapse::updatePartnerProperty(const ZDvidReader &reader)
 {
   m_isPartnerVerified.resize(m_partnerHint.size(), false);
   m_partnerKind.resize(m_partnerHint.size(), EKind::KIND_UNKNOWN);

@@ -520,6 +520,11 @@ void ZStackDoc::addMessageTask(const ZWidgetMessage &msg)
   addTask(task);
 }
 
+void ZStackDoc::addTask(std::function<void()> f)
+{
+  addTask(new ZFunctionTask(f));
+}
+
 void ZStackDoc::addTask(ZTask *task)
 {
   addTaskSlot(task);
@@ -5399,7 +5404,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
         stack->setSource(filePath.toStdString());
-        stack->setOffset(cuboid.getFirstCorner());
+        stack->setOffset(cuboid.getMinCorner());
         loadStack(stack);
       }
     }
@@ -5426,7 +5431,7 @@ bool ZStackDoc::_loadFile(const QString &filePath)
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
         stack->setSource(filePath.toStdString());
-        stack->setOffset(cuboid.getFirstCorner());
+        stack->setOffset(cuboid.getMinCorner());
         loadStack(stack);
       } else  {
         succ = false;
@@ -9822,32 +9827,32 @@ ZStackArray ZStackDoc::createWatershedMask(bool selectedOnly) const
           checkObj->boundBox(&checkBox);
           int boxDist;
           if (!checkBox.isEmpty()) {
-            if (box.contains(checkBox.getLastCorner()) ||
-                box.contains(checkBox.getFirstCorner())) {
+            if (box.contains(checkBox.getMaxCorner()) ||
+                box.contains(checkBox.getMinCorner())) {
               boxDist = 0;
             } else {
               ZIntPoint cornerDiff =
-                  box.getFirstCorner() - checkBox.getFirstCorner();
+                  box.getMinCorner() - checkBox.getMinCorner();
 
               boxDist = imax3(std::abs(cornerDiff.getX()),
                               std::abs(cornerDiff.getY()),
                               std::abs(cornerDiff.getZ()));
-              cornerDiff = box.getFirstCorner() - checkBox.getLastCorner();
+              cornerDiff = box.getMinCorner() - checkBox.getMaxCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
 
-              cornerDiff = box.getFirstCorner() - checkBox.getLastCorner();
+              cornerDiff = box.getMinCorner() - checkBox.getMaxCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
 
-              cornerDiff = box.getLastCorner() - checkBox.getLastCorner();
+              cornerDiff = box.getMaxCorner() - checkBox.getMaxCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
 
-              cornerDiff = box.getLastCorner() - checkBox.getFirstCorner();
+              cornerDiff = box.getMaxCorner() - checkBox.getMinCorner();
               boxDist = imin2(boxDist, imax3(std::abs(cornerDiff.getX()),
                                              std::abs(cornerDiff.getY()),
                                              std::abs(cornerDiff.getZ())));
@@ -10230,9 +10235,9 @@ void ZStackDoc::runSeededWatershed()
 //  seededWatershed();
 }
 
-void ZStackDoc::notifySegmentationUpdated()
+void ZStackDoc::notifySegmentationUpdated(bool invalidatingSplit)
 {
-  emit segmentationUpdated();
+  emit segmentationUpdated(invalidatingSplit);
 }
 
 const ZStack* ZStackDoc::getLabelFieldUnsync() const
@@ -10283,7 +10288,7 @@ ZStack* ZStackDoc::makeLabelStack(ZStack *stack) const
   }
 
   if (signalStack->kind() != GREY) {
-    emitWarning("Only GREY kind is supported.");
+//    emitWarning("Only GREY kind is supported.");
     return nullptr;
   }
 //  TZ_ASSERT(signalStack->kind() == GREY, "Only GREY kind is supported.");
@@ -10619,13 +10624,13 @@ ZIntCuboid ZStackDoc::getCuboidRoi() const
           ZStackObject::EType::RECT2D,
           ZStackObjectSourceFactory::MakeRectRoiSource()));
   if (rectObj != NULL) {
-    box.setFirstCorner(
-          rectObj->getFirstX(), rectObj->getFirstY(), rectObj->getZ());
-    box.setLastCorner(
-          rectObj->getLastX(), rectObj->getLastY(), rectObj->getZ());
+    box.setMinCorner(
+          rectObj->getMinX(), rectObj->getMinY(), rectObj->getZ());
+    box.setMaxCorner(
+          rectObj->getMaxX(), rectObj->getMaxY(), rectObj->getZ());
     if (rectObj->getZSpan() > 0) {
-      box.setFirstZ(box.getFirstCorner().getZ() - rectObj->getZSpan());
-      box.setLastZ(box.getLastCorner().getZ() + rectObj->getZSpan());
+      box.setMinZ(box.getMinCorner().getZ() - rectObj->getZSpan());
+      box.setMaxZ(box.getMaxCorner().getZ() + rectObj->getZSpan());
     }
   } else {
     ZIntCuboidObj *obj = dynamic_cast<ZIntCuboidObj*>(
@@ -10947,7 +10952,7 @@ void ZStackDoc::removeRect2dRoi()
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
 
-void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type) const
+void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
 {
   emit messageGenerated(ZWidgetMessage(msg, type,
                                        ZWidgetMessage::TARGET_TEXT_APPENDING |
@@ -10960,7 +10965,7 @@ void ZStackDoc::emitInfo(const QString &msg)
   emitMessage(msg, neutu::EMessageType::INFORMATION);
 }
 
-void ZStackDoc::emitWarning(const QString &msg) const
+void ZStackDoc::emitWarning(const QString &msg)
 {
   emitMessage(msg, neutu::EMessageType::WARNING);
 }

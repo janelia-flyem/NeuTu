@@ -129,7 +129,7 @@ public:
     return m_bufferReader;
   }
 
-  std::vector<std::string> readDataInstances(const std::string &type);
+//  std::vector<std::string> readDataInstances(const std::string &type);
   void updateDataStatus();
 
   //ZSwcTree* readSwc(const QString &key);
@@ -212,10 +212,16 @@ public:
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
 
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
+  ZMesh* readMesh(const std::string &key) const;
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
   std::tuple<QByteArray, std::string> readMeshBufferFromUrl(
       const std::string &url) const;
+
+  std::vector<uint64_t> readMergedMeshKeys(uint64_t bodyId) const;
+  std::vector<uint64_t> readMergedMeshKeys(const std::string &key) const;
+  std::vector<uint64_t> readConsistentMergedMeshKeys(uint64_t bodyId) const;
+  std::vector<uint64_t> readConsistentMergedMeshKeys(const std::string &key) const;
 
   ZMesh* readSupervoxelMesh(uint64_t svId) const;
 
@@ -266,6 +272,10 @@ public:
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
 
+  ZStack* readGrayScaleWithBlock(
+      int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
+
+  ZStack* readGrayScaleWithBlock(const ZIntCuboid &box, int zoom) const;
 #if 0
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -285,12 +295,22 @@ public:
 
 //  QString readInfo(const QString &dataName) const;
 
+  void readGrayScaleBlock(
+      std::vector<int> &blockcoords, int zoom, ZStack *dest) const;
+
+  ZStack* readGrayScaleBlock(int bx, int by, int bz, int zoom) const;
+
+  ZStack* readGrayScaleBlock(
+      int bx, int by, int bz, int zoom, const ZDvidInfo &info) const;
+
   std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth,
       bool ignoringZero = true);
   std::set<uint64_t> readBodyId(const ZIntPoint &firstCorner,
                                 const ZIntPoint &lastCorner,
                                 bool ignoringZero = true);
+  std::set<uint64_t> readBodyId(
+      const ZIntCuboid &range, int zoom, bool ignoringZero = true);
   std::set<uint64_t> readBodyId(size_t minSize);
   std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
   std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
@@ -299,9 +319,12 @@ public:
   bool hasKey(const QString &dataName, const QString &key) const;
 
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
-  QList<QByteArray> readKeyValues(const QString &dataName, const QStringList &keyList) const;
+  QList<QByteArray> readKeyValues(
+      const QString &dataName, const QStringList &keyList) const;
+  QList<QByteArray> readKeyValues(
+      const QString &dataName, const QString &startKey, const QString &endKey) const;
   QStringList readKeys(const QString &dataName) const;
-  QStringList readKeys(const QString &dataName, const QString &minKey);
+  QStringList readKeys(const QString &dataName, const QString &minKey) const;
   QStringList readKeys(const QString &dataName,
                        const QString &minKey, const QString &maxKey) const;
   ZJsonObject readJsonObjectFromKey(
@@ -357,6 +380,11 @@ public:
   //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+
+  ZArray* readLabels64Lowtis(int x0, int y0, int z0,
+                             int width, int height, int depth, int zoom ) const;
+
+  ZArray* readLabels64Lowtis(const ZIntCuboid &range, int zoom ) const;
 
   ZArray* readLabels64Lowtis(
       int x0, int y0, int z0,
@@ -445,9 +473,13 @@ public:
   uint64_t readMaxBodyId();
 
   void updateMaxLabelZoom();
+  void updateMaxLabelZoom(int zoom);
+  int getMaxLabelZoom() const;
+
   void updateMaxLabelZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
   void updateMaxGrayscaleZoom();
+  void updateMaxGrayscaleZoom(int zoom);
   void updateMaxGrayscaleZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
@@ -599,8 +631,12 @@ public:
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZSharedPointer<libdvid::DVIDNodeService> getService() const {
+  std::shared_ptr<libdvid::DVIDNodeService> getService() const {
     return m_service;
+  }
+
+  std::shared_ptr<libdvid::DVIDConnection> getConnection() const {
+    return m_connection;
   }
 #endif
 
@@ -713,6 +749,8 @@ private:
 
   std::vector<uint64_t> readBodyIdAt(const ZJsonArray &queryObj) const;
 
+  bool hasConsistentMergedMesh(uint64_t bodyId) const;
+
 protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
@@ -724,6 +762,8 @@ protected:
 
 //  mutable ZNetBufferReader m_netBufferReader;
   mutable ZDvidBufferReader m_bufferReader;
+//  QMutex m_maxLabelZoomMutex;
+  mutable bool m_maxLabelZoomUpdated = false;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::shared_ptr<libdvid::DVIDNodeService> m_service;
@@ -733,9 +773,9 @@ protected:
 
 #if defined(_ENABLE_LOWTIS_)
   mutable lowtis::DVIDLabelblkConfig m_lowtisConfig;
-  mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
+  mutable std::shared_ptr<lowtis::ImageService> m_lowtisService;
   mutable lowtis::DVIDGrayblkConfig m_lowtisConfigGray;
-  mutable ZSharedPointer<lowtis::ImageService> m_lowtisServiceGray;
+  mutable std::shared_ptr<lowtis::ImageService> m_lowtisServiceGray;
 #endif
 
 };

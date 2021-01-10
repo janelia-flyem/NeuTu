@@ -53,9 +53,12 @@ public:
 
   void setFromUrl_deprecated(const std::string &url);
 
-  inline const std::string& getAddress() const {
+  std::string getAddress() const {
     return m_node.getHost();
   }
+
+  std::string getHostWithScheme() const;
+  std::string getRootUrl() const;
 
   /*!
    * \brief Get the address with port
@@ -151,6 +154,9 @@ public:
    */
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
+
+  void setFromJson(const std::string &jsonSpec);
+
   void updateData(const ZJsonObject &obj);
 
   void loadDvidDataSetting(const ZJsonObject &obj);
@@ -267,7 +273,7 @@ public:
   std::string getBookmarkKeyName() const;
   std::string getSkeletonName() const;
   std::string getMeshName() const;
-  std::string getMeshName(int zoom) const;
+//  std::string getMeshName(int zoom) const;
   std::string getThumbnailName() const;
 
   std::string getTodoListName() const;

@@ -250,7 +250,9 @@ void ZFlyEmBodyMerger::decodeJsonString(const std::string &str)
 QList<uint64_t> ZFlyEmBodyMerger::getOriginalLabelList(uint64_t finalLabel) const
 {
   QList<uint64_t> list = getFinalMap().keys(finalLabel);
-  list.append(finalLabel);
+  if (getFinalLabel(finalLabel) == finalLabel) {
+    list.append(finalLabel);
+  }
 
   ZOUT(LTRACE(), 5) << list;
 

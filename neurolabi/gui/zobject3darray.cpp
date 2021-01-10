@@ -132,8 +132,8 @@ ZStack* ZObject3dArray::toStackObject()
   }
 
   ZIntCuboid box;
-  box.setFirstCorner(corner[0], corner[1], corner[2]);
-  box.setLastCorner(corner[3], corner[4], corner[5]);
+  box.setMinCorner(corner[0], corner[1], corner[2]);
+  box.setMaxCorner(corner[3], corner[4], corner[5]);
   ZStack *stack = ZStackFactory::MakeZeroStack(kind, box);
 
   for (size_t i = 0; i < size(); ++i) {

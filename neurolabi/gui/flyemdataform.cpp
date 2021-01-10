@@ -971,8 +971,8 @@ void FlyEmDataForm::generateThumbnailItem(
         if (reader.open(dvidTarget)) {
           ZFlyEmNeuronBodyInfo bodyInfo =
               FlyEmDataReader::ReadBodyInfo(reader, neuron->getId());
-          int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
-          int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
+          int startY = bodyInfo.getBoundBox().getMinCorner().getY();
+          int startZ = bodyInfo.getBoundBox().getMinCorner().getZ();
           int bodyHeight = bodyInfo.getBoundBox().getDepth();
           int bodySpan = bodyInfo.getBoundBox().getHeight();
 
@@ -1310,8 +1310,8 @@ void FlyEmDataForm::updateThumbnail(
         if (reader.open(dvidTarget)) {
           ZFlyEmNeuronBodyInfo bodyInfo =
               FlyEmDataReader::ReadBodyInfo(reader, neuron->getId());
-          int startY = bodyInfo.getBoundBox().getFirstCorner().getY();
-          int startZ = bodyInfo.getBoundBox().getFirstCorner().getZ();
+          int startY = bodyInfo.getBoundBox().getMinCorner().getY();
+          int startZ = bodyInfo.getBoundBox().getMinCorner().getZ();
           int bodyHeight = bodyInfo.getBoundBox().getDepth();
           int bodySpan = bodyInfo.getBoundBox().getHeight();
 

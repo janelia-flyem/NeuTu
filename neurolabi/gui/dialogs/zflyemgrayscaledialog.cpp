@@ -62,8 +62,8 @@ ZIntCuboid ZFlyEmGrayscaleDialog::getBoundBox() const
 {
   ZIntCuboid box;
 
-  box.setFirstCorner(getFirstCorner());
-  box.setLastCorner(getLastCorner());
+  box.setMinCorner(getFirstCorner());
+  box.setMaxCorner(getLastCorner());
 
   return box;
 }

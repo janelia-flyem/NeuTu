@@ -151,28 +151,6 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     CONFIG *= strict_c++ c++11
 }
 
-#CONFIG(c++11) {
-#  message(Using C++11)
-##  DEFINES += _CPP11_
-#  unix {
-#    QMAKE_CXXFLAGS += -std=c++11
-#    macx {
-#      QMAKE_CXXFLAGS += -stdlib=libc++
-#    }
-#  }
-#} else {
-#  CONFIG(c++14) {
-#    message(Using C++14)
-##    DEFINES += _CPP11_ #necessary for glm
-#    unix {
-#      QMAKE_CXXFLAGS += -std=c++14
-#      macx {
-#        QMAKE_CXXFLAGS += -stdlib=libc++
-#      }
-#    }
-#  }
-#}
-
 equals(SANITIZE_BUILD, "thread") {
   QMAKE_CXXFLAGS += -fsanitize=thread
   QMAKE_LFLAGS += -fsanitize=thread
@@ -187,7 +165,6 @@ equals(SANITIZE_BUILD, "address") {
 unix {
     QMAKE_CXXFLAGS += -Wno-deprecated
     macx {
-#        DEFINES += _NEUTUBE_MAC_
         LIBS += -framework AppKit -framework IOKit \
             -framework ApplicationServices \
             -framework CoreFoundation
@@ -287,6 +264,7 @@ include(qt/qt.pri)
 include(widgets/widgets.pri)
 include(flyem/flyem.pri)
 include(tracing/tracing.pri)
+include(movie/movie.pri)
 
 # Input
 win32 {
@@ -307,9 +285,15 @@ unix {
 RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
-    dialogs/neuprintdatasetdialog.h \
-    dialogs/userfeedbackdialog.h \
-    dialogs/zsynapsepropertydialog.h \
+    concurrent/zworkerwrapper.h \
+    dvid/zdvidglobal.h \
+    dvid/zdvidstacksource.h \
+    protocols/protocolassignment.h \
+    protocols/protocolassignmentdialog.h \
+    protocols/protocolassignmentclient.h \
+    protocols/protocolchooseassignmentdialog.h \
+    protocols/protocolassignmenttask.h \
+    protocols/protocolassignmenturl.h \
     dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
@@ -319,6 +303,9 @@ HEADERS += mainwindow.h \
     zinteractivecontext.h \
     ztraceproject.h \
     zpunctum.h \
+    dialogs/neuprintdatasetdialog.h \
+    dialogs/userfeedbackdialog.h \
+    dialogs/zsynapsepropertydialog.h \
     dialogs/settingdialog.h \
     dialogs/frameinfodialog.h \
     dialogs/traceoutputdialog.h \
@@ -339,6 +326,10 @@ HEADERS += mainwindow.h \
     dialogs/swcskeletontransformdialog.h \
     dialogs/swctypedialog.h \
     dialogs/mexicanhatdialog.h \
+    dialogs/helpdialog.h \
+    dialogs/moviedialog.h \
+    dialogs/projectiondialog.h \
+    dialogs/zalphadialog.h \
     dialogs/channeldialog.h \
     zsinglechannelstack.h \
     zrandom.h \
@@ -383,7 +374,6 @@ HEADERS += mainwindow.h \
     zobjsmanagerwidget.h \
     zmoviescriptgenerator.h \
     zmoviestage.h \
-    dialogs/zalphadialog.h \
     zqtbarprogressreporter.h \
     zstackdoccommand.h \
     zcursorstore.h \
@@ -392,27 +382,24 @@ HEADERS += mainwindow.h \
     zstroke2d.h \
     neutube.h \
     zreportable.h \
-    dialogs/helpdialog.h \
     zswcnodeobjsmodel.h \
     zstackstatistics.h \
     biocytin/biocytin.h \
     biocytin/zstackprojector.h \
-    dialogs/projectiondialog.h \
     zstackviewlocator.h \
     dialogs/startsettingdialog.h \
     zstackreadthread.h \
     zswccolorscheme.h \
-    dialogs/moviedialog.h \
     zpunctumio.h \
     zstatisticsutils.h \
     zswcrangeanalyzer.h \
     dialogs/informationdialog.h \
-    zswcnodezrangeselector.h \
-    zswcnodecompositeselector.h \
-    zswcnodeellipsoidrangeselector.h \
     dialogs/flyemdataquerydialog.h \
     dialogs/flyemdataprocessdialog.h \
     dialogs/autosaveswclistdialog.h \
+    zswcnodezrangeselector.h \
+    zswcnodecompositeselector.h \
+    zswcnodeellipsoidrangeselector.h \
     zswcfilelistmodel.h \
     zswcglobalfeatureanalyzer.h \
     zcommandline.h \
@@ -509,7 +496,6 @@ HEADERS += mainwindow.h \
     zrect2d.h \
     zobjectcolorscheme.h \
     dialogs/synapseimportdialog.h \
-    dialogs/flyembodymergeprojectdialog.h \
     zstackdvidgrayscalefactory.h \
     zstackdocreader.h \
     dialogs/flyemprojectdialog.h \
@@ -601,6 +587,7 @@ HEADERS += mainwindow.h \
     protocols/connectionvalidationprotocol.h \ 
     protocols/todoreviewprotocol.h \
     protocols/todoreviewinputdialog.h \
+    protocols/orphanlinkprotocol.h \
     protocols/todosearcher.h \
     dialogs/tipdetectordialog.h \
     zactionlibrary.h \
@@ -657,14 +644,14 @@ HEADERS += mainwindow.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
     protocols/bodyprefetchqueue.h \
+    protocols/taskbodyhistory.h \
+    protocols/taskbodycleave.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
     zcontrastprotocol.h \
     dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
-    protocols/taskbodyhistory.h \
-    protocols/taskbodycleave.h \
     dialogs/zflyemproofsettingdialog.h \
     zstackdocptr.h \
     zstackdoc3dhelper.h \
@@ -775,6 +762,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/flyembodyiddialog.ui \
     dialogs/zdviddialog.ui \
     dialogs/flyembodyfilterdialog.ui \
+    protocols/protocolassignmentdialog.ui \
+    protocols/protocolchooseassignmentdialog.ui \
     tilemanager.ui \
     dialogs/flyembodysplitprojectdialog.ui \
     dialogs/dvidskeletonizedialog.ui \
@@ -782,7 +771,6 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/shapepaperdialog.ui \
     dialogs/dvidoperatedialog.ui \
     dialogs/synapseimportdialog.ui \
-    dialogs/flyembodymergeprojectdialog.ui \
     dialogs/zsegmentationprojectdialog.ui \
     dialogs/zmarkswcsomadialog.ui \
     dialogs/swcexportdialog.ui \
@@ -803,6 +791,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/connectionvalidationprotocol.ui \
     protocols/todoreviewprotocol.ui \
     protocols/todoreviewinputdialog.ui \
+    protocols/orphanlinkprotocol.ui \
     protocols/protocoldialog.ui \
     dialogs/tipdetectordialog.ui \
     dialogs/flyemsettingdialog.ui \
@@ -836,11 +825,20 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/neuprintsetupdialog.ui 
 
 SOURCES += main.cpp \
+    concurrent/zworkerwrapper.cpp \
     dialogs/neuprintdatasetdialog.cpp \
     dialogs/userfeedbackdialog.cpp \
     dialogs/zsynapsepropertydialog.cpp \
+    dvid/zdvidglobal.cpp \
+    dvid/zdvidstacksource.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
+    protocols/protocolassignment.cpp \
+    protocols/protocolassignmentdialog.cpp \
+    protocols/protocolassignmentclient.cpp \
+    protocols/protocolassignmenttask.cpp \
+    protocols/protocolassignmenturl.cpp \
+    protocols/protocolchooseassignmentdialog.cpp \
     protocols/taskprotocolmocktask.cpp \
     zimage.cpp \
     zslider.cpp \
@@ -1016,7 +1014,6 @@ SOURCES += main.cpp \
     zrect2d.cpp \
     zobjectcolorscheme.cpp \
     dialogs/synapseimportdialog.cpp \
-    dialogs/flyembodymergeprojectdialog.cpp \
     zstackdvidgrayscalefactory.cpp \
     zstackdocreader.cpp \
     dialogs/flyemprojectdialog.cpp \
@@ -1084,13 +1081,13 @@ SOURCES += main.cpp \
     zpunctumselector.cpp \
     zgraphobjsmodel.cpp \
     zsurfaceobjsmodel.cpp \
-    dvid/zdvidsynapse.cpp \
-    dvid/zdvidsynapseensenmble.cpp \
     zcubearray.cpp \
     dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
     dvid/zdvidannotation.cpp \
+    dvid/zdvidsynapse.cpp \
+    dvid/zdvidsynapseensenmble.cpp \
     dialogs/stringlistdialog.cpp \
     zroiwidget.cpp \
     dialogs/flyemtododialog.cpp \
@@ -1109,6 +1106,7 @@ SOURCES += main.cpp \
     protocols/connectionvalidationprotocol.cpp \
     protocols/todoreviewprotocol.cpp \
     protocols/todoreviewinputdialog.cpp \
+    protocols/orphanlinkprotocol.cpp \
     protocols/todosearcher.cpp \
     dialogs/tipdetectordialog.cpp \
     zactionlibrary.cpp \

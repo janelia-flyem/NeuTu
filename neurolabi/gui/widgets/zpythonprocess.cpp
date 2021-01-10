@@ -2,7 +2,7 @@
 #include <iostream>
 #include <QFile>
 #include <QDebug>
-#include "zerror.h"
+//#include "zerror.h"
 
 
 ZPythonProcess::ZPythonProcess()
@@ -39,14 +39,15 @@ bool ZPythonProcess::runScript(const QString &script, bool parseOutput)
 
   QStringList args;
   args << script;
-  for(auto arg:m_args){
-    args<<arg;
+  for (auto arg:m_args){
+    args << arg;
   }
-  m_process.start(m_pythonPath,args);
+  m_process.start(m_pythonPath, args);
 
   if (!m_process.waitForStarted()){
-    std::cerr<<"lanuch python failed..."<<std::endl;
-    RECORD_ERROR_UNCOND(m_process.errorString().toStdString());
+    std::cerr << "lanuch python failed..." << std::endl;
+    std::cerr << m_process.errorString().toStdString() << std::endl;
+//    RECORD_ERROR_UNCOND(m_process.errorString().toStdString());
     return false;
   }
   while(!m_process.waitForFinished());

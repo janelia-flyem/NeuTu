@@ -78,6 +78,18 @@ bool ZStackObjectInfoSet::hasObjectModified(ZStackObject::EType type) const
   return contains(type);
 }
 
+namespace {
+
+bool has_overlapping_flag(ZStackObjectInfo::TState state, ZStackObjectInfo::TState flag)
+{
+  return state & flag;
+}
+
+static const ZStackObjectInfo::TState DATA_MODIFIED_FLAG =
+    ZStackObjectInfo::STATE_REMOVED | ZStackObjectInfo::STATE_ADDED |
+    ZStackObjectInfo::STATE_MODIFIED;
+}
+
 bool ZStackObjectInfoSet::hasObjectModified(
     ZStackObject::EType type, ZStackObjectInfo::TState flag) const
 {
@@ -101,6 +113,12 @@ bool ZStackObjectInfoSet::hasObjectModified(
   }
 
   return false;
+}
+
+bool ZStackObjectInfoSet::hasDataModified(ZStackObject::EType type) const
+{
+  return hasObjectModified(
+        type, DATA_MODIFIED_FLAG);
 }
 
 bool ZStackObjectInfoSet::onlyVisibilityChanged(ZStackObject::EType type) const
@@ -128,6 +146,18 @@ bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
 {
   foreach (const ZStackObjectInfo &info, keys()) {
     if (info.getRole().hasRole(role)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStackObjectInfoSet::hasDataModified(ZStackObjectRole::TRole role) const
+{
+  foreach (const ZStackObjectInfo &info, keys()) {
+    if (info.getRole().hasRole(role) &&
+        has_overlapping_flag((*this)[info], DATA_MODIFIED_FLAG)) {
       return true;
     }
   }

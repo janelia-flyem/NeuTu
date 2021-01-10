@@ -24,6 +24,8 @@ public:
   inline int getWidth() const { return m_width; }
   inline int getHeight() const { return m_height; }
 
+  ZIntPoint getCenter() const;
+
   bool hit(double x, double y, neutu::EAxis axis) override;
   bool hit(double x, double y, double z) override;
 
@@ -62,18 +64,18 @@ public:
   /*!
    * \brief Set the last corner of the rectable
    */
-  void setLastCorner(int x, int y);
-  void setFirstCorner(int x, int y);
+  void setMaxCorner(int x, int y);
+  void setMinCorner(int x, int y);
 
   /*!
     * \brief Set size by fixing the first corner.
     */
   void setSize(int width, int height);
 
-  int getFirstX() const;
-  int getFirstY() const;
-  int getLastX() const;
-  int getLastY() const;
+  int getMinX() const;
+  int getMinY() const;
+  int getMaxX() const;
+  int getMaxY() const;
 
   inline void setZ(int z) { m_z = z; }
   inline int getZ() const { return m_z; }
@@ -88,6 +90,7 @@ public:
       const QRectF &targetRectIn);
 
   ZCuboid getBoundBox() const override;
+  ZIntCuboid getIntBoundBox() const;
 
 private:
   void init(int x0, int y0, int width, int height);

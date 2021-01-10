@@ -35,6 +35,34 @@ ZMesh::ZMesh(const QString& filename)
   m_type = GetType();
 }
 
+ZMesh::ZMesh(const ZMesh &rhs): ZStackObject(rhs)
+{
+  m_ttype = rhs.m_ttype;
+  m_vertices = rhs.m_vertices;
+  m_1DTextureCoordinates = rhs.m_1DTextureCoordinates;
+  m_2DTextureCoordinates = rhs.m_2DTextureCoordinates;
+  m_3DTextureCoordinates = rhs.m_3DTextureCoordinates;
+  m_normals = rhs.m_normals;
+  m_colors = rhs.m_colors;
+  m_indices = rhs.m_indices;
+}
+
+ZMesh& ZMesh::operator=(const ZMesh &rhs)
+{
+  ZStackObject::operator=(rhs);
+  m_ttype = rhs.m_ttype;
+  m_vertices = rhs.m_vertices;
+  m_1DTextureCoordinates = rhs.m_1DTextureCoordinates;
+  m_2DTextureCoordinates = rhs.m_2DTextureCoordinates;
+  m_3DTextureCoordinates = rhs.m_3DTextureCoordinates;
+  m_normals = rhs.m_normals;
+  m_colors = rhs.m_colors;
+  m_indices = rhs.m_indices;
+
+  return *this;
+}
+
+/*
 void ZMesh::swap(ZMesh& rhs) noexcept
 {
   std::swap(m_ttype, rhs.m_ttype);
@@ -51,6 +79,12 @@ void ZMesh::swap(ZMesh& rhs) noexcept
   invalidateCachedProperties();
 //  rhs.validateObbTree(false);
 //  validateObbTree(false);
+}
+*/
+
+ZMesh* ZMesh::clone() const
+{
+  return new ZMesh(*this);
 }
 
 /*
@@ -129,8 +163,8 @@ ZCuboid ZMesh::getBoundBox() const
 {
   ZCuboid box;
   ZBBox<glm::dvec3> bbox = boundBox();
-  box.setFirstCorner(bbox.minCorner().x, bbox.minCorner().y, bbox.minCorner().z);
-  box.setLastCorner(bbox.maxCorner().x, bbox.maxCorner().y, bbox.maxCorner().z);
+  box.setMinCorner(bbox.minCorner().x, bbox.minCorner().y, bbox.minCorner().z);
+  box.setMaxCorner(bbox.maxCorner().x, bbox.maxCorner().y, bbox.maxCorner().z);
 
   return box;
 }
@@ -556,12 +590,12 @@ ZMesh ZMesh::CreateCuboidFaceMesh(
     const ZIntCuboid &cf, const std::vector<bool> &visible, const QColor &color)
 {
   std::vector<glm::vec3> coordLlfs;
-  coordLlfs.emplace_back(cf.getFirstCorner().getX(), cf.getFirstCorner().getY(),
-                         cf.getFirstCorner().getZ());
+  coordLlfs.emplace_back(cf.getMinCorner().getX(), cf.getMinCorner().getY(),
+                         cf.getMinCorner().getZ());
 
   std::vector<glm::vec3> coordUrbs;
-  coordUrbs.emplace_back(cf.getLastCorner().getX(), cf.getLastCorner().getY(),
-                         cf.getLastCorner().getZ());
+  coordUrbs.emplace_back(cf.getMaxCorner().getX(), cf.getMaxCorner().getY(),
+                         cf.getMaxCorner().getZ());
 
   std::vector<std::vector<bool> > faceVisbility;
   faceVisbility.push_back(visible);
@@ -1614,6 +1648,118 @@ void ZMesh::append(const ZMesh &mesh)
   }
 }
 
+namespace {
+
+template<typename T>
+void append_triangle_element(
+    T &dest, const T& source, const std::vector<glm::uvec3>& triangleList)
+{
+  if (!source.empty()) {
+    size_t oldSize = dest.size();
+    size_t newVertexCount = triangleList.size() * 3;
+    dest.resize(oldSize + newVertexCount);
+    for (size_t i = 0; i < triangleList.size(); i++) {
+      const auto &triangle = triangleList[i];
+      dest[oldSize + i * 3] = source[triangle[0]];
+      dest[oldSize + i * 3 + 1] = source[triangle[1]];
+      dest[oldSize + i * 3 + 2] = source[triangle[2]];
+    }
+  }
+}
+
+}
+
+void ZMesh::appendTriangleList(
+    const ZMesh& mesh, const std::vector<glm::uvec3>& triangleList)
+{
+  if (triangleList.empty() || m_ttype != GL_TRIANGLES)
+    return;
+
+  size_t newVertexStartIndex = m_vertices.size();
+
+  append_triangle_element(m_vertices, mesh.m_vertices, triangleList);
+
+  size_t newVertexSize = m_vertices.size();
+
+  size_t newVertexCount = triangleList.size() * 3;
+  if (!m_indices.empty()) {
+    m_indices.resize(m_indices.size() + newVertexCount);
+    for (size_t i = newVertexStartIndex; i < newVertexSize; ++i) {
+      m_indices[i] = GLuint(i);
+    }
+  }
+
+//  size_t oldSize = m_vertices.size();
+//  m_vertices.resize(m_vertices.size() + newVertexCount);
+//  for (size_t i = 0; i < triangleList.size(); ++i) {
+//    const auto &triangle = triangleList[i];
+//    m_vertices[oldSize + i] = mesh.m_vertices[triangle[0]];
+//    m_vertices[oldSize + i + 1] = mesh.m_vertices[triangle[1]];
+//    m_vertices[oldSize + i + 2] = mesh.m_vertices[triangle[2]];
+//  }
+
+//  m_vertices.push_back(mesh.m_vertices[triangle[0]]);
+//  m_vertices.push_back(mesh.m_vertices[triangle[1]]);
+//  m_vertices.push_back(mesh.m_vertices[triangle[2]]);
+
+//  validateObbTree(false);
+  invalidateCachedProperties();
+
+  append_triangle_element(
+        m_1DTextureCoordinates, mesh.m_1DTextureCoordinates, triangleList);
+
+//  oldSize = m_1DTextureCoordinates.size();
+//  m_1DTextureCoordinates.resize()
+//  if (mesh.num1DTextureCoordinates() > 0) {
+//    m_1DTextureCoordinates.push_back(mesh.m_1DTextureCoordinates[triangle[0]]);
+//    m_1DTextureCoordinates.push_back(mesh.m_1DTextureCoordinates[triangle[1]]);
+//    m_1DTextureCoordinates.push_back(mesh.m_1DTextureCoordinates[triangle[2]]);
+//  }
+
+
+  append_triangle_element(
+        m_2DTextureCoordinates, mesh.m_2DTextureCoordinates, triangleList);
+
+//  if (mesh.num2DTextureCoordinates() > 0) {
+//    m_2DTextureCoordinates.push_back(mesh.m_2DTextureCoordinates[triangle[0]]);
+//    m_2DTextureCoordinates.push_back(mesh.m_2DTextureCoordinates[triangle[1]]);
+//    m_2DTextureCoordinates.push_back(mesh.m_2DTextureCoordinates[triangle[2]]);
+//  }
+
+  append_triangle_element(
+        m_3DTextureCoordinates, mesh.m_3DTextureCoordinates, triangleList);
+
+  /*
+  if (mesh.num3DTextureCoordinates() > 0) {
+    m_3DTextureCoordinates.push_back(mesh.m_3DTextureCoordinates[triangle[0]]);
+    m_3DTextureCoordinates.push_back(mesh.m_3DTextureCoordinates[triangle[1]]);
+    m_3DTextureCoordinates.push_back(mesh.m_3DTextureCoordinates[triangle[2]]);
+  }
+  */
+
+  append_triangle_element(
+        m_normals, mesh.m_normals, triangleList);
+
+  /*
+  if (mesh.numNormals() > 0) {
+    m_normals.push_back(mesh.m_normals[triangle[0]]);
+    m_normals.push_back(mesh.m_normals[triangle[1]]);
+    m_normals.push_back(mesh.m_normals[triangle[2]]);
+  }
+  */
+
+  append_triangle_element(
+        m_colors, mesh.m_colors, triangleList);
+
+  /*
+  if (mesh.numColors() > 0) {
+    m_colors.push_back(mesh.m_colors[triangle[0]]);
+    m_colors.push_back(mesh.m_colors[triangle[1]]);
+    m_colors.push_back(mesh.m_colors[triangle[2]]);
+  }
+  */
+}
+
 void ZMesh::appendTriangle(const ZMesh& mesh, const glm::uvec3& triangle)
 {
   if (/*!m_indices.empty() ||*/ m_ttype != GL_TRIANGLES)
@@ -1844,6 +1990,44 @@ vtkSmartPointer<vtkOBBTree> ZMesh::getObbTree() const
 
   return m_obbTreeData.m_obbTree;
 }
+
+std::vector<std::shared_ptr<ZMesh>> ZMesh::getSplitMeshList(size_t thre) const
+{
+  if (thre > 0) {
+    size_t totalNumTri = numTriangles();
+    size_t numResult = size_t(std::ceil(1.0 * totalNumTri / thre));
+    if (m_splitMeshList.size() != numResult) {
+      m_splitMeshList.clear();
+
+      if (numTriangles() > thre) {
+        m_splitMeshList = std::vector<std::shared_ptr<ZMesh>>(numResult);
+        //        m_splitCount = std::vector<size_t>(numResult);
+        //        std::vector<std::shared_ptr<ZMesh>> res(numResult);
+        for (size_t i = 0; i < numResult; ++i) {
+          std::shared_ptr<ZMesh> mesh(new ZMesh);
+
+          size_t first = i * thre;
+          size_t last = std::min(totalNumTri, (i + 1) * thre);
+          std::vector<glm::uvec3> triangles(last - first);
+          for (size_t j = first; j < last; ++j) {
+            triangles[j - first] = triangleIndices(j);
+          }
+#ifdef _DEBUG_2
+          for (const auto & tr : triangles) {
+            std::cout << tr[0] << ", " << tr[1] << ", " << tr[2] << std::endl;
+          }
+#endif
+          mesh->appendTriangleList(*this, triangles);
+          m_splitMeshList[i] = mesh;
+          //          m_splitCount[i] = mesh->size();
+        }
+      }
+    }
+  }
+
+  return m_splitMeshList;
+}
+
 std::vector<ZPoint> ZMesh::intersectLineSeg(
     const ZPoint &start, const ZPoint &end) const
 {
@@ -1870,6 +2054,13 @@ std::vector<ZPoint> ZMesh::intersectLineSeg(
 
 
   return result;
+}
+
+void ZMesh::printVertices() const
+{
+  for (const auto v : m_vertices) {
+    std::cout << v[0] << ", " << v[1] << ", " << v[2] <<std::endl;
+  }
 }
 
 

@@ -43,14 +43,16 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScan &obj)
   return MakeMesh(obj, m_dsIntv, m_smooth, m_offsetAdjust);
 }
 
-ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
+template<typename InputIterator>
+ZMesh* ZMeshFactory::makeMesh(
+    const InputIterator &first, const InputIterator &last)
 {
   ZMesh *mesh = NULL;
 
   std::vector<ZMesh*> meshArray;
   bool isOverSize = false;
-  for (const ZObject3dScan *obj : objArray) {
-    ZMesh *submesh = makeMesh(*obj);
+  for (InputIterator iter = first; iter != last; ++iter) {
+    ZMesh *submesh = makeMesh(*(*iter));
 //    mesh->prepareNormals();
     if (submesh != NULL) {
       meshArray.push_back(submesh);
@@ -83,6 +85,18 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
 
   return mesh;
 }
+
+ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
+{
+  return makeMesh(objArray.begin(), objArray.end());
+}
+
+ZMesh* ZMeshFactory::makeMesh(
+    const std::vector<std::shared_ptr<ZObject3dScan>> &objArray)
+{
+  return makeMesh(objArray.begin(), objArray.end());
+}
+
 /*
 ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScanArray &objArray)
 {
@@ -152,8 +166,7 @@ ZMesh* ZMeshFactory::MakeMesh(
   ZObject3dScan dsObj = obj;
 
   if (dsIntv == 0) {
-    ZIntCuboid box = dsObj.getIntBoundBox();
-    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutu::ONEGIGA / 2, false);
+    dsIntv = ZStackObjectHelper::GetDsIntv(dsObj.getIntBoundBox());
   }
 
   if (dsIntv > 0) {
@@ -244,20 +257,20 @@ ZMesh* ZMeshFactory::MakeFaceMesh(const ZObject3dScan &obj, int dsIntv)
           }
           if (visible) {
             ZIntCuboid box;
-            box.setFirstCorner(
+            box.setMinCorner(
                   (i + startCoord[0]) * bw, (j + startCoord[1]) * bh,
                 (k + startCoord[2]) * bd);
-            box.setLastCorner(box.getFirstCorner() + ZIntPoint(bw, bh, bd));
+            box.setMaxCorner(box.getMinCorner() + ZIntPoint(bw, bh, bd));
 
             bool added = false;
             if (hasLast) {
-              if (box.getFirstCorner().getX() == lastX) {
+              if (box.getMinCorner().getX() == lastX) {
                 std::vector<bool> &lastFv = faceVisbility.back();
 
                 if (fv[2] == lastFv[2] && fv[3] == lastFv[3] &&
                     fv[4] == lastFv[4] && fv[5] == lastFv[5]) {
                   glm::vec3 &coord = coordUrbs.back();
-                  coord[0] = box.getLastCorner().getX();
+                  coord[0] = box.getMaxCorner().getX();
                   lastFv[1] = fv[1];
                   added = true;
                 }
@@ -265,17 +278,17 @@ ZMesh* ZMeshFactory::MakeFaceMesh(const ZObject3dScan &obj, int dsIntv)
             }
 
             if (!added) {
-              coordLlfs.emplace_back(box.getFirstCorner().getX(),
-                                     box.getFirstCorner().getY(),
-                                     box.getFirstCorner().getZ());
-              coordUrbs.emplace_back(box.getLastCorner().getX(),
-                                     box.getLastCorner().getY(),
-                                     box.getLastCorner().getZ());
+              coordLlfs.emplace_back(box.getMinCorner().getX(),
+                                     box.getMinCorner().getY(),
+                                     box.getMinCorner().getZ());
+              coordUrbs.emplace_back(box.getMaxCorner().getX(),
+                                     box.getMaxCorner().getY(),
+                                     box.getMaxCorner().getZ());
               //              cubeColors.emplace_back(r, g, b, a);
               faceVisbility.push_back(fv);
               hasLast = true;
             }
-            lastX = box.getLastCorner().getX();
+            lastX = box.getMaxCorner().getX();
           }
         }
         offset++;

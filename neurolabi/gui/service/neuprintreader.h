@@ -51,6 +51,7 @@ public:
   void setCurrentDataset(const QString &dataset);
   ZJsonObject getDatasetJson() const;
   QStringList getDatasetList() const;
+  QString getCurrentDataset() const;
 
   QList<QString> getRoiList();
 

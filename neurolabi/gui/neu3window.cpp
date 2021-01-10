@@ -54,6 +54,7 @@
 #include "zrandomgenerator.h"
 #include "zqtbarprogressreporter.h"
 #include "zwidgetmessage.h"
+#include "ztextlinecompositer.h"
 
 #include "dvid/zdvidlabelslice.h"
 
@@ -67,6 +68,7 @@
 #include "dialogs/stringlistdialog.h"
 #include "dialogs/flyemsettingdialog.h"
 #include "dialogs/zneu3sliceviewdialog.h"
+#include "dialogs/informationdialog.h"
 
 //#include "z3dpunctafilter.h"
 
@@ -149,6 +151,7 @@ void Neu3Window::createDialogs()
   connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(setOption()));
 
   m_browseOptionDlg = new ZNeu3SliceViewDialog(this);
+  m_infoDlg = new InformationDialog(this);
 }
 
 void Neu3Window::initialize()
@@ -220,6 +223,8 @@ void Neu3Window::initGrayscaleWidget()
 
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
             this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
+    connect(m_sliceWidget, SIGNAL(locating(double, double, double)),
+            this, SLOT(browse(double, double, double)));
 
     m_sliceWidget->setDefaultViewPort(
           getSliceViewParam(m_browsePos).getViewPort());
@@ -324,7 +329,7 @@ void Neu3Window::initOpenglContext()
   m_sharedContext->hide();
 }
 
-bool Neu3Window::loadDvidTarget()
+bool Neu3Window::loadDvidTarget(const QString &name)
 {
   bool succ = false;
 
@@ -332,21 +337,32 @@ bool Neu3Window::loadDvidTarget()
 
   ZDvidTargetProviderDialog *dlg = ZDialogFactory::makeDvidDialog(NULL);
 
-  if (dlg->exec()) {
+  ZDvidTarget target;
+  if (!name.isEmpty()) {
+    target = dlg->getDvidTarget(name.toStdString());
+  }
+
+  if (!target.isValid()) {
+    if (dlg->exec()) {
+      target = dlg->getDvidTarget();
+    }
+  }
+
+  if (target.isValid()) {
     m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
     ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
     QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvid,
-                      ZDvidEnv(dlg->getDvidTarget()));
+                      ZDvidEnv(target));
 //    m_dataContainer->setDvid(ZDvidEnv(dlg->getDvidTarget()));
 
     m_dataContainer->hide();
     succ = true;
     QString windowTitle = QString("%1 [%2]").
-        arg(dlg->getDvidTarget().getSourceString(false).c_str()).
-        arg(dlg->getDvidTarget().getSegmentationName().c_str());
+        arg(target.getSourceString(false).c_str()).
+        arg(target.getSegmentationName().c_str());
     setWindowTitle(windowTitle);
   }
 
@@ -747,6 +763,11 @@ void Neu3Window::browseInPlace(double x, double y, double z)
   getBodyDocument()->updateArbGraySlice(getSliceViewParam(x, y, z));
 }
 */
+
+void Neu3Window::gotoPosition(double x, double y, double z)
+{
+  browse(x, y, z);
+}
 
 void Neu3Window::browse(double x, double y, double z)
 {
@@ -1290,6 +1311,19 @@ void Neu3Window::diagnose()
 {
   m_bodyListWidget->diagnose();
 //  getBodyDocument()->logInfo();
+
+
+  ZTextLineCompositer text;
+  text.appendLine("Server information:");
+  text.appendLine(
+        "Cleave: " + ZGlobal::GetInstance().getCleaveServer().toStdString(), 2);
+  text.appendLine(
+        "NeuPrint: " + ZGlobal::GetInstance().getNeuPrintServer().toStdString(), 2);
+
+  m_infoDlg->setText(text.toString(2));
+
+  m_infoDlg->show();
+  m_infoDlg->raise();
 }
 
 void Neu3Window::on_actionNeuTu_Proofread_triggered()

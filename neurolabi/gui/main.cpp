@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     splash.close();
 #endif
 
-    if (!mainWin->loadDvidTarget()) {
+    if (!mainWin->loadDvidTarget(mainConfig.databaseName)) {
       mainWin->close();
 //      delete mainWin;
       mainWin = NULL;
@@ -194,8 +194,27 @@ int main(int argc, char *argv[])
 #  endif
 #endif
       } else {
+#if !defined(_NEU3_)
+        ZProofreadWindow *proofreadWindow = nullptr;
+#  if defined(_DEBUG_)
+        if (!mainConfig.databaseName.isEmpty()) {
+          proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+        }
+#  else
+        proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+#  endif
+#endif
+
+#if 0
+        ZProofreadWindow *proofreadWindow = nullptr;
 #if !defined(_DEBUG_) && !defined(_NEU3_)
-        mainWin->startProofread();
+        proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+#endif
+#if defined(_DEBUG_) && !defined(_NEU3_)
+        if (!mainConfig.databaseName.isEmpty()) {
+          proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+        }
+#endif
 #endif
       }
 

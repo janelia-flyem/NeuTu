@@ -279,6 +279,10 @@ void FlyEmBodyInfoDialog::prepareWidget()
 //    ui->iconLabel->setMask(pixmap.mask());
   }
 
+  if (m_mode == EMode::SEQUENCER) {
+    ui->closeButton->hide();
+  }
+
   if (m_mode == EMode::NEUPRINT) {
     connect(ui->datasetComboBox, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(changeDataset(const QString &)));
@@ -299,8 +303,9 @@ namespace {
 std::string get_annotation_primary_neurite(const ZJsonObject &bodyData)
 {
   ZJsonObjectParser parser;
-  return
-      parser.getValue(bodyData, ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "");
+  return parser.getValue(
+        bodyData, {ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
+                   ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE}, std::string());
 }
 
 std::string get_annotation_name(const ZJsonObject &bodyData)
@@ -1262,7 +1267,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                 }
 
                 entry.setNonEmptyEntry(
-                      ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE,
+                      ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
                       get_annotation_primary_neurite(bodyData));
             }
 
@@ -1990,14 +1995,17 @@ void FlyEmBodyInfoDialog::onDoubleClickFilterTable(const QModelIndex &proxyIndex
         }
     } else if (proxyIndex.column() == FILTER_COLOR_COLUMN) {
         // double-click on color; change it
-        QColor currentColor = m_bodyGroupProxy->data(m_bodyGroupProxy->index(proxyIndex.row(),
-            FILTER_COLOR_COLUMN), Qt::BackgroundRole).value<QColor>();
+        QColor currentColor = m_bodyGroupProxy->data(
+              m_bodyGroupProxy->index(
+                proxyIndex.row(),FILTER_COLOR_COLUMN), Qt::BackgroundRole).
+            value<QColor>();
         QColor newColor = QColorDialog::getColor(currentColor, this, "Choose color");
         if (newColor.isValid()) {
             setFilterTableModelColor(newColor, modelIndex.row());
             updateColorScheme();
-//            updateColorSchemeWithFilterCache();
+            raise(); //Keep the dialog front in case it is put behind by other events triggered
         }
+
     }
 }
 
@@ -2239,7 +2247,7 @@ void FlyEmBodyInfoDialog::updateColorScheme() {
 //      updateFilterColorScheme(filterString, color);
 //    }
   }
-  m_colorScheme.buildColorTable();
+//  m_colorScheme.buildColorTable();
 
   emit colorMapChanged(m_colorScheme);
 
@@ -2856,20 +2864,31 @@ void FlyEmBodyInfoDialog::setNeuPrintReader(
 {
   m_neuPrintReader = std::move(reader);
   if (m_neuPrintReader) {
-    setWindowTitle("Body Infomation @ NeuPrint:" +
-                   m_neuPrintReader->getServer() + ":" +
-                   m_neuprintDataset.c_str());
-
     ui->datasetComboBox->clear();
     auto datasets = m_neuPrintReader->getDatasetList();
 #ifdef _DEBUG_
     std::cout << "#datasets: " << datasets.size() << std::endl;
 #endif
+    // Don't let combobox addItem trigger changeDataset when it needs to be
+    // chosen later.
+    if (!m_neuPrintReader->getCurrentDataset().isEmpty() &&
+        m_neuPrintReader->getCurrentDataset() != datasets[0]) {
+      // Use blockSignals may have side effect, but it might be OK here as
+      // QComboBox::addItem seems only trigger
+      // currentTextChanged/currentIndexChanged signal.
+      ui->datasetComboBox->blockSignals(true);
+    }
     for (const QString &dataset : datasets) {
       ui->datasetComboBox->addItem(dataset);
     }
-    ui->datasetComboBox->setCurrentText(m_neuprintDataset.c_str());
+    if (!m_neuPrintReader->getCurrentDataset().isEmpty()) {
+      ui->datasetComboBox->blockSignals(false);
+      ui->datasetComboBox->setCurrentText(m_neuPrintReader->getCurrentDataset());
+    }
 
+    setWindowTitle("Body Infomation @ NeuPrint:" +
+                   m_neuPrintReader->getServer() + "?dataset=" +
+                   m_neuprintDataset.c_str());
   } else {
     setStatusLabel("<font color=\"#800000\">Oops! "
                    "Cannot connect NeuPrint!</font>");
