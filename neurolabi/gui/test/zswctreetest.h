@@ -674,6 +674,32 @@ TEST(SwcTree, Util)
   ASSERT_EQ(tn, nodeArray.front());
 }
 
+TEST(ZSwcTree, Merge)
+{
+  ZSwcTree tree;
+  Swc_Tree_Node *tn1 = SwcTreeNode::MakePointer(1, 2, ZPoint(10, 20, 30), 3, -1);
+  tree.addRoot(tn1);
+  ASSERT_EQ(tn1, tree.firstRegularRoot());
+
+  ZSwcTree tree2;
+  Swc_Tree_Node *tn2 = SwcTreeNode::MakePointer(2, 2, ZPoint(20, 20, 30), 3, -1);
+  tree2.addRoot(tn2);
+
+  tree.merge(&tree2);
+
+  ASSERT_EQ(2, tree.regularRootNumber());
+
+  ZSwcTree tree3;
+  Swc_Tree_Node *tn3 = SwcTreeNode::MakePointer(3, 2, ZPoint(30, 20, 30), 3, -1);
+  Swc_Tree_Node *tn4 = SwcTreeNode::MakePointer(4, 2, ZPoint(40, 20, 30), 3, -1);
+  SwcTreeNode::setParent(tn3, tn4, SwcTreeNode::EChildPosition::CHILD_POS_FIRST);
+  tree3.addRoot(tn4);
+
+  tree.merge(&tree3);
+  ASSERT_EQ(3, tree.regularRootNumber());
+  ASSERT_EQ(10, tree.length());
+}
+
 #endif
 
 #endif // ZSWCTREETEST_H

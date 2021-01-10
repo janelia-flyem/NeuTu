@@ -171,6 +171,8 @@ public:
                            ESetDataOption option = CLEAN_ALL);
   ///@}
 
+  void addRoot(Swc_Tree_Node *tn, bool updatingComponent = true);
+
   /*!
    * \brief Clone an SWC tree
    */
@@ -556,6 +558,7 @@ public:
   Swc_Tree_Node *firstLeaf();
 
   std::vector<Swc_Tree_Node*> getTerminalArray();
+  std::vector<Swc_Tree_Node*> getRegularRootArray();
 
   ZSwcBranch *extractBranch(int beginId, int endId);
   ZSwcBranch *extractBranch(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
