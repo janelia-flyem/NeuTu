@@ -30829,16 +30829,7 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
   writer.setAdmin(true);
   writer.deleteSkeleton(1505851998);
-<<<<<<< HEAD
 
-#endif
-
-#if 1
-=======
-#endif
-
-#if 0
->>>>>>> c4ba7deba817c45b2cbfd0f7d9e9f1ceadc2a5cd
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/_test.swc");
 
@@ -30850,8 +30841,6 @@ void ZTest::test(MainWindow *host)
   Swc_Tree_Label_Stack(tree.data(), stack->c_stack(), &workspace);
 
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
-<<<<<<< HEAD
-=======
 #endif
 
 #if 0
@@ -31585,7 +31574,6 @@ void ZTest::test(MainWindow *host)
   obj.unify(obj2);
 
   obj.save(GET_TEST_DATA_DIR + "/nBreak-v1.sobj");
->>>>>>> c4ba7deba817c45b2cbfd0f7d9e9f1ceadc2a5cd
 #endif
 
   std::cout << "Done." << std::endl;
