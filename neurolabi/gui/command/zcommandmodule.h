@@ -19,6 +19,9 @@ public:
   void setForceUpdate(bool on);
   bool forcingUpdate() const;
 
+  void warn(const std::string &msg) const;
+  void error(const std::string &msg) const;
+
 private:
   bool m_forceUpdate;
 };

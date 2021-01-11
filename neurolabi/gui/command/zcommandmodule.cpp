@@ -1,5 +1,7 @@
 #include "zcommandmodule.h"
 
+#include <iostream>
+
 ZCommandModule::ZCommandModule()
 {
   m_forceUpdate = false;
@@ -21,4 +23,14 @@ void ZCommandModule::setForceUpdate(bool on)
 bool ZCommandModule::forcingUpdate() const
 {
   return m_forceUpdate;
+}
+
+void ZCommandModule::warn(const std::string &msg) const
+{
+  std::cout << "WARNING: " << msg << std::endl;
+}
+
+void ZCommandModule::error(const std::string &msg) const
+{
+  std::cerr << "ERROR: " << msg << std::endl;
 }

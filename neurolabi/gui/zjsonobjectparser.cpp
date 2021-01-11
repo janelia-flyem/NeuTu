@@ -7,7 +7,10 @@ ZJsonObjectParser::ZJsonObjectParser()
 {
 }
 
-
+ZJsonObjectParser::ZJsonObjectParser(const ZJsonObject &obj)
+{
+  m_obj = obj;
+}
 
 template<>
 ZJsonObject ZJsonObjectParser::getValue<ZJsonObject>(
@@ -43,15 +46,26 @@ std::string ZJsonObjectParser::getValue<std::string>(
 //}
 
 std::string ZJsonObjectParser::getValue(
-        const ZJsonObject &obj, const char *key, const char *defaultValue)
+        const ZJsonObject &obj, const char *key, const char *defaultValue) const
 {
    return getValue(obj, key, std::string(defaultValue));
 }
 
 std::string ZJsonObjectParser::getValue(
-        const ZJsonObject &obj, const std::string &key, const char *defaultValue)
+        const ZJsonObject &obj, const std::string &key, const char *defaultValue) const
 {
    return getValue(obj, key.c_str(), defaultValue);
+}
+
+std::string ZJsonObjectParser::getValue(const char *key, const char *defaultValue) const
+{
+   return getValue(m_obj, key, std::string(defaultValue));
+}
+
+std::string ZJsonObjectParser::getValue(
+    const std::string &key, const char *defaultValue) const
+{
+   return getValue(m_obj, key.c_str(), defaultValue);
 }
 
 std::string ZJsonObjectParser::getValue(

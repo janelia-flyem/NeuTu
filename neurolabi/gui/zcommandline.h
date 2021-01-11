@@ -89,7 +89,7 @@ private:
   ZSwcTree* traceFile();
   ZSwcTree* traceDvid(const ZDvidTarget &target);
 
-  void loadInputJson();
+  ZJsonObject loadInputJson();
 
   ZDvidTarget getInputDvidTarget() const;
 
@@ -108,6 +108,7 @@ private:
   std::string m_configDir;
   std::string m_outputFlag;
   std::string m_generalConfig;
+  ZJsonObject m_inputJson;
 //  std::string m_initialSwcPath;
   int m_ravelerHeight;
   int m_zStart;
