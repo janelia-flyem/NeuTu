@@ -271,6 +271,7 @@ public:
 
   std::string getBookmarkName() const;
   std::string getBookmarkKeyName() const;
+  bool hasBookmark() const;
   std::string getSkeletonName() const;
   std::string getMeshName() const;
 //  std::string getMeshName(int zoom) const;

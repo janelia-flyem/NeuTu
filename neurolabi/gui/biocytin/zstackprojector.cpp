@@ -362,7 +362,7 @@ std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
   str.appendNumber(maxZ);
   str += ".tif";
 
-  return str;
+  return std::move(str);
 }
 
 std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
@@ -375,7 +375,7 @@ std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
   str.appendNumber(slabCount);
   str += ".tif";
 
-  return str;
+  return std::move(str);
 }
 
 std::pair<int, int> Biocytin::ZStackProjector::getSlabRange(

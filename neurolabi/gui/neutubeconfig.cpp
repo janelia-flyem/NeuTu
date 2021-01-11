@@ -148,6 +148,32 @@ void NeutubeConfig::setWorkDir(const string str)
   updateLogDir();
 }
 
+std::string NeutubeConfig::getPointPosFormat() const
+{
+#ifdef _QT_GUI_USED_
+  return getSettings().value("pointPosFormat", "").toString().toStdString();
+#else
+  return "";
+#endif
+}
+
+void NeutubeConfig::setPointPosFormat(const std::string &format)
+{
+#ifdef _QT_GUI_USED_
+  getSettings().setValue("pointPosFormat", QString::fromStdString(format));
+#endif
+}
+
+std::string NeutubeConfig::GetPointPosFormat()
+{
+  return getInstance().getPointPosFormat();
+}
+
+void NeutubeConfig::SetPointPosFormat(const std::string &format)
+{
+  getInstance().setPointPosFormat(format);
+}
+
 void NeutubeConfig::setUserName(const string &name)
 {
   m_userInfo.setUserName(name);

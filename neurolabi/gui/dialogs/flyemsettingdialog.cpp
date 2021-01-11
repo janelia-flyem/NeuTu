@@ -40,6 +40,7 @@ void FlyEmSettingDialog::init()
         Shrink(GET_FLYEM_CONFIG.getDefaultConfigPath().c_str(), 40));
   ui->defaultConfigLineEdit->setToolTip(
         GET_FLYEM_CONFIG.getDefaultConfigPath().c_str());
+   ui->posFormatLineEdit->setPlaceholderText("default");
 
   updateDefaultConfigChecked(usingDefaultConfig());
   updateDefaultNeuTuServerChecked(usingDefaultService());
@@ -104,6 +105,8 @@ void FlyEmSettingDialog::loadSetting()
   ui->meshThreSpinBox->setValue(
         NeutubeConfig::GetMeshSplitThreshold() / 1000000);
   ui->crossWidthSpinBox->setValue(NeutubeConfig::Get3DCrossWidth());
+  ui->posFormatLineEdit->setText(
+        QString::fromStdString(NeutubeConfig::GetPointPosFormat()));
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -242,6 +245,11 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetNamingPsd(namingPsd());
   NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
   NeutubeConfig::Set3DCrossWidth(ui->crossWidthSpinBox->value());
+  if (!ui->posFormatLineEdit->text().trimmed().isEmpty()) {
+    NeutubeConfig::SetPointPosFormat(ui->posFormatLineEdit->text().toStdString());
+  } else {
+    NeutubeConfig::SetPointPosFormat("");
+  }
 }
 
 QString FlyEmSettingDialog::Shrink(const QString &str, int len)

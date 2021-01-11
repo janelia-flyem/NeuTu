@@ -2,6 +2,7 @@
 #include <iostream>
 #include <climits>
 #include <stdexcept>
+#include <neulib/core/stringbuilder.h>
 
 #include "zerror.h"
 #include "zpoint.h"
@@ -256,6 +257,19 @@ std::string ZIntPoint::toString() const
   stream << "(" << getX() << ", " << getY() << ", " << getZ() << ")";
 
   return stream.str();
+}
+
+std::string ZIntPoint::toString(const std::string &templ) const
+{
+  if (templ.empty()) {
+    return toString();
+  }
+
+  return neulib::StringBuilder(templ).
+      replace("$X", "$x").replace("$Y", "$y").replace("$Z", "$z").
+      replace("$x", std::to_string(getX())).
+      replace("$y", std::to_string(getY())).
+      replace("$z", std::to_string(getZ()));
 }
 
 ZIntPoint ZIntPoint::operator - () const
