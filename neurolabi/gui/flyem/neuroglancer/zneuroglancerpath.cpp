@@ -85,9 +85,11 @@ ZJsonObject ZNeuroglancerPath::toJsonObject() const
     rootObj.setEntry("selectedLayer", obj);
   }
   rootObj.setNonEmptyEntry("layout", m_layout);
+  /*
   if (m_perspectiveScale > 0) {
     rootObj.setEntry("projectionScale", m_perspectiveScale);
   }
+  */
 
   return rootObj;
 }

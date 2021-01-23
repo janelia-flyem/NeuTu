@@ -26,7 +26,7 @@ public:
   explicit ZDvidEnv(const ZDvidTarget &target);
 
   enum class ERole {
-    GRAYSCALE, SEGMENTATION
+    GRAYSCALE, SEGMENTATION, BOOKMARKS, SYNAPSES
   };
 
   bool isValid() const;
@@ -59,6 +59,8 @@ public:
   ZDvidTarget getFullMainTarget() const;
 
   void appendValidDvidTarget(const ZDvidTarget &target, ERole role);
+
+  bool hasData(ERole role) const;
 
 private:
   void appendDvidTarget(

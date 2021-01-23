@@ -203,6 +203,12 @@ public:
   void updateUserInfo();
   static void UpdateUserInfo();
 
+  std::string getPointPosFormat() const;
+  void setPointPosFormat(const std::string &format);
+
+  static std::string GetPointPosFormat();
+  static void SetPointPosFormat(const std::string &format);
+
 //  static void SetUserName(const std::string &name);
 
   inline bool isStereoEnabled() {
@@ -214,6 +220,10 @@ public:
 
 #ifdef _QT_GUI_USED_
   inline QSettings& getSettings() {
+    return m_settings;
+  }
+
+  inline const QSettings& getSettings() const {
     return m_settings;
   }
 #if 0

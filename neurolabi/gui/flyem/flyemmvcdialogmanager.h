@@ -26,6 +26,7 @@ class ZFlyEmSplitCommitDialog;
 class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
 class ZSynapsePropertyDialog;
+class NeuroglancerLinkDialog;
 //class ZStackViewRecordDialog;
 
 /*!
@@ -63,6 +64,7 @@ public:
   ZContrastProtocalDialog* getContrastDlg();
   TipDetectorDialog* getTipDetectorDlg();
   ZSynapsePropertyDialog* getSynpasePropertyDlg();
+  NeuroglancerLinkDialog* getNeuroglancerLinkDlg();
 
   void showSynpasePropertyDlg();
 //  ZStackViewRecordDialog* getRecordDlg();
@@ -123,6 +125,7 @@ private:
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
   TipDetectorDialog *m_tipDetectorDlg = nullptr;
   ZSynapsePropertyDialog *m_synapseDlg = nullptr;
+  NeuroglancerLinkDialog *m_neuroglancerLinkDlg = nullptr;
   std::string m_neuprintDataset; //temp hack
 //  ZStackViewRecordDialog *m_recordDlg = nullptr;
 
