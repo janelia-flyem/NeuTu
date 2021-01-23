@@ -114,6 +114,16 @@ public:
 
   std::string toString() const;
 
+  /*!
+   * \brief Convert the point to a string according to a template
+   *
+   * Any "$x"/"$X", "$y"/"$Y", "$z"/"$Z" substring in the template will be
+   * replaced by the X, Y, Z coordiates of the point respectively. An empty
+   * template results in a normal point string, which is the same from
+   * \a toString().
+   */
+  std::string toString(const std::string &templ) const;
+
   ZPoint toPoint() const;
 
   /*!

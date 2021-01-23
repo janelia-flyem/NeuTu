@@ -116,6 +116,7 @@ signals:
   void togglingBodyColorMap();
   void refreshingData();
   void tipDetectRequested(ZIntPoint point, uint64_t bodyID);
+  void copyingLink(const QString &option);
 
 public slots:
   void deleteSelectedSynapse();

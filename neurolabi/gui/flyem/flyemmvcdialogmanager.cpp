@@ -33,6 +33,7 @@
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/tipdetectordialog.h"
 #include "dialogs/zsynapsepropertydialog.h"
+#include "dialogs/neuroglancerlinkdialog.h"
 //#include "dialogs/zstackviewrecorddialog.h"
 
 /** Implementation details
@@ -324,6 +325,13 @@ ZSynapsePropertyDialog* FlyEmMvcDialogManager::getSynpasePropertyDlg()
   }
 
   return m_synapseDlg;
+}
+
+NeuroglancerLinkDialog* FlyEmMvcDialogManager::getNeuroglancerLinkDlg()
+{
+  createIfNecessary(m_neuroglancerLinkDlg);
+
+  return m_neuroglancerLinkDlg;
 }
 
 void FlyEmMvcDialogManager::Show(QDialog *dlg)
