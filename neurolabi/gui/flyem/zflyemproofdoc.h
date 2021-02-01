@@ -740,6 +740,12 @@ protected:
 
   void setBodyColorR(uint64_t bodyId, const std::string &colorCode, size_t rank);
 
+  enum class EErrorType {
+    BODY_LOCK_NA
+  };
+
+  QString getWarning(EErrorType type);
+
 private:
   void connectSignalSlot();
 

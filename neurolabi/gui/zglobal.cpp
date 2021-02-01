@@ -131,7 +131,9 @@ ZJsonObject ZGlobal::readJsonObjectFromUrl(const std::string& url)
 
 QString ZGlobal::getCleaveServer() const
 {
-  QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
+  // Disable default server to avoid confusion
+  //QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
+  QString server;
   std::string serverOverride = GET_FLYEM_CONFIG.getCleaveServer();
   if (!serverOverride.empty()) {
     server = serverOverride.c_str();

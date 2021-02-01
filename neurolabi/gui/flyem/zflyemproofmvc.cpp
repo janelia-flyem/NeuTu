@@ -3561,6 +3561,8 @@ bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode)
 
 void ZFlyEmProofMvc::checkInSelectedBody(neutu::EBodySplitMode mode)
 {
+  getCompleteDocument()->checkInSelectedBody(mode);
+  /*
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
         getCurrentSelectedBodyId(neutu::ELabelSource::ORIGINAL);
@@ -3578,10 +3580,13 @@ void ZFlyEmProofMvc::checkInSelectedBody(neutu::EBodySplitMode mode)
   } else {
     emit messageGenerated(QString("Body lock service is not available."));
   }
+  */
 }
 
 void ZFlyEmProofMvc::checkInSelectedBodyAdmin()
 {
+  return getCompleteDocument()->checkInSelectedBodyAdmin();
+  /*
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
         getCurrentSelectedBodyId(neutu::ELabelSource::ORIGINAL);
@@ -3603,10 +3608,13 @@ void ZFlyEmProofMvc::checkInSelectedBodyAdmin()
   } else {
     emit messageGenerated(QString("Body lock service is not available."));
   }
+  */
 }
 
 void ZFlyEmProofMvc::checkOutBody(neutu::EBodySplitMode mode)
 {
+  getCompleteDocument()->checkOutBody(mode);
+  /*
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
         getCurrentSelectedBodyId(neutu::ELabelSource::ORIGINAL);
@@ -3636,6 +3644,7 @@ void ZFlyEmProofMvc::checkOutBody(neutu::EBodySplitMode mode)
   } else {
     emit messageGenerated(QString("Body lock service is not available."));
   }
+  */
 }
 
 void ZFlyEmProofMvc::showBodyConnection()

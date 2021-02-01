@@ -42,6 +42,7 @@ TaskProtocolWindow::TaskProtocolWindow(
     ui(new Ui::TaskProtocolWindow)
 {
     ui->setupUi(this);
+    m_defaultProtocolInfo = ui->infoLabel->text();
 
     m_proofDoc = doc;
     m_body3dDoc = bodyDoc;
@@ -740,7 +741,7 @@ bool TaskProtocolWindow::skip(int taskIndex)
               text += " Reason: \"" + reason + "\"";
           }
           text.replace("<br>", " ");
-          emitInfo(ZWidgetMessage::appendTime(text));
+          emitWarning(ZWidgetMessage::appendTime(text));
       }
 
       m_skippedTaskIndices.insert(taskIndex);
@@ -816,20 +817,23 @@ void TaskProtocolWindow::updateCurrentTaskLabel() { //#Review-TZ: It seems it's 
         ui->taskTargetLabel->setText("n/a");
         ui->completedCheckBox->setChecked(false);
         ui->reviewCheckBox->setChecked(false);
+        setProtocolInfo("Ready");
     } else {
-        ui->taskActionLabel->setText(m_taskList[m_currentTaskIndex]->actionString());
-        ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
+        auto currentTask = m_taskList[m_currentTaskIndex];
+        ui->taskActionLabel->setText(currentTask->actionString());
+        ui->taskTargetLabel->setText(currentTask->targetString());
 
         // make the "completed" checkbox match the current task, but prevent the signal from
         // being triggered, so that task does not do somehing like save its results an extra time
         BlockSignals blockOnCompleted(ui->completedCheckBox);
-        ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
+        ui->completedCheckBox->setChecked(currentTask->completed());
 
-        if (m_taskList[m_currentTaskIndex]->hasTag(TAG_NEEDS_REVIEW)) {
+        if (currentTask->hasTag(TAG_NEEDS_REVIEW)) {
             ui->reviewCheckBox->setChecked(true);
         } else {
             ui->reviewCheckBox->setChecked(false);
         }
+
         // show task-specific UI if it exist
         m_currentTaskWidget = m_taskList[m_currentTaskIndex]->getTaskWidget();
         if (m_currentTaskWidget != NULL) {
@@ -840,6 +844,23 @@ void TaskProtocolWindow::updateCurrentTaskLabel() { //#Review-TZ: It seems it's 
         }
 
         updateMenu(true);
+
+        if (!currentTask->getError().isEmpty()) {
+          setProtocolInfo(
+                ZWidgetMessage::ToHtmlString(
+                  currentTask->getError(), neutu::EMessageType::ERROR,
+                  {true, false}));
+        } else if (!currentTask->getWarning().isEmpty()) {
+          setProtocolInfo(
+                ZWidgetMessage::ToHtmlString(
+                  currentTask->getWarning(), neutu::EMessageType::WARNING,
+                  {true, false}));
+        } else if (!currentTask->getInfo().isEmpty()) {
+          setProtocolInfo(currentTask->getInfo());
+        } else {
+          setProtocolInfo(ZWidgetMessage::ToHtmlString(
+                            "Ready", neutu::EMessageType::INFORMATION, {true, false}));
+        }
     }
 }
 
@@ -1386,6 +1407,7 @@ void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
         ui->taskDetailsWidget->hide();
         ui->tasksProgressWidget->hide();
         updateMenu(false);
+        setProtocolInfo(m_defaultProtocolInfo);
     }
 }
 
@@ -1436,6 +1458,11 @@ void TaskProtocolWindow::emitInfo(const QString &msg)
 void TaskProtocolWindow::emitWarning(const QString &msg)
 {
   emitMessage(msg, neutu::EMessageType::WARNING);
+}
+
+void TaskProtocolWindow::setProtocolInfo(const QString &msg)
+{
+  ui->infoLabel->setText(msg);
 }
 
 void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
