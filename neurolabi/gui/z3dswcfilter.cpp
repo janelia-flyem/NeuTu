@@ -1,14 +1,11 @@
 #include "z3dswcfilter.h"
 
-#include <QMessageBox>
 #include <QApplication>
 #include <iostream>
 #include <QSet>
 #include <QtConcurrentRun>
-#include <QMessageBox>
 #include <QApplication>
 #include <QElapsedTimer>
-#include <QMessageBox>
 #include <QApplication>
 //#include <QColorDialog>
 
@@ -40,6 +37,7 @@
 #include "z3drendertarget.h"
 #include "zlabelcolortable.h"
 #include "zswccolorparam.h"
+#include "zwidgetmessage.h"
 
 namespace {
 
@@ -1369,6 +1367,7 @@ void Z3DSwcFilter::prepareNodePairData(
   if (checkRadius && n1->node.d < std::numeric_limits<double>::epsilon() &&
       n2->node.d < std::numeric_limits<double>::epsilon()) {
     checkRadius = false;
+    /*
     QMessageBox::information(QApplication::activeWindow(),
                              qApp->applicationName(),
                              "Reset SWC Rendering Mode.\n"
@@ -1376,8 +1375,8 @@ void Z3DSwcFilter::prepareNodePairData(
                              "The geometrical primitive of SWC rendering "
                              "will be set to 'Line' to "
                              "make those segments visible.");
-
-    m_renderingPrimitive.select("Line");
+    */
+    handleZeroRadius();
   }
 
   glm::vec4 baseAndbRadius, axisAndtRadius;
@@ -1581,6 +1580,17 @@ void Z3DSwcFilter::prepareDataForImmutable()
   ZOUT(LINFO(), 5) << "SWC data ready";
 }
 
+void Z3DSwcFilter::handleZeroRadius()
+{
+  emit messageGenerated(
+        ZWidgetMessageFactory(
+          "The rendering mode has been set to 'sphere' automatically "
+          "due to one or more zero radius SWC nodes.")
+        .as(neutu::EMessageType::WARNING)
+        .to(ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA));
+  m_renderingPrimitive.select("Sphere");
+}
+
 void Z3DSwcFilter::prepareData()
 {
   QMutexLocker locker(&m_dataValidMutex);
@@ -1629,6 +1639,7 @@ void Z3DSwcFilter::prepareData()
       if (checkRadius && n1->node.d < std::numeric_limits<double>::epsilon() &&
           n2->node.d < std::numeric_limits<double>::epsilon()) {
         checkRadius = false;
+        /*
         QMessageBox::information(QApplication::activeWindow(),
                                  qApp->applicationName(),
                                  "Reset SWC Rendering Mode.\n"
@@ -1636,7 +1647,8 @@ void Z3DSwcFilter::prepareData()
                                  "The geometrical primitive of SWC rendering "
                                  "will be set to 'Line' to "
                                  "make those segments visible.");
-        m_renderingPrimitive.select("Line");
+                                         */
+        handleZeroRadius();
       }
 
       glm::vec4 baseAndbRadius, axisAndtRadius;
