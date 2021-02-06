@@ -73,7 +73,8 @@ void ZFlyEmMessageWidget::dumpError(const QString &info, bool appending)
 void ZFlyEmMessageWidget::dump(
     const QString &info, neutu::EMessageType type, bool appending)
 {
-  dump(ZWidgetMessage::ToHtmlString(info, type), appending);
+  dump(ZWidgetMessage::ToHtmlString(
+         info, type, ZWidgetMessage::ToHtmlStringOption(type)), appending);
 }
 
 void ZFlyEmMessageWidget::dump(

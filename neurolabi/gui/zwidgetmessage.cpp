@@ -104,24 +104,28 @@ bool ZWidgetMessage::hasTargetOtherThan(FTargets targets) const
 
 
 QString ZWidgetMessage::ToHtmlString(
-    const QString &msg, neutu::EMessageType type)
+    const QString &msg, neutu::EMessageType type, const ToHtmlStringOption &option)
 {
   QString output = msg;
 
   if (!output.startsWith("<p>")) {
-    switch (type) {
-    case neutu::EMessageType::INFORMATION:
-//      output += "<font color = \"#007700\">test</font>";
-//      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
-      break;
-    case neutu::EMessageType::ERROR:
-      output = "<p><font color=\"#FF0000\">" + output + "</font></p>";
-      break;
-    case neutu::EMessageType::WARNING:
-      output = "<p><font color=\"#777700\">" + output + "</font></p>";
-      break;
-    default:
-      break;
+    if (option.coloring) {
+      switch (type) {
+      case neutu::EMessageType::INFORMATION:
+        output = "<font color = \"#007700\">" + output + "</font>";
+        break;
+      case neutu::EMessageType::ERROR:
+        output = "<font color=\"#FF0000\">" + output + "</font>";
+        break;
+      case neutu::EMessageType::WARNING:
+        output = "<font color=\"#777700\">" + output + "</font>";
+        break;
+      default:
+        break;
+      }
+    }
+    if (option.makingParagraph) {
+      output = "<p>" + output + "</p>";
     }
   }
 
@@ -149,7 +153,7 @@ QString ZWidgetMessage::ToHtmlString(
   QString output;
 
   foreach (const QString msg, msgList) {
-    output += ToHtmlString(msg, type);
+    output += ToHtmlString(msg, type, ToHtmlStringOption(type));
   }
 
   return output;

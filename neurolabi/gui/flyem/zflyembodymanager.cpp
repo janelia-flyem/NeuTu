@@ -396,7 +396,7 @@ void ZFlyEmBodyManager::print() const
 }
 
 namespace {
-  const uint64_t ENCODING_BASE = 100000000000;
+  const uint64_t ENCODING_BASE = 100000000000000;
   const uint64_t ENCODING_TAR = 100;
   const uint64_t ENCODING_SUPERVOXEL_LEVEL = 99;
 }

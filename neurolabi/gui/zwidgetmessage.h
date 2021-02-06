@@ -50,7 +50,24 @@ public:
 
 
   QString toHtmlString() const;
-  static QString ToHtmlString(const QString &msg, neutu::EMessageType type);
+  struct ToHtmlStringOption {
+    ToHtmlStringOption(bool c, bool m) {
+      coloring = c;
+      makingParagraph = m;
+    }
+    ToHtmlStringOption(neutu::EMessageType type) {
+      if (type == neutu::EMessageType::INFORMATION) {
+        this->coloring = false;
+        this->makingParagraph = false;
+      }
+    }
+    bool coloring = true;
+    bool makingParagraph = true;
+  };
+
+  static QString ToHtmlString(
+      const QString &msg, neutu::EMessageType type,
+      const ToHtmlStringOption &option);
   static QString ToHtmlString(const QStringList &msgList,
                               neutu::EMessageType type);
   QString toPlainString() const;

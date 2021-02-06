@@ -34,7 +34,7 @@ public:
   ~TaskBodyCleave() override;
 
   // For use with TaskProtocolTaskFactory.
-  static QString taskTypeStatic();
+  static QString taskTypeStatic(); //#Review-TZ: Use StaticFunc naming conversion for static functions
   static TaskBodyCleave* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
   static QString menuLabelCreateFromGuiBodyId();
   static QJsonArray createFromGuiBodyId(ZFlyEmBody3dDoc *bodyDoc);
@@ -59,6 +59,9 @@ public:
 
   ProtocolTaskConfig getTaskConfig() const override;
   bool allowingSplit(uint64_t bodyId) const override;
+
+  QString getInfo() const override;
+  QString getError() const override;
 
 public:
   //Temporary solution for resolving shortcut conflict

@@ -164,6 +164,7 @@ void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 
   if (!m_interaction.processKeyPressEvent(event)) {
     broadcastEvent(event, width(), height());
+    updateView();
   }
 
   setCursor(m_interaction.getCursorShape());

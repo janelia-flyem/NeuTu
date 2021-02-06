@@ -64,6 +64,7 @@ protected:
     void emitInfo(const QString &msg);
     void emitWarning(const QString &msg);
     void emitMessage(const QString &msg, neutu::EMessageType type);
+    void setProtocolInfo(const QString &msg);
 
 private slots:
     void onNextButton();
@@ -151,6 +152,7 @@ private:
     int m_bodyMeshLoadedReceived = 0;
     std::set<int> m_skippedTaskIndices;
     bool m_nextPrevAllowed = true;
+    QString m_defaultProtocolInfo;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
