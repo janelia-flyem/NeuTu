@@ -1654,6 +1654,26 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   KINFO << QString("Cleave posted: ") + QString(requestData);
 }
 
+QString TaskBodyCleave::getInfo() const
+{
+  QString server = ZGlobal::GetInstance().getCleaveServer();
+  if (server.isEmpty()) {
+    return TaskProtocolTask::getInfo();
+  }
+
+  return "Cleaving server: " + server;
+}
+
+QString TaskBodyCleave::getError() const
+{
+  QString server = ZGlobal::GetInstance().getCleaveServer();
+  if (server.isEmpty()) {
+    return "Cleaving server missing! It is required to perform cleaving.";
+  }
+
+  return "";
+}
+
 bool TaskBodyCleave::getUnassignedMeshes(std::vector<uint64_t> &result) const
 {
   for (auto it : m_meshIdToCleaveResultIndex) {

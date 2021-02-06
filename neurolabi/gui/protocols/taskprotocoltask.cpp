@@ -98,6 +98,21 @@ void TaskProtocolTask::onCompleted() {
     // nothing
 }
 
+QString TaskProtocolTask::getInfo() const
+{
+  return "";
+}
+
+QString TaskProtocolTask::getWarning() const
+{
+  return "";
+}
+
+QString TaskProtocolTask::getError() const
+{
+  return "";
+}
+
 /*
  * subclasses may optionally implement this method to
  * do something when a task is about to be moved away from

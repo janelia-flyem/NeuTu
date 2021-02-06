@@ -2838,7 +2838,7 @@ void ZFlyEmProofDoc::checkInSelectedBody(neutu::EBodySplitMode mode)
       }
     }
   } else {
-    emit messageGenerated(QString("Body lock service is not available."));
+    emitWarning(QString("Body lock service is not available."));
   }
 }
 
@@ -2866,7 +2866,7 @@ void ZFlyEmProofDoc::checkInSelectedBodyAdmin()
       }
     }
   } else {
-    emit messageGenerated(QString("Body lock service is not available."));
+    emit emitWarning(getWarning(EErrorType::BODY_LOCK_NA));
   }
 }
 
@@ -2899,7 +2899,7 @@ void ZFlyEmProofDoc::checkOutBody(neutu::EBodySplitMode mode)
       }
     }
   } else {
-    emit messageGenerated(QString("Body lock service is not available."));
+    emitWarning(getWarning(EErrorType::BODY_LOCK_NA));
   }
 }
 
@@ -5205,6 +5205,14 @@ void ZFlyEmProofDoc::setBodyColorT(
         processObjectModified(slice);
       }
     }
+  }
+}
+
+QString ZFlyEmProofDoc::getWarning(EErrorType type)
+{
+  switch (type) {
+  case EErrorType::BODY_LOCK_NA:
+    return "Body lock service is not available.";
   }
 }
 
