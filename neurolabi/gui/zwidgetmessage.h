@@ -13,7 +13,7 @@ public:
   enum ETarget {
     TARGET_NULL = 0,
     TARGET_TEXT = BIT_FLAG(1),
-    TARGET_TEXT_APPENDING = 0x3,
+    TARGET_TEXT_APPENDING = BIT_FLAG(2),
     TARGET_DIALOG = BIT_FLAG(3),
     TARGET_STATUS_BAR = BIT_FLAG(4),
     TARGET_CUSTOM_AREA = BIT_FLAG(5),
@@ -80,7 +80,9 @@ public:
 
   bool hasTarget(ETarget target) const;
   bool hasTarget(FTargets targets) const;
+  bool hasTargetIn(FTargets targets) const;
   bool hasTargetOtherThan(FTargets targets) const;
+  bool hasAnyTarget() const;
 
   inline neutu::EMessageType getType() const {
     return m_type;
@@ -93,6 +95,12 @@ public:
   inline void setTarget(FTargets target) {
     m_targets = target;
   }
+
+  void addTarget(ETarget target);
+  void removeTarget(ETarget target);
+
+  void addTarget(FTargets targets);
+  void removeTarget(FTargets targets);
 
   inline void setType(neutu::EMessageType type) {
     m_type = type;
@@ -162,11 +170,13 @@ void ZWidgetMessage::DisconnectMessagePipe(T1 *source, T2 *target)
 struct ZWidgetMessageFactory
 {
   ZWidgetMessageFactory(const char *msg);
+  ZWidgetMessageFactory(const ZWidgetMessage &msg);
   operator ZWidgetMessage() const;
 
   static ZWidgetMessageFactory Make(const char *msg);
 
   ZWidgetMessageFactory& to(ZWidgetMessage::ETarget target);
+  ZWidgetMessageFactory& without(ZWidgetMessage::FTargets targets);
   ZWidgetMessageFactory& as(neutu::EMessageType type);
   ZWidgetMessageFactory& title(const char *title);
 

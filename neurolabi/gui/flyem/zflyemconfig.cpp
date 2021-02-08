@@ -281,7 +281,7 @@ void ZFlyEmConfig::setDefaultTaskServer(const std::string &taskServer)
 
 void ZFlyEmConfig::setDefaultCleaveServer(const std::string &server)
 {
-  m_defaultCleaveServer = server;
+  m_defaultCleaveServer = neutu::GetRootUrl(server);
 }
 
 void ZFlyEmConfig::setDefaultAssignmentManager(const std::string &server) {

@@ -165,6 +165,8 @@ inline bool WithinCloseRange(const T &x, const T &minv, const T &maxv)
   return (x >= minv) && (x <= maxv);
 }
 
+std::string GetRootUrl(const std::string &url);
+
 /*
 template<typename T>
 inline T ClipValue(const T &v, const T &lower, const T&upper)

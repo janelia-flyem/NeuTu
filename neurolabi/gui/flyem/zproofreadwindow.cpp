@@ -789,7 +789,8 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
   neutu::LogMessage(msg);
 
-  if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+  if (msg.hasTargetIn(
+        ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_TEXT_APPENDING)) {
     if (msg.getType() == neutu::EMessageType::ERROR) {
       m_messageWidget->dumpError(msg.toHtmlString(), msg.isAppending());
     } else {

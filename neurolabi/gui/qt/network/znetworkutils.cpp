@@ -1,6 +1,11 @@
 #include "znetworkutils.h"
 
 #include <regex>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QTimer>
+#include <QEventLoop>
 
 #include "neulib/core/utilities.h"
 
@@ -81,4 +86,41 @@ QByteArray ZNetworkUtils::Post(
 ZJsonObject ZNetworkUtils::ReadJsonObjectMemo(const std::string& url)
 {
   return read_json_memo(url);
+}
+
+bool ZNetworkUtils::IsAvailable(
+    const QString &url, const QByteArray &method, int timeout)
+{
+  return IsAvailable(QNetworkRequest(QUrl(url)), method, timeout);
+}
+
+bool ZNetworkUtils::IsAvailable(
+    const QNetworkRequest &request, const QByteArray &method, int timeout)
+{
+  QTimer timer;
+  timer.setSingleShot(true);
+
+  QNetworkAccessManager manager;
+  QNetworkReply *reply = manager.sendCustomRequest(request, method);
+
+  QEventLoop loop;
+  QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+  QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+  timer.start(timeout);
+  loop.exec();
+
+  bool succ = false;
+  if (timer.isActive()) {
+    timer.stop();
+    if(reply->error() == QNetworkReply::NoError) {
+      int statusCode = reply->attribute(
+            QNetworkRequest::HttpStatusCodeAttribute).toInt();
+      succ = (statusCode >= 200 && statusCode < 300);
+    }
+  } else {
+    reply->abort();
+  }
+  reply->deleteLater();
+
+  return succ;
 }

@@ -31567,7 +31567,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/_test.sobj");
   ZObject3dScan obj2;
@@ -31576,6 +31576,10 @@ void ZTest::test(MainWindow *host)
   obj.unify(obj2);
 
   obj.save(GET_TEST_DATA_DIR + "/nBreak-v1.sobj");
+#endif
+
+#if 1
+  std::cout << ZNetworkUtils::IsAvailable("http://emdata5.int.janelia.org:5570/compute-cleave", "OPTIONS") << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

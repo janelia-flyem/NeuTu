@@ -42,6 +42,7 @@
 #include "z3dcontext.h"
 #include "zstackdoc3dhelper.h"
 #include "common/utilities.h"
+#include "zwidgetmessage.h"
 
 Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent)
   : QObject(parent)
@@ -460,6 +461,10 @@ void Z3DView::init()
       connect(m_doc, &ZStackDoc::volumeModified, this, &Z3DView::volumeDataChanged);
     }
 
+    for (auto filter : m_allFilters) {
+      ZWidgetMessage::ConnectMessagePipe(filter, this);
+    }
+
     foreach (neutu3d::ERendererLayer layer, m_layerList) {
       updateDocData(layer);
     }
@@ -822,6 +827,19 @@ void Z3DView::processObjectModified(const ZStackObjectInfoSet &objInfo)
 void Z3DView::dump(const QString &message)
 {
   m_canvas->dump(message);
+}
+
+void Z3DView::processMessage(const ZWidgetMessage &msg)
+{
+  ZWidgetMessage newMsg = msg;
+  if (msg.hasTarget(ZWidgetMessage::TARGET_CUSTOM_AREA)) {
+    dump(msg.toPlainString());
+    newMsg.removeTarget(ZWidgetMessage::TARGET_CUSTOM_AREA);
+  }
+
+  if (newMsg.hasAnyTarget()) {
+    emit messageGenerated(newMsg);
+  }
 }
 
 void Z3DView::setCutBox(neutu3d::ERendererLayer layer, const ZIntCuboid &box)

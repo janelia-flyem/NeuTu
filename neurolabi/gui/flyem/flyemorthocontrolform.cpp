@@ -68,7 +68,8 @@ ZFlyEmMessageWidget* FlyEmOrthoControlForm::getMessageWidget() const
 void FlyEmOrthoControlForm::dump(const ZWidgetMessage &message)
 {
   neutu::LogMessage(message);
-  if (message.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+  if (message.hasTargetIn(
+        ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_TEXT_APPENDING)) {
     ui->messageWidget->dump(message.toHtmlString(), message.isAppending());
   }
 }

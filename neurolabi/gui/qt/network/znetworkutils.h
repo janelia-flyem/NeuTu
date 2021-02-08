@@ -4,6 +4,7 @@
 #include <QString>
 
 class ZJsonObject;
+class QNetworkRequest;
 
 class ZNetworkUtils
 {
@@ -15,6 +16,11 @@ public:
   static QByteArray Post(const QString &url, const QByteArray &payload);
 
   static ZJsonObject ReadJsonObjectMemo(const std::string& url);
+
+  static bool IsAvailable(
+      const QNetworkRequest &request, const QByteArray &method, int timeout);
+  static bool IsAvailable(
+      const QString &url, const QByteArray &method, int timeout = 1000);
 };
 
 #endif // ZNETWORKUTILS_H

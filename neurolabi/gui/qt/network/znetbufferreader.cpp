@@ -35,6 +35,7 @@ QNetworkAccessManager* ZNetBufferReader::getNetworkAccessManager()
 void ZNetBufferReader::resetNetworkReply()
 {
   if (m_networkReply != NULL) {
+    m_networkReply->abort();
     m_networkReply->disconnect();
     m_networkReply->deleteLater();
   }

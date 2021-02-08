@@ -99,6 +99,18 @@ void neutu::RangePartitionProcess(
   }
 }
 
+std::string neutu::GetRootUrl(const std::string &url)
+{
+  std::regex rgx("([^/]+://[^/]+).*");
+  std::smatch matches;
+  std::regex_search(url, matches, rgx);
+  if (matches.size() > 1) {
+    return matches[1];
+  }
+
+  return "";
+}
+
 /*
 void neutu::RangePartitionProcess(
     int x0, int x1, int block, int n, std::function<void(int, int)> f)

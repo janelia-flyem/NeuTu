@@ -225,6 +225,13 @@ void Z3DCanvas::dump(const QString &message)
   updateView();
 }
 
+void Z3DCanvas::processMessage(const ZWidgetMessage &message)
+{
+  if (message.hasTarget(ZWidgetMessage::TARGET_CUSTOM_AREA)) {
+    dump(message.toPlainString());
+  }
+}
+
 void Z3DCanvas::updateView()
 {
   viewport()->update();
