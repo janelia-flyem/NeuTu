@@ -11,18 +11,21 @@
 class QNetworkAccessManager;
 class QNetworkReply;
 class QEventLoop;
+class QTimer;
 
 class ZNetBufferReader : public QObject
 {
   Q_OBJECT
 public:
   explicit ZNetBufferReader(QObject *parent = nullptr);
+  ~ZNetBufferReader();
 
   void read(const QString &url, bool outputingUrl);
   void readPartial(const QString &url, int maxSize, bool outputingUrl);
-  void readHead(const QString &url);
+  void readHead(const QString &url, int timeout = 0);
   bool isReadable(const QString &url);
-  bool hasHead(const QString &url);
+  bool hasHead(const QString &url, int timeout = 0);
+  bool hasOptions(const QString &url, int timeout = 0);
   void post(const QString &url, const QByteArray &data);
 
   neutu::EReadStatus getStatus() const;
@@ -39,6 +42,8 @@ public:
   void setRequestHeader(const QString &key, const QString &value);
   bool hasRequestHeader(const QString &key) const;
   void removeRequestHeader(const QString &key);
+
+  void abort();
 
 signals:
 
@@ -68,12 +73,15 @@ private:
   void endReading(neutu::EReadStatus status);
   bool isReadingDone() const;
   QNetworkAccessManager* getNetworkAccessManager();
+  QTimer *getTimer();
+  void startRequestTimer(int timeout);
 
 private:
   QByteArray m_buffer;
   QNetworkAccessManager *m_networkManager = nullptr;
   QNetworkReply *m_networkReply = nullptr;
   QEventLoop *m_eventLoop = nullptr;
+  QTimer *m_timer = nullptr;
   bool m_isReadingDone = false;
   neutu::EReadStatus m_status = neutu::EReadStatus::NONE;
   int m_statusCode = 0;

@@ -2,6 +2,7 @@
 #include <QFileInfo>
 #include "QsLog/QsLog.h"
 
+#include "qt/network/znetworkutils.h"
 #include "ui_flyemsettingdialog.h"
 #include "neutubeconfig.h"
 #include "zdialogfactory.h"
@@ -19,6 +20,16 @@ FlyEmSettingDialog::FlyEmSettingDialog(QWidget *parent) :
 FlyEmSettingDialog::~FlyEmSettingDialog()
 {
   delete ui;
+}
+
+void FlyEmSettingDialog::updateCleavingServerWidget()
+{
+  bool connected = ZNetworkUtils::IsAvailable(
+        ui->cleavingServerLineEdit->text(), "OPTIONS");
+  QPalette *palette = new QPalette();
+  palette->setColor(
+        QPalette::Text, connected ? Qt::darkGreen : Qt::darkRed);
+  ui->cleavingServerLineEdit->setPalette(*palette);
 }
 
 void FlyEmSettingDialog::updateNeutuseWidget()
@@ -74,6 +85,10 @@ void FlyEmSettingDialog::loadSetting()
 #endif
   ui->taskServerLineEdit->setText(GET_FLYEM_CONFIG.getTaskServer().c_str());
 #endif
+
+  ui->cleavingServerLineEdit->setText(
+        GET_FLYEM_CONFIG.getCleaveServer().c_str());
+
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
   ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
@@ -111,7 +126,8 @@ void FlyEmSettingDialog::loadSetting()
 
 void FlyEmSettingDialog::connectSignalSlot()
 {
-  connect(ui->updatePushButton, SIGNAL(clicked()), this, SLOT(update()));
+  connect(
+        ui->updatePushButton, SIGNAL(clicked()), this, SLOT(update()), Qt::DirectConnection);
   connect(ui->closePushButton, SIGNAL(clicked()), this, SLOT(close()));
   connect(ui->defaultConfigFileCheckBox, SIGNAL(toggled(bool)),
           this, SLOT(updateDefaultConfigChecked(bool)));
@@ -204,6 +220,10 @@ void FlyEmSettingDialog::update()
 
   GET_FLYEM_CONFIG.activateNeutuseForce(false);
   updateNeutuseWidget();
+
+  GET_FLYEM_CONFIG.setCleaveServer(
+        ui->cleavingServerLineEdit->text().toStdString());
+  updateCleavingServerWidget();
 
   /*
   if (GET_FLYEM_CONFIG.hasNormalService()) {

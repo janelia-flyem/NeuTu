@@ -209,6 +209,7 @@
 #include "z3dmainwindow.h"
 #include "misc/zvtkutil.h"
 #include "flyem/zfileparser.h"
+#include "qt/network/znetbufferreaderthread.h"
 
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
@@ -28337,7 +28338,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   neutuse::TaskWriter writer;
   writer.open("http://emdata2.int.janelia.org:2018");
-  writer.testConnection();
+//  writer.testConnection();
   std::cout << writer.ready() << std::endl;
 
 #endif
@@ -31578,8 +31579,39 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/nBreak-v1.sobj");
 #endif
 
-#if 1
+#if 0
   std::cout << ZNetworkUtils::IsAvailable("http://emdata5.int.janelia.org:5570/compute-cleave", "OPTIONS") << std::endl;
+#endif
+
+#if 1
+  std::cout << ZNetworkUtils::IsAvailable(
+                 "http://emdata5.int.janelia.org:5570/compute-cleave",
+                 znetwork::EOperation::HAS_OPTIONS) << std::endl;
+  std::cout << ZNetworkUtils::IsAvailable(
+                 "http://127.0.0.1:1600",
+                 znetwork::EOperation::HAS_OPTIONS) << std::endl;
+#endif
+
+#if 0
+  {
+    ZNetBufferReaderThread thread;
+    thread.setOperation(znetwork::EOperation::HAS_OPTIONS);
+    thread.setUrl("http://127.0.0.1:1600");
+    thread.start();
+    thread.wait();
+    std::cout << thread.getResultStatus() << std::endl;
+  }
+
+  {
+    ZNetBufferReaderThread *thread = new ZNetBufferReaderThread;
+    thread->connect(thread, &ZNetBufferReaderThread::finished, thread, &QObject::deleteLater);
+    thread->setOperation(znetwork::EOperation::HAS_OPTIONS, 1000);
+    thread->setUrl("http://emdata5.int.janelia.org:5570/compute-cleave");
+    thread->start();
+    QTimer::singleShot(100, []() { std::cout << "later event." << std::endl; });
+    thread->wait();
+    std::cout << thread->getResultStatus() << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

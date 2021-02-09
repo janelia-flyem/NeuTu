@@ -66,6 +66,8 @@ public:
   static void UseDefaultTaskServer(bool on);
   static bool UsingDefaultTaskServer();
 
+  static QString GetCleaveServer();
+  static void SetCleaveServer(const QString &server);
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
   static QString GetTaskServer();

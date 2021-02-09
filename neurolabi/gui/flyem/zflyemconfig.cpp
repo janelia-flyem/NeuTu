@@ -396,7 +396,21 @@ std::string ZFlyEmConfig::getNeuTuServer() const
 
 std::string ZFlyEmConfig::getCleaveServer() const
 {
+#ifdef _QT_GUI_USED_
+  std::string server = NeutubeConfig::GetCleaveServer().toStdString();
+#endif
+  if (!server.empty()) {
+    return server;
+  }
+
   return m_defaultCleaveServer;
+}
+
+void ZFlyEmConfig::setCleaveServer(const std::string &server)
+{
+#ifdef _QT_GUI_USED_
+  NeutubeConfig::SetCleaveServer(server.c_str());
+#endif
 }
 
 void ZFlyEmConfig::setCustomNeuTuServer(const std::string &server)

@@ -12,6 +12,13 @@ ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
   _init();
 }
 
+ZNetBufferReader::~ZNetBufferReader()
+{
+#ifdef _DEBUG_
+  std::cout << __func__ << std::endl;
+#endif
+}
+
 void ZNetBufferReader::_init()
 {
   m_eventLoop = new QEventLoop(this);
@@ -21,6 +28,16 @@ void ZNetBufferReader::_init()
           m_eventLoop, &QEventLoop::quit);
   connect(this, &ZNetBufferReader::checkingStatus,
           this, &ZNetBufferReader::waitForReading);
+}
+
+QTimer* ZNetBufferReader::getTimer()
+{
+  if (m_timer == nullptr) {
+    m_timer = new QTimer(this);
+    connect(m_timer, &QTimer::timeout, this, &ZNetBufferReader::handleTimeout);
+  }
+
+  return m_timer;
 }
 
 QNetworkAccessManager* ZNetBufferReader::getNetworkAccessManager()
@@ -35,10 +52,15 @@ QNetworkAccessManager* ZNetBufferReader::getNetworkAccessManager()
 void ZNetBufferReader::resetNetworkReply()
 {
   if (m_networkReply != NULL) {
-    m_networkReply->abort();
     m_networkReply->disconnect();
+    m_networkReply->abort();
     m_networkReply->deleteLater();
   }
+}
+
+void ZNetBufferReader::abort()
+{
+  resetNetworkReply();
 }
 
 void ZNetBufferReader::connectNetworkReply()
@@ -97,7 +119,7 @@ void ZNetBufferReader::readPartial(
   waitForReading();
 }
 
-void ZNetBufferReader::readHead(const QString &url)
+void ZNetBufferReader::readHead(const QString &url, int timeout)
 {
   startReading();
 
@@ -107,6 +129,7 @@ void ZNetBufferReader::readHead(const QString &url)
 
   resetNetworkReply();
 
+  startRequestTimer(timeout);
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
   connectNetworkReply();
   connect(m_networkReply, &QNetworkReply::readyRead,
@@ -115,15 +138,32 @@ void ZNetBufferReader::readHead(const QString &url)
   waitForReading();
 }
 
-bool ZNetBufferReader::hasHead(const QString &url)
+bool ZNetBufferReader::hasHead(const QString &url, int timeout)
 {
   startReading();
 
-//  qDebug() << url;
   neutu::LogUrlIO("HEAD", url);
 
   resetNetworkReply();
+  startRequestTimer(timeout);
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
+  connectNetworkReply();
+
+  waitForReading();
+
+  return m_status == neutu::EReadStatus::OK;
+}
+
+bool ZNetBufferReader::hasOptions(const QString &url, int timeout)
+{
+  startReading();
+
+  neutu::LogUrlIO("OPTIONS", url);
+
+  resetNetworkReply();
+  startRequestTimer(timeout);
+  m_networkReply = getNetworkAccessManager()->sendCustomRequest(
+        QNetworkRequest(url), "OPTIONS");
   connectNetworkReply();
 
   waitForReading();
@@ -178,29 +218,57 @@ bool ZNetBufferReader::isReadable(const QString &url)
   return m_status == neutu::EReadStatus::OK;
 }
 
+void ZNetBufferReader::startRequestTimer(int timeout)
+{
+  if (timeout > 0) {
+    getTimer()->stop();
+    getTimer()->start(timeout);
+#ifdef _DEBUG_
+    std::cout << "Start timer." << std::endl;
+#endif
+  }
+}
+
 void ZNetBufferReader::startReading()
 {
   m_isReadingDone = false;
   m_buffer.clear();
-  m_status = neutu::EReadStatus::OK;
+  m_status = neutu::EReadStatus::NONE;
+  m_statusCode = 0;
 }
 
 void ZNetBufferReader::endReading(neutu::EReadStatus status)
 {
+  if (m_timer) { //delete timer here explicitly to avoid thread confusion
+    m_timer->stop();
+    m_timer->deleteLater();
+    m_timer = nullptr;
+  }
+
   m_status = status;
   m_isReadingDone = true;
 
-  if (m_networkReply != NULL) {
-    QVariant statusCode = m_networkReply->attribute(
-          QNetworkRequest::HttpStatusCodeAttribute);
-
-    m_statusCode = statusCode.toInt();
-    if (m_statusCode != 200) {
-      KWARN << QString("Status code: %1").arg(m_statusCode);
-      m_status = neutu::EReadStatus::BAD_RESPONSE;
+  if (m_networkReply) {
+    if (status == neutu::EReadStatus::TIMEOUT) {
+      m_networkReply->disconnect();
+      m_networkReply->abort();
     }
+
+    if (m_status == neutu::EReadStatus::NONE) {
+      QVariant statusCode = m_networkReply->attribute(
+            QNetworkRequest::HttpStatusCodeAttribute);
+
+      m_statusCode = statusCode.toInt();
+      if (m_statusCode < 200 || m_statusCode >= 300) {
+        KWARN << QString("Status code: %1").arg(m_statusCode);
+        m_status = neutu::EReadStatus::BAD_RESPONSE;
+      } else {
+        m_status = neutu::EReadStatus::OK;
+      }
+    }
+
     m_networkReply->deleteLater();
-    m_networkReply = NULL;
+    m_networkReply = nullptr;
   }
 
   emit readingDone();

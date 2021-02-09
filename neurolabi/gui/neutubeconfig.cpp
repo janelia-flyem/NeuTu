@@ -1198,6 +1198,16 @@ QString NeutubeConfig::GetTaskServer()
   return GetSettings().value("task_server").toString();
 }
 
+QString NeutubeConfig::GetCleaveServer()
+{
+  return GetSettings().value("cleave_server").toString();
+}
+
+void NeutubeConfig::SetCleaveServer(const QString &server)
+{
+  GetSettings().setValue("cleave_server", server);
+}
+
 bool NeutubeConfig::UsingDefaultFlyemConfig()
 {
   if (GetSettings().contains("default_flyem_config")) {
