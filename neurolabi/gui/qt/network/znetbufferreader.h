@@ -52,7 +52,7 @@ public slots:
 signals:
   void readingDone();
   void readingCanceled();
-  void checkingStatus();
+//  void checkingStatus();
 
 public slots:
 
@@ -60,10 +60,8 @@ private slots:
   void handleError(QNetworkReply::NetworkError error);
   void finishReading();
   void handleTimeout();
-  void cancelReading();
   void readBuffer();
   void readBufferPartial();
-  void waitForReading();
   void resetNetworkReply();
   void connectNetworkReply();
 
@@ -71,7 +69,10 @@ private:
   void _init();
   void startReading();
   void endReading(neutu::EReadStatus status);
+  void waitForReading();
+  void cancelReading();
   bool isReadingDone() const;
+  bool isReadingInproress() const;
   QNetworkAccessManager* getNetworkAccessManager();
   QTimer *getTimer();
   void startRequestTimer(int timeout);
@@ -82,7 +83,7 @@ private:
   QNetworkReply *m_networkReply = nullptr;
   QEventLoop *m_eventLoop = nullptr;
   QTimer *m_timer = nullptr;
-  bool m_isReadingDone = false;
+//  bool m_isReadingDone = false;
   neutu::EReadStatus m_status = neutu::EReadStatus::NONE;
   int m_statusCode = 0;
   int m_maxSize = 0;

@@ -798,7 +798,7 @@ ZObject3dScan *ZDvidReader::readBody(
     result->clear();
   }
 
-  if (isReady()) {
+  if (isReady() && zoom <= getMaxLabelZoom()) {
     if (result == NULL) {
       result = new ZObject3dScan;
     }

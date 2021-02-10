@@ -31588,7 +31588,10 @@ void ZTest::test(MainWindow *host)
                  "http://emdata5.int.janelia.org:5570/compute-cleave",
                  znetwork::EOperation::HAS_OPTIONS) << std::endl;
   std::cout << ZNetworkUtils::IsAvailable(
-                 "http://127.0.0.1:1600",
+                 "http://127.0.0.1:1601",
+                 znetwork::EOperation::HAS_OPTIONS) << std::endl;
+  std::cout << ZNetworkUtils::IsAvailable(
+                 "http://emdata4.int.janelia.org:5570/compute-cleave",
                  znetwork::EOperation::HAS_OPTIONS) << std::endl;
 #endif
 
