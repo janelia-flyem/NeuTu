@@ -1,0 +1,121 @@
+#!/bin/bash
+
+usage() {
+  echo 'Generate a C++ project.'
+  echo "${0} [-tf] PROJECT_NAME"
+  echo '  -t  Create tests folder'
+  echo '  -f  Create full structure'
+  exit 1
+}
+
+create_readme() {
+  touch README.md
+}
+
+create_license() {
+  touch LICENCE.md
+}
+
+create_cmake() {
+  mkdir cmake
+}
+
+create_src() {
+  mkdir src
+}
+
+create_include() {
+  mkdir -p include/${project}
+}
+
+create_tests() {
+  mkdir tests
+}
+
+create_docs() {
+  mkdir docs
+}
+
+create_extern() {
+  mkdir extern
+}
+
+while getopts tf OPTION
+do
+  case "${OPTION}" in
+    t)
+      CREATE_TESTS='true'
+      ;;
+    f)
+      CREATE_FULL='true'
+      ;;
+    ?)
+      usage
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+if [[ $# -ne 1 ]]
+then
+  usage
+fi
+
+project="$1"
+projectDir="$project"
+
+if [[ -d "${projectDir}" ]]
+then
+  echo "Cannot create a project in an existing directory: ${projectDir}"
+  exit 1
+fi
+
+mkdir "$projectDir"
+if [[ $? -eq 0 ]]
+then
+  set -e 
+  cd "$projectDir"
+  echo 'cmake_minimum_required(VERSION 3.5)' > CMakeLists.txt
+  echo "" >> CMakeLists.txt
+  echo "set(CMAKE_CXX_STANDARD 11)" >> CMakeLists.txt
+  echo "set(CMAKE_CXX_STANDARD_REQUIRED ON)" >> CMakeLists.txt
+  echo "set(CMAKE_CXX_EXTENSIONS OFF)" >> CMakeLists.txt
+  echo "" >> CMakeLists.txt
+  echo "project($project LANGUAGES CXX)" >> CMakeLists.txt
+  echo "" >> CMakeLists.txt
+  echo "add_executable($project apps/main.cpp)" >> CMakeLists.txt
+
+  mkdir apps
+  cd apps
+  echo "#include <iostream>" > main.cpp
+  echo >> main.cpp
+  echo "int main(int argc, char *argv[])" >> main.cpp
+  echo "{" >> main.cpp
+  echo '  std::cout << "Hello World!" << std::endl;' >> main.cpp
+  echo '  return 0;' >> main.cpp
+  echo "}" >> main.cpp
+  echo "${projectDir} created."
+
+  cd ..
+
+  if [[ "${CREATE_FULL}" = 'true' ]]
+  then
+    create_readme
+    create_license
+    create_cmake
+    create_src
+    create_include
+    create_tests
+    create_docs
+    create_extern
+  elif [[ "${CREATE_TESTS}" = 'true' ]]
+  then
+    create_tests
+  fi
+else
+  echo "Failed to ceate a new project directory: $projectDir."
+  exit 1
+fi
+
+ 
