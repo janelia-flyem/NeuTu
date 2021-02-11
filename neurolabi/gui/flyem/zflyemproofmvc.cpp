@@ -3042,7 +3042,8 @@ void ZFlyEmProofMvc::highlightSelectedObject(
     bool usingSparseVol =
         getCompleteDocument()->getDvidTarget().hasBodyLabel() &&
         getDocument()->getStack()->getVoxelNumber(ZStack::SINGLE_PLANE) > 300 * 300;
-    if (getDvidTarget().usingMulitresBodylabel()) {
+    if (getDvidTarget().usingMulitresBodylabel() ||
+        getView()->getSliceAxis() == neutu::EAxis::ARB) {
       usingSparseVol = false;
     }
 

@@ -1,6 +1,7 @@
 #ifndef ZFLYEMBOOKMARKFILTER_H
 #define ZFLYEMBOOKMARKFILTER_H
 
+#include <functional>
 #include <QWidget>
 
 class ZFlyEmBookmarkWidget;
@@ -26,6 +27,8 @@ private slots:
 private:
     Ui::ZFlyEmBookmarkFilter *ui;
     ZFlyEmBookmarkWidget * m_bookmarkWidget;
+    std::function<void(QString)> m_debounceFilterUpdated;
+    bool m_retiring = false;
 };
 
 #endif // ZFLYEMBOOKMARKFILTER_H

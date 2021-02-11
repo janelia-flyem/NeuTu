@@ -63,6 +63,7 @@
 #include "tz_color.h"
 #include "tz_swc_tree.h"
 
+#include "ext/QFunctionUtils/src/QFunctionUtils"
 #include "geometry/zaffinerect.h"
 #include "filesystem/utilities.h"
 #include "tr1_header.h"
@@ -31583,7 +31584,7 @@ void ZTest::test(MainWindow *host)
   std::cout << ZNetworkUtils::IsAvailable("http://emdata5.int.janelia.org:5570/compute-cleave", "OPTIONS") << std::endl;
 #endif
 
-#if 1
+#if 0
   std::cout << ZNetworkUtils::IsAvailable(
                  "http://emdata5.int.janelia.org:5570/compute-cleave",
                  znetwork::EOperation::HAS_OPTIONS) << std::endl;
@@ -31615,6 +31616,18 @@ void ZTest::test(MainWindow *host)
     thread->wait();
     std::cout << thread->getResultStatus() << std::endl;
   }
+#endif
+
+#if 1
+  auto testFunc = QFunctionUtils::Throttle([](int v) {
+    std::cout << "test: " << v << std::endl;
+    ZSleeper::sleep(1);
+  }, 100);
+
+  testFunc(1);
+  testFunc(2);
+  testFunc(3);
+  testFunc(4);
 #endif
 
   std::cout << "Done." << std::endl;
