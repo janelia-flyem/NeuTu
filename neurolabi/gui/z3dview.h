@@ -10,6 +10,7 @@
 #include "zstackobjectgroup.h"
 #include "z3ddef.h"
 //#include "zstackdoc3dhelper.h"
+#include "zwidgetmessage.h"
 
 class Z3DCanvas;
 class Z3DCompositor;
@@ -212,11 +213,13 @@ public slots:
   void processObjectModified(const ZStackObjectInfoSet &objInfo);
 
   void dump(const QString &message);
+  void processMessage(const ZWidgetMessage &msg);
 
 signals:
   void networkConstructed();
   void cancelingLocalExplore();
   void exploringLocal(double x, double y, double z);
+  void messageGenerated(ZWidgetMessage msg);
 
 private:
   void zoomIn();

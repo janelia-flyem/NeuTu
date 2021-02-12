@@ -251,6 +251,16 @@ TEST(ZIntPoint, Hash)
   ASSERT_EQ(3, pointMap.at(ZIntPoint(1, 2, 3)));
 }
 
+TEST(ZIntPoint, String)
+{
+  ZIntPoint pt(1, 2, 3);
+  ASSERT_EQ("(1, 2, 3)", pt.toString());
+  ASSERT_EQ("1, 2, 3", pt.toString("$x, $y, $z"));
+  ASSERT_EQ("1, 2, 3", pt.toString("$X, $Y, $Z"));
+  ASSERT_EQ("(2, 3, 1)", pt.toString("($y, $z, $x)"));
+
+}
+
 #endif
 
 

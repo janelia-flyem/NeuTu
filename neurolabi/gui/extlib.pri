@@ -205,5 +205,6 @@ CONFIG(static_gtest) { # gtest from ext folder
 include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include(ext/QFontIcon/QFontIcon/QFontIcon.pri)
+include(ext/QFunctionUtils/src/qfunctionutils.pri)
 
 HEADERS += ext/http/HTTPRequest.hpp

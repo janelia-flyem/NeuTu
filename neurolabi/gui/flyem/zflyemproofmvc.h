@@ -444,6 +444,8 @@ public slots:
 
   void configureRecorder();
 
+  void copyLink(const QString &option);
+
   void processObjectModified(const ZStackObjectInfoSet &objSet) override;
 
 protected slots:

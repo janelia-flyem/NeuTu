@@ -165,6 +165,7 @@ void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 
   if (!m_interaction.processKeyPressEvent(event)) {
     broadcastEvent(event, width(), height());
+    updateView();
   }
 
   setCursor(m_interaction.getCursorShape());
@@ -223,6 +224,13 @@ void Z3DCanvas::dump(const QString &message)
 {
   m_message = message;
   updateView();
+}
+
+void Z3DCanvas::processMessage(const ZWidgetMessage &message)
+{
+  if (message.hasTarget(ZWidgetMessage::TARGET_CUSTOM_AREA)) {
+    dump(message.toPlainString());
+  }
 }
 
 void Z3DCanvas::updateView()

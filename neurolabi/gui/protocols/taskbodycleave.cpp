@@ -36,6 +36,8 @@
 #include "zdialogfactory.h"
 #include "zglobal.h"
 
+#include "qt/network/znetworkutils.h"
+
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
 
@@ -1583,6 +1585,25 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
   }
 }
 
+QString TaskBodyCleave::getCleaveServer() const
+{
+  return ZGlobal::GetInstance().getCleaveServer();
+}
+
+QString TaskBodyCleave::GetCleaveServerApi(const QString &server)
+{
+  if (!server.isEmpty()) {
+    return server + "/compute-cleave";
+  }
+
+  return "";
+}
+
+QString TaskBodyCleave::getCleaveServerApi() const
+{
+  return GetCleaveServerApi(getCleaveServer());
+}
+
 void TaskBodyCleave::cleave(unsigned int requestNumber)
 {
   m_cleavingStatusLabel->setText(CLEAVING_STATUS_IN_PROGRESS);
@@ -1637,7 +1658,7 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
 
   requestJson["request-number"] = int(requestNumber);
 
-  QString server = ZGlobal::GetInstance().getCleaveServer();
+  QString server = getCleaveServerApi();
 
   QUrl url(server);
   QNetworkRequest request(url);
@@ -1652,6 +1673,31 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   m_networkManager->post(request, requestData);
 
   KINFO << QString("Cleave posted: ") + QString(requestData);
+}
+
+QString TaskBodyCleave::getInfo() const
+{
+  QString server = getCleaveServer();
+  if (server.isEmpty()) {
+    return TaskProtocolTask::getInfo();
+  }
+
+  return "Cleaving server: " + server;
+}
+
+QString TaskBodyCleave::getError() const
+{
+  QString server = getCleaveServer();
+  if (server.isEmpty()) {
+    return "Cleaving CANNOT be done: cleaving server missing!";
+  }
+
+  if (!ZNetworkUtils::IsAvailable(GetCleaveServerApi(server), "OPTIONS")) {
+    return "Cleaving CANNOT be done:<br>--unable to connect to " +
+        server + " for cleaving.";
+  }
+
+  return "";
 }
 
 bool TaskBodyCleave::getUnassignedMeshes(std::vector<uint64_t> &result) const

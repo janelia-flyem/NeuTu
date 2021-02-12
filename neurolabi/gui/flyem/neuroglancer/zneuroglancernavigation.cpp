@@ -8,6 +8,7 @@ ZNeuroglancerNavigation::ZNeuroglancerNavigation()
 
 }
 
+/* OBSOLETE settings */
 ZJsonObject ZNeuroglancerNavigation::toJsonObject() const
 {
   ZJsonObject obj;
@@ -85,6 +86,11 @@ void ZNeuroglancerNavigation::setZoomScale2D(double s)
   m_crossSectionScale = 1.0/s;
 }
 
+void ZNeuroglancerNavigation::setProjectionScale(double s)
+{
+  m_projectionScale = s;
+}
+
 namespace {
 
 void configure_dim(ZJsonObject &objRef, const char *key, double value)
@@ -101,6 +107,10 @@ void ZNeuroglancerNavigation::configureJson(ZJsonObject &objRef) const
 {
   objRef.setEntry("position", m_voxelCoordinates, 3);
   objRef.setEntry("crossSectionScale", m_crossSectionScale);
+
+  if (m_projectionScale > 0) {
+    objRef.setEntry("projectionScale", m_projectionScale);
+  }
 
   ZPoint dims = m_voxelSize.getVoxelDims(ZResolution::EUnit::UNIT_NANOMETER);
   ZJsonObject dimObject;

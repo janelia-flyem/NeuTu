@@ -3556,10 +3556,12 @@ void ZStackPresenter::copyCurrentPosition()
   ZPoint pt = event.getDataPosition();
 
   ZGlobal::GetInstance().setDataPosition(pt.x(), pt.y(), pt.z());
-  ZGlobal::CopyToClipboard(pt.roundToIntPoint().toString());
 
-  buddyDocument()->notify(
-        QString("%1 copied").arg(pt.roundToIntPoint().toString().c_str()));
+  std::string posStr =
+      pt.roundToIntPoint().toString(NeutubeConfig::GetPointPosFormat());
+  ZGlobal::CopyToClipboard(posStr);
+
+  buddyDocument()->notify(QString("%1 copied").arg(posStr.c_str()));
 }
 
 void ZStackPresenter::copyLabelId()

@@ -1,6 +1,6 @@
 #include "taskio.h"
 
-#include "http/HTTPRequest.hpp"
+//#include "http/HTTPRequest.hpp"
 #include "logging/zqslog.h"
 #include "zdvidutil.h"
 #include "neutubeconfig.h"
@@ -67,11 +67,13 @@ bool TaskIO::ready() const
 //  return (m_connection.get() != nullptr);
 }
 
-void TaskIO::testConnection()
+void TaskIO::testConnection(const std::string &method)
 {
   if (!m_address.empty() && m_connection) {
 //    m_connected = ZNetworkUtils::HasHead(m_address.c_str());
 
+    m_connected = ZNetworkUtils::IsAvailable(m_address.c_str(), method.c_str());
+    /*
     try {
       http::Request request(m_address);
       http::Response response = request.send("HEAD");
@@ -79,6 +81,7 @@ void TaskIO::testConnection()
     } catch (...) {
       m_connected = false;
     }
+    */
 
 //    ZNetBufferReader reader;
 //    m_connected = reader.hasHead(m_address.c_str());

@@ -311,6 +311,7 @@ void Z3DWindow::init()
           this, SLOT(extendSwcTreeNode(double, double, double, double)));
   connect(getSwcFilter(), SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
+  ZWidgetMessage::ConnectMessagePipe(m_view, this);
 
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),

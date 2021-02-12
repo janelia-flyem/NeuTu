@@ -28,7 +28,7 @@ public:
 
   bool ready() const;
 
-  void testConnection();
+  void testConnection(const std::string &method = "HEAD");
 
   void reset();
 

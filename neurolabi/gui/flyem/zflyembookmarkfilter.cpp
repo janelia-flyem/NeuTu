@@ -3,6 +3,7 @@
 
 #include <QSortFilterProxyModel>
 
+#include "ext/QFunctionUtils/src/QFunctionUtils"
 #include "widgets/zflyembookmarkview.h"
 #include "widgets/zflyembookmarkwidget.h"
 
@@ -25,20 +26,29 @@ void ZFlyEmBookmarkFilter::onTabChanged(int /*index*/) {
 }
 
 void ZFlyEmBookmarkFilter::filterUpdated(QString text) {
-    ZFlyEmBookmarkView * view = m_bookmarkWidget->getBookmarkView(m_bookmarkWidget->getCurrentSource());
-    QSortFilterProxyModel * proxy = view->getProxy();
+  if (!m_debounceFilterUpdated) {
+    m_debounceFilterUpdated = QFunctionUtils::Debounce([this](QString text) {
+        if (!m_retiring) {
+          ZFlyEmBookmarkView * view = m_bookmarkWidget->getBookmarkView(
+            m_bookmarkWidget->getCurrentSource());
+          QSortFilterProxyModel * proxy = view->getProxy();
 
-    // at this point you have options; you could do a regex filter (could even add a check box
-    //  to enable/disable that); could implement a simpler wildcard filter; could parse the
-    //  string and define a mini-language that let you eg filter on specific fields (columns)
-    //  (not sure how hard that would be)
+          // at this point you have options; you could do a regex filter (could even add a check box
+          //  to enable/disable that); could implement a simpler wildcard filter; could parse the
+          //  string and define a mini-language that let you eg filter on specific fields (columns)
+          //  (not sure how hard that would be)
 
-    // as a first try, do a simple text filter on all columns:
-    proxy->setFilterFixedString(text);
+          // as a first try, do a simple text filter on all columns:
+          proxy->setFilterFixedString(text);
+        }
+    }, 100);
+  }
 
+  m_debounceFilterUpdated(text);
 }
 
 ZFlyEmBookmarkFilter::~ZFlyEmBookmarkFilter()
 {
-    delete ui;
+  m_retiring = true;
+  delete ui;
 }

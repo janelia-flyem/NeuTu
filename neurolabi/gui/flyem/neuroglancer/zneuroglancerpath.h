@@ -33,7 +33,7 @@ private:
   std::vector<std::shared_ptr<ZNeuroglancerLayerSpec>> m_layerList;
   std::shared_ptr<ZNeuroglancerLayerSpec> m_selectedLayer;
   ZNeuroglancerNavigation m_navigation;
-  double m_perspectiveScale = 0;
+//  double m_perspectiveScale = 0;
   std::string m_layout = "4panel";
 };
 

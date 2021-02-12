@@ -1183,6 +1183,11 @@ std::string ZDvidTarget::getBookmarkKeyName() const
   return ZDvidData::GetName(ZDvidData::ERole::BOOKMARK_KEY);
 }
 
+bool ZDvidTarget::hasBookmark() const
+{
+  return getBookmarkName().empty();
+}
+
 std::string ZDvidTarget::getSkeletonName() const
 {
   return ZDvidData::GetName(

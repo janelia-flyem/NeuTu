@@ -7,12 +7,16 @@ ZDvidEnv::ZDvidEnv()
 {
   enableRole(ERole::GRAYSCALE);
   enableRole(ERole::SEGMENTATION);
+  enableRole(ERole::SYNAPSES);
+  enableRole(ERole::BOOKMARKS);
 }
 
 ZDvidEnv::ZDvidEnv(const ZDvidTarget &target)
 {
   enableRole(ERole::GRAYSCALE);
   enableRole(ERole::SEGMENTATION);
+  enableRole(ERole::SYNAPSES);
+  enableRole(ERole::BOOKMARKS);
   m_mainTarget = target;
   m_targetMap[ERole::GRAYSCALE] = target.getGrayScaleTargetList();
 }
@@ -122,6 +126,32 @@ void ZDvidEnv::set(const ZDvidTarget &target)
   m_mainTarget = target;
   m_mainTarget.clearGrayScale();
   m_targetMap[ERole::GRAYSCALE] = target.getGrayScaleTargetList();
+}
+
+bool ZDvidEnv::hasData(ERole role) const
+{
+  bool found = false;
+
+  switch (role) {
+  case ERole::GRAYSCALE:
+    found = getMainTarget().hasGrayScaleData();
+    break;
+  case ERole::SEGMENTATION:
+    found = getMainTarget().hasSegmentation();
+    break;
+  case ERole::BOOKMARKS:
+    found = getMainTarget().hasBookmark();
+    break;
+  case ERole::SYNAPSES:
+    found = getMainTarget().hasSynapse();
+    break;
+  }
+
+  if (!found) {
+    found = !getTargetList(role).empty();
+  }
+
+  return found;
 }
 
 namespace {

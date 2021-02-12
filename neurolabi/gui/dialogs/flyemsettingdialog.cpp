@@ -2,6 +2,7 @@
 #include <QFileInfo>
 #include "QsLog/QsLog.h"
 
+#include "qt/network/znetworkutils.h"
 #include "ui_flyemsettingdialog.h"
 #include "neutubeconfig.h"
 #include "zdialogfactory.h"
@@ -19,6 +20,16 @@ FlyEmSettingDialog::FlyEmSettingDialog(QWidget *parent) :
 FlyEmSettingDialog::~FlyEmSettingDialog()
 {
   delete ui;
+}
+
+void FlyEmSettingDialog::updateCleavingServerWidget()
+{
+  bool connected = ZNetworkUtils::IsAvailable(
+        ui->cleavingServerLineEdit->text(), "OPTIONS");
+  QPalette *palette = new QPalette();
+  palette->setColor(
+        QPalette::Text, connected ? Qt::darkGreen : Qt::darkRed);
+  ui->cleavingServerLineEdit->setPalette(*palette);
 }
 
 void FlyEmSettingDialog::updateNeutuseWidget()
@@ -40,6 +51,7 @@ void FlyEmSettingDialog::init()
         Shrink(GET_FLYEM_CONFIG.getDefaultConfigPath().c_str(), 40));
   ui->defaultConfigLineEdit->setToolTip(
         GET_FLYEM_CONFIG.getDefaultConfigPath().c_str());
+   ui->posFormatLineEdit->setPlaceholderText("default");
 
   updateDefaultConfigChecked(usingDefaultConfig());
   updateDefaultNeuTuServerChecked(usingDefaultService());
@@ -73,6 +85,10 @@ void FlyEmSettingDialog::loadSetting()
 #endif
   ui->taskServerLineEdit->setText(GET_FLYEM_CONFIG.getTaskServer().c_str());
 #endif
+
+  ui->cleavingServerLineEdit->setText(
+        GET_FLYEM_CONFIG.getCleaveServer().c_str());
+
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
   ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
@@ -104,11 +120,14 @@ void FlyEmSettingDialog::loadSetting()
   ui->meshThreSpinBox->setValue(
         NeutubeConfig::GetMeshSplitThreshold() / 1000000);
   ui->crossWidthSpinBox->setValue(NeutubeConfig::Get3DCrossWidth());
+  ui->posFormatLineEdit->setText(
+        QString::fromStdString(NeutubeConfig::GetPointPosFormat()));
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
 {
-  connect(ui->updatePushButton, SIGNAL(clicked()), this, SLOT(update()));
+  connect(
+        ui->updatePushButton, SIGNAL(clicked()), this, SLOT(update()), Qt::DirectConnection);
   connect(ui->closePushButton, SIGNAL(clicked()), this, SLOT(close()));
   connect(ui->defaultConfigFileCheckBox, SIGNAL(toggled(bool)),
           this, SLOT(updateDefaultConfigChecked(bool)));
@@ -202,6 +221,10 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.activateNeutuseForce(false);
   updateNeutuseWidget();
 
+  GET_FLYEM_CONFIG.setCleaveServer(
+        ui->cleavingServerLineEdit->text().toStdString());
+  updateCleavingServerWidget();
+
   /*
   if (GET_FLYEM_CONFIG.hasNormalService()) {
     ui->statusLabel->setText("Normal");
@@ -242,6 +265,11 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetNamingPsd(namingPsd());
   NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
   NeutubeConfig::Set3DCrossWidth(ui->crossWidthSpinBox->value());
+  if (!ui->posFormatLineEdit->text().trimmed().isEmpty()) {
+    NeutubeConfig::SetPointPosFormat(ui->posFormatLineEdit->text().toStdString());
+  } else {
+    NeutubeConfig::SetPointPosFormat("");
+  }
 }
 
 QString FlyEmSettingDialog::Shrink(const QString &str, int len)

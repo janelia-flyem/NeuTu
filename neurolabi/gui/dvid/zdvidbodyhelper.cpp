@@ -56,10 +56,12 @@ ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId, ZObject3dScan *result)
   if (!m_coarseVol) {
     out = getDvidReader()->readBody(
           bodyId, m_labelType, m_zoom, m_range, m_canonizing, result);
-    out->setDsIntv(zgeom::GetZoomScale(m_zoom) - 1);
+    if (out) {
+      out->setDsIntv(zgeom::GetZoomScale(m_zoom) - 1);
+    }
   } else {
     out = getDvidReader()->readCoarseBody(bodyId, m_labelType, m_range, result);
-    if (m_canonizing) {
+    if (out && m_canonizing) {
       out->canonize();
     }
   }

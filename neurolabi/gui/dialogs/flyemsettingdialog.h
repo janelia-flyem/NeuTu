@@ -39,6 +39,7 @@ private:
 
   void init();
   void updateNeutuseWidget();
+  void updateCleavingServerWidget();
 
   void connectSignalSlot();
   static QString Shrink(const QString &str, int len);
