@@ -303,9 +303,10 @@ namespace {
 std::string get_annotation_primary_neurite(const ZJsonObject &bodyData)
 {
   ZJsonObjectParser parser;
-  return parser.getValue(
-        bodyData, {ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
-                   ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE}, std::string());
+  return parser.GetValue(
+        bodyData, std::vector<std::string>{
+          ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
+          ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE}, std::string());
 }
 
 std::string get_annotation_name(const ZJsonObject &bodyData)

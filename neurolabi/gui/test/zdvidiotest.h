@@ -4,6 +4,7 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
+#include "http/HTTPRequest.hpp"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidtarget.h"
@@ -54,6 +55,30 @@ TEST(ZDvidReader, basic)
     target.print();
 
     ASSERT_FALSE(reader.open(""));
+  }
+
+  {
+    ZDvidReader reader;
+    ASSERT_FALSE(reader.open("foo:9001"));
+    ASSERT_FALSE(reader.open("", "uuid", 1));
+    ASSERT_FALSE(reader.open("server", "", 1));
+  }
+
+  try {
+    http::Request request("http://127.0.0.1:1600");
+    http::Response response = request.send("HEAD");
+    bool connected = (response.code == 200);
+    if (connected) {
+      ZDvidReader reader;
+      if (reader.open("http://127.0.0.1:1600:c315")) {
+        ASSERT_TRUE(reader.good());
+        ASSERT_TRUE(reader.isReady());
+      }
+    } else {
+      std::cout << "Cannot connect to dvid server. Skip." << std::endl;
+    }
+  } catch (...) {
+    std::cout << "Cannot connect to dvid server. Skip." << std::endl;
   }
 
   {

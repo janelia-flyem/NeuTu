@@ -20,8 +20,8 @@ public:
   explicit ZFlyEmBookmarkWidget(QWidget *parent = 0);
   ~ZFlyEmBookmarkWidget();
 
-  enum EBookmarkSource {
-    SOURCE_ASSIGNED, SOURCE_USER
+  enum class EBookmarkSource {
+    ASSIGNED, USER
   };
 
   ZFlyEmBookmarkView* getBookmarkView(EBookmarkSource source);
@@ -31,7 +31,15 @@ public:
 
 signals:
   void locatingBookmark(ZFlyEmBookmark *bookmark);
+  void importingUserBookmark();
+  void exportingUserBookmark();
+  void importingAssignedBookmark();
+  void exportingAssignedBookmark();
 
+private slots:
+  void importBookmark();
+  void exportBookmark();
+  void onTabChanged(int index);
 
 private:
   Ui::ZFlyEmBookmarkWidget *ui;

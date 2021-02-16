@@ -49,7 +49,10 @@ QVariant ZFlyEmBookmarkPresenter::data(
   case Qt::ToolTipRole:
     switch (index) {
     case 0:
-      return QString("Double click to locate the bookmark");
+      return QString("Double click to locate the bookmark @") +
+          bookmark.getLocation().toString().c_str();
+    case 8:
+      return bookmark.getTime();
     default:
       break;
     }

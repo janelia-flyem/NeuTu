@@ -18,7 +18,7 @@ TEST(ZDvidEnv, Basic)
 
     ZDvidTarget target;
     ZJsonObject obj;
-    obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting.json");
+    obj.load(GET_TEST_DATA_DIR + "/_test/json/dvid_setting.json");
     target.loadJsonObject(obj);
 
     env.set(target);
@@ -28,7 +28,7 @@ TEST(ZDvidEnv, Basic)
 
   {
     ZJsonObject obj;
-    obj.load(GET_TEST_DATA_DIR + "/_test/dvid_setting2.json");
+    obj.load(GET_TEST_DATA_DIR + "/_test/json/dvid_setting2.json");
 
     ZDvidEnv env;
     env.loadJsonObject(obj);

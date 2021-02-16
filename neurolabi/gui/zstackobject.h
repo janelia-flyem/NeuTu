@@ -255,13 +255,15 @@ public:
     m_usingCosmeticPen = state;
   }
 
-  void setTimeStamp(int t){
+  void setTimestamp(int64_t t) {
     m_timeStamp = t;
   }
 
-  int getTimeStamp() const {
+  int64_t getTimestamp() const {
     return m_timeStamp;
   }
+
+  void updateTimestamp();
 
   virtual void setLabel(uint64_t label);
 
@@ -426,7 +428,7 @@ protected:
   uint64_t m_uLabel = 0;
 //  int m_label = -1;
   int m_zOrder = 1;
-  int m_timeStamp = 0;
+  int64_t m_timeStamp = 0;
   ZStackObjectRole m_role = ZStackObjectRole::ROLE_NONE;
   ZIntPoint m_hitPoint;
   neutu::EAxis m_sliceAxis;

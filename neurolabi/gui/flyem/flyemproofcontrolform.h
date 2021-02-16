@@ -72,6 +72,7 @@ signals:
   void updatingMeshForSelectedBody();
   void showingInfo();
   void reportingBodyCorruption();
+  void importingUserBookmark();
 
 public slots:
   void setInfo(const QString &info);

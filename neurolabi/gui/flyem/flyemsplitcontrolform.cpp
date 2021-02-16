@@ -44,13 +44,13 @@ FlyEmSplitControlForm::~FlyEmSplitControlForm()
 ZFlyEmBookmarkView* FlyEmSplitControlForm::getAssignedBookmarkView() const
 {
   return ui->bookmarkWidget->getBookmarkView(
-        ZFlyEmBookmarkWidget::SOURCE_ASSIGNED);
+        ZFlyEmBookmarkWidget::EBookmarkSource::ASSIGNED);
 }
 
 ZFlyEmBookmarkView* FlyEmSplitControlForm::getUserBookmarkView() const
 {
   return ui->bookmarkWidget->getBookmarkView(
-        ZFlyEmBookmarkWidget::SOURCE_USER);
+        ZFlyEmBookmarkWidget::EBookmarkSource::USER);
 }
 
 void FlyEmSplitControlForm::setupWidgetBehavior()

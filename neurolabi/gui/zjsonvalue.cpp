@@ -236,10 +236,10 @@ std::vector<ZJsonValue> ZJsonValue::toArray()
 
   if (isArray()) {
     json_t *value = getValue();
-    size_t n = ZJsonParser::arraySize(value);
+    size_t n = ZJsonParser::ArraySize(value);
     array.resize(n);
     for (size_t i = 0; i < n; ++i) {
-      array[i].set(ZJsonParser::arrayValue(value, i), false);
+      array[i].set(ZJsonParser::ArrayValue(value, i), false);
     }
   }
   return array;

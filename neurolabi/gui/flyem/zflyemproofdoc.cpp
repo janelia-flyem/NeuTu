@@ -991,7 +991,7 @@ std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::initRoiProvider()
     if (!keyList.isEmpty()) {
       ZJsonObjectParser parser;
       for (int i = 0; i < keyList.size(); ++i) {
-        bool visible = parser.getValue(infoList[i], "visible", true);
+        bool visible = parser.GetValue(infoList[i], "visible", true);
         if (visible) {
           nameList.push_back(keyList[i].toStdString());
         }
@@ -1029,15 +1029,26 @@ std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::initRoiProvider()
   return m_roiProvider;
 }
 
+ZDvidWriter& ZFlyEmProofDoc::getBookmarkWriter()
+{
+  if (!m_bookmarkWriter.good()) {
+    m_bookmarkWriter.open(getDvidTarget());
+  }
+
+  return m_bookmarkWriter;
+}
 
 ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
 {
+  return getBookmarkWriter().getDvidReader();
+  /*
   if (!m_bookmarkReader.isReady()) {
     KINFO << "Open bookmark reader";
     m_bookmarkReader.openRaw(getDvidReader().getDvidTarget());
   }
 
   return m_bookmarkReader;
+  */
 }
 
 void ZFlyEmProofDoc::updateUserStatus()
@@ -4224,6 +4235,25 @@ void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
   }
 }
 
+void ZFlyEmProofDoc::importUserBookmark(const QString &filePath)
+{
+  ZFlyEmBookmarkArray bookmarkArray;
+
+  bookmarkArray.importJsonFile(filePath.toStdString(), nullptr);
+  for (auto &bookmark : bookmarkArray) {
+    bookmark.setCustom(true);
+    bookmark.setUser(neutu::GetCurrentUserName());
+    bookmark.addUserTag();
+  }
+
+  if (!bookmarkArray.isEmpty()) {
+    emitInfo(QString("Importing %1 bookmarks ...").arg(bookmarkArray.size()));
+    getBookmarkWriter().writeBookmark(bookmarkArray.toAnnotationJson());
+    emitInfo("Done.");
+//    addLocalBookmark(bookmarkArray);
+  }
+}
+
 QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     const std::string &filePath)
 {
@@ -6080,11 +6110,15 @@ void ZFlyEmProofDoc::addLocalBookmark(ZFlyEmBookmark *bookmark)
 void ZFlyEmProofDoc::addLocalBookmark(
     const std::vector<ZFlyEmBookmark *> &bookmarkArray)
 {
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (std::vector<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
        iter != bookmarkArray.end(); ++iter) {
     ZFlyEmBookmark *bookmark = *iter;
     addObject(bookmark, false);
   }
+  endObjectModifiedMode();
+
+  processObjectModified();
 
   if (!bookmarkArray.empty()) {
     emit userBookmarkModified();

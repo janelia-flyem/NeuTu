@@ -1047,6 +1047,8 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
       bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
     }
 
+    bookmark->updateTimestamp();
+
     getCompleteDocument()->executeAddBookmarkCommand(bookmark);
   }
 }
@@ -1356,12 +1358,12 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
   obj.decode(option.toStdString(), true);
 
   ZJsonObjectParser parser;
-  if (parser.getValue(obj, "type", "") == "neuroglancer") {
+  if (parser.GetValue(obj, "type", "") == "neuroglancer") {
     const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
 
-    if (parser.getValue(obj, "location", "") == "rectroi") {
+    if (parser.GetValue(obj, "location", "") == "rectroi") {
       ZRect2d rect = buddyDocument()->getRect2dRoi();
       pt.set(rect.getCenter().toPoint());
     }

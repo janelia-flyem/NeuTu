@@ -4907,7 +4907,7 @@ int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
   if (!url.empty()) {
     ZJsonObject obj = readJsonObject(url);
     ZJsonObjectParser parser;
-    mutId = parser.getValue(obj, "mutation id", int64_t(-1));
+    mutId = parser.GetValue(obj, "mutation id", int64_t(-1));
 //    mutId = ZJsonParser::integerValue(obj["mutation id"]);
   }
 

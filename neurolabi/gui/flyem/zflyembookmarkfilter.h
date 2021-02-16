@@ -27,7 +27,7 @@ private slots:
 private:
     Ui::ZFlyEmBookmarkFilter *ui;
     ZFlyEmBookmarkWidget * m_bookmarkWidget;
-    std::function<void(QString)> m_debounceFilterUpdated;
+    std::function<void(QString, bool)> m_debounceFilterUpdated;
     bool m_retiring = false;
 };
 

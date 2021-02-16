@@ -153,7 +153,7 @@ public:
    * \brief Load json object
    */
   void loadJsonObject(const ZJsonObject &obj);
-  ZJsonObject toJsonObject() const;
+  ZJsonObject toJsonObject(bool usingOriginalUuid = false) const;
 
   void setFromJson(const std::string &jsonSpec);
 

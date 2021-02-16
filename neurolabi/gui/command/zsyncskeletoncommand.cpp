@@ -52,8 +52,8 @@ NeuPrintReader* get_neuprint_reader(const ZJsonObject &obj, const QString &uuid)
   NeuPrintReader *reader = nullptr;
 
   ZJsonObjectParser parser;
-  QString url = parser.getValue(obj, "url", "").c_str();
-  QString token = parser.getValue(obj, "token", "").c_str();
+  QString url = parser.GetValue(obj, "url", "").c_str();
+  QString token = parser.GetValue(obj, "token", "").c_str();
 
   if (!url.isEmpty() && !uuid.isEmpty()) {
     reader = new NeuPrintReader(url);
@@ -130,7 +130,7 @@ int ZSyncSkeletonCommand::run(
   std::function<void(uint64_t)> processBody;
   neutuse::TaskFactory taskFactory;
   taskFactory.setForceUpdate(true);
-  taskFactory.setPriority(parser.getValue(config, "priority", 5));
+  taskFactory.setPriority(parser.GetValue(config, "priority", 5));
 
   if (outputUrl.scheme() == "http") {
     std::string neutuseServer = output;
