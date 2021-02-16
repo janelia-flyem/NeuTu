@@ -31618,7 +31618,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   auto testFunc = QFunctionUtils::Throttle([](int v) {
     std::cout << "test: " << v << std::endl;
     ZSleeper::sleep(1);
@@ -31628,6 +31628,50 @@ void ZTest::test(MainWindow *host)
   testFunc(2);
   testFunc(3);
   testFunc(4);
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://emdata5-private.janelia.org"
+        "?uuid=cd30&segmentation=segmentation&admintoken=test");
+  target.print();
+  std::cout << target.getAdminToken() << std::endl;
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    writer.createData("keyvalue", "segmentation_skeletons");
+  }
+#endif
+
+#if 1
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://emdata5-private.janelia.org"
+        "?uuid=cd30&segmentation=segmentation&admintoken=test");
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    ZSwcTree testTree;
+    testTree.setDataFromNode(SwcTreeNode::MakePointer(ZPoint(0, 0, 0), 1));
+    writer.writeSwc(0, &testTree);
+  }
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://emdata5-private.janelia.org"
+        "?uuid=cd30&segmentation=segmentation");
+  ZDvidReader reader;
+  ZObject3dScan obj;
+  if (reader.open(target)) {
+    reader.readBody(100482, true, &obj);
+  }
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  ZNetBufferReader bufferReader;
+  ZDvidUrl dvidUrl(target);
+  bufferReader.hasHead(dvidUrl.getSparsevolUrl(10048200000).c_str());
+
+  std::cout << bufferReader.getStatusCode() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

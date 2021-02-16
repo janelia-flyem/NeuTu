@@ -199,6 +199,7 @@ public:
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
   void importUserBookmark(const QString &filePath);
+  void exportUserBookmark(const QString &filePath);
 
 //  void saveCustomBookmark();
   void downloadBookmark();

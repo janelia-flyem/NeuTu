@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "common/math.h"
+#include "filesystem/utilities.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
@@ -66,17 +67,19 @@ void ZFlyEmBookmarkArray::importJsonFile(
     const std::string &filePath, const ZFlyEmCoordinateConverter *converter)
 {
   clear();
-  ZJsonValue json;
-  json.load(filePath);
-  if (json.isObject()) {
-    ZJsonObject jsonObj(json);
-    if (jsonObj.hasKey("data")) {
-      loadJsonArray(ZJsonArray(jsonObj.value("data")), converter);
-    } else {
-      loadJsonObject(jsonObj, converter);
+  if (neutu::FileExists(filePath)) {
+    ZJsonValue json;
+    json.load(filePath);
+    if (json.isObject()) {
+      ZJsonObject jsonObj(json);
+      if (jsonObj.hasKey("data")) {
+        loadJsonArray(ZJsonArray(jsonObj.value("data")), converter);
+      } else {
+        loadJsonObject(jsonObj, converter);
+      }
+    } else if (json.isArray()) {
+      loadJsonArray(ZJsonArray(json), converter);
     }
-  } else if (json.isArray()) {
-    loadJsonArray(ZJsonArray(json), converter);
   }
 }
 

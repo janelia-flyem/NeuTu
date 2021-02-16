@@ -1411,5 +1411,6 @@ void ZDvidTarget::prepareTile()
 
 bool ZDvidTarget::IsDvidTarget(const std::string &source)
 {
-  return ZString(source).startsWith("http:");
+  return ZString(source).startsWith("http:") ||
+      ZString(source).startsWith("https:");
 }

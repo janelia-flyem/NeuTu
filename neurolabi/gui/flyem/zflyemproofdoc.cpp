@@ -4250,7 +4250,13 @@ void ZFlyEmProofDoc::importUserBookmark(const QString &filePath)
     emitInfo(QString("Importing %1 bookmarks ...").arg(bookmarkArray.size()));
     getBookmarkWriter().writeBookmark(bookmarkArray.toAnnotationJson());
     emitInfo("Done.");
-//    addLocalBookmark(bookmarkArray);
+  }
+}
+
+void ZFlyEmProofDoc::exportUserBookmark(const QString &filePath)
+{
+  if (!filePath.isEmpty()) {
+
   }
 }
 
