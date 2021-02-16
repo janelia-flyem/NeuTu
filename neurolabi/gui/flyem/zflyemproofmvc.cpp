@@ -6509,11 +6509,20 @@ void ZFlyEmProofMvc::refreshBookmark()
 
 void ZFlyEmProofMvc::importUserBookmark()
 {
-  const QString &filePath =
+  QString filePath =
       ZDialogFactory::GetOpenFileName("Import Bookmarks", "", this);
   if (!filePath.isEmpty()) {
     getCompleteDocument()->importUserBookmark(filePath);
     refreshBookmark();
+  }
+}
+
+void ZFlyEmProofMvc::exportUserBookmark()
+{
+  QString filePath =
+      ZDialogFactory::GetSaveFileName("Export Bookmarks", "", this);
+  if (!filePath.isEmpty()) {
+    getCompleteDocument()->exportUserBookmark(filePath);
   }
 }
 

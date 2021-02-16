@@ -90,6 +90,7 @@ public:
   std::string dumpJanssonString(size_t flags) const;
 
   void forEachString(std::function<void(const std::string &str)>f);
+  ZJsonArray filter(std::function<bool(ZJsonValue)> pred);
 };
 
 #endif // ZJSONARRAY_H

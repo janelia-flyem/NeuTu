@@ -112,6 +112,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
 
   connect(ui->bookmarkWidget, &ZFlyEmBookmarkWidget::importingUserBookmark,
           this, &FlyEmProofControlForm::importingUserBookmark);
+  connect(ui->bookmarkWidget, &ZFlyEmBookmarkWidget::exportingUserBookmark,
+          this, &FlyEmProofControlForm::exportingUserBookmark);
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));

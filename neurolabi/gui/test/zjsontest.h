@@ -189,6 +189,25 @@ TEST(ZJsonObjectParser, Basic)
   ASSERT_EQ("v1", parser.getValue("key1", ""));
 }
 
+TEST(ZJsonArray, Iter)
+{
+  {
+    ZJsonArray array;
+    array.append(1);
+    array.append(2);
+    array.append(3);
+    array.append(4);
+    array.append(5);
+
+    ZJsonArray result = array.filter([](const ZJsonValue &value) {
+      return (ZJsonParser::integerValue(value.getData()) > 3);
+    });
+    ASSERT_EQ(2, result.size());
+    auto intArray = result.toIntegerArray();
+    ASSERT_EQ(4, intArray[0]);
+    ASSERT_EQ(5, intArray[1]);
+  }
+}
 
 #endif
 

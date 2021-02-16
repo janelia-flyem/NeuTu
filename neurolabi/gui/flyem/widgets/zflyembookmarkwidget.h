@@ -29,6 +29,8 @@ public:
   void setBookmarkModel(ZFlyEmBookmarkListModel *model, EBookmarkSource source);  
   EBookmarkSource getCurrentSource();
 
+  void hideFileButtons();
+
 signals:
   void locatingBookmark(ZFlyEmBookmark *bookmark);
   void importingUserBookmark();

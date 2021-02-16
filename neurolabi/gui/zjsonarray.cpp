@@ -259,3 +259,16 @@ void ZJsonArray::forEachString(std::function<void(const std::string &str)>f)
     f(ZJsonParser::stringValue(at(i)));
   }
 }
+
+ZJsonArray ZJsonArray::filter(std::function<bool(ZJsonValue)> pred)
+{
+  ZJsonArray result;
+  for (size_t i = 0; i< size(); ++i) {
+    ZJsonValue e = value(i);
+    if (pred(e)) {
+      result.append(e);
+    }
+  }
+
+  return result;
+}

@@ -85,4 +85,11 @@ void ZFlyEmBookmarkWidget::onTabChanged(int index)
   ui->bookmarkFilter->onTabChanged(index);
 
   ui->importPushButton->setEnabled(index == 1);
+  ui->exportPushButton->setEnabled(index == 1);
+}
+
+void ZFlyEmBookmarkWidget::hideFileButtons()
+{
+  ui->importPushButton->hide();
+  ui->exportPushButton->hide();
 }

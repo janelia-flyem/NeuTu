@@ -501,6 +501,7 @@ protected slots:
   void refreshData();
 
   void importUserBookmark();
+  void exportUserBookmark();
 //  void notifyBookmarkDeleted();
 
 protected:
@@ -809,6 +810,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SLOT(updateWidget(ZFlyEmProofMvc*)));
   connect(panel, SIGNAL(importingUserBookmark()),
           this, SLOT(importUserBookmark()));
+  connect(panel, SIGNAL(exportingUserBookmark()),
+          this, SLOT(exportUserBookmark()));
 }
 
 template <typename T>

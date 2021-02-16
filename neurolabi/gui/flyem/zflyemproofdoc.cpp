@@ -4255,8 +4255,24 @@ void ZFlyEmProofDoc::importUserBookmark(const QString &filePath)
 
 void ZFlyEmProofDoc::exportUserBookmark(const QString &filePath)
 {
-  if (!filePath.isEmpty()) {
+  if (!filePath.isEmpty() && getDvidReader().isReady()) {
+    ZJsonArray bookmarkJson =
+        getDvidReader().readTaggedBookmark("user:" + neutu::GetCurrentUserName());
+    ZJsonArray userBookmarkJson = bookmarkJson.filter([](const ZJsonValue &value) {
+      ZFlyEmBookmark bookmark;
+      bookmark.loadJsonObject(ZJsonObject(value));
+      return bookmark.isCustom();
+    });
 
+    if (!userBookmarkJson.isEmpty()) {
+      if (userBookmarkJson.dump(filePath.toStdString())) {
+        emitInfo("Bookmarks saved in " + filePath);
+      } else {
+        emitWarning("Unable to save the bookmarks.");
+      }
+    } else {
+      emitWarning("No user bookmark found. Nothing was saved.");
+    }
   }
 }
 
