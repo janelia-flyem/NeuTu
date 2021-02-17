@@ -3068,7 +3068,7 @@ void MainWindow::test(ZTestOptionDialog *dlg)
 {
   switch (dlg->getOption()) {
   case ZTestOptionDialog::OPTION_NORMAL:
-    ZTest::test(this);
+    ZTest::Test(this);
     break;
   case ZTestOptionDialog::OPTION_STRESS:
     ZTest::stressTest(this);

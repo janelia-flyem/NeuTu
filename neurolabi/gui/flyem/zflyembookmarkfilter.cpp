@@ -27,8 +27,9 @@ void ZFlyEmBookmarkFilter::onTabChanged(int /*index*/) {
 
 void ZFlyEmBookmarkFilter::filterUpdated(QString text) {
   if (!m_debounceFilterUpdated) {
-    m_debounceFilterUpdated = QFunctionUtils::Debounce([this](QString text) {
-        if (!m_retiring) {
+    m_debounceFilterUpdated = QFunctionUtils::Debounce(
+          [this](QString text, bool cancel) {
+        if (!cancel) {
           ZFlyEmBookmarkView * view = m_bookmarkWidget->getBookmarkView(
             m_bookmarkWidget->getCurrentSource());
           QSortFilterProxyModel * proxy = view->getProxy();
@@ -44,11 +45,13 @@ void ZFlyEmBookmarkFilter::filterUpdated(QString text) {
     }, 100);
   }
 
-  m_debounceFilterUpdated(text);
+  m_debounceFilterUpdated(text, false);
 }
 
 ZFlyEmBookmarkFilter::~ZFlyEmBookmarkFilter()
 {
-  m_retiring = true;
+  if (m_debounceFilterUpdated) {
+    m_debounceFilterUpdated("", true);
+  }
   delete ui;
 }

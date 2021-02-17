@@ -501,6 +501,9 @@ protected slots:
   void zoomToAssigned(int x, int y, int z);
 
   void refreshData();
+
+  void importUserBookmark();
+  void exportUserBookmark();
 //  void notifyBookmarkDeleted();
 
 protected:
@@ -778,22 +781,6 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(goingToBody()), this, SLOT(goToBody()));
   connect(panel, SIGNAL(selectingBody()), this, SLOT(selectBody()));
   connect(panel, SIGNAL(showingInfo()), this, SLOT(showInfoDialog()));
-//  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodyMergeProject*)),
-//          panel, SLOT(updateBookmarkTable(ZFlyEmBodyMergeProject*)));
-//  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodyMergeProject*)),
-//          panel, SLOT(clearBookmarkTable(ZFlyEmBodyMergeProject*)));
-//  connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
-//          this, SLOT(recordCheckedBookmark(QString, bool)));
-//  connect(panel, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-//          this, SLOT(recordBookmark(ZFlyEmBookmark*)));
-//  connect(this, SIGNAL(userBookmarkUpdated(ZStackDoc*)),
-//          panel, SLOT(updateUserBookmarkTable(ZStackDoc*)));
-//  connect(panel, SIGNAL(userBookmarkChecked(ZFlyEmBookmark*)),
-//          this, SLOT(processCheckedUserBookmark(ZFlyEmBookmark*)));
-//  connect(panel, SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-//          this, SLOT(removeBookmark(ZFlyEmBookmark*)));
-//  connect(panel, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
-//          this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
   connect(panel, SIGNAL(changingColorMap(QString)),
           this, SLOT(changeColorMap(QString)));
 //  connect(this, SIGNAL(nameColorMapReady(bool)),
@@ -821,6 +808,10 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
   connect(this, SIGNAL(stateUpdated(ZFlyEmProofMvc*)),
           panel, SLOT(updateWidget(ZFlyEmProofMvc*)));
+  connect(panel, SIGNAL(importingUserBookmark()),
+          this, SLOT(importUserBookmark()));
+  connect(panel, SIGNAL(exportingUserBookmark()),
+          this, SLOT(exportUserBookmark()));
 }
 
 template <typename T>

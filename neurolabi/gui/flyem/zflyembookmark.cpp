@@ -1,7 +1,10 @@
 #include "zflyembookmark.h"
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
+#include <QDateTime>
 
+#include "common/utilities.h"
 #include "common/math.h"
 #include "common/utilities.h"
 #include "logging/zqslog.h"
@@ -13,6 +16,7 @@
 #include "zjsonparser.h"
 #include "zjsonarray.h"
 #include "zjsonfactory.h"
+#include "zjsonobjectparser.h"
 
 #include "data3d/displayconfig.h"
 #include "vis2d/zslicepainter.h"
@@ -65,7 +69,7 @@ void ZFlyEmBookmark::clear()
   m_userName.clear();
   m_comment.clear();
   m_status.clear();
-  m_time.clear();
+//  m_time.clear();
   m_tags.clear();
 }
 
@@ -80,6 +84,17 @@ ZFlyEmBookmark *ZFlyEmBookmark::clone() const
   return new ZFlyEmBookmark(*this);
 }
 
+QString ZFlyEmBookmark::getTime() const
+{
+  if (getTimestamp() > 0) {
+    QDateTime t;
+    t.setTime_t(getTimestamp() /1000);
+    return t.toString(Qt::SystemLocaleShortDate);
+  }
+
+  return "";
+}
+
 QString ZFlyEmBookmark::getDvidKey() const
 {
   return QString("%1_%2_%3").arg(neutu::iround(getCenter().x())).
@@ -92,13 +107,13 @@ ZJsonObject ZFlyEmBookmark::toDvidAnnotationJson() const
   return ZJsonFactory::MakeAnnotationJson(*this);
 }
 
-void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
+bool ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 {
   clear();
 
 
   if (!jsonObj.hasKey("Pos") || !jsonObj.hasKey("Kind")) {
-    return;
+    return false;
   }
 
   if (ZJsonParser::stringValue(jsonObj["Kind"]) == std::string("Note")) {
@@ -116,7 +131,7 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
       setLocation(coordinates[0], coordinates[1], coordinates[2]);
       ZJsonObject propJson(jsonObj.value("Prop"));
 
-      m_propertyJson = propJson;
+      m_propJson = propJson;
 
       if (!propJson.isEmpty()) {
         uint64_t bodyId = 0;
@@ -163,7 +178,9 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
 
         setComment(ZJsonParser::stringValue(propJson["comment"]));
         setStatus(ZJsonParser::stringValue(propJson["status"]));
-        setUser(ZJsonParser::stringValue(propJson["user"]));
+        updateUser(ZJsonParser::stringValue(propJson["user"]).c_str());
+        updatePrevUser(ZJsonParser::stringValue(propJson["prevUser"]));
+        normalizePrevUser();
 
         if (propJson.hasKey("checked")) {
           if (ZJsonParser::IsBoolean(propJson["checked"])) {
@@ -182,8 +199,74 @@ void ZFlyEmBookmark::loadDvidAnnotation(const ZJsonObject &jsonObj)
             setCustom(custom == "1");
           }
         }
+
+        if (propJson.hasKey("timestamp")) {
+          setTimestampS(ZJsonParser::stringValue(propJson["timestamp"]));
+        }
       }
     }
+
+    return true;
+  }
+
+  return false;
+}
+
+void ZFlyEmBookmark::setTimestampS(const std::string &t)
+{
+  if (!t.empty()) {
+    setTimestamp(neutu::ToInt64(t));
+  } else {
+    setTimestamp(0);
+  }
+}
+
+void ZFlyEmBookmark::setUser(const char *user)
+{
+  setUser(QString(user));
+}
+
+void ZFlyEmBookmark::setUser(const QString &user)
+{
+  if (user != m_userName) {
+    if (!m_userName.isEmpty()) {
+      updatePrevUser(m_userName.toStdString());
+    }
+    m_userName = user;
+    normalizePrevUser();
+  }
+}
+
+void ZFlyEmBookmark::updateUser(const QString &user)
+{
+  if (!user.isEmpty()) {
+    setUser(user);
+  }
+}
+
+void ZFlyEmBookmark::normalizePrevUser()
+{
+  std::string prevUser = getPrevUser();
+  if (prevUser.empty() || prevUser == getUserName().toStdString()) {
+    m_propJson.removeKey("user");
+  }
+}
+
+void ZFlyEmBookmark::updatePrevUser(const std::string &user)
+{
+  if (!user.empty()) {
+    m_propJson.setEntry("user", user);
+  }
+}
+
+void ZFlyEmBookmark::setBookmarkType(const std::string &type)
+{
+  if (type == "Split") {
+    setBookmarkType(EBookmarkType::FALSE_MERGE);
+  } else if (type == "Merge") {
+    setBookmarkType(EBookmarkType::FALSE_SPLIT);
+  } else {
+    setBookmarkType(EBookmarkType::LOCATION);
   }
 }
 
@@ -343,6 +426,62 @@ void ZFlyEmBookmark::display(
 }
 #endif
 
+bool ZFlyEmBookmark::loadClioAnnotation(const ZJsonObject &jsonObj)
+{
+  bool loaded = false;
+  clear();
+
+  auto pos = ZJsonParser::integerArray(jsonObj["pos"]);
+  if (pos.size() == 3) {
+    ZJsonObjectParser parser(jsonObj);
+    setLocation(pos[0], pos[1], pos[2]);
+    if (jsonObj.hasKey("tags")) {
+      ZJsonArray tagsArray(jsonObj.value("tags"));
+      tagsArray.forEachString([&](const std::string &str) {
+        if (!str.empty()) {
+          m_tags.append(str.c_str());
+        }
+      });
+    }
+
+    if (jsonObj.hasKey("prop")) {
+      m_propJson = ZJsonObject(jsonObj.value("prop"));
+    }
+
+    if (jsonObj.hasKey("timestamp")) {
+      double dt = parser.getValue("timestamp", 0.0);
+      int64_t t = int64_t(dt);
+      t = t * 1000 + int64_t((dt - t) * 1000 + 0.5) ;
+      setTimestamp(t);
+    } else if (m_propJson.hasKey("timestamp")) {
+      setTimestampS(ZJsonParser::stringValue(m_propJson["timestamp"]));
+      m_propJson.removeKey("timestamp");
+    }
+
+    setComment(parser.getValue("description", ""));
+    setChecked(parser.getValue("verified", false));
+
+    if (m_propJson.hasKey("status")) {
+      setStatus(ZJsonParser::stringValue(m_propJson["status"]));
+      m_propJson.removeKey("status");
+    }
+    if (m_propJson.hasKey("type")) {
+      setBookmarkType(ZJsonParser::stringValue(m_propJson["type"]));
+      m_propJson.removeKey("type");
+    }
+    if (m_propJson.hasKey("body ID")) {
+      setBodyId(neutu::ToUint64(ZJsonParser::stringValue(m_propJson["body ID"])));
+    }
+
+    updatePrevUser(ZJsonObjectParser::GetValue(m_propJson, "prevUser", ""));
+    setUser(ZJsonObjectParser::GetValue(m_propJson, "user", ""));
+    updateUser(parser.getValue("user", "").c_str());
+
+    loaded = true;
+  }
+
+  return loaded;
+}
 
 bool ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 {
@@ -350,8 +489,9 @@ bool ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 
   clear();
 
-#if 1
-  if (jsonObj["location"] != NULL) {
+  if (ZJsonParser::stringValue(jsonObj["Kind"]) == "Note") {
+    loaded = loadDvidAnnotation(jsonObj);
+  } else if (jsonObj.hasKey("location")) {
     std::vector<int64_t> coordinates =
         ZJsonParser::integerArray(jsonObj["location"]);
 
@@ -406,8 +546,9 @@ bool ZFlyEmBookmark::loadJsonObject(const ZJsonObject &jsonObj)
 
       loaded = true;
     }
+  } else if (jsonObj["pos"]) { // clio annotations
+    loaded = loadClioAnnotation(jsonObj);
   }
-#endif
 
   return loaded;
 }
@@ -425,6 +566,16 @@ std::string ZFlyEmBookmark::toLogString() const
   return stream.str();
 }
 
+std::string ZFlyEmBookmark::toString(bool ignoringComment) const
+{
+  return toJsonObject(ignoringComment).dumpString(0);
+}
+
+std::string ZFlyEmBookmark::getPrevUser() const
+{
+  return ZJsonObjectParser::GetValue(m_propJson, "user", "");
+}
+
 void ZFlyEmBookmark::addTag(const char *tag)
 {
   addTag(QString(tag));
@@ -437,7 +588,9 @@ void ZFlyEmBookmark::addTag(const std::string &tag)
 
 void ZFlyEmBookmark::addTag(const QString &tag)
 {
-  m_tags.append(tag);
+  if (m_tags.indexOf(tag) < 0) {
+    m_tags.append(tag);
+  }
 }
 
 void ZFlyEmBookmark::addUserTag()
@@ -448,6 +601,11 @@ void ZFlyEmBookmark::addUserTag()
 void ZFlyEmBookmark::setLocation(const ZIntPoint &pt)
 {
   setLocation(pt.getX(), pt.getY(), pt.getZ());
+}
+
+std::string ZFlyEmBookmark::getProp(const std::string &key)
+{
+  return ZJsonObjectParser::GetValue(m_propJson, key, "");
 }
 
 /*

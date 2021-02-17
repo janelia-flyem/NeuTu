@@ -205,6 +205,9 @@ public:
   QList<ZFlyEmBookmark*> importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
+  void importUserBookmark(const QString &filePath);
+  void exportUserBookmark(const QString &filePath);
+
 //  void saveCustomBookmark();
   void downloadBookmark();
 //  inline void setCustomBookmarkSaveState(bool state) {
@@ -836,6 +839,8 @@ private:
   void warnSynapseReadonly();
 
   ZDvidReader& getBookmarkReader();
+  ZDvidWriter& getBookmarkWriter();
+//  void notifyUserBookmkarModified();
 
 private slots:
   void processBodyMergeUploaded();
@@ -859,7 +864,8 @@ protected:
 
   ZDvidReader *m_mainGrayscaleReader = nullptr;
 
-  ZDvidReader m_bookmarkReader;
+  ZDvidWriter m_bookmarkWriter;
+//  ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 

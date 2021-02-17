@@ -482,7 +482,7 @@ private:
   std::vector<std::string> m_bodyConnectionFeature;
   //////////////////////
 
-  std::string m_dataPath;
+//  std::string m_dataPath;
   std::string m_developPath;
 //  std::string m_userName;
   neutu::UserInfo m_userInfo;
@@ -516,9 +516,9 @@ private:
 };
 
 #define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::DATA))
-#if defined(PROJECT_PATH)
-#  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
-#endif
+//#if defined(PROJECT_PATH)
+//#  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
+//#endif
 
 #ifndef GET_TEST_DATA_DIR
 #  define GET_TEST_DATA_DIR GET_DATA_DIR

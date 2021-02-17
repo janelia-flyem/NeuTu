@@ -121,6 +121,18 @@ std::string neutu::GetRootUrl(const std::string &url)
   return "";
 }
 
+uint64_t neutu::ToUint64(const std::string &s)
+{
+  char *se;
+  return std::strtoull(s.c_str(), &se, 10);
+}
+
+int64_t neutu::ToInt64(const std::string &s)
+{
+  char *se;
+  return std::strtoll(s.c_str(), &se, 10);
+}
+
 /*
 void neutu::RangePartitionProcess(
     int x0, int x1, int block, int n, std::function<void(int, int)> f)

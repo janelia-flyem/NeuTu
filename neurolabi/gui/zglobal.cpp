@@ -7,6 +7,8 @@
 #include <QClipboard>
 #include <QApplication>
 
+#include <neulib/core/sharedresourcepool.h>
+
 #include "common/utilities.h"
 #include "logging/zqslog.h"
 #include "geometry/zintpoint.h"
@@ -26,7 +28,11 @@
 #include "qt/network/znetbufferreader.h"
 #include "qt/network/znetworkutils.h"
 #include "dvid/zdvidglobal.h"
+#include "dvid/zdvidbufferreader.h"
 
+auto dvidBufferReaderFactory = [](const std::string&) {
+  return new ZDvidBufferReader;
+};
 
 class ZGlobalData {
 public:
@@ -39,11 +45,18 @@ public:
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
   neutu::EServerStatus m_neuprintStatus = neutu::EServerStatus::OFFLINE;
+  neulib::SharedResourcePoolMap<ZDvidBufferReader> *m_bufferReaderResource = nullptr;
+  static const char* KEY_DVID_BUFFER_READER;
 };
+
+const char* ZGlobalData::KEY_DVID_BUFFER_READER  = "ZDvidBufferReader";
 
 ZGlobalData::ZGlobalData()
 {
   m_stackPosition.invalidate();
+  m_bufferReaderResource =
+      new neulib::SharedResourcePoolMap<ZDvidBufferReader>(
+        dvidBufferReaderFactory);
 }
 
 ZGlobalData::~ZGlobalData()
@@ -57,6 +70,7 @@ ZGlobalData::~ZGlobalData()
   }
 
   delete m_neuprintReader;
+  delete m_bufferReaderResource;
 }
 
 
@@ -73,6 +87,15 @@ ZGlobal::~ZGlobal()
   m_data = NULL;
 }
 
+std::shared_ptr<ZDvidBufferReader> ZGlobal::takeDvidBufferReader() const
+{
+  return m_data->m_bufferReaderResource->take(ZGlobalData::KEY_DVID_BUFFER_READER);
+}
+
+void ZGlobal::returnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader)
+{
+  m_data->m_bufferReaderResource->add(ZGlobalData::KEY_DVID_BUFFER_READER, reader);
+}
 
 ZBrowserOpener* ZGlobal::getBrowserOpener() const
 {
@@ -415,6 +438,17 @@ ZDvidWriter* ZGlobal::GetDvidWriterFromUrl(
 {
   return GetInstance().getDvidWriterFromUrl(url, key);
 }
+
+std::shared_ptr<ZDvidBufferReader> ZGlobal::TakeDvidBufferReader()
+{
+  return GetInstance().takeDvidBufferReader();
+}
+
+void ZGlobal::ReturnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader)
+{
+  GetInstance().returnDvidBufferReader(reader);
+}
+
 
 void ZGlobal::CopyToClipboard(const std::string &str)
 {

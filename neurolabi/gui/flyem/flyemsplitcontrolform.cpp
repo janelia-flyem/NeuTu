@@ -26,6 +26,7 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   ui->coarseBodyViewPushButton->setIcon(FLYEM_COARSE_BODY_ICON);
   ui->quickViewPushButton->setIcon(FLYEM_FINE_BODY_ICON);
   ui->meshPushButton->setIcon(FLYEM_FINE_MESH_ICON);
+  ui->bookmarkWidget->hideFileButtons();
 
 //  neutu::SetHtmlIcon(ui->coarseBodyViewPushButton, flyem::COARSE_BODY_ICON);
 //  neutu::SetHtmlIcon(ui->quickViewPushButton, flyem::FINE_BODY_ICON);
@@ -44,13 +45,13 @@ FlyEmSplitControlForm::~FlyEmSplitControlForm()
 ZFlyEmBookmarkView* FlyEmSplitControlForm::getAssignedBookmarkView() const
 {
   return ui->bookmarkWidget->getBookmarkView(
-        ZFlyEmBookmarkWidget::SOURCE_ASSIGNED);
+        ZFlyEmBookmarkWidget::EBookmarkSource::ASSIGNED);
 }
 
 ZFlyEmBookmarkView* FlyEmSplitControlForm::getUserBookmarkView() const
 {
   return ui->bookmarkWidget->getBookmarkView(
-        ZFlyEmBookmarkWidget::SOURCE_USER);
+        ZFlyEmBookmarkWidget::EBookmarkSource::USER);
 }
 
 void FlyEmSplitControlForm::setupWidgetBehavior()

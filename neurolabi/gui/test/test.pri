@@ -14,6 +14,7 @@ HEADERS += \
     $$PWD/zdvidurltest.h \
     $$PWD/zflyembodyannotationprotocaltest.h \
     $$PWD/zflyembodycolorschemetest.h \
+    $$PWD/zflyembookmarktest.h \
     $$PWD/zlocalneurosegtest.h \
     $$PWD/zmeshtest.h \
     $$PWD/znetworkutilstest.h \

@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
       return ZTest::RunUnitTest(argc, argv);
     } else {
       std::cout << "Running test function" << std::endl;
-      ZTest::test(NULL);
+      ZTest::Test(NULL);
 
       return 0;
     }

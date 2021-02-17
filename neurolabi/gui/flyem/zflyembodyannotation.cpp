@@ -221,8 +221,9 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
     }
 
     setPrimaryNeurite(
-          objParser.getValue(obj, {KEY_CELL_BODY_FIBER, KEY_PRIMARY_NEURITE},
-                             std::string()));
+          objParser.GetValue(
+            obj, std::vector<std::string>{KEY_CELL_BODY_FIBER, KEY_PRIMARY_NEURITE},
+            std::string()));
     /*
     if (obj.hasKey(KEY_PRIMARY_NEURITE)) {
       setPrimaryNeurite(ZJsonParser::stringValue(obj[KEY_PRIMARY_NEURITE]));
@@ -245,7 +246,8 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setNeurotransmitter(ZJsonParser::stringValue(obj[KEY_NEURONTRANSMITTER]));
     }
 
-    setSynonym(objParser.getValue(obj, {KEY_NOTES, KEY_SYNONYM}, std::string()));
+    setSynonym(objParser.GetValue(
+                 obj, std::vector<std::string>{KEY_NOTES, KEY_SYNONYM}, std::string()));
     /*
     if (obj.hasKey(KEY_SYNONYM)) {
       setSynonym(ZJsonParser::stringValue(obj[KEY_SYNONYM]));

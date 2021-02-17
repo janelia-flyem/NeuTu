@@ -214,6 +214,16 @@ void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
 
   m_buffer.clear();
 
+  ZNetBufferReaderThread thread;
+  thread.setUrl(url);
+  thread.setOperation(znetwork::EOperation::READ);
+  thread.start();
+  thread.wait();
+  m_statusCode = thread.getStatusCode();
+  m_status = thread.getStatus();
+  m_buffer = thread.getData();
+
+#if 0
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidTarget target;
   target.setFromUrl_deprecated(url.toStdString());
@@ -301,6 +311,7 @@ void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
           this, SLOT(handleError(QNetworkReply::NetworkError)));
 
   waitForReading();
+#endif
 #endif
 
   KLOG << ZLog::Info()

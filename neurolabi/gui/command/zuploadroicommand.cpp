@@ -31,8 +31,8 @@ int ZUploadRoiCommand::run(
 
   ZJsonObjectParser parser;
 
-  bool uploadingMesh = parser.getValue(config, "mesh", true);
-  bool uploadingData = parser.getValue(config, "data", true);
+  bool uploadingMesh = parser.GetValue(config, "mesh", true);
+  bool uploadingData = parser.GetValue(config, "data", true);
 
   if (uploadingMesh == false && uploadingData == false) {
     qWarning() << "No ROI will be loaded because all uploading options are off.";

@@ -17,6 +17,7 @@
 #include "zdvidutil.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidurl.h"
 
 #include "neutuse/taskwriter.h"
 #include "neutuse/taskfactory.h"
@@ -52,8 +53,8 @@ NeuPrintReader* get_neuprint_reader(const ZJsonObject &obj, const QString &uuid)
   NeuPrintReader *reader = nullptr;
 
   ZJsonObjectParser parser;
-  QString url = parser.getValue(obj, "url", "").c_str();
-  QString token = parser.getValue(obj, "token", "").c_str();
+  QString url = parser.GetValue(obj, "url", "").c_str();
+  QString token = parser.GetValue(obj, "token", "").c_str();
 
   if (!url.isEmpty() && !uuid.isEmpty()) {
     reader = new NeuPrintReader(url);
@@ -80,7 +81,17 @@ void process_body(uint64_t bodyId, int index, int totalCount,
                   const ZDvidReader &reader,
                   std::function<void(uint64_t)> processBody)
 {
-  if (reader.hasBody(bodyId)) {
+  ZNetBufferReader bufferReader;
+  ZDvidUrl dvidUrl(reader.getDvidTarget());
+  bufferReader.hasHead(dvidUrl.getSparsevolUrl(bodyId).c_str());
+  bool hasBody = false;
+  if (bufferReader.getStatusCode() == 200) {
+    hasBody = true;
+  } else if (bufferReader.getStatusCode() != 204) {
+    hasBody = reader.hasBody(bodyId);
+  }
+
+  if (hasBody) {
     int64_t bodyMod = reader.readBodyMutationId(bodyId);
     std::unique_ptr<ZSwcTree> tree =
         std::unique_ptr<ZSwcTree>(reader.readSwc(bodyId));
@@ -260,7 +271,7 @@ int ZSyncSkeletonCommand::run(
   std::function<void(uint64_t)> processBody;
   neutuse::TaskFactory taskFactory;
   taskFactory.setForceUpdate(true);
-  taskFactory.setPriority(parser.getValue(config, "priority", 5));
+  taskFactory.setPriority(parser.GetValue(config, "priority", 5));
 
   if (outputUrl.scheme() == "http") {
     std::string neutuseServer = output;
@@ -347,6 +358,33 @@ int ZSyncSkeletonCommand::run(
         } else {
           qWarning() << "Failed to load dataset from neuprint:"
                      << neuprintObj.dumpString(0).c_str();
+        }
+      }
+
+      if (config.hasKey("bodyList")) {
+        if (ZJsonValue(config.value("bodyList")).isArray()) {
+          ZJsonArray bodyArray(config.value("bodyList"));
+          for (size_t i = 0; i < bodyArray.size(); ++i) {
+            uint64_t bodyId = ZJsonParser::integerValue(bodyArray.at(i));
+            ZJsonObject bodyJson;
+            bodyJson.setEntry("body ID", bodyId);
+            predefinedBodyList.append(bodyJson);
+          }
+        } else {
+          std::string bodyFilePath =
+              ZJsonParser::stringValue(config["bodyList"]);
+          std::ifstream stream(bodyFilePath);
+          if (stream.is_open()) {
+            ZString line;
+            while (getline(stream, line)) {
+              auto bodyIdArray = line.toUint64Array();
+              for (uint64_t bodyId : bodyIdArray) {
+                ZJsonObject bodyJson;
+                bodyJson.setEntry("body ID", bodyId);
+                predefinedBodyList.append(bodyJson);
+              }
+            }
+          }
         }
       }
 

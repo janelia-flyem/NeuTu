@@ -134,6 +134,12 @@ TEST(common, utilities)
     ASSERT_EQ(partition[i-1].second + 1, partition[i].first);
   }
 
+  ASSERT_EQ(123456, neutu::ToInt64("123456"));
+  ASSERT_EQ(-123456, neutu::ToInt64("-123456"));
+  ASSERT_EQ(123456, neutu::ToUint64("123456"));
+  ASSERT_LE(0, neutu::ToUint64("-123456"));
+  ASSERT_EQ(18446744073709550592ull, neutu::ToUint64("18446744073709550592"));
+  ASSERT_EQ(-1844674407370955059, neutu::ToInt64("-1844674407370955059"));
 }
 
 TEST(common, math)

@@ -205,6 +205,7 @@
 #include "flyem/flyemtodoensemble.h"
 #include "flyem/flyemtodomocksource.h"
 
+#include "filesystem/utilities.h"
 #include "swc/zswcterminalsurfacemetric.h"
 
 #include "zswcgenerator.h"
@@ -376,15 +377,12 @@ using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
 
+
 ZTest::ZTest()
 {
+  std::string envPath = neutu::Join({GET_TEST_DATA_DIR, "_test", "env.json"});
+  m_testEnv.load(envPath);
 }
-
-#ifdef _JANELIA_WORKSTATION_
-const static string dataPath("/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data");
-#else
-const static string dataPath("/Users/zhaot/Work/neutube/neurolabi/data");
-#endif
 
 void ZTest::setCommandLineArg(int argc, char *argv[])
 {
@@ -392,6 +390,20 @@ void ZTest::setCommandLineArg(int argc, char *argv[])
   m_argv = argv;
 }
 
+std::string ZTest::getVar(const std::string &key) const
+{
+  return ZJsonObjectParser::GetValue(m_testEnv, key, "");
+}
+
+std::string ZTest::getDataDir() const
+{
+  return ZJsonObjectParser::GetValue(m_testEnv, "dataDir", GET_TEST_DATA_DIR);
+}
+
+ZDvidTarget ZTest::getDvidTarget() const
+{
+  return ZDvidTargetFactory::MakeFromSpec(getVar("dvidSource"));
+}
 
 void ZTest::runUnitTest()
 {
@@ -450,6 +462,11 @@ void ZTest::stressTest(MainWindow *host)
     }
 #endif
   }
+}
+
+void ZTest::Test(MainWindow *host)
+{
+  getInstance().test(host);
 }
 
 void ZTest::test(MainWindow *host)
@@ -576,19 +593,6 @@ void ZTest::test(MainWindow *host)
   dlg.exec();
 #endif
 
-
-#if 0
-  ZStackFrame *frame = new ZStackFrame(this);
-  const char *filePath = "E:\\data\\diadem\\diadem1\\nc_01.tif";
-  Mc_Stack *stack = Read_Mc_Stack(filePath, -1);
-  frame->document()->loadStack(Mc_Stack_To_Stack(stack, -1, NULL));
-  frame->document()->setStackSource(filePath);
-  frame->setWindowTitle(filePath);
-  frame->presenter()->optimizeStackBc();
-  frame->view()->reset();
-  setCurrentFile(filePath);
-  addStackFrame(frame);
-#endif
 
 #if 0
   ZSwcTree tree1;
@@ -32543,7 +32547,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   auto testFunc = QFunctionUtils::Throttle([](int v) {
     std::cout << "test: " << v << std::endl;
     ZSleeper::sleep(1);
@@ -32553,6 +32557,68 @@ void ZTest::test(MainWindow *host)
   testFunc(2);
   testFunc(3);
   testFunc(4);
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://emdata5-private.janelia.org"
+        "?uuid=cd30&segmentation=segmentation&admintoken=test");
+  target.print();
+  std::cout << target.getAdminToken() << std::endl;
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    writer.createData("keyvalue", "segmentation_skeletons");
+  }
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        ZJsonObjectParser::GetValue(m_testEnv, "dvidSource", ""));
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    ZSwcTree testTree;
+    testTree.setDataFromNode(SwcTreeNode::MakePointer(ZPoint(0, 0, 0), 1));
+    writer.writeSwc(0, &testTree);
+    std::cout << writer.getStatusCode() << std::endl;
+  }
+#endif
+
+#if 1
+  ZDvidTarget target = getDvidTarget();
+  ZDvidBufferReader reader;
+  ZDvidUrl url(getDvidTarget());
+  reader.read(url.getSkeletonUrl(0).c_str(), true);
+  std::cout << reader.getStatusCode() << std::endl;
+  std::cout << reader.getStatus() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    tic();
+    reader.readSwc(1);
+    ptoc();
+  }
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://emdata5-private.janelia.org"
+        "?uuid=cd30&segmentation=segmentation");
+  ZDvidReader reader;
+  ZObject3dScan obj;
+  if (reader.open(target)) {
+    reader.readBody(100482, true, &obj);
+  }
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  ZNetBufferReader bufferReader;
+  ZDvidUrl dvidUrl(target);
+  bufferReader.hasHead(dvidUrl.getSparsevolUrl(10048200000).c_str());
+
+  std::cout << bufferReader.getStatusCode() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

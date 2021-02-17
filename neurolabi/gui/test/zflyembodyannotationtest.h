@@ -46,11 +46,11 @@ TEST(ZFlyEmBodyAnnotation, Basic)
 
   ZJsonObject json2 = annot.toJsonObject();
   ZJsonObjectParser parser;
-  ASSERT_EQ("clonal unit test", parser.getValue(json2, "clonal unit", ""));
-  ASSERT_EQ("auto type test", parser.getValue(json2, "auto-type", ""));
-  ASSERT_EQ("neurite test", parser.getValue(
+  ASSERT_EQ("clonal unit test", parser.GetValue(json2, "clonal unit", ""));
+  ASSERT_EQ("auto type test", parser.GetValue(json2, "auto-type", ""));
+  ASSERT_EQ("neurite test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, ""));
-  ASSERT_EQ("note test", parser.getValue(
+  ASSERT_EQ("note test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_NOTES, ""));
 
   annot.clear();
@@ -69,9 +69,9 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   json3.setEntry(ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, "neurite test");
   json3.setEntry(ZFlyEmBodyAnnotation::KEY_NOTES, "note test");
   annot.loadJsonObject(json3);
-  ASSERT_EQ("neurite test", parser.getValue(
+  ASSERT_EQ("neurite test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, ""));
-  ASSERT_EQ("note test", parser.getValue(
+  ASSERT_EQ("note test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_NOTES, ""));
 }
 

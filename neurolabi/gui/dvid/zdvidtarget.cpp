@@ -399,9 +399,9 @@ ZJsonObject MakeJsonObject(const std::map<std::string, T> &config)
 } //namespace
 
 
-ZJsonObject ZDvidTarget::toJsonObject() const
+ZJsonObject ZDvidTarget::toJsonObject(bool usingOriginalUuid) const
 {
-  ZJsonObject obj = m_node.toJsonObject();
+  ZJsonObject obj = m_node.toJsonObject(usingOriginalUuid);
   obj.setNonEmptyEntry(m_commentKey, m_comment);
   obj.setNonEmptyEntry(m_nameKey, m_name);
   obj.setNonEmptyEntry(m_localKey, m_localFolder);
@@ -1411,5 +1411,6 @@ void ZDvidTarget::prepareTile()
 
 bool ZDvidTarget::IsDvidTarget(const std::string &source)
 {
-  return ZString(source).startsWith("http:");
+  return ZString(source).startsWith("http:") ||
+      ZString(source).startsWith("https:");
 }

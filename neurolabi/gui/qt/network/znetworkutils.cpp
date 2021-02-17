@@ -7,7 +7,6 @@
 #include <QTimer>
 #include <QEventLoop>
 
-#include "http/HTTPRequest.hpp"
 #include "neulib/core/utilities.h"
 
 #include "znetbufferreaderthread.h"

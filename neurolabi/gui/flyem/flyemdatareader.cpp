@@ -225,7 +225,7 @@ ZMesh* FlyEmDataReader::ReadRoiMesh(
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
   ZJsonObjectParser parser;
-  bool visible = parser.getValue(roiInfo, "visible", true);
+  bool visible = parser.GetValue(roiInfo, "visible", true);
 
   if (visible && roiInfo.hasKey(neutu::json::REF_KEY)) {
     ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));

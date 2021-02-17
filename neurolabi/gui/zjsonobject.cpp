@@ -533,6 +533,17 @@ void ZJsonObject::removeKey(const char *key)
   }
 }
 
+void ZJsonObject::forEachValue(std::function<void (ZJsonValue)> f) const
+{
+  if (!isEmpty()) {
+    const char *key;
+    json_t *value;
+    json_object_foreach(m_data, key, value) {
+      f(ZJsonValue(value, ESetDataOption::SET_INCREASE_REF_COUNT));
+    }
+  }
+}
+
 std::string ZJsonObject::dumpJanssonString(size_t flags) const
 {
   if (isEmpty()) {

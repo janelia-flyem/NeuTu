@@ -104,6 +104,7 @@
 #include "test/zdvidlabelslicetest.h"
 #include "test/zdvidinfotest.h"
 #include "test/zdviddialogtest.h"
+#include "test/zflyembookmarktest.h"
 
 #include "bigdata/tests/zitemchunktest.h"
 #include "bigdata/tests/zdatachunktest.h"

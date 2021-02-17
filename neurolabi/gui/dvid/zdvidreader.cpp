@@ -1778,20 +1778,20 @@ ZSwcTree* ZDvidReader::readSwc(uint64_t bodyId) const
 
   reader.read(url.getSkeletonUrl(bodyId).c_str(), isVerbose());
 
-  const QByteArray &buffer = reader.getBuffer();
-
   ZSwcTree *tree = NULL;
+  if (reader.getStatusCode() == 200) {
+    const QByteArray &buffer = reader.getBuffer();
 
-  if (!buffer.isEmpty()) {
-    tree = new ZSwcTree;
-    tree->loadFromBuffer(buffer.constData());
-    if (tree->isEmpty()) {
-      delete tree;
-      tree = NULL;
+    if (!buffer.isEmpty()) {
+      tree = new ZSwcTree;
+      tree->loadFromBuffer(buffer.constData());
+      if (tree->isEmpty()) {
+        delete tree;
+        tree = NULL;
+      }
     }
-
-    reader.clearBuffer();
   }
+  reader.clearBuffer();
   /*
   startReading();
 
@@ -4963,7 +4963,7 @@ int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
   if (!url.empty()) {
     ZJsonObject obj = readJsonObject(url);
     ZJsonObjectParser parser;
-    mutId = parser.getValue(obj, "mutation id", int64_t(-1));
+    mutId = parser.GetValue(obj, "mutation id", int64_t(-1));
 //    mutId = ZJsonParser::integerValue(obj["mutation id"]);
   }
 

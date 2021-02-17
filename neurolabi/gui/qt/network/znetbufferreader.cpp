@@ -15,7 +15,7 @@ ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 
 ZNetBufferReader::~ZNetBufferReader()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << __func__ << std::endl;
 #endif
 }
@@ -225,7 +225,7 @@ void ZNetBufferReader::startRequestTimer(int timeout)
   if (timeout > 0) {
     getTimer()->stop();
     getTimer()->start(timeout);
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << "Start timer." << std::endl;
 #endif
   }
@@ -248,7 +248,7 @@ void ZNetBufferReader::endReading(neutu::EReadStatus status)
     return;
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << __func__ << ": " << neutu::EnumValue(status) << std::endl;
 #endif
 
@@ -307,13 +307,13 @@ void ZNetBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
 {
   if (m_networkReply != NULL) {
     KWARN << m_networkReply->errorString();
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << __func__ << ": " << m_networkReply->errorString().toStdString() << std::endl;
 #endif
   }
   endReading(neutu::EReadStatus::FAILED);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << __func__ << ": done" << std::endl;
 #endif
 }

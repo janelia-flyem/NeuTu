@@ -70,9 +70,9 @@ ZDvidEnv ZNeuroglancerPathParser::MakeDvidEnvFromUrl(const QString &url)
     ZJsonArray layerArray(obj.value("layers"));
     for (size_t i = 0; i < layerArray.size(); ++i) {
       ZJsonObject layerObj(layerArray.value(i));
-      std::string type = parser.getValue(
+      std::string type = parser.GetValue(
             layerObj, ZNeuroglancerLayerSpec::KEY_TYPE, "");
-      ZString source = parser.getValue(
+      ZString source = parser.GetValue(
             layerObj, ZNeuroglancerLayerSpec::KEY_SOURCE, "");
       std::string dataName;
       ZDvidTarget target = make_dvid_target_from_source(source, dataName);

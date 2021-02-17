@@ -18,6 +18,7 @@ class ZBrowserOpener;
 class QMainWindow;
 class NeuPrintReader;
 class ZJsonObject;
+class ZDvidBufferReader;
 
 class ZGlobal
 {
@@ -84,6 +85,9 @@ public:
 
   QString getCleaveServer() const;
 
+  std::shared_ptr<ZDvidBufferReader> takeDvidBufferReader() const;
+  void returnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader);
+
 public:
   static ZDvidReader* GetDvidReader(
       const std::string &name, const std::string &key = "");
@@ -97,6 +101,8 @@ public:
       const std::string &url, const std::string &key = "");
   static ZDvidWriter* GetDvidWriterFromUrl(
       const std::string &url, const std::string &key = "");
+  static std::shared_ptr<ZDvidBufferReader> TakeDvidBufferReader();
+  static void ReturnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader);
 
 public:
   ZDvidSparseStack* readDvidSparseStack(const std::string &url) const;

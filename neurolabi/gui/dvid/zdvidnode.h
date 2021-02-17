@@ -111,7 +111,7 @@ public:
    * }
    */
   void loadJsonObject(const ZJsonObject &obj);
-  ZJsonObject toJsonObject() const;
+  ZJsonObject toJsonObject(bool usingOriginalUuid = false) const;
 
   bool operator == (const ZDvidNode &node) const;
   bool operator != (const ZDvidNode &node) const;
@@ -120,6 +120,26 @@ public:
   void setScheme(const std::string &scheme);
 
   std::string getSchemePrefix() const;
+
+public:
+  static bool IsValidDvidUuid(const std::string &uuid);
+  static bool IsUuidRef(const std::string &uuid);
+  static bool IsUuidAlias(const std::string &uuid);
+  static bool IsImplicitUuid(const std::string &uuid);
+  static bool IsValidUuid(const std::string &uuid);
+  static bool IsMasterUuid(const std::string &uuid);
+
+  /*!
+   * \brief Dereference a UUID
+   *
+   * It dereference a UUID until it cannot be deferenced. It returns an empty
+   * string whenever an invalid UUID is encountered or the depth of deference
+   * exceeds \a maxRefDepth. It always returns an empty string if maxRefDepth
+   * is less than 0.
+   */
+  static std::string DerefUuid(const std::string &uuid, int maxRefDepth = 100);
+
+//  static std::string
 
 private:
   std::string m_host;

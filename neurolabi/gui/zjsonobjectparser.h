@@ -3,28 +3,49 @@
 
 #include <vector>
 #include <string>
-#include "zjsonparser.h"
 
-class ZJsonObject;
+#include "zjsonparser.h"
+#include "zjsonobject.h"
 
 class ZJsonObjectParser
 {
 public:
   ZJsonObjectParser();
+  ZJsonObjectParser(const ZJsonObject &obj);
 
   template<typename T>
-  T getValue(const ZJsonObject &obj, const std::string &key) const;
+  T getValue( const std::string &key) const;
 
   template<typename T>
-  T getValue(const ZJsonObject &obj, const std::string &key,
-             const T &defaultValue) const;
+  T getValue(const std::string &key, const T &defaultValue) const;
 
   template<typename T>
-  T getValue(const ZJsonObject &obj, const char *key) const;
+  T getValue(const char *key) const;
 
   template<typename T>
-  T getValue(const ZJsonObject &obj, const char *key,
-             const T &defaultValue) const;
+  T getValue(const char *key, const T &defaultValue) const;
+
+  std::string getValue(const char *key, const char *defaultValue) const;
+  std::string getValue(const std::string &key, const char *defaultValue) const;
+
+  template<typename T>
+  static T GetValue(const ZJsonObject &obj, const std::string &key);
+
+  template<typename T>
+  static T GetValue(const ZJsonObject &obj, const std::string &key,
+             const T &defaultValue);
+
+  template<typename T>
+  static T GetValue(const ZJsonObject &obj, const char *key);
+
+  template<typename T>
+  static T GetValue(const ZJsonObject &obj, const char *key,
+             const T &defaultValue);
+
+  static std::string GetValue(const ZJsonObject &obj, const char *key,
+                       const char *defaultValue);
+  static std::string GetValue(const ZJsonObject &obj, const std::string &key,
+                       const char *defaultValue);
 
   /*!
    * \brief Get value from a list of candidate keys
@@ -33,40 +54,36 @@ public:
    * if the value is not valid.
    */
   template<typename T>
-  T getValue(
+  static T GetValue(
       const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
       const T &defaultValue);
 
-  std::string getValue(
+  static std::string GetValue(
       const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
       const char* defaultValue);
-//  std::string getValue(
-//      const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
-//      const std::string &defaultValue);
 
-  std::string getValue(const ZJsonObject &obj, const char *key,
-                       const char *defaultValue);
-  std::string getValue(const ZJsonObject &obj, const std::string &key,
-                       const char *defaultValue);
+
+private:
+  ZJsonObject m_obj;
 };
 
 template<typename T>
-T ZJsonObjectParser::getValue(const ZJsonObject &obj, const std::string &key) const
+T ZJsonObjectParser::GetValue(const ZJsonObject &obj, const std::string &key)
 {
-  return getValue<T>(obj, key.c_str());
+  return GetValue<T>(obj, key.c_str());
 }
 
 template<typename T>
-T ZJsonObjectParser::getValue(const ZJsonObject &obj, const std::string &key,
-           const T &defaultValue) const
+T ZJsonObjectParser::GetValue(const ZJsonObject &obj, const std::string &key,
+           const T &defaultValue)
 {
-  return getValue(obj, key.c_str(), defaultValue);
+  return GetValue(obj, key.c_str(), defaultValue);
 }
 
 template<typename T>
-T ZJsonObjectParser::getValue(
+T ZJsonObjectParser::GetValue(
         const ZJsonObject &obj, const char *key,
-        const T &defaultValue) const
+        const T &defaultValue)
 {
   if (obj.hasKey(key)) {
     return ZJsonParser().getValue<T>(obj[key]);
@@ -76,17 +93,41 @@ T ZJsonObjectParser::getValue(
 }
 
 template<typename T>
-T ZJsonObjectParser::getValue(
+T ZJsonObjectParser::GetValue(
     const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
     const T &defaultValue)
 {
   for (const std::string &key : candidateKeys) {
     if (obj.hasKey(key)) {
-      return getValue(obj, key, defaultValue);
+      return GetValue(obj, key, defaultValue);
     }
   }
 
   return defaultValue;
+}
+
+template<typename T>
+T ZJsonObjectParser::getValue( const std::string &key) const
+{
+  return ZJsonObjectParser::GetValue<T>(m_obj, key);
+}
+
+template<typename T>
+T ZJsonObjectParser::getValue(const std::string &key, const T &defaultValue) const
+{
+  return ZJsonObjectParser::GetValue(m_obj, key, defaultValue);
+}
+
+template<typename T>
+T ZJsonObjectParser::getValue(const char *key) const
+{
+  return ZJsonObjectParser::GetValue<T>(m_obj, key);
+}
+
+template<typename T>
+T ZJsonObjectParser::getValue(const char *key, const T &defaultValue) const
+{
+  return ZJsonObjectParser::GetValue(m_obj, key, defaultValue);
 }
 
 //template<>

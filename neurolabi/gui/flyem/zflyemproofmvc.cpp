@@ -3241,7 +3241,7 @@ void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector
     const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(obj);
     if (bookmark != NULL) {
       emit messageGenerated(
-            ZWidgetMessage(bookmark->toJsonObject(true).dumpString(0).c_str(),
+            ZWidgetMessage(bookmark->toString(true).c_str(),
                            neutu::EMessageType::INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
     }
@@ -6561,6 +6561,25 @@ void ZFlyEmProofMvc::refreshBookmark()
     }
   }
   doc->downloadBookmark();
+}
+
+void ZFlyEmProofMvc::importUserBookmark()
+{
+  QString filePath =
+      ZDialogFactory::GetOpenFileName("Import Bookmarks", "", this);
+  if (!filePath.isEmpty()) {
+    getCompleteDocument()->importUserBookmark(filePath);
+    refreshBookmark();
+  }
+}
+
+void ZFlyEmProofMvc::exportUserBookmark()
+{
+  QString filePath =
+      ZDialogFactory::GetSaveFileName("Export Bookmarks", "", this);
+  if (!filePath.isEmpty()) {
+    getCompleteDocument()->exportUserBookmark(filePath);
+  }
 }
 
 void ZFlyEmProofMvc::appendAssignedBookmarkTable(

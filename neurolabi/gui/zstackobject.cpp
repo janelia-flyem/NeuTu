@@ -5,13 +5,15 @@
 #include <QCoreApplication>
 #endif
 
+#include <chrono>
+
 #if defined(_QT_GUI_USED_)
 #include "zpainter.h"
 #endif
 
 #include "common/math.h"
-#include "geometry/zintcuboid.h"
 #include "common/utilities.h"
+#include "geometry/zintcuboid.h"
 #include "geometry/zcuboid.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
@@ -516,4 +518,11 @@ bool ZStackObject::display_inner(
     QPainter */*painter*/, const DisplayConfig &/*config*/) const
 {
   return false;
+}
+
+void ZStackObject::updateTimestamp()
+{
+  setTimestamp(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch()).count());
 }
