@@ -1777,20 +1777,20 @@ ZSwcTree* ZDvidReader::readSwc(uint64_t bodyId) const
 
   reader.read(url.getSkeletonUrl(bodyId).c_str(), isVerbose());
 
-  const QByteArray &buffer = reader.getBuffer();
-
   ZSwcTree *tree = NULL;
+  if (reader.getStatusCode() == 200) {
+    const QByteArray &buffer = reader.getBuffer();
 
-  if (!buffer.isEmpty()) {
-    tree = new ZSwcTree;
-    tree->loadFromBuffer(buffer.constData());
-    if (tree->isEmpty()) {
-      delete tree;
-      tree = NULL;
+    if (!buffer.isEmpty()) {
+      tree = new ZSwcTree;
+      tree->loadFromBuffer(buffer.constData());
+      if (tree->isEmpty()) {
+        delete tree;
+        tree = NULL;
+      }
     }
-
-    reader.clearBuffer();
   }
+  reader.clearBuffer();
   /*
   startReading();
 

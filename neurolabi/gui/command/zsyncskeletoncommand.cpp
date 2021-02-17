@@ -230,6 +230,21 @@ int ZSyncSkeletonCommand::run(
             bodyJson.setEntry("body ID", bodyId);
             predefinedBodyList.append(bodyJson);
           }
+        } else {
+          std::string bodyFilePath =
+              ZJsonParser::stringValue(config["bodyList"]);
+          std::ifstream stream(bodyFilePath);
+          if (stream.is_open()) {
+            ZString line;
+            while (getline(stream, line)) {
+              auto bodyIdArray = line.toUint64Array();
+              for (uint64_t bodyId : bodyIdArray) {
+                ZJsonObject bodyJson;
+                bodyJson.setEntry("body ID", bodyId);
+                predefinedBodyList.append(bodyJson);
+              }
+            }
+          }
         }
       }
 
