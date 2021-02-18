@@ -358,6 +358,15 @@ bool FlyEmDataReader::IsSkeletonSynced(
   return true;
 }
 
+std::string FlyEmDataReader::ReadBookmarkUser(
+    const ZDvidReader &reader, const ZIntPoint &pos)
+{
+  ZJsonObject obj = reader.readBookmarkJson(pos);
+
+  return ZJsonObjectParser::GetValue(ZJsonObject(obj.value("Prop")), "user", "");
+}
+
+
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
     const ZDvidReader &reader,
     const ZIntCuboid &box, dvid::EAnnotationLoadMode mode)
@@ -485,4 +494,5 @@ ZDvidSynapse FlyEmDataReader::ReadSynapse(
 {
   return FlyEmDataReader::ReadSynapse(reader, pt.getX(), pt.getY(), pt.getZ(), mode);
 }
+
 #endif

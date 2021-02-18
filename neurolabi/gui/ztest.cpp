@@ -32585,7 +32585,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target = getDvidTarget();
   ZDvidBufferReader reader;
   ZDvidUrl url(getDvidTarget());
@@ -32619,6 +32619,21 @@ void ZTest::test(MainWindow *host)
   bufferReader.hasHead(dvidUrl.getSparsevolUrl(10048200000).c_str());
 
   std::cout << bufferReader.getStatusCode() << std::endl;
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  {
+    std::string user =
+        FlyEmDataReader::ReadBookmarkUser(*reader, {1215, 1117, 1023});
+    std::cout << user << std::endl;
+  }
+
+  {
+    std::string user =
+        FlyEmDataReader::ReadBookmarkUser(*reader, {1215, 1117, 1024});
+    std::cout << user << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

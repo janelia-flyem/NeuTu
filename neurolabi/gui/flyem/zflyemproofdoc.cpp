@@ -27,6 +27,7 @@
 #include "zstackdocaccessor.h"
 #include "zjsonobjectparser.h"
 #include "zrect2d.h"
+#include "zjsonfactory.h"
 
 #include "dvid/zdviddataslicehelper.h"
 #include "dvid/zdvidsynapseensenmble.h"
@@ -4470,17 +4471,22 @@ void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
 void ZFlyEmProofDoc::importUserBookmark(const QString &filePath)
 {
   ZFlyEmBookmarkArray bookmarkArray;
-
   bookmarkArray.importJsonFile(filePath.toStdString(), nullptr);
+
+  ZJsonArray array;
+
   for (auto &bookmark : bookmarkArray) {
-    bookmark.setCustom(true);
-    bookmark.setUser(neutu::GetCurrentUserName());
-    bookmark.addUserTag();
+    if (canAddBookmarkAt(bookmark.getLocation(), true)) {
+      bookmark.setCustom(true);
+      bookmark.setUser(neutu::GetCurrentUserName());
+      bookmark.addUserTag();
+      array.append(ZJsonFactory::MakeAnnotationJson(bookmark));
+    }
   }
 
-  if (!bookmarkArray.isEmpty()) {
-    emitInfo(QString("Importing %1 bookmarks ...").arg(bookmarkArray.size()));
-    getBookmarkWriter().writeBookmark(bookmarkArray.toAnnotationJson());
+  if (!array.isEmpty()) {
+    emitInfo(QString("Importing %1 bookmarks ...").arg(array.size()));
+    getBookmarkWriter().writeBookmark(array);
     emitInfo("Done.");
   }
 }
@@ -4642,6 +4648,22 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 #endif
 
 }
+
+bool ZFlyEmProofDoc::canAddBookmarkAt(const ZIntPoint &pos, bool warning)
+{
+  std::string owner = FlyEmDataReader::ReadBookmarkUser(getBookmarkReader(), pos);
+
+  if (!owner.empty() && owner != neutu::GetCurrentUserName()) {
+    if (warning) {
+      emitWarning(QString("Cannot overwrite bookmark owned by %1 @%2")
+                  .arg(owner.c_str()).arg(pos.toString().c_str()));
+    }
+    return false;
+  }
+
+  return true;
+}
+
 
 QString ZFlyEmProofDoc::getInfo() const
 {

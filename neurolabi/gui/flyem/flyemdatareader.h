@@ -79,6 +79,8 @@ public:
       const ZDvidReader &reader, ZDvidSynapse *synapse);
   static ZDvidSynapse ReadSynapse(
       const ZDvidReader &reader, const ZIntPoint &pos);
+  static std::string ReadBookmarkUser(
+      const ZDvidReader &reader, const ZIntPoint &pos);
 
 private:
   static ZMesh* LoadRoi(

@@ -216,7 +216,7 @@ ZJsonArray& ZJsonArray::operator << (double e)
   return *this;
 }
 
-bool ZJsonArray::decode(const string &str)
+bool ZJsonArray::decode(const string &str, bool reportingError)
 {
   clear();
 
@@ -226,11 +226,11 @@ bool ZJsonArray::decode(const string &str)
   if (ZJsonParser::IsArray(obj)) {
     set(obj, true);
   } else {
-    if (obj == NULL) {
+    if (obj == NULL && reportingError) {
       parser.printError();
     } else {
       json_decref(obj);
-//      RECORD_ERROR_UNCOND("Not a json array");
+      //      RECORD_ERROR_UNCOND("Not a json array");
     }
 
     return false;
