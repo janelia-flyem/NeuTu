@@ -270,6 +270,8 @@ void ZNetBufferReader::endReading(neutu::EReadStatus status)
       if (m_statusCode < 200 || m_statusCode >= 300) {
         KWARN << QString("Status code: %1").arg(m_statusCode);
         m_status = neutu::EReadStatus::BAD_RESPONSE;
+      } else if (m_statusCode == 204) {
+        m_status = neutu::EReadStatus::NO_CONTENT;
       } else {
         m_status = neutu::EReadStatus::OK;
       }

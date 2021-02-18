@@ -207,6 +207,8 @@ public:
 //    m_isCustomBookmarkSaved = state;
 //  }
 
+  bool canAddBookmarkAt(const ZIntPoint &pos, bool warning);
+
 //  virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
       const ZIntCuboid &roi, neutu::EBodySplitMode mode) const;
@@ -817,6 +819,7 @@ private:
 
   ZDvidReader& getBookmarkReader();
   ZDvidWriter& getBookmarkWriter();
+
 //  void notifyUserBookmkarModified();
 
 private slots:

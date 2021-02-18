@@ -135,7 +135,7 @@ enum class ECardinalDirection {
 };
 
 enum class EReadStatus {
-  NONE, OK, FAILED, TIMEOUT, CANCELED, BAD_RESPONSE, INPROGRESS,
+  NONE, OK, FAILED, TIMEOUT, CANCELED, BAD_RESPONSE, NO_CONTENT, INPROGRESS,
   FINISHED, //finished with unknown status
 };
 

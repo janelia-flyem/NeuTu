@@ -26,6 +26,8 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zflyemtododelegate.h"
 #include "zflyemproofdocutil.h"
+#include "flyemdatareader.h"
+
 #include "neuroglancer/zneuroglancerpathfactory.h"
 #include "neuroglancer/zneuroglancerlayerspecfactory.h"
 #include "neuroglancer/zneuroglancerannotationlayerspec.h"
@@ -1033,23 +1035,25 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   if (stroke != NULL) {
     stroke->getLastPoint(&x, &y);
     double radius = stroke->getWidth() / 2.0;
-
-    ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
     ZIntPoint pos(x, y, buddyView()->getZ(neutu::ECoordinateSystem::STACK));
-    pos.shiftSliceAxisInverse(getSliceAxis());
-    bookmark->setLocation(pos);
-    bookmark->setRadius(radius);
-    bookmark->setCustom(true);
-    bookmark->setUser(neutu::GetCurrentUserName());
-    bookmark->addUserTag();
-    ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
-    if (doc != NULL) {
-      bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
+
+    if (getCompleteDocument()->canAddBookmarkAt(pos, true)) {
+      ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+      pos.shiftSliceAxisInverse(getSliceAxis());
+      bookmark->setLocation(pos);
+      bookmark->setRadius(radius);
+      bookmark->setCustom(true);
+      bookmark->setUser(neutu::GetCurrentUserName());
+      bookmark->addUserTag();
+      ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
+      if (doc != NULL) {
+        bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
+      }
+
+      bookmark->updateTimestamp();
+
+      getCompleteDocument()->executeAddBookmarkCommand(bookmark);
     }
-
-    bookmark->updateTimestamp();
-
-    getCompleteDocument()->executeAddBookmarkCommand(bookmark);
   }
 }
 

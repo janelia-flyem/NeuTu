@@ -82,7 +82,7 @@ public:
    * \param str Source string.
    * \return true iff the decoding succeeds.
    */
-  bool decode(const std::string &str);
+  bool decode(const std::string &str, bool reportingError = false);
 
   bool isEmpty() const;
   void denull();
