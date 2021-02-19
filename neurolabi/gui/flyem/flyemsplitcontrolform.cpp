@@ -342,6 +342,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 }
 #endif
 
+/*
 void FlyEmSplitControlForm::loadBookmark()
 {
   QString fileName = ZDialogFactory::GetOpenFileName("Load Bookmarks", "", this);
@@ -349,6 +350,7 @@ void FlyEmSplitControlForm::loadBookmark()
     emit loadingBookmark(fileName);
   }
 }
+*/
 
 void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
 {

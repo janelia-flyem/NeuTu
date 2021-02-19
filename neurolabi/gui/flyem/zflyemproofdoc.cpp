@@ -3651,15 +3651,21 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
-      bool good =
-          (bookmark->getUserName().length() == int(currentUserName.length()));
+      //Users must match
+      bool good = (bookmark->getUserName().toStdString() == currentUserName);
       if (good) {
+        //to deal with out-of-sync problem in DVID
         ZJsonObject checkJson =
-            getDvidReader().readBookmarkJson(bookmark->getCenter().toIntPoint());
+            getDvidReader().readBookmarkJson(bookmark->getLocation());
         good = (!checkJson.isEmpty());
+      } else {
+        emitWarning(
+              QString("Skipping bookmark @%1 due to unmached owner.").
+              arg(bookmark->getLocation().toString().c_str()));
       }
       if (good) {
-        if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+        if (bookmark->isChecked() && getDvidReader().isBookmarkChecked(
+              bookmark->getLocation())) {
           bookmark->setChecked(true);
           ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
           //        bookmarkObj.setProperty("checked", "1");
@@ -3675,7 +3681,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     endObjectModifiedMode();
     processObjectModified();
 
-    if (bookmarkCount == 0) {
+    if (bookmarkCount == 0) { //For compatibility
       ZDvidUrl url(getDvidTarget());
       ZDvidBufferReader reader;
       reader.read(url.getCustomBookmarkUrl(neutu::GetCurrentUserName()).c_str());
@@ -3690,7 +3696,7 @@ void ZFlyEmProofDoc::downloadBookmark()
           bookmark->loadJsonObject(bookmarkObj);
           addObject(bookmark, true);
           bookmark->addUserTag();
-          if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+          if (getDvidReader().isBookmarkChecked(bookmark->getLocation())) {
             bookmark->setChecked(true);
           }
           m_dvidWriter.writeBookmark(*bookmark);

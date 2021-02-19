@@ -832,8 +832,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(savingSeed()), this, SLOT(saveSeed()));
   connect(panel, SIGNAL(previewingResult()), this, SLOT(previewCurrentSplit()));
   connect(panel, SIGNAL(committingResult()), this, SLOT(commitCurrentSplit()));
-  connect(panel, SIGNAL(loadingBookmark(QString)),
-          this, SLOT(loadBookmark(QString)));
+//  connect(panel, SIGNAL(loadingBookmark(QString)),
+//          this, SLOT(loadBookmark(QString)));
 //  connect(this, SIGNAL(bookmarkUpdated(ZFlyEmBodySplitProject*)),
 //          panel, SLOT(updateBookmarkTable(ZFlyEmBodySplitProject*)));
 //  connect(this, SIGNAL(bookmarkDeleted(ZFlyEmBodySplitProject*)),
