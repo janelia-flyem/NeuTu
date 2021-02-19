@@ -325,7 +325,7 @@ void ZProofreadWindow::createMenu()
           this, &ZProofreadWindow::loadDatabaseFromUrl);
   fileMenu->addAction(m_loadDvidUrlAction);
 
-  m_importBookmarkAction = new QAction("Import Bookmarks", this);
+  m_importBookmarkAction = new QAction("Import Assigned Bookmarks", this);
   m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
   fileMenu->addAction(m_importBookmarkAction);
   connect(m_importBookmarkAction, SIGNAL(triggered()),

@@ -4645,7 +4645,7 @@ void ZStackDoc::deselectAllObject(bool recursive)
                      ZStackObject::EType::LOCSEG_CHAIN));
 
   m_objectGroup.setSelected(false, [this](const ZStackObject* obj) {
-    bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
+    bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
   });
   processObjectModified();
 }
@@ -5029,7 +5029,7 @@ void ZStackDoc::setSelected(ZStackObject *obj,  bool selecting)
     if (obj->isSelectable()) {
       m_objectGroup.setSelected(obj, selecting);
       processObjectModified(
-                  obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
+                  obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
     }
   }
 }
@@ -5050,7 +5050,7 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
   if (obj != NULL) {
     m_objectGroup.setSelected(obj, true);
     processObjectModified(
-                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
+                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
   }
 
 //  m_objectGroup.getSelector()->selectObject(obj);
@@ -5991,152 +5991,145 @@ void ZStackDoc::clearObjectModifiedBuffer(bool sync)
   }
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
+void ZStackDoc::bufferObjectModified(ZStackObject::EType type)
 {
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(type);
-  } else {
-    m_objectModifiedBuffer.add(type);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(type);
+//  }
 }
 
-void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role, bool sync)
+void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role)
 {
-  bufferObjectModified(role.getRole(), sync);
+  bufferObjectModified(role.getRole()/*, sync*/);
 }
 
-void ZStackDoc::bufferObjectModified(neutu::data3d::ETarget target, bool sync)
+void ZStackDoc::bufferObjectModified(neutu::data3d::ETarget target)
 {
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(target);
-  } else {
-    m_objectModifiedBuffer.add(target);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(target);
+//  }
 }
 
 void ZStackDoc::bufferObjectModified(
-    const ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
+    const ZStackObject *obj, ZStackObjectInfo::TState state)
 {
   ZStackObjectInfo info;
   info.set(*obj);
-  bufferObjectModified(info, state, sync);
+  bufferObjectModified(info, state);
 }
 
-void ZStackDoc::bufferObjectModified(const ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectModified(const ZStackObject *obj)
 {
   ZStackObjectInfo info;
   info.set(*obj);
-  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
+  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN);
 }
 
-void ZStackDoc::bufferObjectDataModified(
-    const ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectDataModified(const ZStackObject *obj)
 {
-  bufferObjectModified(obj, ZStackObjectInfo::STATE_MODIFIED, sync);
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_MODIFIED);
 }
 
-void ZStackDoc::bufferObjectDataAdded(
-    const ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectDataAdded(const ZStackObject *obj)
 {
-  bufferObjectModified(obj, ZStackObjectInfo::STATE_ADDED, sync);
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_ADDED);
 }
 
-void ZStackDoc::bufferObjectDataRemoved(
-    const ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectDataRemoved(const ZStackObject *obj)
 {
-  bufferObjectModified(obj, ZStackObjectInfo::STATE_REMOVED, sync);
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_REMOVED);
 }
 
-void ZStackDoc::bufferObjectVisibilityChanged(
-    const ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectVisibilityChanged(const ZStackObject *obj)
 {
-  bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED, sync);
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED/*, sync*/);
 }
 
-void ZStackDoc::bufferObjectSelectionChanged(
-    const ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectSelectionChanged(const ZStackObject *obj)
 {
-  bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, sync);
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
+void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role)
 {
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(role);
-  } else {
-    m_objectModifiedBuffer.add(role);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(role);
+//  }
+}
+
+void ZStackDoc::bufferObjectModified(const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
+{
+//  if (sync) {
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.add(info, state);
+//  } else {
+//    m_objectModifiedBuffer.add(info, state);
+//  }
 }
 
 void ZStackDoc::bufferObjectModified(
-    const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
+    const QSet<neutu::data3d::ETarget> &targetSet)
 {
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedBufferMutex);
-    m_objectModifiedBuffer.add(info, state);
-  } else {
-    m_objectModifiedBuffer.add(info, state);
-  }
-}
-
-void ZStackDoc::bufferObjectModified(
-    const QSet<neutu::data3d::ETarget> &targetSet, bool sync)
-{
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(targetSet);
-  } else {
-    m_objectModifiedBuffer.add(targetSet);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(targetSet);
+//  }
 }
 
-void ZStackDoc::processObjectDataModified(ZStackObject *obj, bool sync)
-{
-  processObjectModified(obj, ZStackObjectInfo::STATE_MODIFIED, sync);
-}
-
-void ZStackDoc::processObjectDataAdded(ZStackObject *obj, bool sync)
-{
-  processObjectModified(obj, ZStackObjectInfo::STATE_ADDED, sync);
-}
-
-void ZStackDoc::processObjectDataRemoved(ZStackObject *obj, bool sync)
-{
-  processObjectModified(obj, ZStackObjectInfo::STATE_REMOVED, sync);
-}
-
-void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
+void ZStackDoc::processObjectModified(ZStackObject *obj)
 {
   if (obj) {
     ZStackObjectInfo info;
     info.set(*obj);
-    processObjectModified(info, sync);
+    processObjectModified(info/*, sync*/);
   }
 }
 
+void ZStackDoc::processObjectDataModified(ZStackObject *obj)
+{
+  processObjectModified(obj, ZStackObjectInfo::STATE_MODIFIED);
+}
+
+void ZStackDoc::processObjectDataAdded(ZStackObject *obj)
+{
+  processObjectModified(obj, ZStackObjectInfo::STATE_ADDED);
+}
+
+void ZStackDoc::processObjectDataRemoved(ZStackObject *obj)
+{
+  processObjectModified(obj, ZStackObjectInfo::STATE_REMOVED);
+}
+
 void ZStackDoc::processObjectModified(
-    ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
+    ZStackObject *obj, ZStackObjectInfo::TState state)
 {
   if (obj) {
     ZStackObjectInfo info;
     info.set(*obj);
-    processObjectModified(info, state, sync);
+    processObjectModified(info, state);
   }
 }
 
-void ZStackDoc::processObjectModified(
-    const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
+void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
 {
-  bufferObjectModified(info, state, sync);
+  bufferObjectModified(info, state);
   processObjectModified();
 }
 
-void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
+void ZStackDoc::processObjectModified(const ZStackObjectInfo &info)
 {
-  processObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
+  processObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN);
 }
 /*
 void ZStackDoc::processObjectModified(neutu::data3d::ETarget target, bool sync)
@@ -6174,25 +6167,31 @@ void ZStackDoc::processObjectModified(
 }
 #endif
 
-void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
+void ZStackDoc::processObjectModified(ZStackObject::EType type)
 {
   ZStackObjectInfo info;
   info.setType(type);
-  processObjectModified(info, sync);
-  /*
+  processObjectModified(info);
+}
+
+/*
+void ZStackDoc::processObjectModified(
+    const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
+{
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
-    notifyObjectModified(type);
+    notifyObjectModified(info, state);
     break;
   case EObjectModifiedMode::CACHE:
-    bufferObjectModified(type, sync);
-//    m_objectModifiedTargetBuffer.unite(targetSet);
+  {
+    bufferObjectModified(info, state);
+  }
     break;
   default:
     break;
   }
-  */
 }
+*/
 
 void ZStackDoc::processSwcModified()
 {
@@ -6204,19 +6203,19 @@ void ZStackDoc::processSwcModified()
 //  processObjectModified(ZSwcTree::GetDefaultTarget());
 }
 
-void ZStackDoc::processObjectModified(const ZStackObjectRole &role, bool sync)
+void ZStackDoc::processObjectModified(const ZStackObjectRole &role)
 {
-  processObjectModified(role.getRole(), sync);
+  processObjectModified(role.getRole()/*, sync*/);
 }
 
-void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role, bool sync)
+void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role)
 {
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
     notifyPlayerChanged(role);
     break;
   case EObjectModifiedMode::CACHE:
-    bufferObjectModified(role, sync);
+    bufferObjectModified(role/*, sync*/);
 //    m_objectModifiedTargetBuffer.unite(targetSet);
     break;
   default:
@@ -6238,22 +6237,6 @@ void ZStackDoc::notifyObjectModified(const ZStackObjectInfo &info)
   emit objectModified(infoSet);
 }
 
-/*
-void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
-{
-  switch (type) {
-  case ZStackObject::EType::SWC:
-    notifySwcModified();;
-    break;
-  default:
-    break;
-  }
-
-  setSaved(type, false);
-
-  customNotifyObjectModified(type);
-}
-*/
 
 void ZStackDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
@@ -8294,7 +8277,7 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
   }
 
   addPlayer(obj);
-  processObjectModified(obj);
+  processObjectModified(obj, ZStackObjectInfo::STATE_ADDED);
 
   endObjectModifiedMode();
 

@@ -960,26 +960,27 @@ public:
 //  void notifyObjectModified(ZStackObject::EType type);
   void notifyObjectModified(const ZStackObjectInfoSet &infoSet);
   void notifyObjectModified(const ZStackObjectInfo &info);
+  void notifyObjectModified(
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state);
 
-  void bufferObjectModified(ZStackObject::EType type, bool sync = true);
-  void bufferObjectModified(neutu::data3d::ETarget target, bool sync = true);
+  void bufferObjectModified(ZStackObject::EType type);
+  void bufferObjectModified(neutu::data3d::ETarget target);
   void bufferObjectModified(
-      const ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
-  void bufferObjectModified(const ZStackObject *obj, bool sync = true);
-  void bufferObjectVisibilityChanged(const ZStackObject *obj, bool sync = true);
-  void bufferObjectSelectionChanged(const ZStackObject *obj, bool sync = true);
-  void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
-  void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
+      const ZStackObject *obj, ZStackObjectInfo::TState state);
+  void bufferObjectModified(const ZStackObject *obj);
+  void bufferObjectVisibilityChanged(const ZStackObject *obj);
+  void bufferObjectSelectionChanged(const ZStackObject *obj);
+  void bufferObjectModified(const ZStackObjectRole &role);
+  void bufferObjectModified(ZStackObjectRole::TRole role);
   void bufferObjectModified(
-      const ZStackObjectInfo &info, ZStackObjectInfo::TState state,
-      bool sync);
-  void bufferObjectModified(
-      const QSet<neutu::data3d::ETarget> &targetSet, bool sync = true);
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state);
+  void bufferObjectModified(const QSet<neutu::data3d::ETarget> &targetSet);
+//  void bufferObjectModified(const ZStackObject *obj, ZStackObjectInfo::TState state);
+//  void bufferObjectModified(ZStackObject *obj);
 
-  void bufferObjectDataModified(const ZStackObject *obj, bool sync = true);
-  void bufferObjectDataAdded(const ZStackObject *obj, bool sync = true);
-  void bufferObjectDataRemoved(const ZStackObject *obj, bool sync = true);
-
+  void bufferObjectDataModified(const ZStackObject *obj);
+  void bufferObjectDataAdded(const ZStackObject *obj);
+  void bufferObjectDataRemoved(const ZStackObject *obj);
 
 
   /*!
@@ -992,8 +993,10 @@ public:
   void processObjectModified();
 
 
-  void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
-  void processObjectModified(ZStackObject::EType type, bool sync = true);
+  void processObjectModified(const ZStackObjectInfo &info);
+  void processObjectModified(ZStackObject::EType type);
+  void processObjectModified(
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state);
 
   void processObjectModified(
       const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync);
@@ -1003,15 +1006,15 @@ public:
    * It emits a object-modified signal with the information of \a obj in the
    * PROMPT mode, or buffers the inforation in the BUFFER mode.
    */
-  void processObjectModified(ZStackObject *obj, bool sync = true);
+  void processObjectModified(ZStackObject *obj);
   void processObjectModified(
-      ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
-  void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
-  void processObjectModified(const ZStackObjectRole &role, bool sync = true);
+      ZStackObject *obj, ZStackObjectInfo::TState state);
+  void processObjectModified(ZStackObjectRole::TRole role);
+  void processObjectModified(const ZStackObjectRole &role);
 
-  void processObjectDataModified(ZStackObject *obj, bool sync = true);
-  void processObjectDataAdded(ZStackObject *obj, bool sync = true);
-  void processObjectDataRemoved(ZStackObject *obj, bool sync = true);
+  void processObjectDataModified(ZStackObject *obj);
+  void processObjectDataAdded(ZStackObject *obj);
+  void processObjectDataRemoved(ZStackObject *obj);
 
   void processSwcModified();
   void clearObjectModifiedBuffer(bool sync);

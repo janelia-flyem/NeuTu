@@ -33,7 +33,7 @@ void ZStackDocSelector::deselectAll()
           ZStackObject *obj = *iter;
           obj->deselectSub();
           m_doc->bufferObjectModified(
-                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
+                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
         }
       }
     }

@@ -204,6 +204,7 @@
 #include "zneurontracer.h"
 #include "flyem/flyemtodoensemble.h"
 #include "flyem/flyemtodomocksource.h"
+#include "mvc/zstackdocobjectmonitor.h"
 
 #include "filesystem/utilities.h"
 #include "swc/zswcterminalsurfacemetric.h"
@@ -32621,7 +32622,7 @@ void ZTest::test(MainWindow *host)
   std::cout << bufferReader.getStatusCode() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   {
     std::string user =
@@ -32634,6 +32635,17 @@ void ZTest::test(MainWindow *host)
         FlyEmDataReader::ReadBookmarkUser(*reader, {1215, 1117, 1024});
     std::cout << user << std::endl;
   }
+#endif
+
+#if 1
+  ZStackDoc *doc = new ZStackDoc();
+  ZStackDocObjectMonitor *monitor = new ZStackDocObjectMonitor(doc);
+  monitor->monitor(doc);
+
+  doc->addObject(new ZSwcTree);
+  doc->removeAllObject(true);
+
+  delete doc;
 #endif
 
   std::cout << "Done." << std::endl;

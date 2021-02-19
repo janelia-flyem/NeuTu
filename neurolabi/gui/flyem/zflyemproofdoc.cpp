@@ -1687,7 +1687,7 @@ void ZFlyEmProofDoc::updateSegmentationOpacity(double opacity)
   auto sliceList = getDvidLabelSliceList();
   for (auto &slice : sliceList) {
     slice->setOpacity(opacity);
-    bufferObjectModified(slice, ZStackObjectInfo::STATE_COLOR_CHANGED, true);
+    bufferObjectModified(slice, ZStackObjectInfo::STATE_COLOR_CHANGED);
   }
   processObjectModified();
 }
@@ -3883,15 +3883,21 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
-      bool good =
-          (bookmark->getUserName().length() == int(currentUserName.length()));
+      //Users must match
+      bool good = (bookmark->getUserName().toStdString() == currentUserName);
       if (good) {
+        //to deal with out-of-sync problem in DVID
         ZJsonObject checkJson =
-            getDvidReader().readBookmarkJson(bookmark->getCenter().roundToIntPoint());
+            getDvidReader().readBookmarkJson(bookmark->getLocation());
         good = (!checkJson.isEmpty());
+      } else {
+        emitWarning(
+              QString("Skipping bookmark @%1 due to unmached owner.").
+              arg(bookmark->getLocation().toString().c_str()));
       }
       if (good) {
-        if (getDvidReader().isBookmarkChecked(bookmark->getCenter().roundToIntPoint())) {
+        if (bookmark->isChecked() && getDvidReader().isBookmarkChecked(
+              bookmark->getLocation())) {
           bookmark->setChecked(true);
           ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
           //        bookmarkObj.setProperty("checked", "1");
@@ -3907,7 +3913,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     endObjectModifiedMode();
     processObjectModified();
 
-    if (bookmarkCount == 0) {
+    if (bookmarkCount == 0) { //For compatibility
       ZDvidUrl url(getDvidTarget());
       ZDvidBufferReader reader;
       reader.read(url.getCustomBookmarkUrl(neutu::GetCurrentUserName()).c_str());
@@ -3922,7 +3928,7 @@ void ZFlyEmProofDoc::downloadBookmark()
           bookmark->loadJsonObject(bookmarkObj);
           addObject(bookmark, true);
           bookmark->addUserTag();
-          if (getDvidReader().isBookmarkChecked(bookmark->getCenter().roundToIntPoint())) {
+          if (getDvidReader().isBookmarkChecked(bookmark->getLocation())) {
             bookmark->setChecked(true);
           }
           m_dvidWriter.writeBookmark(*bookmark);

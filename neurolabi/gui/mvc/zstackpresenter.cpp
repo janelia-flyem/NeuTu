@@ -4279,7 +4279,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       obj->processHit(ZStackObject::ESelection::SELECT_MULTIPLE);
       buddyDocument()->setSelected(obj, obj->isSelected());
       buddyDocument()->processObjectModified(
-            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
+            obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
 //      buddyDocument()->toggleSelected(obj);
 
 //      buddyDocument()->setSelected(op.getHitObject<ZStackObject>(), true);
@@ -4297,7 +4297,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
         obj->processHit(ZStackObject::ESelection::SELECT_TOGGLE);
         buddyDocument()->setSelected(obj, obj->isSelected());
         buddyDocument()->processObjectModified(
-              obj, ZStackObjectInfo::STATE_SELECTION_CHANGED, true);
+              obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
         interactionEvent.setEvent(
               ZInteractionEvent::EVENT_OBJECT_SELECTED);
       }
