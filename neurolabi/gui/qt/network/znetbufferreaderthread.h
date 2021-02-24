@@ -28,6 +28,7 @@ public:
 
   neutu::EReadStatus getStatus() const;
   int getStatusCode() const;
+  QByteArray getResponseHeader(const QByteArray &headerName) const;
   /*
   ZNetBufferReader* getReader() const {
     return m_reader;

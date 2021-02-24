@@ -124,14 +124,30 @@ void ZNetBufferReader::readHead(const QString &url, int timeout)
 {
   startReading();
 
-//  qDebug() << url;
   neutu::LogUrlIO("HEAD", url);
-//  KINFO << "HEAD " + url;
 
   resetNetworkReply();
 
   startRequestTimer(timeout);
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
+  connectNetworkReply();
+  connect(m_networkReply, &QNetworkReply::readyRead,
+          this, &ZNetBufferReader::readBuffer);
+
+  waitForReading();
+}
+
+void ZNetBufferReader::readOptions(const QString &url, int timeout)
+{
+  startReading();
+
+  neutu::LogUrlIO("OPTIONS", url);
+
+  resetNetworkReply();
+
+  startRequestTimer(timeout);
+  m_networkReply = getNetworkAccessManager()->sendCustomRequest(
+        QNetworkRequest(url), "OPTIONS");
   connectNetworkReply();
   connect(m_networkReply, &QNetworkReply::readyRead,
           this, &ZNetBufferReader::readBuffer);
@@ -236,9 +252,31 @@ void ZNetBufferReader::startReading()
   cancelReading();
   waitForReading();
 
-  m_buffer.clear();
+  clearBuffer();
   m_status = neutu::EReadStatus::INPROGRESS;
   m_statusCode = 0;
+}
+
+QMap<QByteArray, QByteArray> ZNetBufferReader::getResponseHeaderMap() const
+{
+  QMap<QByteArray, QByteArray> headerMap;
+  for (const auto headerPair : m_responseHeader) {
+    headerMap[headerPair.first] = headerPair.second;
+  }
+
+  return headerMap;
+}
+
+QByteArray ZNetBufferReader::getResponseHeader(
+    const QByteArray &headerName) const
+{
+  for (const auto headerPair : m_responseHeader) {
+    if (headerPair.first == headerName) {
+      return headerPair.second;
+    }
+  }
+
+  return QByteArray();
 }
 
 void ZNetBufferReader::endReading(neutu::EReadStatus status)
@@ -262,6 +300,8 @@ void ZNetBufferReader::endReading(neutu::EReadStatus status)
 //  m_isReadingDone = true;
 
   if (m_networkReply) {
+    m_responseHeader = m_networkReply->rawHeaderPairs();
+
     if (m_status == neutu::EReadStatus::FINISHED) {
       QVariant statusCode = m_networkReply->attribute(
             QNetworkRequest::HttpStatusCodeAttribute);
@@ -359,6 +399,7 @@ neutu::EReadStatus ZNetBufferReader::getStatus() const
 void ZNetBufferReader::clearBuffer()
 {
   m_buffer.clear();
+  m_responseHeader.clear();
 }
 
 bool ZNetBufferReader::hasRequestHeader(const QString &key) const

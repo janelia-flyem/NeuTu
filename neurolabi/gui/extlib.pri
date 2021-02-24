@@ -203,4 +203,4 @@ include(ext/libqxt.pri)
 include(ext/QFontIcon/QFontIcon/QFontIcon.pri)
 include(ext/QFunctionUtils/src/qfunctionutils.pri)
 
-HEADERS += ext/http/HTTPRequest.hpp
+HEADERS += ext/http/HTTPRequest.hpp ext/cpp-httplib/httplib.h
