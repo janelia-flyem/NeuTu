@@ -370,8 +370,11 @@
 #include "zobject3dfactory.h"
 #include "flyem/zflyemrandombodycolorscheme.h"
 
+/*
 #include "ext/http/HTTPRequest.hpp"
-
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "ext/cpp-httplib/httplib.h"
+*/
 //#include "test/ztestall.h"
 
 using namespace std;
@@ -32637,7 +32640,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStackDoc *doc = new ZStackDoc();
   ZStackDocObjectMonitor *monitor = new ZStackDocObjectMonitor(doc);
   monitor->monitor(doc);
@@ -32646,6 +32649,27 @@ void ZTest::test(MainWindow *host)
   doc->removeAllObject(true);
 
   delete doc;
+#endif
+
+#if 0
+//  QByteArray data = ZNetworkUtils::OptionsHeader("http://127.0.0.1:1600", "Allow");
+//  qDebug() << data;
+  ZJsonObject obj = ZNetworkUtils::ReadJsonObjectMemo(
+        "http://127.0.0.1:1600/api/node/c315/bookmark_annotations/info");
+  obj.print();
+#endif
+
+#if 0
+  httplib::Client cli(getVar("httpsServer").c_str());
+  cli.enable_server_certificate_verification(false);
+  auto res = cli.Get(getVar("httpsPath").c_str());
+  std::cout << res << std::endl;
+  if (res) {
+    std::cout << res->status << std::endl;
+    std::cout << res->body << std::endl;
+  } else {
+    std::cout << res.error() << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

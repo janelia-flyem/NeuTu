@@ -1,6 +1,8 @@
 #include "znetworkutils.h"
 
 #include <regex>
+#include <map>
+
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -19,9 +21,10 @@ static ZJsonObject read_json(std::string source)
 {
   ZJsonObject obj;
   if (!source.empty()) {
-    ZNetBufferReader reader;
-    reader.read(source.c_str(), true);
-    obj.decode(reader.getBuffer().toStdString(), false);
+//    ZNetBufferReader reader;
+//    reader.read(source.c_str(), true);
+    QByteArray buffer = ZNetworkUtils::Get(source.c_str());
+    obj.decode(buffer.toStdString(), false);
   }
 
   return obj;
@@ -51,6 +54,37 @@ bool ZNetworkUtils::HasHead(const QString &url, int timeout)
   }
 
   return thread.getResultStatus();
+}
+
+QByteArray ZNetworkUtils::Options(const QString &url)
+{
+  if (url.isEmpty()) {
+    return QByteArray();
+  }
+
+  ZNetBufferReaderThread thread;
+  thread.setOperation(znetwork::EOperation::READ_OPTIONS);
+  thread.setUrl(url);
+  thread.start();
+  thread.wait();
+
+  return thread.getData();
+}
+
+QByteArray ZNetworkUtils::OptionsHeader(
+    const QString &url, const QByteArray &headerName)
+{
+  if (url.isEmpty()) {
+    return QByteArray();
+  }
+
+  ZNetBufferReaderThread thread;
+  thread.setOperation(znetwork::EOperation::READ_OPTIONS);
+  thread.setUrl(url);
+  thread.start();
+  thread.wait();
+
+  return thread.getResponseHeader(headerName);
 }
 
 QByteArray ZNetworkUtils::Get(const QString &url)
@@ -104,6 +138,34 @@ bool ZNetworkUtils::IsAvailable(
   return thread->getResultStatus();
 }
 
+namespace {
+
+const std::map<QString, znetwork::EOperation> ZNETWORK_OPERATION_MAP = {
+  {"HEAD", znetwork::EOperation::READ_HEAD},
+  {"GET", znetwork::EOperation::READ},
+  {"POST", znetwork::EOperation::POST},
+  {"OPTIONS", znetwork::EOperation::READ_OPTIONS},
+  {"HAS_HEAD", znetwork::EOperation::HAS_HEAD}
+};
+
+znetwork::EOperation get_operation(const QString &method) {
+  auto iter = ZNETWORK_OPERATION_MAP.find(method);
+  if (iter != ZNETWORK_OPERATION_MAP.end()) {
+    return iter->second;
+  }
+
+  return znetwork::EOperation::NONE;
+}
+
+}
+
+bool ZNetworkUtils::IsAvailable(
+    const QString &url, const QString &method, int timeout)
+{
+  return IsAvailable(url, get_operation(method), timeout);
+}
+
+/*
 bool ZNetworkUtils::IsAvailable(
     const QString &url, const QByteArray &method, int timeout)
 {
@@ -155,3 +217,4 @@ bool ZNetworkUtils::IsAvailable(
 
   return succ;
 }
+*/

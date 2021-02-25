@@ -23,6 +23,7 @@ public:
   void read(const QString &url, bool outputingUrl);
   void readPartial(const QString &url, int maxSize, bool outputingUrl);
   void readHead(const QString &url, int timeout = 0);
+  void readOptions(const QString &url, int timeout = 0);
   bool isReadable(const QString &url);
   bool hasHead(const QString &url, int timeout = 0);
   bool hasOptions(const QString &url, int timeout = 0);
@@ -36,6 +37,13 @@ public:
   inline const QByteArray& getBuffer() const {
     return m_buffer;
   }
+
+  inline const QList<QNetworkReply::RawHeaderPair> getResponseHeader() const {
+    return m_responseHeader;
+  }
+  QByteArray getResponseHeader(const QByteArray &headerName) const;
+
+  QMap<QByteArray, QByteArray> getResponseHeaderMap() const;
 
   void clearBuffer();
 
@@ -88,6 +96,7 @@ private:
   int m_statusCode = 0;
   int m_maxSize = 0;
   QMap<QString, QString> m_header;
+  QList<QNetworkReply::RawHeaderPair> m_responseHeader;
 };
 
 #endif // ZNETBUFFERREADER_H

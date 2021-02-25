@@ -6,7 +6,7 @@
 
 #include "common/neutudefs.h"
 #include "neurolabi_config.h"
-#include "tz_json.h"
+//#include "tz_json.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonvalue.h"

@@ -59,6 +59,16 @@ int ZNetBufferReaderThread::getStatusCode() const
   return 0;
 }
 
+QByteArray ZNetBufferReaderThread::getResponseHeader(
+    const QByteArray &headerName) const
+{
+  if (m_reader) {
+    return m_reader->getResponseHeader(headerName);
+  }
+
+  return QByteArray();
+}
+
 neutu::EReadStatus ZNetBufferReaderThread::getStatus() const
 {
   if (m_reader) {
@@ -84,6 +94,9 @@ void ZNetBufferReaderThread::run()
       break;
     case znetwork::EOperation::HAS_OPTIONS:
       m_status = m_reader->hasOptions(m_url, m_operationTimeout);
+      break;
+    case znetwork::EOperation::READ_OPTIONS:
+      m_reader->readOptions(m_url, m_operationTimeout);
       break;
     case znetwork::EOperation::POST:
       m_reader->post(m_url, m_payload);

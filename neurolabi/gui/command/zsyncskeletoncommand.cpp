@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <fstream>
+#include <algorithm>
 
 #include <QDebug>
 #include <QUrl>
@@ -388,9 +389,18 @@ int ZSyncSkeletonCommand::run(
         }
       }
 
+      bool shuffling = ZJsonObjectParser::GetValue(config, "shuffle", false);
       if (!predefinedBodyList.isEmpty()) {
+        std::vector<size_t> m_indexArray(predefinedBodyList.size());
         for (size_t i = 0; i < predefinedBodyList.size(); ++i) {
-          ZJsonObject bodyJson(predefinedBodyList.value(i));
+          m_indexArray[i] = i;
+        }
+        if (shuffling) {
+          std::random_shuffle(m_indexArray.begin(), m_indexArray.end());
+        }
+        for (size_t i = 0; i < predefinedBodyList.size(); ++i) {
+          size_t index = m_indexArray[i];
+          ZJsonObject bodyJson(predefinedBodyList.value(index));
           uint64_t bodyId = ZJsonParser::integerValue(bodyJson["body ID"]);
           report_progress(i, predefinedBodyList.size());
           process_body(
@@ -400,6 +410,9 @@ int ZSyncSkeletonCommand::run(
         QStringList annotList =
             reader.readKeys(reader.getDvidTarget().getBodyAnnotationName().c_str());
         int index = 1;
+        if (shuffling) {
+          std::random_shuffle(annotList.begin(), annotList.end());
+        }
         for (const QString &bodyStr : annotList) {
           report_progress(index - 1, annotList.size());
           uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();
