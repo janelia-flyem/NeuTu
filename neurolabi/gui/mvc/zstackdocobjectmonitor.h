@@ -2,6 +2,7 @@
 #define ZSTACKDOCOBJECTMONITOR_H
 
 #include <QObject>
+#include <functional>
 
 class ZStackObjectInfoSet;
 class ZStackDoc;
