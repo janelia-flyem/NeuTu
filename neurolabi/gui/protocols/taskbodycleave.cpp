@@ -1692,7 +1692,7 @@ QString TaskBodyCleave::getError() const
     return "Cleaving CANNOT be done: cleaving server missing!";
   }
 
-  if (!ZNetworkUtils::IsAvailable(GetCleaveServerApi(server), "OPTIONS")) {
+  if (!ZNetworkUtils::IsAvailable(GetCleaveServerApi(server), "HAS_OPTIONS")) {
     return "Cleaving CANNOT be done:<br>--unable to connect to " +
         server + " for cleaving.";
   }

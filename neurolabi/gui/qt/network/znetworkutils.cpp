@@ -145,6 +145,7 @@ const std::map<QString, znetwork::EOperation> ZNETWORK_OPERATION_MAP = {
   {"GET", znetwork::EOperation::READ},
   {"POST", znetwork::EOperation::POST},
   {"OPTIONS", znetwork::EOperation::READ_OPTIONS},
+  {"HAS_OPTIONS", znetwork::EOperation::HAS_OPTIONS},
   {"HAS_HEAD", znetwork::EOperation::HAS_HEAD}
 };
 
