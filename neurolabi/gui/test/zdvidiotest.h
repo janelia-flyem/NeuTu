@@ -62,6 +62,7 @@ TEST(ZDvidReader, basic)
     ASSERT_FALSE(reader.open("foo:9001"));
     ASSERT_FALSE(reader.open("", "uuid", 1));
     ASSERT_FALSE(reader.open("server", "", 1));
+    ASSERT_TRUE(reader.open("mock://mock", "", 1));
   }
 
   try {
@@ -123,6 +124,12 @@ TEST(ZDvidReader, basic)
       ZDvidInfo info = reader2.readGrayScaleInfo();
       ASSERT_TRUE(info.isValid());
     }
+  }
+
+  {
+    ZDvidReader reader;
+    ZDvidTarget target("mock://mock", "");
+    ASSERT_TRUE(reader.open(target));
   }
 
 

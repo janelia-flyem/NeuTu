@@ -31593,9 +31593,12 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-  std::cout << ZNetworkUtils::IsAvailable(
-                 "http://127.0.0.1:1600",
-                 znetwork::EOperation::HAS_OPTIONS) << std::endl;
+  for (int i = 0; i < 1000; ++i) {
+    std::cout << ZNetworkUtils::IsAvailable(
+                   getVar("httpServer").c_str(),
+                   znetwork::EOperation::HAS_OPTIONS) << std::endl;
+  }
+  /*
   std::cout << ZNetworkUtils::IsAvailable(
                  "http://127.0.0.1:1600", "OPTIONS") << std::endl;
   std::cout << ZNetworkUtils::IsAvailable(
@@ -31604,6 +31607,7 @@ void ZTest::test(MainWindow *host)
                  "http://127.0.0.1:1600", "HAS_HEAD") << std::endl;
   std::cout << ZNetworkUtils::IsAvailable(
                  "http://127.0.0.1:1601", "HAS_HEAD") << std::endl;
+                 */
 #endif
 
 #if 0

@@ -298,8 +298,8 @@ bool ZDvidTarget::hasPort() const
 
 bool ZDvidTarget::isValid() const
 {
-  return !getAddress().empty() && !getUuid().empty() &&
-      (m_nodeStatus != dvid::ENodeStatus::INVALID);
+  return isMock() || (!getAddress().empty() && !getUuid().empty() &&
+      (m_nodeStatus != dvid::ENodeStatus::INVALID));
 }
 
 std::string ZDvidTarget::getAddressWithPort() const

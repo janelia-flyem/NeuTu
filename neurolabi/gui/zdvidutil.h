@@ -112,6 +112,8 @@ ZDvidTarget MakeTargetFromUrlSpec(const std::string &path);
 
 bool IsValidDvidUrl(const std::string &url);
 
+bool IsServerReachable(const ZDvidTarget &target);
+
 /*!
  * \brief Test if two UUIDs they point to the same DVID node
  *

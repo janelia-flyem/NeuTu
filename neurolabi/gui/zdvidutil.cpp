@@ -13,6 +13,8 @@
 #include "logging/zlog.h"
 #include "logging/zqslog.h"
 
+#include "qt/network/znetworkutils.h"
+
 #include "dvid/zdvidversiondag.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
@@ -487,6 +489,21 @@ bool dvid::IsValidDvidUrl(const std::string &url)
   target.setFromUrl_deprecated(url);
 
   return target.isValid();
+}
+
+bool dvid::IsServerReachable(const ZDvidTarget &target)
+{
+  if (target.isMock()) {
+    return true;
+  }
+
+  std::string server = target.getRootUrl();
+  if (!server.empty()) {
+    return ZNetworkUtils::IsAvailable(
+          server.c_str(), znetwork::EOperation::HAS_HEAD);
+  }
+
+  return false;
 }
 
 ZDvidTarget dvid::MakeTargetFromUrlSpec(const std::string &path)

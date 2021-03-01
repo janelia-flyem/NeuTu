@@ -1393,11 +1393,18 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_dvidWriter.clear();
 //    m_dvidTarget.clear();
     ZWidgetMessage msg("Failed to open the node.", neutu::EMessageType::ERROR);
-    QString detail = "Detail: ";
+    QString detail;
     if (!getDvidReader().getErrorMsg().empty()) {
       detail += getDvidReader().getErrorMsg().c_str();
+    } else if (getDvidReader().getNodeStatus() == dvid::ENodeStatus::OFFLINE) {
+      QString rootUrl(getDvidReader().getDvidTarget().getRootUrl().c_str());
+      if (!rootUrl.isEmpty()) {
+        detail += "cannot connect to " + rootUrl;
+      }
     }
-    msg.appendMessage(detail);
+    if (!detail.isEmpty()) {
+      msg.appendMessage("Detail: " + detail);
+    }
     emit messageGenerated(msg);
 
     return false;

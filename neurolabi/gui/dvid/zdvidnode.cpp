@@ -211,11 +211,14 @@ std::string ZDvidNode::getHostWithScheme() const
 
 std::string ZDvidNode::getRootUrl() const
 {
-//  if (m_scheme.empty()) {
-//    return getAddressWithPort();
-//  }
+  std::string url = getAddressWithPort();
+  if (url.empty()) {
+    return "";
+  }
 
-  return getSchemePrefix() + getAddressWithPort();
+  std::string prefix = getSchemePrefix();
+
+  return prefix + url;
 }
 
 void ZDvidNode::setHost(const std::string &address)
