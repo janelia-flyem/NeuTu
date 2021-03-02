@@ -559,7 +559,7 @@ int ZStackViewParam::getZoomLevel() const
 //  int scale = pow(2, zoom);
   int zoom = 0;
   int scale = 1;
-  while (getArea(neutu::data3d::ESpace::MODEL) / scale / scale > 1024 * 1024) {
+  while (getArea(neutu::data3d::ESpace::MODEL) / scale / scale > 512 * 512) {
     zoom += 1;
     scale = pow(2, zoom);
   }

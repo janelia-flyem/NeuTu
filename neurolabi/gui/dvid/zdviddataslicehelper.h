@@ -40,6 +40,8 @@ public:
     return m_zoom;
   }
 
+  int getHighresZoom(int viewId) const;
+
   int getLowresZoom() const;
 
   const ZStackViewParam& getViewParam(int viewId) const;
@@ -84,6 +86,7 @@ public:
   int getHeight(int viewId) const;
   size_t getViewPortArea(int viewId) const;
   size_t getViewDataSize(int viewId) const;
+  double getPixelScale(int viewId) const;
   static size_t GetViewDataSize(const ZStackViewParam &viewParam, int zoom);
 
   void closeViewPort(int viewId);

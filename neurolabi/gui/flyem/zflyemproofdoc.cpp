@@ -1757,7 +1757,7 @@ ZDvidGraySliceEnsemble* ZFlyEmProofDoc::getDvidGraySliceEnsemble() const
 {
   ZStackObject *obj = getObject(
         ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE,
-        ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(neutu::EAxis::Z));
+        ZStackObjectSourceFactory::MakeDvidGraySliceEnsembleSource(neutu::EAxis::ARB));
   ZDvidGraySliceEnsemble *se = dynamic_cast<ZDvidGraySliceEnsemble*>(obj);
 
   return se;

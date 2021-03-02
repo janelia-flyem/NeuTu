@@ -419,7 +419,7 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc, int viewId)
       && getHelper()->getViewDataSize(viewId) < maxSize) {
     task = new ZDvidGraySliceHighresTask;
     task->setViewParam(getHelper()->getViewParam(viewId));
-    task->setZoom(getHelper()->getZoom());
+    task->setZoom(getHelper()->getHighresZoom(viewId));
     task->useCenterCut(false);
     task->setDelay(50);
     task->setDoc(doc);

@@ -166,7 +166,7 @@ void ZDvidLabelSlice::setSliceAxis(neutu::EAxis sliceAxis)
   m_sliceAxis = sliceAxis;
 }
 
-bool ZDvidLabelSlice::isVisible_inner(const DisplayConfig &config) const
+bool ZDvidLabelSlice::isVisible_inner(const DisplayConfig &/*config*/) const
 {
   return true;
 //  return getSliceAxis() == config.getSliceAxis();
@@ -249,7 +249,7 @@ ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc, int viewId)
         viewParam.openViewPort();
         if (viewParam.isValid()) {
           task->setViewParam(viewParam);
-          task->setZoom(getHelper()->getZoom());
+          task->setZoom(getHelper()->getHighresZoom(viewId));
           task->setCenterCut(
                 getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
           task->useCenterCut(false);

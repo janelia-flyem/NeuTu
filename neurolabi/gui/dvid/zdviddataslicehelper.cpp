@@ -208,6 +208,11 @@ size_t ZDvidDataSliceHelper::getViewDataSize(int viewId) const
   return getViewPortArea(viewId) / scale / scale;
 }
 
+double ZDvidDataSliceHelper::getPixelScale(int viewId) const
+{
+  return getViewParam(viewId).getSliceViewTransform().getScale();
+}
+
 int ZDvidDataSliceHelper::getWidth(int viewId) const
 {
   return getViewParam(viewId).getIntWidth(neutu::data3d::ESpace::MODEL);
@@ -543,6 +548,16 @@ bool ZDvidDataSliceHelper::isResolutionReached(int viewId) const
         getWidth(viewId), getHeight(viewId), getMaxZoom());
 }
 
+int ZDvidDataSliceHelper::getHighresZoom(int viewId) const
+{
+  int targetZoom = getZoom();
+  if (targetZoom > 0 && getPixelScale(viewId) < 0.9) {
+    targetZoom -= 1;
+  }
+
+  return targetZoom;
+}
+
 bool ZDvidDataSliceHelper::needHighResUpdate(int viewId) const
 {
   if (getViewDataSize(viewId) == 0) {
@@ -553,7 +568,7 @@ bool ZDvidDataSliceHelper::needHighResUpdate(int viewId) const
   return IsResIncreasing(
         vpb.m_actualZoom, vpb.m_actualCenterCutWidth, vpb.m_actualCenterCutHeight,
         vpb.m_actualUsingCenterCut,
-        m_zoom, m_centerCutWidth, m_centerCutHeight, false,
+        getHighresZoom(viewId), m_centerCutWidth, m_centerCutHeight, false,
         getWidth(viewId), getHeight(viewId), getMaxZoom());
 }
 
