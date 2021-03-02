@@ -927,7 +927,12 @@ int ZCommandLine::runGeneral()
     std::cout << "Running command " << commandName << "..." << std::endl;
     ZCommandModule *module = getModule(commandName);
     if (module != NULL) {
-      return module->run(m_input, m_output, config);
+      try {
+        return module->run(m_input, m_output, config);
+      } catch (std::exception &e) {
+        std::cerr << "COMMAND FAILED: " << e.what() << std::endl;
+        return 1;
+      }
     } else {
       std::cerr << "Invalid command module: " << commandName << std::endl;
 

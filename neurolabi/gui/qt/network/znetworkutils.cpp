@@ -127,30 +127,31 @@ ZJsonObject ZNetworkUtils::ReadJsonObjectMemo(const std::string& url)
 bool ZNetworkUtils::IsAvailable(
       const QString &url, znetwork::EOperation op, int timeout)
 {
-  ZNetBufferReaderThread *thread = new ZNetBufferReaderThread;
-  thread->connect(
-        thread, &ZNetBufferReaderThread::finished, thread, &QObject::deleteLater);
-  thread->setOperation(op, timeout);
-  thread->setUrl(url);
-  thread->start();
-  thread->wait();
+  ZNetBufferReaderThread thread;
+//  thread->connect(
+//        thread, &ZNetBufferReaderThread::finished, thread, &QObject::deleteLater);
+  thread.setOperation(op, timeout);
+  thread.setUrl(url);
+  thread.start();
+  thread.wait();
 
-  return thread->getResultStatus();
+  return thread.getResultStatus();
 }
 
 namespace {
 
-const std::map<QString, znetwork::EOperation> ZNETWORK_OPERATION_MAP = {
-  {"HEAD", znetwork::EOperation::READ_HEAD},
-  {"GET", znetwork::EOperation::READ},
-  {"POST", znetwork::EOperation::POST},
-  {"OPTIONS", znetwork::EOperation::READ_OPTIONS},
-  {"HAS_HEAD", znetwork::EOperation::HAS_HEAD}
-};
-
 znetwork::EOperation get_operation(const QString &method) {
-  auto iter = ZNETWORK_OPERATION_MAP.find(method);
-  if (iter != ZNETWORK_OPERATION_MAP.end()) {
+  static const std::map<QString, znetwork::EOperation> OPERATION_MAP = {
+    {"HEAD", znetwork::EOperation::READ_HEAD},
+    {"GET", znetwork::EOperation::READ},
+    {"POST", znetwork::EOperation::POST},
+    {"OPTIONS", znetwork::EOperation::READ_OPTIONS},
+    {"HAS_OPTIONS", znetwork::EOperation::HAS_OPTIONS},
+    {"HAS_HEAD", znetwork::EOperation::HAS_HEAD}
+  };
+
+  auto iter = OPERATION_MAP.find(method);
+  if (iter != OPERATION_MAP.end()) {
     return iter->second;
   }
 

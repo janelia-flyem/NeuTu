@@ -64,15 +64,19 @@ ZDvidReader *ZBodySplitCommand::parseInputPath(
   ZDvidReader *reader= NULL;
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
-    inputJson = reader->readJsonObject(inputPath);
-    if (inputJson.hasKey(neutu::json::REF_KEY)) {
-      inputJson =
-          reader->readJsonObject(
-            ZJsonParser::stringValue(inputJson[neutu::json::REF_KEY]));
+    if (reader) {
+      inputJson = reader->readJsonObject(inputPath);
+      if (inputJson.hasKey(neutu::json::REF_KEY)) {
+        inputJson =
+            reader->readJsonObject(
+              ZJsonParser::stringValue(inputJson[neutu::json::REF_KEY]));
+      }
+      isFile = false;
+      splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
+      splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
+    } else {
+      throw std::runtime_error("Cannot perform IO for " + inputPath);
     }
-    isFile = false;
-    splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
-    splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
     if (ZFileType::FileType(inputPath) == ZFileType::EFileType::JSON) {
       inputJson.load(inputPath);

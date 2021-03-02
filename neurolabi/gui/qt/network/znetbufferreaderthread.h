@@ -42,7 +42,7 @@ private:
   QString m_url;
   QByteArray m_payload;
   int m_partialReadSize = 12;
-  bool m_status = false;
+  bool m_successful = false;
   int m_operationTimeout = 0;
 };
 

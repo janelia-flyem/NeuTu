@@ -25,7 +25,7 @@ FlyEmSettingDialog::~FlyEmSettingDialog()
 void FlyEmSettingDialog::updateCleavingServerWidget()
 {
   bool connected = ZNetworkUtils::IsAvailable(
-        ui->cleavingServerLineEdit->text(), "OPTIONS");
+        ui->cleavingServerLineEdit->text(), "HAS_OPTIONS");
   QPalette *palette = new QPalette();
   palette->setColor(
         QPalette::Text, connected ? Qt::darkGreen : Qt::darkRed);

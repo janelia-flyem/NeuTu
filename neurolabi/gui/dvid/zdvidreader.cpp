@@ -15,6 +15,7 @@
 
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
+#include "qt/network/znetworkutils.h"
 
 //#include "zglobal.h"
 #include "zjsondef.h"
@@ -61,7 +62,7 @@
 #include "zdvidsynapse.h"
 #include "zdvidpath.h"
 #include "zjsonobjectparser.h"
-
+#include "zdvidutil.h"
 //#include "flyem/zflyemtodoitem.h"
 //#include "zflyemutilities.h"
 
@@ -112,6 +113,10 @@ bool ZDvidReader::startService()
     return true;
   }
 
+  if (!dvid::IsServerReachable(getDvidTarget())) {
+    return false;
+  }
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
     m_service = dvid::MakeDvidNodeService(getDvidTarget());
@@ -146,14 +151,6 @@ bool ZDvidReader::isReady() const
 bool ZDvidReader::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
-  if (serverAddress.isEmpty()) {
-    return false;
-  }
-
-  if (uuid.isEmpty()) {
-    return false;
-  }
-
   ZDvidTarget target;
   target.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
@@ -183,30 +180,39 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     return false;
   }
 
+  if (target.isMock()) {
+    m_dvidTarget = target;
+    return getNodeStatus() == dvid::ENodeStatus::NORMAL;
+  }
+
   bool succ = false;
 
-  if (target.isInferred() || target.isMock()) {
+  if (target.isInferred()) {
     succ = openRaw(target);
   } else {
     m_dvidTarget = target;
 
-    std::string masterNode = ReadMasterNode(target);
-    if (!masterNode.empty()) {
-      m_dvidTarget.setMappedUuid(target.getUuid(), masterNode);
-    }
-
-    succ = startService();
-
-    if (succ && !getDvidTarget().isMock()) { //Read default settings
-      updateNodeStatus();
-
-      if (getDvidTarget().usingDefaultDataSetting()) {
-        loadDefaultDataSetting();
+    if (dvid::IsServerReachable(target)) {
+      std::string masterNode = ReadMasterNode(target);
+      if (!masterNode.empty()) {
+        m_dvidTarget.setMappedUuid(target.getUuid(), masterNode);
       }
 
-      updateSegmentationData();
-      m_dvidTarget.setInferred(true);
-    } else {
+      succ = startService();
+
+      if (succ) { //Read default settings
+        updateNodeStatus();
+
+        if (getDvidTarget().usingDefaultDataSetting()) {
+          loadDefaultDataSetting();
+        }
+
+        updateSegmentationData();
+        m_dvidTarget.setInferred(true);
+      }
+    }
+
+    if (!succ) {
       m_dvidTarget.setNodeStatus(dvid::ENodeStatus::OFFLINE);
     }
   }
@@ -282,25 +288,36 @@ std::vector<std::string> ZDvidReader::readDataInstances(const std::string &type)
 
 void ZDvidReader::updateSegmentationData()
 {
-  std::string typeName;
+  std::string dataName;
   if (getDvidTarget().hasSegmentation()) {
-    typeName = getType(getDvidTarget().getSegmentationName());
+    dataName = getDvidTarget().getSegmentationName();
   } else {
-    typeName = getType(getDvidTarget().getBodyLabelName());
+    dataName = getDvidTarget().getBodyLabelName();
   }
 
-  if (typeName == "labelarray") {
-    getDvidTarget().setSegmentationType(ZDvidData::EType::LABELARRAY);
-  } else if (typeName == "labelmap") {
-    getDvidTarget().setSegmentationType(ZDvidData::EType::LABELMAP);
-  }
+  if (!dataName.empty()) {
+    std::string typeName = getType(dataName);
 
-  if (getDvidTarget().getBodyLabelName().empty()) {
-    syncBodyLabelName();
-  }
-  if (!getDvidTarget().hasSegmentation()) {
-    if (getDvidTarget().segmentationAsBodyLabel()) {
-      getDvidTarget().setSegmentationName(getDvidTarget().getBodyLabelName());
+    if (typeName == "labelarray") {
+      getDvidTarget().setSegmentationType(ZDvidData::EType::LABELARRAY);
+    } else if (typeName == "labelmap") {
+      getDvidTarget().setSegmentationType(ZDvidData::EType::LABELMAP);
+    } else if (typeName == "labelvol") { //sync to labelblk and labelvol
+      getDvidTarget().setSegmentationType(ZDvidData::EType::LABELBLK);
+      std::string labelName = readLabelblkName(dataName);
+      getDvidTarget().setSegmentationName(labelName);
+      getDvidTarget().setBodyLabelName(dataName);
+    } else if (typeName == "labelblk") {
+      getDvidTarget().setSegmentationType(ZDvidData::EType::LABELBLK);
+      if (getDvidTarget().getBodyLabelName().empty()) {
+        syncBodyLabelName();
+      }
+    }
+
+    if (!getDvidTarget().hasSegmentation()) {
+      if (getDvidTarget().segmentationAsBodyLabel()) {
+        getDvidTarget().setSegmentationName(dataName);
+      }
     }
   }
 
@@ -327,24 +344,24 @@ dvid::ENodeStatus ZDvidReader::getNodeStatus() const
   dvid::ENodeStatus status = dvid::ENodeStatus::NORMAL;
 
 #ifdef _ENABLE_LIBDVIDCPP_
-  ZDvidUrl url(getDvidTarget());
-  std::string repoUrl = url.getRepoUrl() + "/info";
-  if (repoUrl.empty()) {
-    status = dvid::ENodeStatus::INVALID;
-  } else {
-    int statusCode = 0;
-    dvid::MakeHeadRequest(repoUrl, statusCode);
-    if (statusCode != 200) {
-      status = dvid::ENodeStatus::OFFLINE;
+  if (!getDvidTarget().isMock()) {
+    ZDvidUrl url(getDvidTarget());
+    std::string repoUrl = url.getRepoUrl() + "/info";
+    if (repoUrl.empty()) {
+      status = dvid::ENodeStatus::INVALID;
     } else {
-      ZJsonObject obj = readJsonObject(url.getCommitInfoUrl());
-//      ZJsonObject obj =
-//          ZGlobal::GetInstance().readJsonObjectFromUrl(url.getCommitInfoUrl());
-      if (obj.hasKey("Locked")) {
-        bool locked = ZJsonParser::booleanValue(obj["Locked"]);
-        if (locked) {
-          status = dvid::ENodeStatus::LOCKED;
+      if (ZNetworkUtils::IsAvailable(repoUrl.c_str(), znetwork::EOperation::HAS_HEAD)) {
+        ZJsonObject obj = readJsonObject(url.getCommitInfoUrl());
+        //      ZJsonObject obj =
+        //          ZGlobal::GetInstance().readJsonObjectFromUrl(url.getCommitInfoUrl());
+        if (obj.hasKey("Locked")) {
+          bool locked = ZJsonParser::booleanValue(obj["Locked"]);
+          if (locked) {
+            status = dvid::ENodeStatus::LOCKED;
+          }
         }
+      } else {
+        status = dvid::ENodeStatus::OFFLINE;
       }
     }
   }
@@ -353,6 +370,7 @@ dvid::ENodeStatus ZDvidReader::getNodeStatus() const
   return status;
 }
 
+/*
 void ZDvidReader::testApiLoad()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -361,6 +379,7 @@ void ZDvidReader::testApiLoad()
                      m_statusCode);
 #endif
 }
+*/
 
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, neutu::EBodyLabelType labelType,
@@ -2698,6 +2717,29 @@ std::string ZDvidReader::readBodyLabelName() const
             name = dataName;
             break;
           }
+        }
+      }
+    }
+  }
+
+  return name;
+}
+
+std::string ZDvidReader::readLabelblkName(const std::string &labelvolName) const
+{
+  std::string name;
+
+  ZJsonObject dataInfo = readInfo(labelvolName);
+  if (dataInfo.hasKey("Base")) {
+    ZJsonObject baseObj(dataInfo.value("Base"));
+    if (baseObj.hasKey("Syncs")) {
+      ZJsonArray syncArray(baseObj.value("Syncs"));
+      for (size_t i = 0; i < syncArray.size(); ++i) {
+        std::string dataName =
+            ZJsonParser::stringValue(syncArray.getData(), i);
+        if (dvid::GetDataType(getType(dataName)) == dvid::EDataType::LABELBLK) {
+          name = dataName;
+          break;
         }
       }
     }
