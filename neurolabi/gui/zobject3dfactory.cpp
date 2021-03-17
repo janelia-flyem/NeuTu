@@ -470,12 +470,12 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   if (array.valueType() == mylib::UINT64_TYPE) {
     if (foreground) {
       bodySet = ZObject3dScan::extractAllForegroundObject(
-        array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
-            array.dim(2), 0, 0, 0, yStep, NULL);
+        array.getDataPointer<uint64_t>(), array.getDim(0), array.getDim(1),
+            array.getDim(2), 0, 0, 0, yStep, NULL);
     } else {
       bodySet = ZObject3dScan::extractAllObject(
-        array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
-            array.dim(2), 0, 0, 0, yStep, NULL);
+        array.getDataPointer<uint64_t>(), array.getDim(0), array.getDim(1),
+            array.getDim(2), 0, 0, 0, yStep, NULL);
     }
   }
 
@@ -590,12 +590,12 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   if (array.valueType() == mylib::UINT64_TYPE) {
     if (foreground) {
       bodySet = ZObject3dScan::extractAllForegroundObject(
-            array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
-            array.dim(2), axis);
+            array.getDataPointer<uint64_t>(), array.getDim(0), array.getDim(1),
+            array.getDim(2), axis);
     } else {
       bodySet = ZObject3dScan::extractAllObject(
-            array.getDataPointer<uint64_t>(), array.dim(0), array.dim(1),
-            array.dim(2), axis);
+            array.getDataPointer<uint64_t>(), array.getDim(0), array.getDim(1),
+            array.getDim(2), axis);
     }
   }
 

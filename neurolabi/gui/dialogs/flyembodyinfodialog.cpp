@@ -376,7 +376,7 @@ void FlyEmBodyInfoDialog::setBodyList(const std::set<uint64_t> &bodySet)
         }
     }
 
-    for (uint64_t bodyId : bodyList) {
+    foreach (uint64_t bodyId, bodyList) {
       ZJsonObject bodyData = reader.readBodyAnnotationJson(bodyId);
 
       // remove name if empty

@@ -159,7 +159,21 @@ public:
 
   void updateData(const ZJsonObject &obj);
 
+  /*!
+   * \brief Load settings in DVID config format
+   *
+   * It expects an object that may have the following fields:
+   *   "segmentation": segmentation data name
+   *   "bodies": sparsevol name (obsolete)
+   *   "synapses": synapse data name
+   *   "grayscale": grayscale data name
+   *   "todos": todo annotation data name
+   *
+   * Other fields will be ignored. It only changes any data name related to an
+   * existing field.
+   */
   void loadDvidDataSetting(const ZJsonObject &obj);
+
   ZJsonObject toDvidDataSetting() const;
 
   void print() const;
@@ -290,7 +304,7 @@ public:
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
 
-  static bool IsDvidTarget(const std::string &source);
+//  static bool IsDvidTarget(const std::string &source);
 
   inline bool isSupervised() const { return m_isSupervised; }
   void enableSupervisor(bool on) {

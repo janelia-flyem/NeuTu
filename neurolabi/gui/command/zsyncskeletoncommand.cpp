@@ -3,6 +3,7 @@
 #include <memory>
 #include <fstream>
 #include <algorithm>
+#include <random>
 
 #include <QDebug>
 #include <QUrl>
@@ -396,7 +397,9 @@ int ZSyncSkeletonCommand::run(
           m_indexArray[i] = i;
         }
         if (shuffling) {
-          std::random_shuffle(m_indexArray.begin(), m_indexArray.end());
+          std::random_device rd;
+          std::mt19937 g(rd());
+          std::shuffle(m_indexArray.begin(), m_indexArray.end(), g);
         }
         for (size_t i = 0; i < predefinedBodyList.size(); ++i) {
           size_t index = m_indexArray[i];
@@ -411,9 +414,11 @@ int ZSyncSkeletonCommand::run(
             reader.readKeys(reader.getDvidTarget().getBodyAnnotationName().c_str());
         int index = 1;
         if (shuffling) {
-          std::random_shuffle(annotList.begin(), annotList.end());
+          std::random_device rd;
+          std::mt19937 g(rd());
+          std::shuffle(annotList.begin(), annotList.end(), g);
         }
-        for (const QString &bodyStr : annotList) {
+        foreach (const QString &bodyStr, annotList) {
           report_progress(index - 1, annotList.size());
           uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();
           if (bodyId > 0) {

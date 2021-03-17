@@ -811,8 +811,8 @@ bool ZDvidLabelSlice::consume(
       ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
       ZSliceViewTransform t = getHelper()->getCanvasTransform(
             rect.getAffinePlane(),
-            displayBuffer->m_labelArray->dim(0),
-            displayBuffer->m_labelArray->dim(1), zoom, viewParam.getViewId());
+            displayBuffer->m_labelArray->getDim(0),
+            displayBuffer->m_labelArray->getDim(1), zoom, viewParam.getViewId());
       displayBuffer->m_imageCanvas.setTransform(t);
       invalidatePaintBuffer(viewParam.getViewId());
       succ = true;
@@ -1028,8 +1028,7 @@ void ZDvidLabelSlice::remapId()
 //  QMutexLocker locker(&m_updateMutex);
   if (m_labelArray != NULL && m_mappedLabelArray == NULL) {
     m_mappedLabelArray = new ZArray(m_labelArray->valueType(),
-                                    m_labelArray->ndims(),
-                                    m_labelArray->dims());
+                                    m_labelArray->getDimVector());
   }
   remapId(m_mappedLabelArray);
 }

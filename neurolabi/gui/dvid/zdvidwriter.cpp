@@ -1880,18 +1880,49 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   writeJson(url.getTodoListElementsUrl(), itemJson);
 }
 
-void ZDvidWriter::writeLabel(const ZArray &label)
+bool ZDvidWriter::writeLabel(const ZArray &label)
 {
-  if (!label.isEmpty()) {
-    ZDvidUrl url(getDvidTarget(), m_admin);
-    std::string urlStr =
-        url.getLabels64Url(label.getDim(0), label.getDim(1), label.getDim(2),
-                           label.getStartCoordinate(0),
-                           label.getStartCoordinate(1),
-                           label.getStartCoordinate(2));
-    post(ZDvidUrl::AppendQuery(urlStr, "mutate", true),
-         label.getDataPointer<char>(), label.getByteNumber(), false);
+  if (!label.isEmpty() && getDvidTarget().hasSegmentation()) {
+    ZDvidInfo info =
+        getDvidReader().readDataInfo(getDvidTarget().getSegmentationName());
+    ZIntPoint blockSize = info.getBlockSize();
+    if (blockSize.definitePositive()) {
+      if (label.getByteNumber() > neutu::ONEGIGA) {
+        auto dims = label.getDimVector();
+        int splitD = 0;
+        if (dims[2] >= info.getBlockSize()[2] * 2) {
+          splitD = 2;
+        } else if (dims[1] >= info.getBlockSize()[1] * 2) {
+          splitD = 1;
+        }
+        std::vector<int> newDims = dims;
+        newDims[splitD] /= 2;
+        ZArray *label1 = label.crop(label.getStartCoordinates(), newDims);
+
+        writeLabel(*label1);
+        delete label1;
+
+        std::vector<int> newStart(3);
+        for (size_t i = 0; i < 3; ++i) {
+          newStart[i] = label.getStartCoordinate(i) + dims[i] - newDims[i];
+        }
+        ZArray *label2 = label.crop(newStart, newDims);
+        writeLabel(*label2);
+        delete label2;
+      } else {
+        ZDvidUrl url(getDvidTarget(), m_admin);
+        std::string urlStr =
+            url.getLabels64Url(label.getDim(0), label.getDim(1), label.getDim(2),
+                               label.getStartCoordinate(0),
+                               label.getStartCoordinate(1),
+                               label.getStartCoordinate(2));
+        post(ZDvidUrl::AppendQuery(urlStr, "mutate", true),
+             label.getDataPointer<char>(), label.getByteNumber(), false);
+      }
+    }
   }
+
+  return false;
 }
 
 void ZDvidWriter::writeLabel(const ZArray &label, int zoom)
