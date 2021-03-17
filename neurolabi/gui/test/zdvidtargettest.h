@@ -22,24 +22,100 @@ TEST(ZDvidTarget, Basic)
     ASSERT_TRUE(target.getSkeletonName().empty());
     ASSERT_TRUE(target.isValid());
 
+    ASSERT_EQ("", target.getBodyAnnotationName());
+    ASSERT_EQ("", target.getMeshName());
+    ASSERT_EQ("", target.getThumbnailName());
+
+
     target.setSegmentationName("test");
     ASSERT_EQ("test", target.getSegmentationName());
+    ASSERT_FALSE(target.hasLabelMapData());
+    ASSERT_FALSE(target.hasBlockCoding());
+    ASSERT_FALSE(target.hasSupervoxel());
+    ASSERT_FALSE(target.hasSparsevolSizeApi());
+    ASSERT_FALSE(target.hasMultiscaleSegmentation());
+    ASSERT_FALSE(target.segmentationAsBodyLabel());
+    ASSERT_TRUE(target.hasCoarseSplit());
+    ASSERT_TRUE(target.hasSegmentation());
     ASSERT_TRUE(target.getBodyLabelName().empty());
     ASSERT_TRUE(target.getSkeletonName().empty());
     ASSERT_TRUE(target.getBodyAnnotationName().empty());
     ASSERT_TRUE(target.getMeshName().empty());
 
-
     target.setSegmentationType(ZDvidData::EType::LABELMAP);
+    ASSERT_TRUE(target.hasLabelMapData());
+    ASSERT_TRUE(target.hasBlockCoding());
+    ASSERT_TRUE(target.hasSupervoxel());
+    ASSERT_TRUE(target.segmentationAsBodyLabel());
+    ASSERT_TRUE(target.hasMultiscaleSegmentation());
+    ASSERT_TRUE(target.hasSparsevolSizeApi());
+    ASSERT_FALSE(target.hasCoarseSplit());
+    ASSERT_EQ("test_1", target.getSegmentationName(1));
+    ASSERT_TRUE(target.getValidSegmentationName(1).empty());
     ASSERT_EQ("test", target.getBodyLabelName());
     ASSERT_EQ("test_skeletons", target.getSkeletonName());
     ASSERT_EQ("test_annotations", target.getBodyAnnotationName());
     ASSERT_EQ("test_meshes", target.getMeshName());
+    ASSERT_EQ("test_thumbnails", target.getThumbnailName());
+
+    target.setBodyLabelName("bodies");
+    ASSERT_EQ("bodies", target.getBodyLabelName());
+    ASSERT_EQ("bodyinfo", target.getBodyInfoName());
+    ASSERT_EQ("skeletons", target.getSkeletonName());
+
+    target.setBodyLabelName("bodies2");
+    ASSERT_EQ("bodies2", target.getBodyLabelName());
+    ASSERT_EQ("bodies2_bodyinfo", target.getBodyInfoName());
+    ASSERT_EQ("bodies2_skeletons", target.getSkeletonName());
+
+    target.setMultiscale2dName("tiles");
+    ASSERT_EQ("tiles", target.getMultiscale2dName());
+    target.setDefaultMultiscale2dName();
+    ASSERT_TRUE(target.getMultiscale2dName().empty());
+
+    ASSERT_FALSE(target.isLowQualityTile("tiles"));
+    target.configTile("tiles", true);
+    ASSERT_TRUE(target.isLowQualityTile("tiles"));
+
+    target.setNullBodyLabelName();
+    ASSERT_FALSE(target.hasBodyLabel());
+    ASSERT_TRUE(target.getBodyInfoName().empty());
+
+    ASSERT_FALSE(target.hasSynapse());
+    ASSERT_FALSE(target.hasSynapseLabelsz());
+
+    target.setSynapseName("synapses");
+    ASSERT_TRUE(target.hasSynapse());
+    ASSERT_TRUE(target.hasSynapseLabelsz());
+
+    target.enableSynapseLabelsz(false);
+    ASSERT_FALSE(target.hasSynapseLabelsz());
+
+    ASSERT_FALSE(target.hasGrayScaleData());
+    target.setGrayScaleName("gray");
+    ASSERT_EQ("gray", target.getGrayScaleName());
+    ASSERT_EQ("gray", target.getGrayScaleName(0));
+    ASSERT_EQ("gray_1", target.getGrayScaleName(1));
+    ASSERT_TRUE(target.getValidGrayScaleName(1).empty());
+
+    target.setMaxGrayscaleZoom(3);
+    ASSERT_EQ("gray_1", target.getValidGrayScaleName(1));
+    ASSERT_EQ("gray_3", target.getValidGrayScaleName(3));
+    ASSERT_TRUE(target.getValidGrayScaleName(4).empty());
+
+    target.setRoiName("roi");
+    ASSERT_EQ("roi", target.getRoiName());
+
+    ASSERT_EQ("bookmark_annotations", target.getBookmarkName());
+    ASSERT_EQ("bookmarks", target.getBookmarkKeyName());
+    ASSERT_TRUE(target.hasBookmark());
 
     ASSERT_EQ(dvid::ENodeStatus::OFFLINE, target.getNodeStatus());
     target.setNodeStatus(dvid::ENodeStatus::NORMAL);
     ASSERT_EQ(dvid::ENodeStatus::NORMAL, target.getNodeStatus());
 
+    target.setNullSegmentationName();
+    ASSERT_TRUE(target.getSegmentationName().empty());
   }
 
   {
@@ -119,9 +195,9 @@ TEST(ZDvidTarget, Basic)
     ASSERT_EQ(9800, target.getPort());
     target.print();
 
-    target.setTileSource(ZDvidNode("emdata2.int.janelia.org", "1234", 9000));
+    target.setTileSource(ZDvidNode("test.host.org", "1234", 9000));
     ZDvidNode node = target.getTileSource();
-    ASSERT_EQ("emdata2.int.janelia.org", node.getHost());
+    ASSERT_EQ("test.host.org", node.getHost());
     ASSERT_EQ(9000, node.getPort());
     ASSERT_EQ("1234", node.getUuid());
 
@@ -129,9 +205,9 @@ TEST(ZDvidTarget, Basic)
     target.configTile("tiles", true);
     ASSERT_TRUE(target.isLowQualityTile("tiles"));
 
-    target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "2234", 9100));
+    target.setGrayScaleSource(ZDvidNode("test.host.org", "2234", 9100));
     node = target.getGrayScaleSource();
-    ASSERT_EQ("emdata3.int.janelia.org", node.getHost());
+    ASSERT_EQ("test.host.org", node.getHost());
     ASSERT_EQ(9100, node.getPort());
     ASSERT_EQ("2234", node.getUuid());
 
@@ -140,6 +216,9 @@ TEST(ZDvidTarget, Basic)
     ASSERT_EQ("hackathon2.janelia.org", node.getHost());
     ASSERT_EQ(9800, node.getPort());
     ASSERT_EQ("1a3", node.getUuid());
+
+    target.clearGrayScale();
+    ASSERT_FALSE(target.hasGrayScaleData());
 
     target.clear();
     target.setFromUrl_deprecated(
@@ -176,11 +255,69 @@ TEST(ZDvidTarget, Basic)
     ASSERT_EQ("test", target.getTodoListName());
     ASSERT_TRUE(target.isMock());
     ASSERT_EQ("body_test", target.getBodyLabelName());
+    ASSERT_EQ("body_test", target.getBodyLabelName(0));
+    ASSERT_EQ("body_test_1", target.getBodyLabelName(1));
     ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234:body_test",
               target.getSourceString());
     target.setGrayScaleName("grayscale");
     ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234::grayscale",
               target.getGrayscaleSourceString());
+  }
+}
+
+TEST(ZDvidTarget, json) {
+  ZJsonObject obj;
+  obj.decode("{"
+    "  \"port\": 1600,"
+    "  \"host\": \"127.0.0.1\","
+    "  \"uuid\": \"c315\","
+    "  \"name\": \"local_test\","
+    "  \"background\": 255,"
+    "  \"label_block\": \"segmentation\","
+    "  \"gray_scale\": \"grayscale\","
+    "  \"roi\": \"test\","
+    "  \"todo\": \"segmentation_todo\","
+    "  \"proofreading\": true,"
+    "  \"roi_list\": [],"
+    "  \"synapse\": \"synapses\","
+    "  \"supervised\": false,"
+    "  \"default\": false"
+    "}", true);
+
+  {
+    ZDvidTarget target;
+    target.setFromJson(obj.dumpString());
+    ASSERT_EQ("127.0.0.1", target.getAddress());
+    ASSERT_EQ("127.0.0.1:1600", target.getAddressWithPort());
+    ASSERT_EQ("127.0.0.1", target.getHostWithScheme());
+    ASSERT_EQ("c315", target.getUuid());
+    ASSERT_EQ("segmentation", target.getSegmentationName());
+    ASSERT_EQ("synapses", target.getSynapseName());
+    ASSERT_EQ("grayscale", target.getGrayScaleName());
+    ASSERT_EQ("segmentation_todo", target.getTodoListName());
+  }
+
+  {
+    ZDvidTarget target;
+    target.loadJsonObject(obj);
+    ASSERT_EQ("127.0.0.1", target.getAddress());
+    ASSERT_EQ("127.0.0.1:1600", target.getAddressWithPort());
+    ASSERT_EQ("127.0.0.1", target.getHostWithScheme());
+    ASSERT_EQ("c315", target.getUuid());
+    ASSERT_EQ("segmentation", target.getSegmentationName());
+    ASSERT_EQ("synapses", target.getSynapseName());
+    ASSERT_EQ("grayscale", target.getGrayScaleName());
+    ASSERT_EQ("segmentation_todo", target.getTodoListName());
+
+    ZJsonObject dvidSetting;
+    dvidSetting.setEntry("segmentation", "seg");
+    dvidSetting.setEntry("todos", "test_todos");
+    target.loadDvidDataSetting(dvidSetting);
+    ASSERT_EQ("seg", target.getSegmentationName());
+    ASSERT_EQ("synapses", target.getSynapseName());
+    ASSERT_EQ("grayscale", target.getGrayScaleName());
+    ASSERT_EQ("test_todos", target.getTodoListName());
+
   }
 }
 

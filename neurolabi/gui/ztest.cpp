@@ -20,6 +20,8 @@
 #include <ostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <random>
 #include <sys/stat.h>
 #include <sys/types.h>
 //#include <boost/filesystem.hpp>
@@ -63,6 +65,7 @@
 #include "tz_color.h"
 #include "tz_swc_tree.h"
 
+#include "neulib/core/stringbuilder.h"
 #include "ext/QFunctionUtils/src/QFunctionUtils"
 #include "geometry/zaffinerect.h"
 #include "filesystem/utilities.h"
@@ -31592,7 +31595,7 @@ void ZTest::test(MainWindow *host)
   std::cout << ZNetworkUtils::IsAvailable("http://emdata5.int.janelia.org:5570/compute-cleave", "OPTIONS") << std::endl;
 #endif
 
-#if 1
+#if 0
   for (int i = 0; i < 1000; ++i) {
     std::cout << ZNetworkUtils::IsAvailable(
                    getVar("httpServer").c_str(),
@@ -31750,6 +31753,99 @@ void ZTest::test(MainWindow *host)
     std::cout << res->body << std::endl;
   } else {
     std::cout << res.error() << std::endl;
+  }
+#endif
+
+#if 0
+  //Read labels
+  ZDvidReader *reader = ZGlobal::GetDvidReader("local_test");
+
+
+  QImage image(2048, 2048, QImage::Format_ARGB32);
+
+  std::string outputDir = GET_TEST_DATA_DIR + "/_dvid/data/hbtest2/seg";
+
+  //For each slice
+  for (int z = 0; z < 2048; ++z) {
+    //read slice
+    auto *array = reader->readLabels64("segmentation", 0, 0, z, 2048, 2048, 1);
+    //Create QImage
+    for (int y = 0; y < 2048; ++y) {
+      for (int x = 0; x < 2048; ++x) {
+        auto value = QRgba64::fromRgba64(
+              array->getValue<uint64_t>(y * 2048 + x));
+//        std::cout << value.red8() << " " << value.green8() <<  " "
+//                  << value.blue8() << std::endl;
+        image.setPixel(x, y, value);
+      }
+    }
+    //Save png
+    std::string outputPath =
+        neulib::StringBuilder(outputDir + "/test").append(z, 4).append(".png");
+    image.save(outputPath.c_str(), nullptr, 100);
+    delete array;
+//    break;
+  }
+
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("medulla-sample-28c");
+  writer->createSynapseLabelsz();
+//  writer->syncSynapseLabelsz();
+#endif
+
+#if 0
+  ZDvidTarget target("127.0.0.1", "565b", 1600);
+  target.setSegmentationName("segmentation2");
+//  ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.getDvidReader().updateMaxLabelZoom();
+
+  std::string outputDir = GET_TEST_DATA_DIR + "/_dvid/data/hbtest2/seg";
+  ZArray label(mylib::UINT64_TYPE, {2048, 2048, 64});
+  size_t offset = 0;
+  for (int z = 0; z < 2048; ++z) {
+    std::cout << "z=" << z << std::endl;
+    QImage image;
+    std::string outputPath =
+        neulib::StringBuilder(outputDir + "/test").append(z, 4).append(".png");
+    image.load(outputPath.c_str());
+
+    for (int y = 0; y < image.height(); ++y) {
+      for (int x = 0; x < image.width(); ++x) {
+        label.setValue(offset++, uint64_t(image.pixel(x, y)));
+      }
+    }
+
+    if ((z + 1) % 64 == 0) {
+      label.printInfo();
+      writer.writeLabel(label);
+      offset = 0;
+      label.setStartCoordinate(2, z + 1);
+    }
+  }
+
+
+#endif
+
+#if 0
+  ZDvidTarget target = getDvidTarget();
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    writer.createKeyvalue("neutu_config");
+  }
+#endif
+
+#if 0
+  std::vector<int> v{1, 2, 3, 4, 5};
+//  std::random_device rd;
+//  std::mt19937 g(rd());
+  std::random_shuffle(v.begin(), v.end());
+  for (int t : v) {
+    std::cout << t << std::endl;
   }
 #endif
 
