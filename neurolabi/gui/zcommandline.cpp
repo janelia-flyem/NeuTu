@@ -62,13 +62,14 @@
 #include "command/zbodyexportcommand.h"
 #include "command/zsparsestackcommandmodule.h"
 #include "command/zstackfiltercommand.h"
-#include "command/zuploadroicommand.h"
 #include "command/zneurontracecommand.h"
-#include "command/zsyncskeletoncommand.h"
-#include "command/zbodyprocesscommand.h"
+#include "command/zsplittaskuploadcommand.h"
 
 #if defined(_FLYEM_)
-#include "command/zsplittaskuploadcommand.h"
+#include "command/zuploadroicommand.h"
+#include "command/zsyncskeletoncommand.h"
+#include "command/zbodyprocesscommand.h"
+#include "command/ztransferskeletoncommand.h"
 #endif
 
 using namespace std;
@@ -131,6 +132,7 @@ void ZCommandLine::registerModule()
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
   registerModule<ZSyncSkeletonCommand>("sync_skeleton");
   registerModule<ZBodyProcessCommand>("process_body");
+  registerModule<ZTransferSkeletonCommand>("transfer_skeleton");
 #endif
 }
 
