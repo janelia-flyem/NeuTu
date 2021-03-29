@@ -118,6 +118,11 @@ void FlyEmBodyAnnotationDialog::setClonalUnit(const std::string &v)
   ui->clonalUnitLineEdit->setText(QString::fromStdString(v));
 }
 
+void FlyEmBodyAnnotationDialog::setHemilineage(const std::string &v)
+{
+  ui->hemilineageEdit->setText(QString::fromStdString(v));
+}
+
 void FlyEmBodyAnnotationDialog::setAutoType(const std::string &v)
 {
   ui->autoTypeLineEdit->setText(QString::fromStdString(v));
@@ -221,6 +226,11 @@ std::string FlyEmBodyAnnotationDialog::getClonalUnit() const
   return ui->clonalUnitLineEdit->text().toStdString();
 }
 
+std::string FlyEmBodyAnnotationDialog::getHemilineage() const
+{
+  return ui->hemilineageEdit->text().toStdString();
+}
+
 void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
@@ -241,6 +251,7 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setOutOfBounds(annotation.getOutOfBounds());
   setCrossMidline(annotation.getCrossMidline());
   setNeurotransmitter(annotation.getNeurotransmitter());
+  setHemilineage(annotation.getHemilineage());
   setSynonym(annotation.getSynonym());
   setClonalUnit(annotation.getClonalUnit());
   setAutoType(annotation.getAutoType());
@@ -270,6 +281,7 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setOutOfBounds(getOutOfBounds());
   annotation.setCrossMidline(getCrossMidline());
   annotation.setNeurotransmitter(getNeurotransmitter());
+  annotation.setHemilineage(getHemilineage());
   annotation.setSynonym(getSynonym());
   annotation.setClonalUnit(getClonalUnit());
   annotation.setAutoType(getAutoType());

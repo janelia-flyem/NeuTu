@@ -1,5 +1,7 @@
 #include "zcommandmodule.h"
 
+#include <iostream>
+
 ZCommandModule::ZCommandModule()
 {
   m_forceUpdate = false;
@@ -21,4 +23,33 @@ void ZCommandModule::setForceUpdate(bool on)
 bool ZCommandModule::forcingUpdate() const
 {
   return m_forceUpdate;
+}
+
+std::string ZCommandModule::composeMessage(
+    const std::string &title, const std::string &description) const
+{
+  std::string msg = description;
+  if (!title.empty()) {
+     msg = title + ": " + msg;
+  }
+
+  return msg;
+}
+
+void ZCommandModule::info(
+    const std::string &title, const std::string &description) const
+{
+  std::cout << composeMessage(title, description) << std::endl;
+}
+
+void ZCommandModule::warn(
+    const std::string &title, const std::string &description) const
+{
+  std::cout << "[WARNING] " << composeMessage(title, description) << std::endl;
+}
+
+void ZCommandModule::error(
+    const std::string &title, const std::string &description) const
+{
+  std::cerr << "[ERROR] "<< composeMessage(title, description) << std::endl;
 }

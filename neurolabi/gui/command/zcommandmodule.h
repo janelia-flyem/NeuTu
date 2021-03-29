@@ -19,6 +19,15 @@ public:
   void setForceUpdate(bool on);
   bool forcingUpdate() const;
 
+protected:
+  void info(const std::string &title, const std::string &description) const;
+  void warn(const std::string &title, const std::string &description) const;
+  void error(const std::string &title, const std::string &description) const;
+
+private:
+  std::string composeMessage(
+      const std::string &title, const std::string &description) const;
+
 private:
   bool m_forceUpdate;
 };
