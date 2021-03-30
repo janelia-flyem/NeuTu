@@ -53,3 +53,16 @@ void ZCommandModule::error(
 {
   std::cerr << "[ERROR] "<< composeMessage(title, description) << std::endl;
 }
+
+#if defined(_DEBUG_)
+void ZCommandModule::debug(
+    const std::string &title, const std::string &description) const
+{
+  info(title, description);
+}
+#else
+void ZCommandModule::debug(
+    const std::string &/*title*/, const std::string &/*description*/) const
+{
+}
+#endif
