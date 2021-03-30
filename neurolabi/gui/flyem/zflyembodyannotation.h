@@ -31,6 +31,7 @@ public:
   bool getCrossMidline() const;
   std::string getNeurotransmitter() const;
   std::string getSynonym() const;
+  std::string getHemilineage() const;
   std::string getClonalUnit() const;
   std::string getProperty() const;
 
@@ -60,6 +61,7 @@ public:
   void setOutOfBounds(bool v);
   void setCrossMidline(bool v);
   void setNeurotransmitter(const std::string &v);
+  void setHemilineage(const std::string &v);
   void setSynonym(const std::string &v);
   void setClonalUnit(const std::string &v);
   void setAutoType(const std::string &v);
@@ -121,6 +123,7 @@ public:
   static const char *KEY_OUT_OF_BOUNDS;
   static const char *KEY_CROSS_MIDLINE;
   static const char *KEY_NEURONTRANSMITTER;
+  static const char *KEY_HEMILINEAGE;
   static const char *KEY_SYNONYM;
   static const char *KEY_NOTES;
   static const char *KEY_CLONAL_UNIT;
@@ -148,6 +151,7 @@ private:
   bool m_outOfBounds = false;
   bool m_crossMidline = false;
   std::string m_neurotransmitter;
+  std::string m_hemilineage;
   std::string m_synonym;
   std::string m_clonalUnit;
   std::string m_autoType;

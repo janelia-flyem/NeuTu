@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>524</width>
-    <height>586</height>
+    <height>619</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -207,6 +207,20 @@
        </item>
        <item>
         <widget class="QLineEdit" name="primaryNeuriteLineEdit"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_17">
+       <item>
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>hemilineage</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="hemilineageEdit"/>
        </item>
       </layout>
      </item>

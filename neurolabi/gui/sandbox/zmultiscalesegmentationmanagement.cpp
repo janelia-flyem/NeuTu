@@ -29,6 +29,7 @@
 #include "segment/zsegmentationnodewrapper.h"
 #include "mainwindow.h"
 #include "zsandbox.h"
+#include "zstackdocaccessor.h"
 
 
 using std::queue;
@@ -71,11 +72,11 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
     ids.push(id);
   } else {
     if(m_show_leaves->isChecked()){
-      for(auto t: m_seg_tree->getLeavesIDs(id)){
+      for(const auto &t: m_seg_tree->getLeavesIDs(id)){
         ids.push(t);
       }
     } else {
-      for(auto t: m_seg_tree->getChildrenIDs(id)){
+      for(const auto &t: m_seg_tree->getChildrenIDs(id)){
         ids.push(t);
       }
     }
@@ -100,8 +101,8 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
       wrapper->setDisplayStyle(ZStackObject::EDisplayStyle::SOLID);
     }
     */
-    m_frame->document()->getDataBuffer()->addUpdate(
-          wrapper, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
+    ZStackDocAccessor::AddObject(m_frame->document().get(), wrapper);
+//    m_frame->document()->getDataBuffer()->addUpdate(wrapper, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
   }
 }
 
@@ -114,7 +115,7 @@ void ZMultiscaleSegmentationWindow::onNodeItemClicked(QTreeWidgetItem *item, int
 
 void ZMultiscaleSegmentationWindow::selectNode(const string& id){
   m_selected_id = id;
-  for(QTreeWidgetItem* wgt:m_view->selectedItems()){
+  foreach (QTreeWidgetItem* wgt, m_view->selectedItems()) {
     wgt->setSelected(false);
   }
 
@@ -155,7 +156,7 @@ void ZMultiscaleSegmentationWindow::updateTreeView(const std::string &id){
     if(items.size() > 0){
       QTreeWidgetItem* item = items.at(0);
       vector<string> ids = m_seg_tree->getChildrenIDs(t);
-      for(auto child_id : ids){
+      for(const auto &child_id : ids){
         QTreeWidgetItem* child = new QTreeWidgetItem(QStringList(QString::fromStdString(child_id)));
         item->addChild(child);
         if(!m_seg_tree->isLeaf(child_id)){

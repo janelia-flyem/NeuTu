@@ -40,6 +40,7 @@ public:
   void setNeurotransmitter(const std::string &v);
   void setSynonym(const std::string &v);
   void setClonalUnit(const std::string &v);
+  void setHemilineage(const std::string &v);
   void setAutoType(const std::string &v);
   void setProperty(const std::string &v);
 
@@ -61,6 +62,7 @@ public:
   std::string getProperty() const;
   std::string getAutoType() const;
   std::string getClonalUnit() const;
+  std::string getHemilineage() const;
   bool isInstanceChanged() const;
 
   void setDefaultStatusList(const QList<QString> statusList);

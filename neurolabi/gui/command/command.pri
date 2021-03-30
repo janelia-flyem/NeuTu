@@ -2,6 +2,7 @@ HEADERS += \
     $$PWD/zbodyprocesscommand.h \
     $$PWD/zneurontracecommand.h \
     $$PWD/zsyncskeletoncommand.h \
+    $$PWD/ztransferskeletoncommand.h \
     $$PWD/zuploadroicommand.h \
     $$PWD/zcommandmodule.h \
     $$PWD/zstackdownsamplecommand.h \
@@ -17,6 +18,7 @@ SOURCES += \
     $$PWD/zbodyprocesscommand.cpp \
     $$PWD/zneurontracecommand.cpp \
     $$PWD/zsyncskeletoncommand.cpp \
+    $$PWD/ztransferskeletoncommand.cpp \
     $$PWD/zuploadroicommand.cpp \
     $$PWD/zcommandmodule.cpp \
     $$PWD/zstackdownsamplecommand.cpp \
