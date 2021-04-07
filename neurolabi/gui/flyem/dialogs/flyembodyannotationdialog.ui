@@ -236,7 +236,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="somaGroupBox">
        <property name="title">
         <string>Soma</string>
        </property>
