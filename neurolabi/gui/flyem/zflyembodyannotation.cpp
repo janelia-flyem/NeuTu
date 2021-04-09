@@ -535,7 +535,9 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
 
   if (getStatusRank(m_status) > getStatusRank(annotation.m_status)) {
 //    m_status = annotation.m_status;
+    uint64_t bodyId = m_bodyId;
     *this = annotation;
+    m_bodyId = bodyId;
   } else if (getStatusRank(m_status) == getStatusRank(annotation.m_status)) {
     if (m_comment.empty()) {
       m_comment = annotation.m_comment;

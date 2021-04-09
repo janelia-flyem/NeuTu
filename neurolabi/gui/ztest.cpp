@@ -31796,6 +31796,11 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("vnc-prod");
+  writer->createSynapseLabelsz();
+#endif
+
+#if 0
   ZDvidTarget target("127.0.0.1", "565b", 1600);
   target.setSegmentationName("segmentation2");
 //  ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
@@ -31847,6 +31852,21 @@ void ZTest::test(MainWindow *host)
   for (int t : v) {
     std::cout << t << std::endl;
   }
+#endif
+
+#if 1
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = dvid::GetMergeConfig(
+        1, std::vector<uint64_t>({2, 3, 4, 5, 6, 7, 8}),
+        [](uint64_t id1, uint64_t id2) {
+      return id1 < id2;
+  });
+
+  std::cout << "Merge: " << mergeConfig.first;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
