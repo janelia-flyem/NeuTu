@@ -3042,7 +3042,8 @@ void ZFlyEmProofMvc::highlightSelectedObject(
     bool usingSparseVol =
         getCompleteDocument()->getDvidTarget().hasBodyLabel() &&
         getDocument()->getStack()->getVoxelNumber(ZStack::SINGLE_PLANE) > 300 * 300;
-    if (getDvidTarget().usingMulitresBodylabel()) {
+    if (getDvidTarget().usingMulitresBodylabel() ||
+        getView()->getSliceAxis() == neutu::EAxis::ARB) {
       usingSparseVol = false;
     }
 
@@ -3204,7 +3205,7 @@ void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector
     const ZFlyEmBookmark *bookmark = dynamic_cast<const ZFlyEmBookmark*>(obj);
     if (bookmark != NULL) {
       emit messageGenerated(
-            ZWidgetMessage(bookmark->toJsonObject(true).dumpString(0).c_str(),
+            ZWidgetMessage(bookmark->toString(true).c_str(),
                            neutu::EMessageType::INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
     }
@@ -5272,7 +5273,7 @@ void ZFlyEmProofMvc::commitMerge()
   if (dlg->exec()) {
     mergeCoarseBodyWindow();
     getCompleteDocument()->getMergeProject()->uploadResult(
-          dlg->mergingToLargest());
+          dlg->mergingToHighestStatus(), dlg->mergingToLargest());
 
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {
@@ -6504,6 +6505,25 @@ void ZFlyEmProofMvc::refreshBookmark()
     }
   }
   doc->downloadBookmark();
+}
+
+void ZFlyEmProofMvc::importUserBookmark()
+{
+  QString filePath =
+      ZDialogFactory::GetOpenFileName("Import Bookmarks", "", this);
+  if (!filePath.isEmpty()) {
+    getCompleteDocument()->importUserBookmark(filePath);
+    refreshBookmark();
+  }
+}
+
+void ZFlyEmProofMvc::exportUserBookmark()
+{
+  QString filePath =
+      ZDialogFactory::GetSaveFileName("Export Bookmarks", "", this);
+  if (!filePath.isEmpty()) {
+    getCompleteDocument()->exportUserBookmark(filePath);
+  }
 }
 
 void ZFlyEmProofMvc::appendAssignedBookmarkTable(

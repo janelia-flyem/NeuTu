@@ -124,7 +124,7 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     contains(DEFINES, _ENABLE_LOWTIS_) {
 #        LIBS *= -llowtis
         CONFIG(debug, debug|release) {
-            LIBS *= -llowtis-g
+            LIBS *= -llowtis
         } else {
             LIBS *= -llowtis
         }
@@ -201,5 +201,6 @@ CONFIG(static_gtest) { # gtest from ext folder
 include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include(ext/QFontIcon/QFontIcon/QFontIcon.pri)
+include(ext/QFunctionUtils/src/qfunctionutils.pri)
 
-HEADERS += ext/http/HTTPRequest.hpp
+HEADERS += ext/http/HTTPRequest.hpp ext/cpp-httplib/httplib.h

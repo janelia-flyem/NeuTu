@@ -86,7 +86,6 @@ ZWidgetMessage::ZWidgetMessage(
   m_message.append(msg);
 }
 
-
 bool ZWidgetMessage::hasTarget(ETarget target) const
 {
   return (m_targets & target) == target;
@@ -97,9 +96,39 @@ bool ZWidgetMessage::hasTarget(FTargets target) const
   return (m_targets & target) == target;
 }
 
+bool ZWidgetMessage::hasTargetIn(FTargets target) const
+{
+  return (m_targets & target);
+}
+
 bool ZWidgetMessage::hasTargetOtherThan(FTargets targets) const
 {
   return (m_targets & ~targets);
+}
+
+bool ZWidgetMessage::hasAnyTarget() const
+{
+  return m_targets != TARGET_NULL;
+}
+
+void ZWidgetMessage::addTarget(ETarget target)
+{
+  m_targets |= target;
+}
+
+void ZWidgetMessage::removeTarget(ETarget target)
+{
+  m_targets &= ~target;
+}
+
+void ZWidgetMessage::addTarget(FTargets target)
+{
+  m_targets |= target;
+}
+
+void ZWidgetMessage::removeTarget(FTargets target)
+{
+  m_targets &= ~target;
 }
 
 
@@ -141,7 +170,10 @@ QString ZWidgetMessage::toPlainString() const
 {
   QString result;
   foreach (const QString &str, m_message) {
-    result += str + " ";
+    if (!result.isEmpty()) {
+      result += " ";
+    }
+    result += str;
   }
 
   return result;
@@ -193,6 +225,11 @@ ZWidgetMessageFactory::ZWidgetMessageFactory(const char *msg)
   m_message.setMessage(msg);
 }
 
+ZWidgetMessageFactory::ZWidgetMessageFactory(const ZWidgetMessage &msg)
+{
+  m_message = msg;
+}
+
 ZWidgetMessageFactory ZWidgetMessageFactory::Make(const char *msg)
 {
   return ZWidgetMessageFactory(msg);
@@ -200,7 +237,15 @@ ZWidgetMessageFactory ZWidgetMessageFactory::Make(const char *msg)
 
 ZWidgetMessageFactory& ZWidgetMessageFactory::to(ZWidgetMessage::ETarget target)
 {
-  m_message.setTarget(target);
+  m_message.addTarget(target);
+
+  return *this;
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::without(
+    ZWidgetMessage::FTargets targets)
+{
+  m_message.removeTarget(targets);
 
   return *this;
 }

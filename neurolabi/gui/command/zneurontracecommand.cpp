@@ -43,7 +43,7 @@ void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
   if (config.hasKey("path")) {
     ZJsonObject actualConfig;
     ZJsonObjectParser parser;
-    std::string path = parser.getValue(config, "path", "");
+    std::string path = parser.GetValue(config, "path", "");
     if (path.empty() || path == "default") {
       path = NeutubeConfig::getInstance().getPath(
             NeutubeConfig::EConfigItem::CONFIG_DIR) + "/json/trace_config.json";

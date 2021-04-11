@@ -185,11 +185,11 @@ ZStack* ZStackReader::ReadJson(const ZJsonObject &obj)
   ZJsonObjectParser parser;
 
   //Json {"source": <path>, "offset": [x0, y0, z0]}
-  std::string source = parser.getValue(obj, "source", "");
+  std::string source = parser.GetValue(obj, "source", "");
   ZStack *stack = Read(source);
   if (stack) {
     std::vector<int64_t> offset =
-        parser.getValue(obj, "offset", std::vector<int64_t>());
+        parser.GetValue(obj, "offset", std::vector<int64_t>());
     if (offset.size() == 3) {
       stack->setOffset(
             stack->getOffset() + ZIntPoint(offset[0], offset[1], offset[2]));

@@ -227,6 +227,8 @@ private:
 
   void testProgressBarFunc();
 
+  void addChildWindow(QMainWindow *window);
+
 protected:
   //a virtual function from QWidget. It is called when the window is closed.
   void changeEvent(QEvent *e);
@@ -503,8 +505,11 @@ private slots:
 
   void on_actionMake_Movie_2_triggered();
 
-  void tryToClose();
+//  void tryToClose();
   void showAndRaise();
+  void showChildWindow(QMainWindow *window);
+  void showChildWindow(QAction *action);
+  void removeChildWindow(QMainWindow *window);
 
   void on_actionTrace_Mask_triggered();
   void on_actionSeed_Mask_triggered();
@@ -785,6 +790,9 @@ private:
 
   QTimer *m_autoCheckTimer;
   ZThreadFutureMap m_futureMap;
+
+  QActionGroup *m_windowActionGroup = nullptr;
+  QMap<QMainWindow*, QAction*> m_childWindowMap;
   //ZStackDocReader *m_docReader;
 };
 

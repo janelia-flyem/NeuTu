@@ -72,7 +72,7 @@ bool ZJsonParser::IsBoolean(const json_t *value)
   return json_is_boolean(value);
 }
 
-size_t ZJsonParser::arraySize(const json_t *array)
+size_t ZJsonParser::ArraySize(const json_t *array)
 {
   if (!IsArray(array)) {
     return 0;
@@ -81,12 +81,12 @@ size_t ZJsonParser::arraySize(const json_t *array)
   return json_array_size(array);
 }
 
-json_t* ZJsonParser::arrayValue(const json_t *array, size_t index)
+json_t* ZJsonParser::ArrayValue(const json_t *array, size_t index)
 {
   return json_array_get(array, index);
 }
 
-json_type ZJsonParser::type(const json_t *value)
+json_type ZJsonParser::Type(const json_t *value)
 {
   if (value == NULL) {
     return JSON_NULL;
@@ -95,12 +95,12 @@ json_type ZJsonParser::type(const json_t *value)
   return json_typeof(value);
 }
 
-void ZJsonParser::incref(json_t *value)
+void ZJsonParser::Incref(json_t *value)
 {
   json_incref(value);
 }
 
-void ZJsonParser::decref(json_t *value)
+void ZJsonParser::Decref(json_t *value)
 {
   json_decref(value);
 }
@@ -153,17 +153,17 @@ bool ZJsonParser::booleanValue(const json_t *value, bool defaultValue)
 
 string ZJsonParser::stringValue(const json_t *value, size_t index)
 {
-  return stringValue(arrayValue(value, index));
+  return stringValue(ArrayValue(value, index));
 }
 
 double ZJsonParser::numberValue(const json_t *value, size_t index)
 {
-  return numberValue(arrayValue(value, index));
+  return numberValue(ArrayValue(value, index));
 }
 
 int64_t ZJsonParser::integerValue(const json_t *value, size_t index)
 {
-  return integerValue(arrayValue(value, index));
+  return integerValue(ArrayValue(value, index));
 }
 
 std::vector<int64_t> ZJsonParser::integerArray(const json_t *value)
@@ -171,9 +171,9 @@ std::vector<int64_t> ZJsonParser::integerArray(const json_t *value)
   std::vector<int64_t> array;
   if (value != NULL) {
     if (IsArray(value)) {
-      int s = arraySize(value);
+      int s = ArraySize(value);
       for (int i = 0; i < s; ++i) {
-        json_t *a = ZJsonParser::arrayValue(value, i);
+        json_t *a = ZJsonParser::ArrayValue(value, i);
         if (a != NULL) {
           if (ZJsonParser::IsInteger(a)) {
             array.push_back(ZJsonParser::integerValue(a));
@@ -196,7 +196,7 @@ void ZJsonParser::print(const char *key, json_t *object, int indent)
     cout << key << ": ";
   }
 
-  switch (type(object)) {
+  switch (Type(object)) {
   case JSON_NULL:
     cout << "NULL" << endl;
     break;
@@ -216,10 +216,10 @@ void ZJsonParser::print(const char *key, json_t *object, int indent)
     break;
   case JSON_ARRAY:
   {
-    int n = arraySize(object);
+    int n = ArraySize(object);
     cout << "[" << endl;
     for (int i = 0; i < n; ++i) {
-      print(NULL, arrayValue(object, i), indent + 2);
+      print(NULL, ArrayValue(object, i), indent + 2);
     }
     for (int i = 0; i < indent; ++i) {
       cout << " ";
@@ -265,7 +265,7 @@ ZIntPoint ZJsonParser::toIntPoint(const json_t *value)
   ZIntPoint pt;
   if (value != NULL) {
     if (IsArray(value)) {
-      if (arraySize(value) == 3) {
+      if (ArraySize(value) == 3) {
         pt.set(integerValue(value, 0), integerValue(value, 1), integerValue(value, 2));
       }
     }

@@ -37,7 +37,7 @@ int ZBodyExportCommand::run(
     ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(inputPath);
 
     ZJsonObjectParser parser;
-    bool checkingMutationId = parser.getValue(config, "mutation", false);
+    bool checkingMutationId = parser.GetValue(config, "mutation", false);
     ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader(target);
 
     int64_t mutationId = -1;
@@ -51,7 +51,7 @@ int ZBodyExportCommand::run(
             ZJsonObject obj;
             obj.load(output + ".json");
             int64_t savedMutationId =
-                parser.getValue(obj, "mutation id", int64_t(-1));
+                parser.GetValue(obj, "mutation id", int64_t(-1));
             if (mutationId == savedMutationId) {
               reader = nullptr;
             }

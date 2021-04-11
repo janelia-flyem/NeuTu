@@ -31,7 +31,7 @@ requirements:
   host:
     - libneucore >=0.1.4, <2.0
     - qt      5.9.*
-    - fftw    3.3.*
+    - fftw    >=3.3.9, <3.4
     - jansson 2.7.*
     - libpng  1.6.*
     - hdf5    1.10.*
@@ -59,7 +59,7 @@ requirements:
     # copied from host (above)
     - libneucore >=0.1.4, <2.0
     - qt      5.9.*
-    - fftw    3.3.*
+    - fftw    >=3.3.9, <3.4
     - jansson 2.7.*
     - libpng  1.6.*
     - hdf5    1.10.*

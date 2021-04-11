@@ -46,11 +46,11 @@ TEST(ZFlyEmBodyAnnotation, Basic)
 
   ZJsonObject json2 = annot.toJsonObject();
   ZJsonObjectParser parser;
-  ASSERT_EQ("clonal unit test", parser.getValue(json2, "clonal unit", ""));
-  ASSERT_EQ("auto type test", parser.getValue(json2, "auto-type", ""));
-  ASSERT_EQ("neurite test", parser.getValue(
+  ASSERT_EQ("clonal unit test", parser.GetValue(json2, "clonal unit", ""));
+  ASSERT_EQ("auto type test", parser.GetValue(json2, "auto-type", ""));
+  ASSERT_EQ("neurite test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, ""));
-  ASSERT_EQ("note test", parser.getValue(
+  ASSERT_EQ("note test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_NOTES, ""));
 
   annot.clear();
@@ -69,32 +69,36 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   json3.setEntry(ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, "neurite test");
   json3.setEntry(ZFlyEmBodyAnnotation::KEY_NOTES, "note test");
   annot.loadJsonObject(json3);
-  ASSERT_EQ("neurite test", parser.getValue(
+  ASSERT_EQ("neurite test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, ""));
-  ASSERT_EQ("note test", parser.getValue(
+  ASSERT_EQ("note test", parser.GetValue(
               json2, ZFlyEmBodyAnnotation::KEY_NOTES, ""));
 }
 
 TEST(ZFlyEmBodyAnnotation, merge)
 {
   ZFlyEmBodyAnnotation annotation1;
+  annotation1.setBodyId(1);
   ZFlyEmBodyAnnotation annotation2;
-
+  annotation2.setBodyId(2);
   annotation1.setStatus("Orphan");
   annotation2.setStatus("");
 
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Orphan", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 
   annotation1.setStatus("Orphan");
 
   annotation2.setStatus("Orphan hotknife");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Orphan hotknife", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 
   annotation2.setStatus("Leaves");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Leaves", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 
   annotation2.setStatus("Hard to trace");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
@@ -103,10 +107,12 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation1.setStatus("Not examined");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Hard to trace", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 
   annotation2.setStatus("Partially traced");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Partially traced", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 
   annotation2.setStatus("Prelim Roughly traced");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
@@ -115,6 +121,7 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation2.setStatus("Roughly traced");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Roughly traced", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 
   annotation2.setStatus("Anchor");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
@@ -123,6 +130,7 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation2.setStatus("Traced in ROI");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Traced in ROI", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 
   annotation2.setStatus("traced");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
@@ -131,6 +139,7 @@ TEST(ZFlyEmBodyAnnotation, merge)
   annotation2.setStatus("Finalized");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("Finalized", annotation1.getStatus());
+  ASSERT_EQ(1, annotation1.getBodyId());
 }
 
 TEST(ZFlyEmBodyAnnotation, Merger)

@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QList>
 #include <QSet>
+#include <QMap>
 
 #include <cstdint>
 #include <string>
@@ -40,6 +41,7 @@ public:
   void setNeurotransmitter(const std::string &v);
   void setSynonym(const std::string &v);
   void setClonalUnit(const std::string &v);
+  void setHemilineage(const std::string &v);
   void setAutoType(const std::string &v);
   void setProperty(const std::string &v);
 
@@ -61,6 +63,7 @@ public:
   std::string getProperty() const;
   std::string getAutoType() const;
   std::string getClonalUnit() const;
+  std::string getHemilineage() const;
   bool isInstanceChanged() const;
 
   void setDefaultStatusList(const QList<QString> statusList);
@@ -76,6 +79,10 @@ private:
   void processUnknownStatus(const std::string &status);
   void processUnknownProperty(const std::string &property);
   void initNullStatusItem();
+  void initWidgetMap();
+
+  void disableWidget(const QString &key);
+  void hideWidget(const QString &key);
 
 private slots:
   void fillType();
@@ -93,8 +100,25 @@ private:
 
   QList<QString> m_defaultStatusList;
   QSet<QString> m_adminSatutsList;
+  QMap<QString, QWidget*> m_widgetMap;
 
   static const QString FINALIZED_TEXT;
+  static const QString KEY_TYPE;
+  static const QString KEY_INSTANCE;
+  static const QString KEY_COMMENT;
+  static const QString KEY_MAJOR_INPUT;
+  static const QString KEY_MAJOR_OUTPUT;
+  static const QString KEY_PRIMARY_NEURITE;
+  static const QString KEY_LOCATION;
+  static const QString KEY_OUT_OF_BOUNDS;
+  static const QString KEY_CROSS_MIDLINE;
+  static const QString KEY_NEUROTRANSMITTER;
+  static const QString KEY_SYNONYM;
+  static const QString KEY_CLONAL_UNIT;
+  static const QString KEY_HEMILINEAGE;
+  static const QString KEY_AUTO_TYPE;
+  static const QString KEY_PROPERTY;
+  static const QString KEY_STATUS;
 };
 
 #endif // FLYEMBODYANNOTATIONDIALOG_H

@@ -17,6 +17,7 @@ public:
 
   void setMessage(const QString &msg);
   bool mergingToLargest() const;
+  bool mergingToHighestStatus() const;
 //  void setBodyList(const QList<uint64_t> &bodyList);
 //  uint64_t getMasterBody() const;
 

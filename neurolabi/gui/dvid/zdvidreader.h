@@ -610,6 +610,8 @@ public:
   std::string readBodyLabelName() const;
   void syncBodyLabelName();
 
+  std::string readLabelblkName(const std::string &labelvolName) const;
+
   bool good() const;
 
   std::string readMasterNode() const;
@@ -646,7 +648,7 @@ public:
 
   bool refreshLabelBuffer() const;
 
-  void testApiLoad();
+//  void testApiLoad();
 
   int checkProofreadingData() const;
 

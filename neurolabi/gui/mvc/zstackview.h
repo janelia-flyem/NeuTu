@@ -9,8 +9,9 @@
 #include <QImage>
 #include <QWidget>
 #include <QPixmap>
-#include <vector>
 #include <QCheckBox>
+#include <vector>
+#include <functional>
 
 #include "zstackframe.h"
 #include "widgets/zparameter.h"

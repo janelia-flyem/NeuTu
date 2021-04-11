@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <initializer_list>
+#include <functional>
 
 #include "zjsonvalue.h"
 
@@ -207,6 +208,8 @@ public:
    * \brief Using flags in libjansson to produce a json string.
    */
   virtual std::string dumpJanssonString(size_t flags) const;
+
+  void forEachValue(std::function<void(ZJsonValue)> f) const;
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

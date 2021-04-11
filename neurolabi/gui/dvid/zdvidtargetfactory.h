@@ -15,7 +15,7 @@ public:
   /*!
    * \brief Make DVID target from a source string
    *
-   * A source string is an deprecated way of encoding a dvid target with the
+   * A source string is a deprecated way of encoding a dvid target with the
    * format [scheme:]host:port::uuid[:segmentation][:grayscale].
    */
   static ZDvidTarget MakeFromSourceString(const std::string &sourceString);

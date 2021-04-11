@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdlib>
 #include <cstdint>
+#include <functional>
 
 #include "mylib/array.h"
 
@@ -19,12 +20,14 @@ public:
 public:
   ZArray();
   ZArray(Value_Type type, int ndims, mylib::Dimn_Type *dims);
+  ZArray(Value_Type type, const std::vector<int> &dims);
   ZArray(const ZArray &array); //always deep copy
   ~ZArray();
 
-  inline int ndims() const { return m_data->ndims; }
-  inline int dim(int index) const { return m_data->dims[index]; }
-  inline mylib::Dimn_Type* dims() const { return m_data->dims; }
+  inline int getRank() const { return m_data->ndims; }
+//  inline int getDim(int index) const { return m_data->dims[index]; }
+//  inline mylib::Dimn_Type* getDims() const { return m_data->dims; }
+  std::vector<int> getDimVector() const;
   inline Value_Type valueType() const { return m_data->type; }
 
   size_t getElementNumber() const;
@@ -32,6 +35,14 @@ public:
   size_t getBytePerElement() const;
 
   bool isEmpty() const;
+
+  /*!
+   * \brief Check if coordinates are with data range.
+   *
+   * If the length of \a coords is different than the array rank, it will be
+   * treated as out of range.
+   */
+  bool withinDataRange(const std::vector<int> &coords) const;
 
   /*!
    * \brief Get the size of a certain dimension
@@ -69,6 +80,8 @@ public:
   template<typename T>
   T* getDataPointer() const;
 
+  void* getDataPointer(size_t offset) const;
+
 
   template<typename T>
   T getValue(size_t index) const;
@@ -103,7 +116,19 @@ public:
   void setStartCoordinate(const std::vector<int> &coord);
   void setStartCoordinate(int x, int y, int z);
 
+  inline std::vector<int> getStartCoordinates() const {
+    return m_startCoordinates;
+  }
+
+  size_t getIndex(const std::vector<int> &coords) const;
+
   ZArray& operator= (const ZArray &array);
+
+  ZArray* crop(
+      const std::vector<int> &corner, const std::vector<int> &dims) const;
+
+  void forEachCoordinates(
+      std::function<void(const std::vector<int> &coords)> f) const;
 
 private:
   mylib::Array *m_data;

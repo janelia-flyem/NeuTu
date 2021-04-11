@@ -184,9 +184,9 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
       }
       */
     } else if (isClipperTag(iter->first.c_str())) {
-      for (size_t i = 0; i < ZJsonParser::arraySize(iter->second); ++i) {
+      for (size_t i = 0; i < ZJsonParser::ArraySize(iter->second); ++i) {
         ZJsonObject clipperObject(
-              ZJsonParser::arrayValue(iter->second, i),
+              ZJsonParser::ArrayValue(iter->second, i),
               ZJsonValue::SET_INCREASE_REF_COUNT);
         ZMovieSceneClipper clipper;
         clipper.loadJsonObject(clipperObject);

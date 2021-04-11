@@ -11,7 +11,6 @@
 #include "logging/zbenchtimer.h"
 #include "qt/core/qthelper.h"
 #include "geometry/zgeometry.h"
-
 #include "widgets/zimagewidget.h"
 //#include "z3dwindow.h"
 #include "zimage.h"
@@ -953,6 +952,7 @@ void ZStackView::updateImageScreen(EUpdateOption option)
   RefreshConfig config;
   config.updateOption = option;
   refreshScreen(config);
+
   /*
   ZOUT(LTRACE(), 5) << "ZStackView::updateImageScreen: index="
            << this->getZ(neutu::ECoordinateSystem::STACK);

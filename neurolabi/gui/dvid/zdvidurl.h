@@ -313,6 +313,8 @@ public:
   void setUuid(const std::string &uuid);
 
 
+  std::string getSynapseLabelszUrl() const;
+  std::string getSynapseLabelszReloadUrl() const;
   std::string getSynapseLabelszUrl(int n) const;
   std::string getSynapseLabelszBodyUrl(uint64_t bodyId) const;
   std::string getSynapseLabelszBodiesUrl() const;

@@ -26,6 +26,8 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zflyemtododelegate.h"
 #include "zflyemproofdocutil.h"
+#include "flyemdatareader.h"
+
 #include "neuroglancer/zneuroglancerpathfactory.h"
 #include "neuroglancer/zneuroglancerlayerspecfactory.h"
 #include "neuroglancer/zneuroglancerannotationlayerspec.h"
@@ -1033,21 +1035,25 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
   if (stroke != NULL) {
     stroke->getLastPoint(&x, &y);
     double radius = stroke->getWidth() / 2.0;
-
-    ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
     ZIntPoint pos(x, y, buddyView()->getZ(neutu::ECoordinateSystem::STACK));
-    pos.shiftSliceAxisInverse(getSliceAxis());
-    bookmark->setLocation(pos);
-    bookmark->setRadius(radius);
-    bookmark->setCustom(true);
-    bookmark->setUser(neutu::GetCurrentUserName());
-    bookmark->addUserTag();
-    ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
-    if (doc != NULL) {
-      bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
-    }
 
-    getCompleteDocument()->executeAddBookmarkCommand(bookmark);
+    if (getCompleteDocument()->canAddBookmarkAt(pos, true)) {
+      ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
+      pos.shiftSliceAxisInverse(getSliceAxis());
+      bookmark->setLocation(pos);
+      bookmark->setRadius(radius);
+      bookmark->setCustom(true);
+      bookmark->setUser(neutu::GetCurrentUserName());
+      bookmark->addUserTag();
+      ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
+      if (doc != NULL) {
+        bookmark->setBodyId(doc->getBodyId(bookmark->getLocation()));
+      }
+
+      bookmark->updateTimestamp();
+
+      getCompleteDocument()->executeAddBookmarkCommand(bookmark);
+    }
   }
 }
 
@@ -1356,12 +1362,12 @@ void ZFlyEmProofPresenter::copyLink(const QString &option) const
   obj.decode(option.toStdString(), true);
 
   ZJsonObjectParser parser;
-  if (parser.getValue(obj, "type", "") == "neuroglancer") {
+  if (parser.GetValue(obj, "type", "") == "neuroglancer") {
     const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
 
-    if (parser.getValue(obj, "location", "") == "rectroi") {
+    if (parser.GetValue(obj, "location", "") == "rectroi") {
       ZRect2d rect = buddyDocument()->getRect2dRoi();
       pt.set(rect.getCenter().toPoint());
     }

@@ -1,6 +1,7 @@
 #include "zflyemcoordinateconverter.h"
 #include "zerror.h"
 #include "geometry/zpoint.h"
+#include "geometry/zintpoint.h"
 #include "dvid/zdvidinfo.h"
 
 ZFlyEmCoordinateConverter::ZFlyEmCoordinateConverter() :
@@ -160,4 +161,13 @@ void ZFlyEmCoordinateConverter::convert(
   if (pt != NULL) {
     convert(pt->xRef(), pt->yRef(), pt->zRef(), source, target);
   }
+}
+
+ZIntPoint ZFlyEmCoordinateConverter::convert(
+    const ZIntPoint &pt, ESpace source, ESpace target) const
+{
+  ZPoint newPt = pt.toPoint();
+  convert(&newPt, source, target);
+
+  return newPt.toIntPoint();
 }

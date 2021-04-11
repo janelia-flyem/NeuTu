@@ -1,6 +1,8 @@
 #ifndef ZDVIDUTIL_H
 #define ZDVIDUTIL_H
 
+#include <functional>
+
 #include "dvid/libdvidheader.h"
 //#include "common/zsharedpointer.h"
 #include "dvid/zdviddef.h"
@@ -112,6 +114,8 @@ ZDvidTarget MakeTargetFromUrlSpec(const std::string &path);
 
 bool IsValidDvidUrl(const std::string &url);
 
+bool IsServerReachable(const ZDvidTarget &target);
+
 /*!
  * \brief Test if two UUIDs they point to the same DVID node
  *
@@ -134,8 +138,13 @@ ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
 ZIntCuboid GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo);
 #endif
 
-std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(const ZDvidReader &reader, const std::vector<uint64_t> &bodyIdArray,
+std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
+    const ZDvidReader &reader, const std::vector<uint64_t> &bodyIdArray,
     bool mergingToLargest);
+
+std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
+    uint64_t defaultTargetId, const std::vector<uint64_t> &bodyIdArray,
+    std::function<bool(uint64_t, uint64_t)> lessStable);
 
 std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
     const ZDvidReader &reader, uint64_t defaultTargetId,

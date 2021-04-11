@@ -752,6 +752,11 @@ void MainWindow::createActions()
   createViewActions();
   createToolActions();
 
+  m_windowActionGroup = new QActionGroup(this);
+  m_windowActionGroup->setExclusive(true);
+  connect(m_windowActionGroup, SIGNAL(triggered(QAction*)),
+          this, SLOT(showChildWindow(QAction*)));
+
   //traceTubeAction->setChecked(true);
 
   interactiveMarkPuncta = new QActionGroup(this);
@@ -2014,6 +2019,7 @@ void MainWindow::importImageSequence()
   //QApplication::processEvents();
 }
 
+/*
 void MainWindow::tryToClose()
 {
   --m_proofreadWindowCount;
@@ -2022,6 +2028,7 @@ void MainWindow::tryToClose()
     close();
   }
 }
+*/
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -3068,7 +3075,7 @@ void MainWindow::test(ZTestOptionDialog *dlg)
 {
   switch (dlg->getOption()) {
   case ZTestOptionDialog::OPTION_NORMAL:
-    ZTest::test(this);
+    ZTest::Test(this);
     break;
   case ZTestOptionDialog::OPTION_STRESS:
     ZTest::stressTest(this);
@@ -7048,7 +7055,7 @@ ZProofreadWindow *MainWindow::startProofread(const QString &databaseName)
 
   window->showMaximized();
 
-  connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
+//  connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
   connect(window, SIGNAL(showingMainWindow()), this, SLOT(showAndRaise()));
 
 #if 0
@@ -7065,15 +7072,59 @@ ZProofreadWindow *MainWindow::startProofread(const QString &databaseName)
     window->loadDatabaseFromName(databaseName);
   }
 
+  addChildWindow(window);
+
   return window;
 }
 
-void MainWindow::showAndRaise()
-{
-  show();
-  raise();
+namespace {
+
+void show_and_raise(QMainWindow *window) {
+  if (window->isMinimized()) {
+    window->showNormal();
+  } else {
+    window->show();
+  }
+  window->raise();
 }
 
+}
+void MainWindow::showAndRaise()
+{
+  show_and_raise(this);
+}
+
+void MainWindow::showChildWindow(QMainWindow *window)
+{
+  if (m_childWindowMap.contains(window)) {
+    show_and_raise(window);
+  }
+}
+
+void MainWindow::showChildWindow(QAction *action)
+{
+  for (auto iter = m_childWindowMap.begin(); iter != m_childWindowMap.end(); ++iter) {
+    if (iter.value() == action) {
+      showChildWindow(iter.key());
+      break;
+    }
+  }
+}
+
+void MainWindow::removeChildWindow(QMainWindow *window)
+{
+  if (m_childWindowMap.contains(window)) {
+    QAction *action = m_childWindowMap.value(window);
+    m_ui->menuWindow->removeAction(action);
+    m_windowActionGroup->removeAction(action);
+    m_childWindowMap.remove(window);
+    action->deleteLater();
+
+    if (m_childWindowMap.isEmpty() && !isVisible()) {
+      close();
+    }
+  }
+}
 
 /*
 void MainWindow::launchSplit(const QString &str)
@@ -7081,6 +7132,20 @@ void MainWindow::launchSplit(const QString &str)
   m_bodySplitProjectDialog->startSplit(str);
 }
 */
+
+void MainWindow::addChildWindow(QMainWindow *window)
+{
+  if (window) {
+    QAction *action = new QAction(this);
+    action->setText(QString("Proofread %1").arg(m_childWindowMap.size() + 1));
+    m_childWindowMap[window] = action;
+    m_windowActionGroup->addAction(action);
+    m_ui->menuWindow->addAction(action);
+    connect(window, &QObject::destroyed, this, [=]() {
+      removeChildWindow(window);
+    });
+  }
+}
 
 void MainWindow::on_actionProof_triggered()
 {

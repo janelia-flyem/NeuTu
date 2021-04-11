@@ -2,6 +2,7 @@ HEADERS += \
     $$PWD/logging.h \
     $$PWD/utilities.h \
     $$PWD/zpositionmapper.h \
+    $$PWD/zstackdocobjectmonitor.h \
     $$PWD/zstackdocobjectupdate.h \
     $$PWD/zstackview.h \
     $$PWD/zstackdoc.h \
@@ -20,6 +21,7 @@ SOURCES += \
     $$PWD/logging.cpp \
     $$PWD/utilities.cpp \
     $$PWD/zpositionmapper.cpp \
+    $$PWD/zstackdocobjectmonitor.cpp \
     $$PWD/zstackdocobjectupdate.cpp \
     $$PWD/zstackview.cpp \
     $$PWD/zstackdoc.cpp \

@@ -35,8 +35,8 @@
  *
  * Catches:
  *   There is no guarantee that supervoxels are unique across mapped sets.
- *   A supervoxel may also have the same ID as a normal body. This can cause
- *   confusion while erasing an ID. Therefore the function erase() has been
+ *   A supervoxel and a normal body may have the same ID. This can cause
+ *   confusion in ID erasing. Therefore the function erase() has been
  *   replaced by more explicit eraseSupervoxel().
  */
 

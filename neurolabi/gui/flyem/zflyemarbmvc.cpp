@@ -66,8 +66,11 @@ void ZFlyEmArbMvc::setDvid(const ZDvidEnv &env)
 {
   clear();
   if (getCompleteDocument()->setDvid(env)) {
-    getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
-                                    SLOT(allowBlinkingSegmentation(bool)));
+    if (getDvidTarget().usingMulitresBodylabel()) {
+      getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
+                                      SLOT(allowBlinkingSegmentation(bool)));
+    }
+
     if (getRole() == ERole::ROLE_WIDGET) {
       getViewButton(EViewButton::GOTO_POSITION)->show();
     }

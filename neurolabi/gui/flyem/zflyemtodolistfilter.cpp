@@ -646,7 +646,9 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
   }
 
   if (e->type() == QEvent::MouseButtonRelease) {
-//    if (m_pressedItem != NULL) {
+    const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
+    //    if (m_pressedItem != NULL) {
+    if (m_pressedItem == obj) {
       if ((std::abs(e->x() - m_startCoord.x) < 2) &&
           (std::abs(m_startCoord.y - e->y()) < 2)) {
         if (e->modifiers() == Qt::ControlModifier)
@@ -657,11 +659,12 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
           e->accept();
         }
       }
+    }
 
-      LDEBUG() << "Release:" << m_pressedItem;
+    LDEBUG() << "Release:" << m_pressedItem;
 
-      m_pressedItem = NULL;
-//    }
+    m_pressedItem = NULL;
+    //    }
   }
 
 

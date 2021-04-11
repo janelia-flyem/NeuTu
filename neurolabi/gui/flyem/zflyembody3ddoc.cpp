@@ -230,7 +230,7 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
               bool recycable = true;
               obj = dynamic_cast<T*>(iter.key());
               if (m_bodyUpdateMap.contains(bodyId)) {
-                if (m_bodyUpdateMap[bodyId] >= obj->getTimeStamp()) { //not recycable
+                if (m_bodyUpdateMap[bodyId] >= obj->getTimestamp()) { //not recycable
                   recycable = false;
                 }
               }
@@ -3370,7 +3370,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
       }
 
       if (tree != NULL) {
-        tree->setTimeStamp(t);
+        tree->setTimestamp(t);
         if (IsOverSize(tree) && zoom <= 2) {
           zoom = 0;
         }
@@ -3811,7 +3811,7 @@ namespace {
     if (mesh) {
       uint64_t id = mesh->getLabel();
       mesh->prepareNormals();
-      mesh->setTimeStamp(t);
+      mesh->setTimestamp(t);
       auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
             id, zoom, flyem::EBodyType::MESH);
       mesh->setSource(source);

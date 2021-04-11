@@ -13,6 +13,8 @@
 #include "logging/zlog.h"
 #include "logging/zqslog.h"
 
+#include "qt/network/znetworkutils.h"
+
 #include "dvid/zdvidversiondag.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
@@ -489,6 +491,21 @@ bool dvid::IsValidDvidUrl(const std::string &url)
   return target.isValid();
 }
 
+bool dvid::IsServerReachable(const ZDvidTarget &target)
+{
+  if (target.isMock()) {
+    return true;
+  }
+
+  std::string server = target.getRootUrl();
+  if (!server.empty()) {
+    return ZNetworkUtils::IsAvailable(
+          server.c_str(), znetwork::EOperation::HAS_HEAD);
+  }
+
+  return false;
+}
+
 ZDvidTarget dvid::MakeTargetFromUrlSpec(const std::string &path)
 {
   ZDvidTarget target;
@@ -523,27 +540,6 @@ ZDvidTarget dvid::MakeTargetFromUrl_deprecated(const std::string &path)
   ZDvidTarget target;
   target.setFromUrl_deprecated(path);
   return target;
-
-#if 0
-  QUrl url(path.c_str());
-
-  std::string uuid;
-
-  std::string marker = "api/node/";
-  std::string::size_type markerPos = path.find(marker);
-
-  if (markerPos != std::string::npos) {
-    markerPos += marker.size();
-    std::string::size_type uuidPos = path.find('/', markerPos);
-    uuid = path.substr(markerPos, uuidPos - markerPos);
-  }
-
-
-  ZDvidTarget target;
-  target.set(url.host().toStdString(), uuid, url.port());
-
-  return target;
-#endif
 }
 
 
@@ -553,6 +549,38 @@ std::string dvid::GetBodyIdTag(uint64_t bodyId)
   stream << "body:" << bodyId;
 
   return stream.str();
+}
+
+std::pair<uint64_t, std::vector<uint64_t>> dvid::GetMergeConfig(
+    uint64_t defaultTargetId, const std::vector<uint64_t> &bodyIdArray,
+    std::function<bool(uint64_t, uint64_t)> lessStable)
+{
+  std::vector<uint64_t> merged;
+  uint64_t target = 0;
+  if (bodyIdArray.size() > 0) {
+    target = defaultTargetId;
+
+    if (lessStable) {
+      for (uint64_t bodyId : bodyIdArray) {
+        if (lessStable(target, bodyId)) {
+          target = bodyId;
+        }
+      }
+
+      if (defaultTargetId != target) {
+        merged.push_back(defaultTargetId);
+      }
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId != target) {
+          merged.push_back(bodyId);
+        }
+      }
+    } else {
+      merged.insert(merged.begin(), bodyIdArray.begin() + 1, bodyIdArray.end());
+    }
+  }
+
+  return std::pair<uint64_t, std::vector<uint64_t>>(target, merged);
 }
 
 std::pair<uint64_t, std::vector<uint64_t>> dvid::GetMergeConfig(
