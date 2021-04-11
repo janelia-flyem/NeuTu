@@ -33,6 +33,7 @@ public:
   int getSeedMethod() const { return m_seedMethod; }
   int getRecoverLevel() const { return m_recover; }
   double getMaxEucDist() const { return m_maxEucDist; }
+  int getChainScreenCount() const { return m_chainScreenCount; }
 
   void setMinAutoScore(double score) { m_minAutoScore = score; }
   void setMinManualScore(double score) { m_minManualScore = score; }
@@ -43,6 +44,7 @@ public:
   void setRecoverLevel(int level) { m_recover = level; }
   void setMaxEucDist(double d) { m_maxEucDist = d; }
   void setCrossoverTest(bool on) { m_crossoverTest = on; }
+  void setChainScreenCount(int c) { m_chainScreenCount = c; }
 
   ZJsonObject getLevelJson(int level) const;
 
@@ -59,6 +61,7 @@ public:
   static const char * getSeedMethodKey() { return m_seedMethodKey; }
   static const char * getRecoverKey() { return m_recoverKey; }
   static const char * getEnhanceLineKey() { return m_enhanceLineKey; }
+  static const char *getChainScreenCountKey() { return m_chainScreenCountKey; }
 
   void print() const;
 
@@ -78,6 +81,7 @@ private:
   bool m_enhanceMask;
   int m_seedMethod;
   int m_recover;
+  int m_chainScreenCount = 0;
   double m_maxEucDist;
   std::map<int, ZJsonObject> m_levelMap;
 
@@ -95,5 +99,6 @@ private:
   static const char *m_recoverKey;
   static const char *m_enhanceLineKey;
   static const char *m_maxEucDistKey;
+  static const char *m_chainScreenCountKey;
 };
 #endif // ZNEURONTRACERCONFIG_H

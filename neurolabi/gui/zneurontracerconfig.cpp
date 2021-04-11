@@ -24,7 +24,7 @@ const char *ZNeuronTracerConfig::m_seedMethodKey = "seedMethod";
 const char *ZNeuronTracerConfig::m_recoverKey = "recover";
 const char *ZNeuronTracerConfig::m_enhanceLineKey = "enhanceMask";
 const char *ZNeuronTracerConfig::m_maxEucDistKey = "maxEucDist";
-
+const char *ZNeuronTracerConfig::m_chainScreenCountKey = "chainScreenCount";
 
 ZNeuronTracerConfig::ZNeuronTracerConfig()
 {
@@ -64,6 +64,7 @@ void ZNeuronTracerConfig::print() const
   std::cout << "Seeding method: " << m_seedMethod << std::endl;
   std::cout << "Recovering: " << m_recover << std::endl;
   std::cout << "Maximal gap: " << m_maxEucDist << std::endl;
+  std::cout << "Chain screen count: " << m_chainScreenCount << std::endl;
 
   std::cout << "Levels: " << std::endl;
   for (std::map<int, ZJsonObject>::const_iterator iter = m_levelMap.begin();
@@ -122,7 +123,10 @@ void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
   std::cout << jsonObj.dumpString() << std::endl;
 #endif
   if (jsonObj.hasKey("tag")) {
-    if (ZJsonParser::stringValue(jsonObj["tag"]) == "trace configuration") {
+    if (ZJsonParser::stringValue(jsonObj["tag"]) == "trace configuration" ||
+        ZJsonParser::stringValue(jsonObj["tag"]) == "trace_configuration" ||
+        ZJsonParser::stringValue(jsonObj["tag"]) == "trace config" ||
+        ZJsonParser::stringValue(jsonObj["tag"]) == "trace_config") {
       if (jsonObj.hasKey("default")) {
         ZJsonObject defaultObj(const_cast<json_t*>(jsonObj["default"]),
             ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -186,6 +190,11 @@ void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
           m_enhanceMask =
               ZJsonParser::booleanValue(defaultObj[m_enhanceLineKey]);
         }
+
+        if (defaultObj.hasKey(m_chainScreenCountKey)) {
+          m_chainScreenCount =
+              ZJsonParser::integerValue(defaultObj[m_chainScreenCountKey]);
+        }
       }
 
       if (jsonObj.hasKey("level")) {
@@ -199,7 +208,7 @@ void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
               ZJsonObject levelObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
               m_levelMap[level] = levelObj;
 #ifdef _DEBUG_
-              std::cout << "Tracing leve config: " << key[0] << std::endl;
+              std::cout << "Tracing level config: " << key[0] << std::endl;
               levelObj.print();
 #endif
             }

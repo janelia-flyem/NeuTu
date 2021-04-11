@@ -290,6 +290,7 @@ void ZNeuronTracer::configure()
   m_enhancingMask = config.enhancingMask();
   m_seedingMethod = config.getSeedMethod();
   m_recover = config.getRecoverLevel();
+  setChainScreenCount(config.getChainScreenCount());
 
   if (m_traceWorkspace != NULL) {
     m_traceWorkspace->refit = config.isRefit();
@@ -1245,6 +1246,11 @@ void ZNeuronTracer::setSeedScreening(bool on)
   m_screeningSeed = on;
 }
 
+void ZNeuronTracer::setChainScreenCount(int c)
+{
+  m_chainScreenCount = c;
+}
+
 void ZNeuronTracer::clearBuffer()
 {
   if (m_mask != NULL) {
@@ -1861,7 +1867,7 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   }
   advanceProgress(0.1);
 
-  if (chainArray.size() > 100) {
+  if (m_chainScreenCount > 0 && int(chainArray.size()) > m_chainScreenCount) {
     std::cout << "Screening " << chainArray.size() << " tubes ..." << std::endl;
     chainArray = screenChain(stack, chainArray);
     m_diag.save(chainArray, "branches3_screen");
