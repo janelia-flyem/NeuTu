@@ -25,6 +25,6 @@ void ZStackDocMeta::allowTracing(bool on)
 void ZStackDocMeta::loadJsonObject(const ZJsonObject &obj)
 {
   ZJsonObjectParser parser;
-  m_allowingTracing = parser.getValue(obj, "tracing", false);
-  m_allowingSegmentation = parser.getValue(obj, "segmentation", true);
+  m_allowingTracing = parser.GetValue(obj, "tracing", false);
+  m_allowingSegmentation = parser.GetValue(obj, "segmentation", true);
 }

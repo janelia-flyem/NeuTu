@@ -176,7 +176,7 @@ public slots:
   void shallowClear();
   void mergeBody();
   void setLoadingLabel(bool state);
-  void uploadResult(bool mergingToLargest);
+  void uploadResult(bool mergingToHighestStatus, bool mergingToLargest);
   void saveMergeOperation();
 //  void update3DBodyView(const ZStackObjectSelector &selector);
 //  void update3DBodyView(
@@ -201,7 +201,7 @@ private:
 //  void update3DBodyViewPlane(
 //      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
 //  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
-  void uploadResultFunc(bool mergingToLargest);
+  void uploadResultFunc(bool mergingToHighestStatus, bool mergingToLargest);
 //  void makeCoarseBodyWindow(ZStackDoc *doc);
 //  void makeBodyWindow();
   void connectSignalSlot();
@@ -213,6 +213,7 @@ private:
   void uploadMeshMerge(
       uint64_t targetId, const std::vector<uint64_t> &bodyIdArray);
   void refreshBodyAnnotationCache();
+  void refreshBodySizeCache();
   void updateMergeMap();
   void updateAffliatedData(
       uint64_t targetId, const std::vector<uint64_t> &bodyArray,
@@ -236,6 +237,9 @@ private:
 
   void logSynapseInfo(uint64_t bodyId);
 
+  int getCachedStatusRank(uint64_t bodyId) const;
+  size_t getCachedSize(uint64_t bodyId) const;
+
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
@@ -248,6 +252,7 @@ private:
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationCache;
+  QMap<uint64_t, size_t> m_bodySizeCache;
   QMap<uint64_t, std::vector<uint64_t>> m_mergeMap;
 
   ZProgressSignal *m_progressSignal;

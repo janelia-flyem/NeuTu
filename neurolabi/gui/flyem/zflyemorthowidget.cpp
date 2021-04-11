@@ -277,7 +277,8 @@ void ZFlyEmOrthoWidget::resetCrosshair()
 
 void ZFlyEmOrthoWidget::processMessage(const ZWidgetMessage &message)
 {
-  if (message.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+  if (message.hasTargetIn(
+        ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_TEXT_APPENDING)) {
     m_controlForm->dump(message);
   }
   /*

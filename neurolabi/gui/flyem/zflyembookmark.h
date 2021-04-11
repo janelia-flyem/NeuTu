@@ -38,7 +38,7 @@ public:
                neutu::EAxis sliceAxis) const override;
 
   inline uint64_t getBodyId() const { return m_bodyId; }
-  inline const QString& getTime() const { return m_time; }
+//  inline const QString& getTime() const { return m_time; }
   inline const QString& getUserName() const { return m_userName; }
   inline const QString& getStatus() const { return m_status; }
   inline const QString& getComment() const { return m_comment; }
@@ -47,11 +47,22 @@ public:
   inline EBookmarkType getBookmarkType() const { return m_bookmarkType; }
   QString getTypeString() const;
 
+  QString getTime() const;
+
   inline void setBookmarkType(EBookmarkType type) { m_bookmarkType = type; }
+  void setBookmarkType(const std::string &type);
 
   inline void setComment(const QString &comment) { m_comment = comment; }
-  inline void setUser(const QString &user) { m_userName = user; }
+  void setUser(const QString &user);
   inline void setStatus(const QString &status) { m_status = status; }
+
+  /*!
+   * \brief Update user.
+   *
+   * It's similar to setUser except that nothing will be done if \a user is
+   * empty.
+   */
+  void updateUser(const QString &user);
 
   inline void setComment(const std::string &comment) {
     setComment(QString::fromStdString(comment)); }
@@ -59,6 +70,8 @@ public:
     setUser(QString::fromStdString(user)); }
   inline void setStatus(const std::string &status) {
     setStatus(QString::fromStdString(status)); }
+
+  void setUser(const char *user);
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setLocation(int x, int y, int z) {
@@ -82,15 +95,15 @@ public:
 
   QString getDvidKey() const;
 
-  ZJsonObject toJsonObject(bool ignoringComment = false) const;
   bool loadJsonObject(const ZJsonObject &jsonObj);
 
   //For the new annotation API
   ZJsonObject toDvidAnnotationJson() const;
-  void loadDvidAnnotation(const ZJsonObject &jsonObj);
+  bool loadDvidAnnotation(const ZJsonObject &jsonObj);
 
   void print() const;
   std::string toLogString() const;
+  std::string toString(bool ignoringComment = false) const;
 
   void setCustom(bool state);
 
@@ -112,21 +125,31 @@ public:
 
 //  ZFlyEmBookmark* clone() const;
 
-  ZJsonObject& getPropertyJson() {
-    return m_propertyJson;
+  ZJsonObject& getPropJson() {
+    return m_propJson;
   }
 
-  const ZJsonObject& getPropertyJson() const {
-    return m_propertyJson;
+  const ZJsonObject& getPropJson() const {
+    return m_propJson;
   }
+
+  std::string getProp(const std::string &key);
+
+  std::string getPrevUser() const;
+
 
 private:
   void init();
+  bool loadClioAnnotation(const ZJsonObject &jsonObj);
+  void setTimestampS(const std::string &t);
+  void updatePrevUser(const std::string &user);
+  void normalizePrevUser();
+  ZJsonObject toJsonObject(bool ignoringComment = false) const;
 
 private:
   uint64_t m_bodyId;
   QString m_userName;
-  QString m_time;
+//  QString m_time;
   QString m_status;
   QString m_comment;
   QStringList m_tags;
@@ -136,7 +159,7 @@ private:
   bool m_isChecked;
   bool m_isCustom;
   bool m_isInTable;
-  ZJsonObject m_propertyJson;
+  ZJsonObject m_propJson;
 //  QString m_decorationText;
 };
 

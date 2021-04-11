@@ -337,7 +337,7 @@ void ZSwcTree::parseComment(istream &stream)
     json_t *value = jsonObj["color"];
     if (value != NULL) {
       int alpha = 255;
-      if (ZJsonParser::arraySize(value) == 4) {
+      if (ZJsonParser::ArraySize(value) == 4) {
         alpha = neutu::iround(ZJsonParser::numberValue(value, 3) * 255.0);
       }
 
@@ -350,7 +350,7 @@ void ZSwcTree::parseComment(istream &stream)
     value = jsonObj["resolution"];
     if (value != NULL) {
       double res[3] = {1, 1, 1};
-      if (ZJsonParser::arraySize(value) == 3) {
+      if (ZJsonParser::ArraySize(value) == 3) {
         for (int i = 0; i < 3; ++i) {
           res[i] = ZJsonParser::numberValue(value, i);
         }
@@ -368,7 +368,7 @@ void ZSwcTree::parseComment(istream &stream)
       ZJsonObject transformObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
       const json_t *transformField = transformObj["scale"];
       if (transformField != NULL) {
-        if (ZJsonParser::arraySize(transformField) == 3) {
+        if (ZJsonParser::ArraySize(transformField) == 3) {
           for (int i = 0; i < 3; ++i) {
             scaleFactor[i] = ZJsonParser::numberValue(transformField, i);
           }
@@ -377,7 +377,7 @@ void ZSwcTree::parseComment(istream &stream)
 
       transformField = transformObj["translate"];
       if (transformField != NULL) {
-        if (ZJsonParser::arraySize(transformField) == 3) {
+        if (ZJsonParser::ArraySize(transformField) == 3) {
           for (int i = 0; i < 3; ++i) {
             offset[i] = ZJsonParser::numberValue(transformField, i);
           }

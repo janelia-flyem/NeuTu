@@ -4,6 +4,7 @@
 #include "ztestheader.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
+#include "http/HTTPRequest.hpp"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidtarget.h"
@@ -58,6 +59,31 @@ TEST(ZDvidReader, basic)
 
   {
     ZDvidReader reader;
+    ASSERT_FALSE(reader.open("foo:9001"));
+    ASSERT_FALSE(reader.open("", "uuid", 1));
+    ASSERT_FALSE(reader.open("server", "", 1));
+    ASSERT_TRUE(reader.open("mock://mock", "", 1));
+  }
+
+  try {
+    http::Request request("http://127.0.0.1:1600");
+    http::Response response = request.send("HEAD");
+    bool connected = (response.code == 200);
+    if (connected) {
+      ZDvidReader reader;
+      if (reader.open("http://127.0.0.1:1600:c315")) {
+        ASSERT_TRUE(reader.good());
+        ASSERT_TRUE(reader.isReady());
+      }
+    } else {
+      std::cout << "Cannot connect to dvid server. Skip." << std::endl;
+    }
+  } catch (...) {
+    std::cout << "Cannot connect to dvid server. Skip." << std::endl;
+  }
+
+  {
+    ZDvidReader reader;
     if (reader.open("127.0.0.1", "4280", 1600)) {
       ASSERT_TRUE(reader.isReady());
 
@@ -98,6 +124,12 @@ TEST(ZDvidReader, basic)
       ZDvidInfo info = reader2.readGrayScaleInfo();
       ASSERT_TRUE(info.isValid());
     }
+  }
+
+  {
+    ZDvidReader reader;
+    ZDvidTarget target("mock://mock", "");
+    ASSERT_TRUE(reader.open(target));
   }
 
 

@@ -961,24 +961,25 @@ public:
   void notifyObjectModified(ZStackObject::EType type);
   void notifyObjectModified(const ZStackObjectInfoSet &infoSet);
   void notifyObjectModified(const ZStackObjectInfo &info);
+  void notifyObjectModified(
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state);
 
-  void bufferObjectModified(ZStackObject::EType type, bool sync = true);
-  void bufferObjectModified(ZStackObject::ETarget target, bool sync = true);
+  void bufferObjectModified(ZStackObject::EType type);
+  void bufferObjectModified(ZStackObject::ETarget target);
 //  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet,
 //                            bool sync = true);
 //  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
 //                            bool sync = true);
   void bufferObjectModified(
-      ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
-  void bufferObjectModified(ZStackObject *obj, bool sync = true);
-  void bufferObjectVisibilityChanged(ZStackObject *obj, bool sync = true);
-  void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
-  void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
+      ZStackObject *obj, ZStackObjectInfo::TState state);
+  void bufferObjectModified(ZStackObject *obj);
+  void bufferObjectVisibilityChanged(ZStackObject *obj);
+  void bufferObjectModified(const ZStackObjectRole &role);
+  void bufferObjectModified(ZStackObjectRole::TRole role);
   void bufferObjectModified(
-      const ZStackObjectInfo &info, ZStackObjectInfo::TState state,
-      bool sync);
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state);
   void bufferObjectModified(
-      const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
+      const QSet<ZStackObject::ETarget> &targetSet/*, bool sync = true*/);
 
 
   /*!
@@ -991,8 +992,10 @@ public:
   void processObjectModified();
 
 
-  void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
-  void processObjectModified(ZStackObject::EType type, bool sync = true);
+  void processObjectModified(const ZStackObjectInfo &info);
+  void processObjectModified(ZStackObject::EType type);
+  void processObjectModified(
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state);
 
   /*!
    * \brief Process object modfication
@@ -1000,9 +1003,11 @@ public:
    * It emits a object-modified signal with the information of \a obj in the
    * PROMPT mode, or buffers the inforation in the BUFFER mode.
    */
-  void processObjectModified(ZStackObject *obj, bool sync = true);
-  void processObjectModified(ZStackObjectRole::TRole role, bool sync = true);
-  void processObjectModified(const ZStackObjectRole &role, bool sync = true);
+  void processObjectModified(ZStackObject *obj);
+  void processObjectModified(
+      ZStackObject *obj, ZStackObjectInfo::TState state);
+  void processObjectModified(ZStackObjectRole::TRole role);
+  void processObjectModified(const ZStackObjectRole &role);
 
   void processSwcModified();
   void clearObjectModifiedBuffer(bool sync);

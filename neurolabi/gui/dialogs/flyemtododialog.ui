@@ -57,6 +57,21 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="deleteSelectedPushButton">
+       <property name="toolTip">
+        <string>This is an experimental feature. Use it with cautious.</string>
+       </property>
+       <property name="text">
+        <string>Delete Selected</string>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normalon>:/images/delete.png</normalon>
+        </iconset>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

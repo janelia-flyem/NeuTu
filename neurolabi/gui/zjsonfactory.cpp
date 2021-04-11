@@ -112,7 +112,10 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   ZJsonObject propJson;
   propJson.setEntry(
         "body ID", QString("%1").arg(bookmark.getBodyId()).toStdString());
-  propJson.setEntry("time", bookmark.getTime().toStdString());
+//  propJson.setEntry("time", bookmark.getTime().toStdString());
+  if (bookmark.getTimestamp() > 0) {
+    propJson.setEntry("timestamp", std::to_string(bookmark.getTimestamp()));
+  }
   propJson.setEntry("status", bookmark.getStatus().toStdString());
   propJson.setEntry("comment", bookmark.getComment().toStdString());
   propJson.setEntry("type", bookmark.getTypeString().toStdString());
@@ -125,9 +128,10 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
     propJson.setEntry("custom", "0");
   }
   propJson.setEntry("user", bookmark.getUserName().toStdString());
+  propJson.setNonEmptyEntry("prevUser", bookmark.getPrevUser());
 
   std::map<std::string, json_t*> additionalProp =
-      bookmark.getPropertyJson().toEntryMap(false);
+      bookmark.getPropJson().toEntryMap(false);
   for (std::map<std::string, json_t*>::iterator iter = additionalProp.begin();
        iter != additionalProp.end(); ++iter) {
     const std::string &key = iter->first;

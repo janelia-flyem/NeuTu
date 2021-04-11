@@ -2,12 +2,15 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <regex>
 
 #if _QT_APPLICATION_
 #include <QtDebug>
 #include "logging/zqslog.h"
 #include "dvid/zdvidbufferreader.h"
+#include "zglobal.h"
 #endif
+
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zjsonobject.h"
@@ -43,16 +46,35 @@ ZDvidNode::ZDvidNode(
   set(address, uuid, port);
 }
 
-bool ZDvidNode::hasDvidUuid() const
+bool ZDvidNode::IsUuidRef(const std::string &uuid)
 {
-  if (!m_uuid.empty()) {
-    if (m_uuid[0] == '@' || ZString(m_uuid).startsWith("ref:") ||
-        ZString(m_uuid).startsWith("ref>")) {
-      return false;
-    }
+  ZString s(uuid);
+
+  return (s.startsWith("ref:") || s.startsWith("ref>"));
+}
+
+bool ZDvidNode::IsUuidAlias(const std::string &uuid)
+{
+  if (uuid.length() > 1) {
+    return uuid[0] == '@';
   }
 
-  return true;
+  return false;
+}
+
+bool ZDvidNode::IsImplicitUuid(const std::string &uuid)
+{
+  return IsUuidRef(uuid) || IsUuidAlias(uuid);
+}
+
+bool ZDvidNode::IsValidUuid(const std::string &uuid)
+{
+  return IsValidDvidUuid(uuid) || IsImplicitUuid(uuid);
+}
+
+bool ZDvidNode::hasDvidUuid() const
+{
+  return IsValidDvidUuid(m_uuid);
 }
 
 std::string ZDvidNode::getScheme() const
@@ -189,11 +211,14 @@ std::string ZDvidNode::getHostWithScheme() const
 
 std::string ZDvidNode::getRootUrl() const
 {
-//  if (m_scheme.empty()) {
-//    return getAddressWithPort();
-//  }
+  std::string url = getAddressWithPort();
+  if (url.empty()) {
+    return "";
+  }
 
-  return getSchemePrefix() + getAddressWithPort();
+  std::string prefix = getSchemePrefix();
+
+  return prefix + url;
 }
 
 void ZDvidNode::setHost(const std::string &address)
@@ -257,17 +282,66 @@ void ZDvidNode::setMappedUuid(
   m_uuid = mapped;
 }
 
+bool ZDvidNode::IsValidDvidUuid(const std::string &uuid)
+{
+  std::regex reg("^[0-9a-fA-F]+(:[^\\s]+)?$");
+
+  return std::regex_match(uuid, reg);
+}
+
+bool ZDvidNode::IsMasterUuid(const std::string &uuid)
+{
+  return ZString(uuid).endsWith(":master") && IsValidDvidUuid(uuid);
+}
+
+std::string ZDvidNode::DerefUuid(const std::string &uuid, int maxRefDepth)
+{
+  if (maxRefDepth < 0) {
+    return "";
+  }
+
+  if (IsUuidRef(uuid)) {
+    if (maxRefDepth == 0) {
+      return "";
+    } else {
+#if _QT_APPLICATION_
+      std::string uuidLink = uuid.substr(4);
+      auto reader = ZGlobal::GetInstance().takeDvidBufferReader();
+//      auto reader = get_dvid_buffer_reader_memo();
+      reader->read(uuidLink.c_str());
+      ZString newUuid(reader->getBuffer().constData());
+      newUuid.trim();
+      ZGlobal::GetInstance().returnDvidBufferReader(reader);
+      return DerefUuid(newUuid, maxRefDepth - 1);
+#else
+      return "";
+#endif
+    }
+  } else if (IsValidUuid(uuid)) {
+    return uuid;
+  }
+
+  return "";
+}
+
 void ZDvidNode::setUuid(const std::string &uuid)
 {
   m_uuid.clear();
   m_originalUuid = uuid;
 
+  m_uuid = DerefUuid(uuid);
+
+  /*
   if (ZString(uuid).startsWith("ref:") || ZString(uuid).startsWith("ref>")) {
 #if _QT_APPLICATION_
     std::string uuidLink = uuid.substr(4);
     ZDvidBufferReader reader;
     reader.read(uuidLink.c_str());
     m_uuid = reader.getBuffer().constData();
+
+    if (!IsValidDvidUuid(m_uuid)) {
+      m_uuid = "";
+    }
 #else
     m_uuid = "";
     std::cout << "Unsupported uuid ref in non-GUI application. No uuid is set."
@@ -276,6 +350,7 @@ void ZDvidNode::setUuid(const std::string &uuid)
   } else {
     m_uuid = uuid;
   }
+  */
   /*
   if (m_uuid.size() > 4) {
     if (m_uuid[0] != '@') { //skip reference
@@ -368,7 +443,7 @@ bool ZDvidNode::hasPort() const
 
 bool ZDvidNode::isValid() const
 {
-  return !getHost().empty() && !getUuid().empty();
+  return !getHost().empty() && IsValidUuid(getUuid());
 }
 
 std::string ZDvidNode::getAddressWithPort() const
@@ -429,7 +504,7 @@ void ZDvidNode::loadJsonObject(const ZJsonObject &obj)
   }
 }
 
-ZJsonObject ZDvidNode::toJsonObject() const
+ZJsonObject ZDvidNode::toJsonObject(bool usingOriginalUuid) const
 {
   ZJsonObject obj;
   if (m_port >= 0) {
@@ -437,7 +512,11 @@ ZJsonObject ZDvidNode::toJsonObject() const
   }
 
   obj.setEntry(m_hostKey, m_host);
-  obj.setEntry(m_uuidKey, m_uuid);
+  if (usingOriginalUuid){
+    obj.setEntry(m_uuidKey, m_originalUuid);
+  } else {
+    obj.setEntry(m_uuidKey, m_uuid);
+  }
   if (!m_scheme.empty()) {
     obj.setEntry(m_schemeKey, m_scheme);
   }

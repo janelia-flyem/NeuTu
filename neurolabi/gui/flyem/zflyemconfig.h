@@ -135,6 +135,7 @@ public:
   std::string getNeuTuServer() const;
   std::string getNeuTuServer(bool usingDefault) const;
   std::string getCleaveServer() const;
+  void setCleaveServer(const std::string &server);
 
   std::string getUserName() const;
   /*

@@ -647,6 +647,21 @@ void ZFlyEmBodyMergeProject::uploadMeshMerge(
 
 }
 
+size_t ZFlyEmBodyMergeProject::getCachedSize(uint64_t bodyId) const
+{
+  return m_bodySizeCache[bodyId];
+}
+
+int ZFlyEmBodyMergeProject::getCachedStatusRank(uint64_t bodyId) const
+{
+  ZFlyEmBodyAnnotation annotation = m_annotationCache[bodyId];
+  if (m_bodyStatusProtocol.isEmpty()) {
+    return ZFlyEmBodyAnnotation::GetStatusRank(annotation.getStatus());
+  }
+
+  return m_bodyStatusProtocol.getStatusRank(annotation.getStatus());
+}
+
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
 {
@@ -676,7 +691,7 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
 
     if (!annotation.isEmpty()) {
       if (m_writer.good()) {
-        m_writer.writeBodyAnntation(annotation);
+        m_writer.writeBodyAnnotation(annotation);
       }
     }
   }
@@ -697,6 +712,28 @@ void ZFlyEmBodyMergeProject::updateMergeMap()
       } else {
         m_mergeMap[targetId] = std::vector<uint64_t>();
         m_mergeMap[targetId].push_back(sourceId);
+      }
+    }
+  }
+}
+
+void ZFlyEmBodyMergeProject::refreshBodySizeCache()
+{
+  m_bodySizeCache.clear();
+  const ZDvidReader &reader = m_writer.getDvidReader();
+  if (reader.isReady()) {
+    foreach (uint64_t targetId, m_mergeMap.keys()) {
+      std::vector<uint64_t> idArray = m_mergeMap[targetId];
+      idArray.push_back(targetId);
+      for (uint64_t bodyId : idArray) {
+        if (!m_bodySizeCache.contains(bodyId)) {
+          size_t bodySize = reader.readBodySize(bodyId);
+          if (bodySize == 0) {
+            bodySize = reader.readBodyBlockCount(
+                  bodyId, neutu::EBodyLabelType::BODY);
+          }
+          m_bodySizeCache[bodyId] = bodySize;
+        }
       }
     }
   }
@@ -908,7 +945,8 @@ void ZFlyEmBodyMergeProject::logSynapseInfo(uint64_t bodyId)
 }
 
 //Assuming m_annotationCache and m_mergeMap are up to date.
-void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
+void ZFlyEmBodyMergeProject::uploadResultFunc(
+    bool mergingToHighestStatus, bool mergingToLargest)
 {
 //  ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
 //  bool anyMergeUploaded = false;
@@ -928,10 +966,26 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
     getProgressSignal()->startProgress(0.5);
     int targetUploadedCount = 0;
     uint64_t lastTarget = 0;
+
+    auto lessStable = [&](uint64_t id1, uint64_t id2)->bool {
+      if (mergingToHighestStatus) {
+        if (getCachedStatusRank(id1) > getCachedStatusRank(id2)) {
+          return true;
+        } else if (getCachedStatusRank(id1) < getCachedStatusRank(id2)) {
+          return false;
+        }
+      }
+
+      if (mergingToLargest) {
+        return getCachedSize(id1) < getCachedSize(id2);
+      }
+
+      return false;
+    };
+
     foreach (uint64_t targetId, m_mergeMap.keys()) {
       const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
-      auto mergeConfig = dvid::GetMergeConfig(
-            m_writer.getDvidReader(), targetId, merged, mergingToLargest);
+      auto mergeConfig = dvid::GetMergeConfig(targetId, merged, lessStable);
       const uint64_t &newTargetId = mergeConfig.first;
       const std::vector<uint64_t> &newMerged = mergeConfig.second;
 
@@ -1155,12 +1209,18 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 }
 #endif
 
-void ZFlyEmBodyMergeProject::uploadResult(bool mergingToLargest)
+void ZFlyEmBodyMergeProject::uploadResult(
+    bool mergingToHighestStatus, bool mergingToLargest)
 {
 //  QtConcurrent::run(this, &ZFlyEmBodyMergeProject::uploadResultFunc);
   updateMergeMap();
   refreshBodyAnnotationCache();
-  uploadResultFunc(mergingToLargest);
+  if (mergingToLargest) {
+    refreshBodySizeCache();
+  } else {
+    m_bodySizeCache.clear();
+  }
+  uploadResultFunc(mergingToHighestStatus, mergingToLargest);
 }
 
 #if 0

@@ -98,6 +98,10 @@ private:
       size_t indexNotCleavedOff)
   const;
 
+  QString getCleaveServer() const;
+  QString getCleaveServerApi() const;
+  static QString GetCleaveServerApi(const QString &server);
+
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   uint64_t m_bodyId;

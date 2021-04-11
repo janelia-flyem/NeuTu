@@ -88,11 +88,11 @@ int chop_body(
   int ret = 1;
 
   ZJsonObjectParser parser;
-  int maxNumSlice = parser.getValue(config, "maxNumSlice", int(0));
+  int maxNumSlice = parser.GetValue(config, "maxNumSlice", int(0));
   if (maxNumSlice > 0) {
     neutu::EAxis sliceAxis = neutu::EAxis::Z;
     if (config.hasKey("axis")) {
-      std::string axisOption = parser.getValue(config, "axis", "Z");
+      std::string axisOption = parser.GetValue(config, "axis", "Z");
       if (axisOption == "X") {
         sliceAxis = neutu::EAxis::X;
       } else if (axisOption == "Y") {
@@ -147,7 +147,7 @@ int process_body(
     ret = chop_body(bodyId, writer, config);
   } else if (action == "external") {
     ZJsonObjectParser parser;
-    std::string command = parser.getValue(config, "script", "");
+    std::string command = parser.GetValue(config, "script", "");
     if (!command.empty()) {
       std::system(std::string(neulib::StringBuilder(command + " ").append(bodyId)).c_str());
       /*
@@ -263,7 +263,7 @@ int ZBodyProcessCommand::run(
 
   int ret = 1;
   ZJsonObjectParser parser;
-  std::string action = parser.getValue(config, "action", "");
+  std::string action = parser.GetValue(config, "action", "");
 
   ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(inputPath);
 

@@ -5,6 +5,7 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "dvid/zdvidnode.h"
+#include "qt/network/znetworkutils.h"
 
 #ifdef _USE_GTEST_
 
@@ -205,6 +206,86 @@ TEST(ZDvidNode, URL)
         "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
   ASSERT_TRUE(node.isMock());
   ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456", node.getSourceString(true));
+}
+
+TEST(ZDvidNode, uuid) {
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("1234"));
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("abcd"));
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("12ab"));
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("ef34"));
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("1234:master"));
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("ef34:master"));
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("1234:main"));
+  ASSERT_TRUE(ZDvidNode::IsValidDvidUuid("ef34:test"));
+
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("1234"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("abcd"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("12ab"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("ef34"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("1234:master"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("ef34:master"));
+
+  ASSERT_TRUE(ZDvidNode::IsMasterUuid("1234:master"));
+  ASSERT_TRUE(ZDvidNode::IsMasterUuid("ef34:master"));
+
+  ASSERT_FALSE(ZDvidNode::IsValidDvidUuid(" ef34"));
+  ASSERT_FALSE(ZDvidNode::IsValidDvidUuid("-1234:master"));
+  ASSERT_FALSE(ZDvidNode::IsValidDvidUuid(":master"));
+  ASSERT_FALSE(ZDvidNode::IsValidDvidUuid("!234"));
+  ASSERT_FALSE(ZDvidNode::IsValidDvidUuid(": master"));
+
+  ASSERT_FALSE(ZDvidNode::IsValidUuid(" ef34"));
+  ASSERT_FALSE(ZDvidNode::IsValidUuid("-1234:master"));
+  ASSERT_FALSE(ZDvidNode::IsValidUuid(":master"));
+  ASSERT_FALSE(ZDvidNode::IsValidUuid("!234"));
+
+  ASSERT_TRUE(ZDvidNode::IsUuidRef("ref:test"));
+  ASSERT_TRUE(ZDvidNode::IsUuidRef("ref>test"));
+  ASSERT_FALSE(ZDvidNode::IsUuidRef("ef34"));
+  ASSERT_FALSE(ZDvidNode::IsUuidRef("1234:master"));
+  ASSERT_FALSE(ZDvidNode::IsValidDvidUuid("ref:test"));
+  ASSERT_FALSE(ZDvidNode::IsValidDvidUuid("ref>test"));
+
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("ref:test"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("ref>test"));
+
+  ASSERT_TRUE(ZDvidNode::IsUuidAlias("@alias"));
+  ASSERT_TRUE(ZDvidNode::IsUuidAlias("@@alias"));
+  ASSERT_FALSE(ZDvidNode::IsUuidAlias("@"));
+  ASSERT_FALSE(ZDvidNode::IsUuidAlias("1234"));
+  ASSERT_FALSE(ZDvidNode::IsUuidAlias("1234:master"));
+
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("@alias"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("@@alias"));
+  ASSERT_FALSE(ZDvidNode::IsValidUuid("@"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("1234"));
+  ASSERT_TRUE(ZDvidNode::IsValidUuid("1234:master"));
+}
+
+TEST(ZDvidNode, deref)
+{
+  ASSERT_EQ("1234", ZDvidNode::DerefUuid("1234"));
+  ASSERT_EQ("", ZDvidNode::DerefUuid("1234", -1));
+  ASSERT_EQ("1234", ZDvidNode::DerefUuid("1234", 0));
+
+  ASSERT_EQ("", ZDvidNode::DerefUuid("ref:test"));
+  ASSERT_EQ("", ZDvidNode::DerefUuid("ref>test"));
+
+  if (ZNetworkUtils::IsAvailable(
+        "http://127.0.0.1:1600/api/node/c315/neutu_config/key/uuid1", "HEAD")) {
+    ASSERT_EQ("abcd", ZDvidNode::DerefUuid("ref>127.0.0.1:1600/api/node/c315/neutu_config/key/uuid1"));
+  }
+
+  if (ZNetworkUtils::IsAvailable(
+        "http://127.0.0.1:1600/api/node/c315/neutu_config/key/uuid2", "HEAD")) {
+    ASSERT_EQ("abcd", ZDvidNode::DerefUuid("ref>127.0.0.1:1600/api/node/c315/neutu_config/key/uuid2"));
+    ASSERT_EQ("abcd", ZDvidNode::DerefUuid("ref>http://127.0.0.1:1600/api/node/c315/neutu_config/key/uuid2"));
+  }
+
+  if (ZNetworkUtils::IsAvailable(
+        "http://127.0.0.1:1600/api/node/c315/neutu_config/key/uuid3", "HEAD")) {
+    ASSERT_EQ("", ZDvidNode::DerefUuid("ref>127.0.0.1:1600/api/node/c315/neutu_config/key/uuid3", 10));
+  }
 }
 
 #endif

@@ -81,7 +81,7 @@ private:
   void loadTraceConfig();
   static bool ExportPointArray(const std::vector<ZWeightedPoint> &ptArray,
                                const std::string &outFilePath);
-  int skeletonizeDvid();
+  int skeletonizeDvid(ZDvidTarget &target);
   int skeletonizeFile();
   std::vector<uint64_t> getSkeletonBodyList(ZDvidReader &reader) const;
   ZJsonObject getSkeletonizeConfig(ZDvidReader &reader);

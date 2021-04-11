@@ -74,7 +74,7 @@ public:
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
 
-  void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
+  void writeBodyAnnotation(const ZFlyEmBodyAnnotation &annotation);
   void removeBodyAnnotation(uint64_t bodyId);
 
 
@@ -107,6 +107,7 @@ public:
                    const std::string &annotationName);
   void syncSynapseLabelsz();
   void createSynapseLabelsz();
+  void reloadSynapseLabelsz();
 
   void syncData(
       const std::string &dataName, const std::string &syncDataName,
@@ -218,7 +219,7 @@ public:
   void deleteToDoItem(int x, int y, int z);
   void writeToDoItem(const ZFlyEmToDoItem &item);
 
-  void writeLabel(const ZArray &label);
+  bool writeLabel(const ZArray &label);
   void writeLabel(const ZArray &label, int zoom);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId);
   void changeLabel(const ZIntCuboid &box, uint64_t oldId, uint64_t newId);

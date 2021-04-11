@@ -20,10 +20,10 @@ ZSegmentationNode::ZSegmentationNode(int label, ZSegmentationNode* parent)
 }
 
 
-string ZSegmentationNode::getNextID()const {
+std::string ZSegmentationNode::getNextID()const {
   static int id = -1;
   id++;
-  string rv = "";
+  std::string rv = "";
   stringstream s;
   s<<id;
   s>>rv;
@@ -282,15 +282,28 @@ shared_ptr<ZSegmentationNode> ZSegmentationComposite::getChildByLabel(int label)
 }
 
 
-vector<string> ZSegmentationComposite::getAllIDs() const{
-  vector<string> ids{this->getID()};
-  for(auto child: m_children){
+vector<std::string> ZSegmentationComposite::getAllIDs() const{
+  vector<std::string> ids{this->getID()};
+  for(const auto &child: m_children){
     if(child){
-      vector<string> t = child->getAllIDs();
+      vector<std::string> t = child->getAllIDs();
       ids.insert(ids.end(),t.begin(),t.end());
     }
   }
   return ids;
+}
+
+bool ZSegmentationComposite::hasId(const std::string &id) const
+{
+  for (const auto &child : m_children) {
+    if (child) {
+      if (child->hasId(id)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 

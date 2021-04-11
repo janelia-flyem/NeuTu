@@ -325,7 +325,7 @@ bool NeutubeConfig::load(const std::string &filePath)
     }
 
     node = doc.getRootElement().queryNode("dataPath");
-    m_dataPath = node.stringValue();
+//    m_dataPath = node.stringValue();
 
     node = doc.getRootElement().queryNode("docUrl");
     m_docUrl = node.stringValue();
@@ -333,9 +333,11 @@ bool NeutubeConfig::load(const std::string &filePath)
     node = doc.getRootElement().queryNode("developPath");
     m_developPath = node.stringValue();
 
+    /*
     if (m_dataPath.empty() && !m_developPath.empty()) {
       m_dataPath = m_developPath + "/neurolabi/data";
     }
+    */
 
     node = doc.getRootElement().queryNode("FlyEmQASegmentationTraining");
     if (!node.empty()) {
@@ -458,7 +460,7 @@ bool NeutubeConfig::load(const std::string &filePath)
 
 void NeutubeConfig::print()
 {
-  cout << m_dataPath << endl;
+//  cout << m_dataPath << endl;
 #if 0
   cout << "SWC repository: " << m_swcRepository << endl;
   cout << "Body connection classifier: " << m_segmentationClassifierPath << endl;
@@ -492,14 +494,22 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   case EConfigItem::DATA:
   {
     std::string dataPath;
+#if defined(PROJECT_PATH)
+    dataPath = neutu::Join({PROJECT_PATH, "..", "data"});
+#endif
+
 #ifdef _QT_GUI_USED_
     if (m_settings.contains("data_dir")) {
       dataPath = m_settings.value("data_dir").toString().toStdString();
+    } else {
+      dataPath = neutu::GetEnv("NEUTU_DATA_DIR");
     }
 #endif
+    /*
     if (dataPath.empty()) {
       return m_dataPath;
     }
+    */
 
     return dataPath;
   }
@@ -1196,6 +1206,16 @@ QString NeutubeConfig::GetNeuTuServer()
 QString NeutubeConfig::GetTaskServer()
 {
   return GetSettings().value("task_server").toString();
+}
+
+QString NeutubeConfig::GetCleaveServer()
+{
+  return GetSettings().value("cleave_server").toString();
+}
+
+void NeutubeConfig::SetCleaveServer(const QString &server)
+{
+  GetSettings().setValue("cleave_server", server);
 }
 
 bool NeutubeConfig::UsingDefaultFlyemConfig()

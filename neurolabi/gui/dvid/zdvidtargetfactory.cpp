@@ -66,15 +66,20 @@ ZDvidTarget ZDvidTargetFactory::MakeFromUrlSpec(const char* urlSpec)
 
 ZDvidTarget ZDvidTargetFactory::MakeFromSpec(const QString &spec)
 {
-  if (spec.startsWith("http:") && !spec.startsWith("http://")) {
-    return MakeFromSourceString(spec);
-  } else if (spec.startsWith("deprecated:")) {
+  QString trimmedSpec = spec.trimmed();
+
+  if (trimmedSpec.startsWith("http:") && !trimmedSpec.startsWith("http://")) {
+    return MakeFromSourceString(trimmedSpec);
+  } else if (trimmedSpec.startsWith("deprecated:")) {
     ZDvidTarget target;
-    target.setFromUrl_deprecated(spec.right(spec.length() - 11).toStdString());
+    target.setFromUrl_deprecated(
+          trimmedSpec.right(trimmedSpec.length() - 11).toStdString());
     return target;
+  } else if (trimmedSpec.startsWith('{') && trimmedSpec.endsWith('}')) {
+    return MakeFromJsonSpec(trimmedSpec.toStdString());
   }
 
-  return MakeFromUrlSpec(spec);
+  return MakeFromUrlSpec(trimmedSpec);
 }
 
 ZDvidTarget ZDvidTargetFactory::MakeFromSpec(const std::string &spec)

@@ -5,12 +5,14 @@
 #include <QCoreApplication>
 #endif
 
+#include <chrono>
+
 #if defined(_QT_GUI_USED_)
 #include "zpainter.h"
 #endif
 
-#include "geometry/zintcuboid.h"
 #include "common/utilities.h"
+#include "geometry/zintcuboid.h"
 #include "geometry/zcuboid.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
@@ -409,4 +411,11 @@ void ZStackObject::setVisualEffect(neutu::display::TVisualEffect ve)
 bool ZStackObject::hasVisualEffect(neutu::display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
+}
+
+void ZStackObject::updateTimestamp()
+{
+  setTimestamp(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch()).count());
 }

@@ -5992,44 +5992,44 @@ void ZStackDoc::clearObjectModifiedBuffer(bool sync)
   }
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
+void ZStackDoc::bufferObjectModified(ZStackObject::EType type)
 {
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(type);
-  } else {
-    m_objectModifiedBuffer.add(type);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(type);
+//  }
 }
 
-void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role, bool sync)
+void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role)
 {
-  bufferObjectModified(role.getRole(), sync);
+  bufferObjectModified(role.getRole()/*, sync*/);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject::ETarget target, bool sync)
+void ZStackDoc::bufferObjectModified(ZStackObject::ETarget target)
 {
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(target);
-  } else {
-    m_objectModifiedBuffer.add(target);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(target);
+//  }
 }
 
 void ZStackDoc::bufferObjectModified(
-    ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
+    ZStackObject *obj, ZStackObjectInfo::TState state)
 {
   ZStackObjectInfo info;
   info.set(*obj);
-  bufferObjectModified(info, state, sync);
+  bufferObjectModified(info, state);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectModified(ZStackObject *obj)
 {
   ZStackObjectInfo info;
   info.set(*obj);
-  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
+  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN/*, sync*/);
   /*
   bufferObjectModified(obj->getType(), sync);
   bufferObjectModified(obj->getTarget(), sync);
@@ -6037,53 +6037,63 @@ void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
   */
 }
 
-void ZStackDoc::bufferObjectVisibilityChanged(ZStackObject *obj, bool sync)
+void ZStackDoc::bufferObjectVisibilityChanged(ZStackObject *obj)
 {
-  bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED, sync);
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED/*, sync*/);
 }
 
-void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
+void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role)
 {
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(role);
-  } else {
-    m_objectModifiedBuffer.add(role);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(role);
+//  }
+}
+
+void ZStackDoc::bufferObjectModified(const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
+{
+//  if (sync) {
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.add(info, state);
+//  } else {
+//    m_objectModifiedBuffer.add(info, state);
+//  }
 }
 
 void ZStackDoc::bufferObjectModified(
-    const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
+    const QSet<ZStackObject::ETarget> &targetSet)
 {
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedBufferMutex);
-    m_objectModifiedBuffer.add(info, state);
-  } else {
-    m_objectModifiedBuffer.add(info, state);
-  }
-}
-
-void ZStackDoc::bufferObjectModified(
-    const QSet<ZStackObject::ETarget> &targetSet, bool sync)
-{
-  if (sync) {
+//  if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
     m_objectModifiedBuffer.add(targetSet);
-  } else {
-    m_objectModifiedBuffer.add(targetSet);
-  }
+//  } else {
+//    m_objectModifiedBuffer.add(targetSet);
+//  }
 }
 
-void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
+void ZStackDoc::processObjectModified(ZStackObject *obj)
 {
   if (obj) {
     ZStackObjectInfo info;
     info.set(*obj);
-    processObjectModified(info, sync);
+    processObjectModified(info/*, sync*/);
   }
 }
 
-void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
+void ZStackDoc::processObjectModified(
+    ZStackObject *obj, ZStackObjectInfo::TState state)
+{
+  if (obj) {
+    ZStackObjectInfo info;
+    info.set(*obj);
+    processObjectModified(info, state/*, sync*/);
+  }
+}
+
+
+void ZStackDoc::processObjectModified(const ZStackObjectInfo &info)
 {
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
@@ -6091,7 +6101,7 @@ void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
     break;
   case EObjectModifiedMode::CACHE:
   {
-    bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
+    bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN/*, sync*/);
   }
     break;
   default:
@@ -6134,15 +6144,31 @@ void ZStackDoc::processObjectModified(
 }
 #endif
 
-void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
+void ZStackDoc::processObjectModified(ZStackObject::EType type)
 {
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
     notifyObjectModified(type);
     break;
   case EObjectModifiedMode::CACHE:
-    bufferObjectModified(type, sync);
+    bufferObjectModified(type/*, sync*/);
 //    m_objectModifiedTargetBuffer.unite(targetSet);
+    break;
+  default:
+    break;
+  }
+}
+
+void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
+{
+  switch (getObjectModifiedMode()) {
+  case EObjectModifiedMode::PROMPT:
+    notifyObjectModified(info, state);
+    break;
+  case EObjectModifiedMode::CACHE:
+  {
+    bufferObjectModified(info, state);
+  }
     break;
   default:
     break;
@@ -6159,19 +6185,19 @@ void ZStackDoc::processSwcModified()
 //  processObjectModified(ZSwcTree::GetDefaultTarget());
 }
 
-void ZStackDoc::processObjectModified(const ZStackObjectRole &role, bool sync)
+void ZStackDoc::processObjectModified(const ZStackObjectRole &role)
 {
-  processObjectModified(role.getRole(), sync);
+  processObjectModified(role.getRole()/*, sync*/);
 }
 
-void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role, bool sync)
+void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role)
 {
   switch (getObjectModifiedMode()) {
   case EObjectModifiedMode::PROMPT:
     notifyPlayerChanged(role);
     break;
   case EObjectModifiedMode::CACHE:
-    bufferObjectModified(role, sync);
+    bufferObjectModified(role/*, sync*/);
 //    m_objectModifiedTargetBuffer.unite(targetSet);
     break;
   default:
@@ -6190,6 +6216,14 @@ void ZStackDoc::notifyObjectModified(const ZStackObjectInfo &info)
   ZStackObjectInfoSet infoSet;
   infoSet.add(info);
 
+  emit objectModified(infoSet);
+}
+
+void ZStackDoc::notifyObjectModified(
+    const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
+{
+  ZStackObjectInfoSet infoSet;
+  infoSet.add(info, state);
   emit objectModified(infoSet);
 }
 
@@ -8260,7 +8294,7 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
   }
 
   addPlayer(obj);
-  processObjectModified(obj);
+  processObjectModified(obj, ZStackObjectInfo::STATE_ADDED);
 
   endObjectModifiedMode();
 

@@ -10,7 +10,7 @@
 
 using std::shared_ptr;
 using std::map;
-using std::string;
+//using std::string;
 
 
 class ZSegmentationNode{
@@ -24,7 +24,7 @@ protected:
 public:
   inline int getLabel()const{return  m_label;}
   void setLabel(int label){m_label = label;}
-  string getID()const{return m_id;}
+  std::string getID()const{return m_id;}
   void setColor(const QColor& color){m_color = color;}
   QColor getColor()const{return m_color;}
 
@@ -43,7 +43,7 @@ public:
 
   virtual void removeChildByLabel(int label) = 0;
 
-  virtual ZSegmentationNode* find(const string& id) = 0;
+  virtual ZSegmentationNode* find(const std::string& id) = 0;
 
   virtual ZIntCuboid getBoundBox()const = 0;
 
@@ -75,7 +75,8 @@ public:
 
   virtual vector<ZSegmentationNode*> getLeaves() = 0;
 
-  virtual vector<string> getAllIDs()const=0;
+  virtual vector<std::string> getAllIDs()const=0;
+  virtual bool hasId(const std::string &id) const = 0;
 
   virtual void group(const map<int,vector<int>>& groups)=0;
 
@@ -84,11 +85,11 @@ public:
   //virtual int getVoxelNumber()const=0;
 
 protected:
-  string getNextID()const;
+  std::string getNextID()const;
 
 protected:
   int m_label;//segmentation label
-  string m_id;//universal id
+  std::string m_id;//universal id
   ZSegmentationNode* m_parent;
   QColor m_color;
 };
@@ -107,7 +108,7 @@ public:
 
   virtual bool isLeaf()const {return true;}
 
-  virtual ZSegmentationNode* find(const string& id){if (id == getID()) return this;return nullptr;}
+  virtual ZSegmentationNode* find(const std::string& id){if (id == getID()) return this;return nullptr;}
 
   virtual ZIntCuboid getBoundBox()const {return m_encoder->getBoundBox();}
   //virtual void unify(const ZSegmentationNode& node);
@@ -128,7 +129,13 @@ public:
 
   virtual vector<ZSegmentationNode*> getLeaves(){vector<ZSegmentationNode*>rv{this};return rv;}
 
-  virtual vector<string> getAllIDs()const{vector<string> rv{this->getID()}; return rv;}
+  vector<std::string> getAllIDs() const override {
+    vector<std::string> rv{this->getID()}; return rv;
+  }
+
+  bool hasId(const std::string &id) const override {
+    return this->getID() == id;
+  }
 
   //virtual map<string,map<string,int>> getAdjMatrix()const;
 
@@ -164,7 +171,7 @@ public:
 
   virtual vector<int> getChildrenLabels()const;
 
-  virtual ZSegmentationNode* find(const string& id);
+  virtual ZSegmentationNode* find(const std::string& id);
 
   virtual ZIntCuboid getBoundBox()const;
 
@@ -182,9 +189,10 @@ public:
 
   virtual void merge(ZSegmentationNode* node);
 
-  virtual vector<ZSegmentationNode*> getLeaves();
+  vector<ZSegmentationNode*> getLeaves() override;
 
-  virtual vector<string> getAllIDs()const;
+  vector<std::string> getAllIDs() const override;
+  bool hasId(const std::string &id) const override;
 
   virtual shared_ptr<ZSegmentationEncoder> getEncoder();
 

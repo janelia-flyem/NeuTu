@@ -1,5 +1,8 @@
 #include "znetbufferreaderthread.h"
 
+#include <QMutexLocker>
+#include <QCoreApplication>
+
 #include "znetbufferreader.h"
 
 ZNetBufferReaderThread::ZNetBufferReaderThread(QObject *parent) :
@@ -9,13 +12,18 @@ ZNetBufferReaderThread::ZNetBufferReaderThread(QObject *parent) :
 
 ZNetBufferReaderThread::~ZNetBufferReaderThread()
 {
-  delete m_reader;
-  m_reader = nullptr;
+  QMutexLocker locker(&m_readerMutex);
+  if (m_reader) {
+    m_reader->abort();
+    delete m_reader;
+    m_reader = nullptr;
+  }
 }
 
-void ZNetBufferReaderThread::setOperation(znetwork::EOperation op)
+void ZNetBufferReaderThread::setOperation(znetwork::EOperation op, int timeout)
 {
   m_op = op;
+  m_operationTimeout = timeout;
 }
 
 void ZNetBufferReaderThread::setUrl(const QString &url)
@@ -30,7 +38,7 @@ void ZNetBufferReaderThread::setPayload(const QByteArray &payload)
 
 bool ZNetBufferReaderThread::getResultStatus() const
 {
-  return m_status;
+  return m_successful;
 }
 
 QByteArray ZNetBufferReaderThread::getData() const
@@ -51,6 +59,16 @@ int ZNetBufferReaderThread::getStatusCode() const
   return 0;
 }
 
+QByteArray ZNetBufferReaderThread::getResponseHeader(
+    const QByteArray &headerName) const
+{
+  if (m_reader) {
+    return m_reader->getResponseHeader(headerName);
+  }
+
+  return QByteArray();
+}
+
 neutu::EReadStatus ZNetBufferReaderThread::getStatus() const
 {
   if (m_reader) {
@@ -62,28 +80,40 @@ neutu::EReadStatus ZNetBufferReaderThread::getStatus() const
 
 void ZNetBufferReaderThread::run()
 {
+  QMutexLocker locker(&m_readerMutex);
   delete m_reader;
   m_reader = nullptr;
   if (!m_url.isEmpty()) {
     m_reader = new ZNetBufferReader;
     switch (m_op) {
     case znetwork::EOperation::HAS_HEAD:
-      m_status = m_reader->hasHead(m_url);
+      m_successful = m_reader->hasHead(m_url, m_operationTimeout);
       break;
     case znetwork::EOperation::IS_READABLE:
-      m_status = m_reader->isReadable(m_url);
+      m_successful = m_reader->isReadable(m_url);
+      break;
+    case znetwork::EOperation::HAS_OPTIONS:
+      m_successful = m_reader->hasOptions(m_url, m_operationTimeout);
+      break;
+    case znetwork::EOperation::READ_OPTIONS:
+      m_reader->readOptions(m_url, m_operationTimeout);
+      m_successful = m_reader->getStatus() == neutu::EReadStatus::OK;
       break;
     case znetwork::EOperation::POST:
       m_reader->post(m_url, m_payload);
+      m_successful = m_reader->getStatus() == neutu::EReadStatus::OK;
       break;
     case znetwork::EOperation::READ:
       m_reader->read(m_url, false);
+      m_successful = m_reader->getStatus() == neutu::EReadStatus::OK;
       break;
     case znetwork::EOperation::READ_HEAD:
-      m_reader->readHead(m_url);
+      m_reader->readHead(m_url, m_operationTimeout);
+      m_successful = m_reader->getStatus() == neutu::EReadStatus::OK;
       break;
     case znetwork::EOperation::READ_PARTIAL:
       m_reader->readPartial(m_url, m_partialReadSize, false);
+      m_successful = m_reader->getStatus() == neutu::EReadStatus::OK;
       break;
     default:
       break;

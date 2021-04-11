@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QThread>
+#include <QMutex>
 
 #include "common/neutudefs.h"
 #include "znetworkdefs.h"
@@ -13,16 +14,10 @@ class ZNetBufferReaderThread : public QThread
 {
   Q_OBJECT
 public:
-  /*
-  enum class EOperation {
-    NONE, READ, READ_PARTIAL, READ_HEAD, IS_READABLE, HAS_HEAD, POST
-  };
-  */
-
   explicit ZNetBufferReaderThread(QObject *parent = Q_NULLPTR);
   ~ZNetBufferReaderThread();
 
-  void setOperation(znetwork::EOperation op);
+  void setOperation(znetwork::EOperation op, int timeout = 0);
   void setUrl(const QString &url);
   void setPayload(const QByteArray &payload);
 
@@ -33,6 +28,7 @@ public:
 
   neutu::EReadStatus getStatus() const;
   int getStatusCode() const;
+  QByteArray getResponseHeader(const QByteArray &headerName) const;
   /*
   ZNetBufferReader* getReader() const {
     return m_reader;
@@ -41,11 +37,13 @@ public:
 
 private:
   ZNetBufferReader *m_reader = nullptr;
+  QMutex m_readerMutex;
   znetwork::EOperation m_op = znetwork::EOperation::NONE;
   QString m_url;
   QByteArray m_payload;
   int m_partialReadSize = 12;
-  bool m_status = false;
+  bool m_successful = false;
+  int m_operationTimeout = 0;
 };
 
 #endif // ZNETBUFFERREADERTHREAD_H

@@ -171,19 +171,43 @@ TEST(ZJsonObjectParser, Basic)
   obj.setEntry("test3", true);
   obj.setEntry(("key1"), "v1");
 
-  ZJsonObjectParser parser;
-  ASSERT_EQ(10, parser.getValue(obj, "test1", 1));
-  ASSERT_EQ(1, parser.getValue(obj, "test2", 1));
-  ASSERT_EQ(true, parser.getValue(obj, "test3", false));
-  ASSERT_EQ("v1", parser.getValue(obj, "key1", ""));
+  ASSERT_EQ(10, ZJsonObjectParser::GetValue(obj, "test1", 1));
+  ASSERT_EQ(1, ZJsonObjectParser::GetValue(obj, "test2", 1));
+  ASSERT_EQ(true, ZJsonObjectParser::GetValue(obj, "test3", false));
+  ASSERT_EQ("v1", ZJsonObjectParser::GetValue(obj, "key1", ""));
 
-  ASSERT_EQ(10, parser.getValue(obj, {"test1", "test2"}, 1));
-  ASSERT_EQ(10, parser.getValue(obj, {"test2", "test1"}, 1));
-  ASSERT_EQ(1, parser.getValue(obj, {"test4", "test5"}, 1));
-  ASSERT_EQ("v1", parser.getValue(obj, {"key2", "key1"}, std::string("")));
-  ASSERT_EQ("", parser.getValue(obj, {"key2", "key3"}, std::string()));
+  ASSERT_EQ(10, ZJsonObjectParser::GetValue(obj, std::vector<std::string>{"test1", "test2"}, 1));
+  ASSERT_EQ(10, ZJsonObjectParser::GetValue(obj, std::vector<std::string>{"test2", "test1"}, 1));
+  ASSERT_EQ(1, ZJsonObjectParser::GetValue(obj, std::vector<std::string>{"test4", "test5"}, 1));
+  ASSERT_EQ("v1", ZJsonObjectParser::GetValue(obj, std::vector<std::string>{"key2", "key1"}, std::string("")));
+  ASSERT_EQ("", ZJsonObjectParser::GetValue(obj, std::vector<std::string>{"key2", "key3"}, std::string()));
+
+  ZJsonObjectParser parser(obj);
+  ASSERT_EQ(10, parser.getValue("test1", 1));
+  ASSERT_EQ(1, parser.getValue("test2", 1));
+  ASSERT_EQ(true, parser.getValue("test3", false));
+  ASSERT_EQ("v1", parser.getValue("key1", ""));
 }
 
+TEST(ZJsonArray, Iter)
+{
+  {
+    ZJsonArray array;
+    array.append(1);
+    array.append(2);
+    array.append(3);
+    array.append(4);
+    array.append(5);
+
+    ZJsonArray result = array.filter([](const ZJsonValue &value) {
+      return (ZJsonParser::integerValue(value.getData()) > 3);
+    });
+    ASSERT_EQ(2, result.size());
+    auto intArray = result.toIntegerArray();
+    ASSERT_EQ(4, intArray[0]);
+    ASSERT_EQ(5, intArray[1]);
+  }
+}
 
 #endif
 

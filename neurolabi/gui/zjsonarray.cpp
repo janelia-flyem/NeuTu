@@ -216,7 +216,7 @@ ZJsonArray& ZJsonArray::operator << (double e)
   return *this;
 }
 
-bool ZJsonArray::decode(const string &str)
+bool ZJsonArray::decode(const string &str, bool reportingError)
 {
   clear();
 
@@ -226,11 +226,11 @@ bool ZJsonArray::decode(const string &str)
   if (ZJsonParser::IsArray(obj)) {
     set(obj, true);
   } else {
-    if (obj == NULL) {
+    if (obj == NULL && reportingError) {
       parser.printError();
     } else {
       json_decref(obj);
-//      RECORD_ERROR_UNCOND("Not a json array");
+      //      RECORD_ERROR_UNCOND("Not a json array");
     }
 
     return false;
@@ -258,4 +258,17 @@ void ZJsonArray::forEachString(std::function<void(const std::string &str)>f)
   for (size_t i = 0; i < size(); ++i) {
     f(ZJsonParser::stringValue(at(i)));
   }
+}
+
+ZJsonArray ZJsonArray::filter(std::function<bool(ZJsonValue)> pred)
+{
+  ZJsonArray result;
+  for (size_t i = 0; i< size(); ++i) {
+    ZJsonValue e = value(i);
+    if (pred(e)) {
+      result.append(e);
+    }
+  }
+
+  return result;
 }

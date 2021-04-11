@@ -6,6 +6,7 @@
 
 class ZPoint;
 class ZDvidInfo;
+class ZIntPoint;
 
 class ZFlyEmCoordinateConverter
 {
@@ -29,6 +30,7 @@ public:
 
   void convert(double *x, double *y, double *z, ESpace source, ESpace target) const;
   void convert(ZPoint *pt, ESpace source, ESpace target) const;
+  ZIntPoint convert(const ZIntPoint &pt, ESpace source, ESpace target) const;
 
 private:
   void convertFromRavelerSpace(double *x, double *y, double *z, ESpace target) const;

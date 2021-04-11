@@ -364,8 +364,9 @@ void ZDvidDialog::saveCurrentTarget(bool cloning)
 
     ZJsonArray dvidJson;
     dvidJson.decode(settings.value("DVID").toString().toStdString());
+    ZJsonObject targetJson = target.toJsonObject(true);
     if (cloned) {
-      dvidJson.append(target.toJsonObject());
+      dvidJson.append(targetJson);
     } else {
       for (size_t i = 0; i < dvidJson.size(); ++i) {
         ZJsonObject dvidTargetJson(
@@ -373,7 +374,7 @@ void ZDvidDialog::saveCurrentTarget(bool cloning)
         ZDvidTarget tmpTarget;
         tmpTarget.loadJsonObject(dvidTargetJson);
         if (tmpTarget.getName() == target.getName()) {
-          dvidJson.setValue(i, target.toJsonObject());
+          dvidJson.setValue(i, targetJson);
           break;
         }
       }
@@ -382,7 +383,7 @@ void ZDvidDialog::saveCurrentTarget(bool cloning)
 
 #ifdef _DEBUG_
     std::cout << "Saving DVID target:" << std::endl;
-    std::cout << target.toJsonObject().dumpString(0) << std::endl;
+    std::cout << targetJson.dumpString(0) << std::endl;
 #endif
     settings.setValue("DVID", QString(dvidJson.dumpString(0).c_str()));
   }

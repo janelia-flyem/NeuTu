@@ -823,7 +823,7 @@ void ZFlyEmBodySplitProject::chopBody(
               ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
                     getBodyId(), newBodyId);
               if (!annot.isEmpty()) {
-                writer.writeBodyAnntation(annot);
+                writer.writeBodyAnnotation(annot);
               }
             }
 
@@ -914,7 +914,7 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg
               ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
                     getBodyId(), newBodyId);
               if (!annot.isEmpty()) {
-                writer.writeBodyAnntation(annot);
+                writer.writeBodyAnnotation(annot);
               }
             }
 
@@ -991,7 +991,7 @@ void ZFlyEmBodySplitProject::cropBody(ZFlyEmSplitUploadOptionDialog *dlg)
             ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
                   getBodyId(), newBodyId);
             if (!annot.isEmpty()) {
-              writer.writeBodyAnntation(annot);
+              writer.writeBodyAnnotation(annot);
             }
           }
 
@@ -1099,7 +1099,7 @@ void ZFlyEmBodySplitProject::decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg)
             ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
                   getBodyId(), newBodyId);
             if (!annot.isEmpty()) {
-              writer.writeBodyAnntation(annot);
+              writer.writeBodyAnnotation(annot);
             }
           }
 
@@ -1852,7 +1852,7 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
         ZFlyEmBodyAnnotation annot;
         annot.setBodyId(newBodyId);
         //      annot.setStatus("Not examined");
-        writer.writeBodyAnntation(annot);
+        writer.writeBodyAnnotation(annot);
 
         emitMessage(msg);
       } else {
@@ -2240,7 +2240,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
       ZFlyEmBodyAnnotation annot;
       annot.setBodyId(newBodyId);
 //      annot.setStatus("Not examined");
-      writer.writeBodyAnntation(annot);
+      writer.writeBodyAnnotation(annot);
 
       emitMessage(msg);
     } else {

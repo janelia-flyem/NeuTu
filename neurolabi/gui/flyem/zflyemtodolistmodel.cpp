@@ -3,6 +3,7 @@
 #include <QItemSelectionModel>
 
 #include "zflyemproofdoc.h"
+#include "zflyemtodoitem.h"
 
 ZFlyEmTodoListModel::ZFlyEmTodoListModel(QObject *parent) :
   ZSortFilterTableModel(parent)
@@ -248,6 +249,42 @@ void ZFlyEmTodoListModel::setChecked(
   for (const QModelIndex &index : indexList) {
     setChecked(index.row(), checked);
   }
+}
+
+void ZFlyEmTodoListModel::deleteSelected(
+    QItemSelectionModel *sel, bool allowingUndo)
+{
+  getDocument()->removeTodoList(getSelectedTodoPosList(sel), allowingUndo);
+}
+
+void ZFlyEmTodoListModel::deleteSelected(
+    QItemSelectionModel *sel, std::function<bool(int)> confirm,
+    std::function<bool(int)> undoAllowed)
+{
+  auto todoList = getSelectedTodoPosList(sel);
+  if (confirm(todoList.size())) {
+    getDocument()->removeTodoList(todoList, undoAllowed(todoList.size()));
+  }
+}
+
+QList<ZIntPoint> ZFlyEmTodoListModel::getSelectedTodoPosList(QItemSelectionModel *sel) const
+{
+  QList<ZIntPoint> itemList;
+  foreach (const QModelIndex &index, getSelected(sel)) {
+    itemList.append(getItem(index)->getPosition());
+  }
+
+  return itemList;
+}
+QList<ZFlyEmToDoItem*> ZFlyEmTodoListModel::getSelectedTodoList(
+    QItemSelectionModel *sel) const
+{
+  QList<ZFlyEmToDoItem*> itemList;
+  foreach (const QModelIndex &index, getSelected(sel)) {
+    itemList.append(const_cast<ZFlyEmToDoItem*>(getItem(index)));
+  }
+
+  return itemList;
 }
 
 //QModelIndexList ZFlyEmTodoListModel::getSelected(QItemSelectionModel *sel) const

@@ -39,6 +39,7 @@ private slots:
   void checkSelected();
   void uncheckSelected();
   void onDoubleClicked(QModelIndex index);
+  void deleteSelected();
 
 private:
   Ui::FlyEmTodoDialog *ui;

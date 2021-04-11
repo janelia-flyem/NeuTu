@@ -67,6 +67,8 @@ public:
   static std::unordered_map<ZIntPoint, uint64_t> ReadSynapseLabel(
       const ZDvidReader &reader, const std::vector<ZDvidSynapse>& synapseArray);
 
+  static std::string ReadBookmarkUser(
+      const ZDvidReader &reader, const ZIntPoint &pos);
 
 private:
   static ZMesh* LoadRoi(

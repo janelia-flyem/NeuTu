@@ -425,7 +425,7 @@ bool ZIntPoint::IsValid(int x)
 
 bool ZIntPoint::isValid() const
 {
-  return m_x != INT_MIN || m_y != INT_MIN || m_z != INT_MIN;
+  return IsValid(m_x) && IsValid(m_y) && IsValid(m_z);
 }
 
 void ZIntPoint::read(std::istream &stream)

@@ -56,7 +56,7 @@ void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
   if (config.hasKey("path")) {
     ZJsonObject actualConfig;
     ZJsonObjectParser parser;
-    std::string path = parser.getValue(config, "path", "");
+    std::string path = parser.GetValue(config, "path", "");
     if (path.empty() || path == "default") {
       path = NeutubeConfig::getInstance().getPath(
             NeutubeConfig::EConfigItem::CONFIG_DIR) + "/json/trace_config.json";
@@ -91,17 +91,17 @@ ZSwcTree* ZNeuronTraceCommand::traceFile(
     if (!maskPath.empty()) {
       std::cout << "Using a predefined mask: " << maskPath << std::endl;
       if (!neutu::FileExists(maskPath)) {
-        error("Cannot find the mask file " + maskPath + ".");
+        error("Missing file", "Cannot find the mask file " + maskPath + ".");
         return nullptr;
       }
       if (ZFileType::FileType(maskPath) != ZFileType::EFileType::TIFF) {
-        error("Failed to recognize the mask file " + maskPath + " as a TIFF");
+        error("File error", "Failed to recognize the mask file " + maskPath + " as a TIFF");
         return nullptr;
       }
 
       mask = ZStackReader::Read(maskPath);
       if (mask == nullptr) {
-        warn("Failed to read mask file " + maskPath + ".");
+        warn("File error", "Failed to read mask file " + maskPath + ".");
       } else {
         int threshold = parser.getValue("maskThreshold", 0);
         if (threshold < 0) {

@@ -26,6 +26,7 @@
 #include "zpuncta.h"
 #include "zstackdocaccessor.h"
 #include "zjsonobjectparser.h"
+#include "zjsonfactory.h"
 
 #include "dvid/zdviddataslicehelper.h"
 #include "dvid/zdvidsynapseensenmble.h"
@@ -991,7 +992,7 @@ std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::initRoiProvider()
     if (!keyList.isEmpty()) {
       ZJsonObjectParser parser;
       for (int i = 0; i < keyList.size(); ++i) {
-        bool visible = parser.getValue(infoList[i], "visible", true);
+        bool visible = parser.GetValue(infoList[i], "visible", true);
         if (visible) {
           nameList.push_back(keyList[i].toStdString());
         }
@@ -1029,15 +1030,26 @@ std::shared_ptr<ZRoiProvider> ZFlyEmProofDoc::initRoiProvider()
   return m_roiProvider;
 }
 
+ZDvidWriter& ZFlyEmProofDoc::getBookmarkWriter()
+{
+  if (!m_bookmarkWriter.good()) {
+    m_bookmarkWriter.open(getDvidTarget());
+  }
+
+  return m_bookmarkWriter;
+}
 
 ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
 {
+  return getBookmarkWriter().getDvidReader();
+  /*
   if (!m_bookmarkReader.isReady()) {
     KINFO << "Open bookmark reader";
     m_bookmarkReader.openRaw(getDvidReader().getDvidTarget());
   }
 
   return m_bookmarkReader;
+  */
 }
 
 void ZFlyEmProofDoc::updateUserStatus()
@@ -1381,11 +1393,18 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     m_dvidWriter.clear();
 //    m_dvidTarget.clear();
     ZWidgetMessage msg("Failed to open the node.", neutu::EMessageType::ERROR);
-    QString detail = "Detail: ";
+    QString detail;
     if (!getDvidReader().getErrorMsg().empty()) {
       detail += getDvidReader().getErrorMsg().c_str();
+    } else if (getDvidReader().getNodeStatus() == dvid::ENodeStatus::OFFLINE) {
+      QString rootUrl(getDvidReader().getDvidTarget().getRootUrl().c_str());
+      if (!rootUrl.isEmpty()) {
+        detail += "cannot connect to " + rootUrl;
+      }
     }
-    msg.appendMessage(detail);
+    if (!detail.isEmpty()) {
+      msg.appendMessage("Detail: " + detail);
+    }
     emit messageGenerated(msg);
 
     return false;
@@ -2522,7 +2541,7 @@ void ZFlyEmProofDoc::removeTodoItem(
     ZFlyEmToDoList *se = *iter;
     se->removeItem(pos, scope);
     scope = ZFlyEmToDoList::DATA_LOCAL;
-    processObjectModified(se);
+    bufferObjectModified(se);
   }
 
   notifyTodoItemModified(pos);
@@ -3639,15 +3658,21 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
-      bool good =
-          (bookmark->getUserName().length() == int(currentUserName.length()));
+      //Users must match
+      bool good = (bookmark->getUserName().toStdString() == currentUserName);
       if (good) {
+        //to deal with out-of-sync problem in DVID
         ZJsonObject checkJson =
-            getDvidReader().readBookmarkJson(bookmark->getCenter().toIntPoint());
+            getDvidReader().readBookmarkJson(bookmark->getLocation());
         good = (!checkJson.isEmpty());
+      } else {
+        emitWarning(
+              QString("Skipping bookmark @%1 due to unmached owner.").
+              arg(bookmark->getLocation().toString().c_str()));
       }
       if (good) {
-        if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+        if (bookmark->isChecked() && getDvidReader().isBookmarkChecked(
+              bookmark->getLocation())) {
           bookmark->setChecked(true);
           ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
           //        bookmarkObj.setProperty("checked", "1");
@@ -3663,7 +3688,7 @@ void ZFlyEmProofDoc::downloadBookmark()
     endObjectModifiedMode();
     processObjectModified();
 
-    if (bookmarkCount == 0) {
+    if (bookmarkCount == 0) { //For compatibility
       ZDvidUrl url(getDvidTarget());
       ZDvidBufferReader reader;
       reader.read(url.getCustomBookmarkUrl(neutu::GetCurrentUserName()).c_str());
@@ -3678,7 +3703,7 @@ void ZFlyEmProofDoc::downloadBookmark()
           bookmark->loadJsonObject(bookmarkObj);
           addObject(bookmark, true);
           bookmark->addUserTag();
-          if (getDvidReader().isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
+          if (getDvidReader().isBookmarkChecked(bookmark->getLocation())) {
             bookmark->setChecked(true);
           }
           m_dvidWriter.writeBookmark(*bookmark);
@@ -4224,6 +4249,52 @@ void ZFlyEmProofDoc::readBookmarkBodyId(QList<ZFlyEmBookmark *> &bookmarkArray)
   }
 }
 
+void ZFlyEmProofDoc::importUserBookmark(const QString &filePath)
+{
+  ZFlyEmBookmarkArray bookmarkArray;
+  bookmarkArray.importJsonFile(filePath.toStdString(), nullptr);
+
+  ZJsonArray array;
+
+  for (auto &bookmark : bookmarkArray) {
+    if (canAddBookmarkAt(bookmark.getLocation(), true)) {
+      bookmark.setCustom(true);
+      bookmark.setUser(neutu::GetCurrentUserName());
+      bookmark.addUserTag();
+      array.append(ZJsonFactory::MakeAnnotationJson(bookmark));
+    }
+  }
+
+  if (!array.isEmpty()) {
+    emitInfo(QString("Importing %1 bookmarks ...").arg(array.size()));
+    getBookmarkWriter().writeBookmark(array);
+    emitInfo("Done.");
+  }
+}
+
+void ZFlyEmProofDoc::exportUserBookmark(const QString &filePath)
+{
+  if (!filePath.isEmpty() && getDvidReader().isReady()) {
+    ZJsonArray bookmarkJson =
+        getDvidReader().readTaggedBookmark("user:" + neutu::GetCurrentUserName());
+    ZJsonArray userBookmarkJson = bookmarkJson.filter([](const ZJsonValue &value) {
+      ZFlyEmBookmark bookmark;
+      bookmark.loadJsonObject(ZJsonObject(value));
+      return bookmark.isCustom();
+    });
+
+    if (!userBookmarkJson.isEmpty()) {
+      if (userBookmarkJson.dump(filePath.toStdString())) {
+        emitInfo("Bookmarks saved in " + filePath);
+      } else {
+        emitWarning("Unable to save the bookmarks.");
+      }
+    } else {
+      emitWarning("No user bookmark found. Nothing was saved.");
+    }
+  }
+}
+
 QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     const std::string &filePath)
 {
@@ -4358,6 +4429,22 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 #endif
 
 }
+
+bool ZFlyEmProofDoc::canAddBookmarkAt(const ZIntPoint &pos, bool warning)
+{
+  std::string owner = FlyEmDataReader::ReadBookmarkUser(getBookmarkReader(), pos);
+
+  if (!owner.empty() && owner != neutu::GetCurrentUserName()) {
+    if (warning) {
+      emitWarning(QString("Cannot overwrite bookmark owned by %1 @%2")
+                  .arg(owner.c_str()).arg(pos.toString().c_str()));
+    }
+    return false;
+  }
+
+  return true;
+}
+
 
 QString ZFlyEmProofDoc::getInfo() const
 {
@@ -5918,6 +6005,35 @@ void ZFlyEmProofDoc::executeRemoveTodoCommand()
   executeRemoveTodoItemCommand();
 }
 
+void ZFlyEmProofDoc::removeTodoList(
+    const QList<ZIntPoint> &todoList, bool allowingUndo)
+{
+  if (!todoList.isEmpty()) {
+    if (allowingUndo) {
+      QUndoCommand *command = new QUndoCommand;
+      foreach (const ZIntPoint &item, todoList) {
+        new ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem(
+              this, item.getX(), item.getY(), item.getZ(), command);
+      }
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+      pushUndoCommand(command);
+      endObjectModifiedMode();
+      processObjectModified();
+    } else {
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+      int index = 1;
+      foreach (const ZIntPoint &item, todoList) {
+        std::cout << "====> Removing todo " << index++ << "/" << todoList.size()
+                  << " @" << item.toString() << std::endl;
+        removeTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+        notifyTodoEdited(item);
+      }
+      endObjectModifiedMode();
+      processObjectModified();
+    }
+  }
+}
+
 void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
 {
   std::set<ZIntPoint> selected = getSelectedTodoItemPosition();
@@ -6080,11 +6196,15 @@ void ZFlyEmProofDoc::addLocalBookmark(ZFlyEmBookmark *bookmark)
 void ZFlyEmProofDoc::addLocalBookmark(
     const std::vector<ZFlyEmBookmark *> &bookmarkArray)
 {
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   for (std::vector<ZFlyEmBookmark*>::const_iterator iter = bookmarkArray.begin();
        iter != bookmarkArray.end(); ++iter) {
     ZFlyEmBookmark *bookmark = *iter;
     addObject(bookmark, false);
   }
+  endObjectModifiedMode();
+
+  processObjectModified();
 
   if (!bookmarkArray.empty()) {
     emit userBookmarkModified();

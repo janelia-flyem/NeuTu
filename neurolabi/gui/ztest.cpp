@@ -20,6 +20,8 @@
 #include <ostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
+#include <random>
 #include <sys/stat.h>
 #include <sys/types.h>
 //#include <boost/filesystem.hpp>
@@ -63,6 +65,8 @@
 #include "tz_color.h"
 #include "tz_swc_tree.h"
 
+#include "neulib/core/stringbuilder.h"
+#include "ext/QFunctionUtils/src/QFunctionUtils"
 #include "geometry/zaffinerect.h"
 #include "filesystem/utilities.h"
 #include "tr1_header.h"
@@ -201,7 +205,9 @@
 #include "misc/miscutility.h"
 #include "imgproc/zstackprinter.h"
 #include "zneurontracer.h"
+#include "mvc/zstackdocobjectmonitor.h"
 
+#include "filesystem/utilities.h"
 #include "swc/zswcterminalsurfacemetric.h"
 
 #include "zswcgenerator.h"
@@ -209,6 +215,7 @@
 #include "z3dmainwindow.h"
 #include "misc/zvtkutil.h"
 #include "flyem/zfileparser.h"
+#include "qt/network/znetbufferreaderthread.h"
 
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
@@ -355,23 +362,23 @@
 #include "flyem/zflyemarbdoc.h"
 #include "flyem/zflyemrandombodycolorscheme.h"
 
+/*
 #include "ext/http/HTTPRequest.hpp"
-
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "ext/cpp-httplib/httplib.h"
+*/
 //#include "test/ztestall.h"
 
 using namespace std;
 
 ostream& ZTest::m_failureStream = cerr;
 
+
 ZTest::ZTest()
 {
+  std::string envPath = neutu::Join({GET_TEST_DATA_DIR, "_test", "env.json"});
+  m_testEnv.load(envPath);
 }
-
-#ifdef _JANELIA_WORKSTATION_
-const static string dataPath("/groups/flyem/home/zhaot/Work/neutube_ws/neurolabi/data");
-#else
-const static string dataPath("/Users/zhaot/Work/neutube/neurolabi/data");
-#endif
 
 void ZTest::setCommandLineArg(int argc, char *argv[])
 {
@@ -379,6 +386,20 @@ void ZTest::setCommandLineArg(int argc, char *argv[])
   m_argv = argv;
 }
 
+std::string ZTest::getVar(const std::string &key) const
+{
+  return ZJsonObjectParser::GetValue(m_testEnv, key, "");
+}
+
+std::string ZTest::getDataDir() const
+{
+  return ZJsonObjectParser::GetValue(m_testEnv, "dataDir", GET_TEST_DATA_DIR);
+}
+
+ZDvidTarget ZTest::getDvidTarget() const
+{
+  return ZDvidTargetFactory::MakeFromSpec(getVar("dvidSource"));
+}
 
 void ZTest::runUnitTest()
 {
@@ -437,6 +458,11 @@ void ZTest::stressTest(MainWindow *host)
     }
 #endif
   }
+}
+
+void ZTest::Test(MainWindow *host)
+{
+  getInstance().test(host);
 }
 
 void ZTest::test(MainWindow *host)
@@ -563,19 +589,6 @@ void ZTest::test(MainWindow *host)
   dlg.exec();
 #endif
 
-
-#if 0
-  ZStackFrame *frame = new ZStackFrame(this);
-  const char *filePath = "E:\\data\\diadem\\diadem1\\nc_01.tif";
-  Mc_Stack *stack = Read_Mc_Stack(filePath, -1);
-  frame->document()->loadStack(Mc_Stack_To_Stack(stack, -1, NULL));
-  frame->document()->setStackSource(filePath);
-  frame->setWindowTitle(filePath);
-  frame->presenter()->optimizeStackBc();
-  frame->view()->reset();
-  setCurrentFile(filePath);
-  addStackFrame(frame);
-#endif
 
 #if 0
   ZSwcTree tree1;
@@ -28337,7 +28350,7 @@ void ZTest::test(MainWindow *host)
 #if 0
   neutuse::TaskWriter writer;
   writer.open("http://emdata2.int.janelia.org:2018");
-  writer.testConnection();
+//  writer.testConnection();
   std::cout << writer.ready() << std::endl;
 
 #endif
@@ -31565,7 +31578,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/_test.sobj");
   ZObject3dScan obj2;
@@ -31574,6 +31587,284 @@ void ZTest::test(MainWindow *host)
   obj.unify(obj2);
 
   obj.save(GET_TEST_DATA_DIR + "/nBreak-v1.sobj");
+#endif
+
+#if 0
+  std::cout << ZNetworkUtils::IsAvailable("http://emdata5.int.janelia.org:5570/compute-cleave", "OPTIONS") << std::endl;
+#endif
+
+#if 0
+  for (int i = 0; i < 1000; ++i) {
+    std::cout << ZNetworkUtils::IsAvailable(
+                   getVar("httpServer").c_str(),
+                   znetwork::EOperation::HAS_OPTIONS) << std::endl;
+  }
+  /*
+  std::cout << ZNetworkUtils::IsAvailable(
+                 "http://127.0.0.1:1600", "OPTIONS") << std::endl;
+  std::cout << ZNetworkUtils::IsAvailable(
+                 "http://127.0.0.1:1600", "HEAD") << std::endl;
+  std::cout << ZNetworkUtils::IsAvailable(
+                 "http://127.0.0.1:1600", "HAS_HEAD") << std::endl;
+  std::cout << ZNetworkUtils::IsAvailable(
+                 "http://127.0.0.1:1601", "HAS_HEAD") << std::endl;
+                 */
+#endif
+
+#if 0
+  {
+    ZNetBufferReaderThread thread;
+    thread.setOperation(znetwork::EOperation::HAS_OPTIONS);
+    thread.setUrl("http://127.0.0.1:1600");
+    thread.start();
+    thread.wait();
+    std::cout << thread.getResultStatus() << std::endl;
+  }
+
+  {
+    ZNetBufferReaderThread *thread = new ZNetBufferReaderThread;
+    thread->connect(thread, &ZNetBufferReaderThread::finished, thread, &QObject::deleteLater);
+    thread->setOperation(znetwork::EOperation::HAS_OPTIONS, 1000);
+    thread->setUrl("http://emdata5.int.janelia.org:5570/compute-cleave");
+    thread->start();
+    QTimer::singleShot(100, []() { std::cout << "later event." << std::endl; });
+    thread->wait();
+    std::cout << thread->getResultStatus() << std::endl;
+  }
+#endif
+
+#if 0
+  auto testFunc = QFunctionUtils::Throttle([](int v) {
+    std::cout << "test: " << v << std::endl;
+    ZSleeper::sleep(1);
+  }, 100);
+
+  testFunc(1);
+  testFunc(2);
+  testFunc(3);
+  testFunc(4);
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://emdata5-private.janelia.org"
+        "?uuid=cd30&segmentation=segmentation&admintoken=test");
+  target.print();
+  std::cout << target.getAdminToken() << std::endl;
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    writer.createData("keyvalue", "segmentation_skeletons");
+  }
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        ZJsonObjectParser::GetValue(m_testEnv, "dvidSource", ""));
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    ZSwcTree testTree;
+    testTree.setDataFromNode(SwcTreeNode::MakePointer(ZPoint(0, 0, 0), 1));
+    writer.writeSwc(0, &testTree);
+    std::cout << writer.getStatusCode() << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target = getDvidTarget();
+  ZDvidBufferReader reader;
+  ZDvidUrl url(getDvidTarget());
+  reader.read(url.getSkeletonUrl(0).c_str(), true);
+  std::cout << reader.getStatusCode() << std::endl;
+  std::cout << reader.getStatus() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  if (reader.open(getDvidTarget())) {
+    tic();
+    reader.readSwc(1);
+    ptoc();
+  }
+#endif
+
+#if 0
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://emdata5-private.janelia.org"
+        "?uuid=cd30&segmentation=segmentation");
+  ZDvidReader reader;
+  ZObject3dScan obj;
+  if (reader.open(target)) {
+    reader.readBody(100482, true, &obj);
+  }
+  std::cout << obj.getVoxelNumber() << std::endl;
+
+  ZNetBufferReader bufferReader;
+  ZDvidUrl dvidUrl(target);
+  bufferReader.hasHead(dvidUrl.getSparsevolUrl(10048200000).c_str());
+
+  std::cout << bufferReader.getStatusCode() << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  {
+    std::string user =
+        FlyEmDataReader::ReadBookmarkUser(*reader, {1215, 1117, 1023});
+    std::cout << user << std::endl;
+  }
+
+  {
+    std::string user =
+        FlyEmDataReader::ReadBookmarkUser(*reader, {1215, 1117, 1024});
+    std::cout << user << std::endl;
+  }
+#endif
+
+#if 0
+  ZStackDoc *doc = new ZStackDoc();
+  ZStackDocObjectMonitor *monitor = new ZStackDocObjectMonitor(doc);
+  monitor->monitor(doc);
+
+  doc->addObject(new ZSwcTree);
+  doc->removeAllObject(true);
+
+  delete doc;
+#endif
+
+#if 0
+//  QByteArray data = ZNetworkUtils::OptionsHeader("http://127.0.0.1:1600", "Allow");
+//  qDebug() << data;
+  ZJsonObject obj = ZNetworkUtils::ReadJsonObjectMemo(
+        "http://127.0.0.1:1600/api/node/c315/bookmark_annotations/info");
+  obj.print();
+#endif
+
+#if 0
+  httplib::Client cli(getVar("httpsServer").c_str());
+  cli.enable_server_certificate_verification(false);
+  auto res = cli.Get(getVar("httpsPath").c_str());
+  std::cout << res << std::endl;
+  if (res) {
+    std::cout << res->status << std::endl;
+    std::cout << res->body << std::endl;
+  } else {
+    std::cout << res.error() << std::endl;
+  }
+#endif
+
+#if 0
+  //Read labels
+  ZDvidReader *reader = ZGlobal::GetDvidReader("local_test");
+
+
+  QImage image(2048, 2048, QImage::Format_ARGB32);
+
+  std::string outputDir = GET_TEST_DATA_DIR + "/_dvid/data/hbtest2/seg";
+
+  //For each slice
+  for (int z = 0; z < 2048; ++z) {
+    //read slice
+    auto *array = reader->readLabels64("segmentation", 0, 0, z, 2048, 2048, 1);
+    //Create QImage
+    for (int y = 0; y < 2048; ++y) {
+      for (int x = 0; x < 2048; ++x) {
+        auto value = QRgba64::fromRgba64(
+              array->getValue<uint64_t>(y * 2048 + x));
+//        std::cout << value.red8() << " " << value.green8() <<  " "
+//                  << value.blue8() << std::endl;
+        image.setPixel(x, y, value);
+      }
+    }
+    //Save png
+    std::string outputPath =
+        neulib::StringBuilder(outputDir + "/test").append(z, 4).append(".png");
+    image.save(outputPath.c_str(), nullptr, 100);
+    delete array;
+//    break;
+  }
+
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("medulla-sample-28c");
+  writer->createSynapseLabelsz();
+//  writer->syncSynapseLabelsz();
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("vnc-prod");
+  writer->createSynapseLabelsz();
+#endif
+
+#if 0
+  ZDvidTarget target("127.0.0.1", "565b", 1600);
+  target.setSegmentationName("segmentation2");
+//  ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.getDvidReader().updateMaxLabelZoom();
+
+  std::string outputDir = GET_TEST_DATA_DIR + "/_dvid/data/hbtest2/seg";
+  ZArray label(mylib::UINT64_TYPE, {2048, 2048, 64});
+  size_t offset = 0;
+  for (int z = 0; z < 2048; ++z) {
+    std::cout << "z=" << z << std::endl;
+    QImage image;
+    std::string outputPath =
+        neulib::StringBuilder(outputDir + "/test").append(z, 4).append(".png");
+    image.load(outputPath.c_str());
+
+    for (int y = 0; y < image.height(); ++y) {
+      for (int x = 0; x < image.width(); ++x) {
+        label.setValue(offset++, uint64_t(image.pixel(x, y)));
+      }
+    }
+
+    if ((z + 1) % 64 == 0) {
+      label.printInfo();
+      writer.writeLabel(label);
+      offset = 0;
+      label.setStartCoordinate(2, z + 1);
+    }
+  }
+
+
+#endif
+
+#if 0
+  ZDvidTarget target = getDvidTarget();
+  ZDvidWriter writer;
+  if (writer.open(target)) {
+    writer.setAdmin(true);
+    writer.createKeyvalue("neutu_config");
+  }
+#endif
+
+#if 0
+  std::vector<int> v{1, 2, 3, 4, 5};
+//  std::random_device rd;
+//  std::mt19937 g(rd());
+  std::random_shuffle(v.begin(), v.end());
+  for (int t : v) {
+    std::cout << t << std::endl;
+  }
+#endif
+
+#if 1
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = dvid::GetMergeConfig(
+        1, std::vector<uint64_t>({2, 3, 4, 5, 6, 7, 8}),
+        [](uint64_t id1, uint64_t id2) {
+      return id1 < id2;
+  });
+
+  std::cout << "Merge: " << mergeConfig.first;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

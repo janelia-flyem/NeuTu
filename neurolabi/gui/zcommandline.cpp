@@ -17,6 +17,8 @@
 #include "zobject3dscan.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
+#include "zjsonobjectparser.h"
+#include "filesystem/utilities.h"
 #include "zdvidutil.h"
 #include "flyem/zflyemqualityanalyzer.h"
 #include "zfiletype.h"
@@ -48,6 +50,7 @@
 #include "zflyemutilities.h"
 #include "flyem/zflyembodyannotation.h"
 #include "flyem/flyemdatareader.h"
+#include "dvid/zdvidtargetfactory.h"
 
 //Incude your module headers here
 #include "command/zcommandmodule.h"
@@ -59,13 +62,14 @@
 #include "command/zbodyexportcommand.h"
 #include "command/zsparsestackcommandmodule.h"
 #include "command/zstackfiltercommand.h"
-#include "command/zuploadroicommand.h"
 #include "command/zneurontracecommand.h"
-#include "command/zsyncskeletoncommand.h"
-#include "command/zbodyprocesscommand.h"
+#include "command/zsplittaskuploadcommand.h"
 
 #if defined(_FLYEM_)
-#include "command/zsplittaskuploadcommand.h"
+#include "command/zuploadroicommand.h"
+#include "command/zsyncskeletoncommand.h"
+#include "command/zbodyprocesscommand.h"
+#include "command/ztransferskeletoncommand.h"
 #endif
 
 using namespace std;
@@ -122,12 +126,13 @@ void ZCommandLine::registerModule()
   registerModule<ZBodyExportCommand>("export_body");
   registerModule<ZSparseStackCommand>("sparse_stack");
   registerModule<ZStackFilterCommand>("filter_stack");
-  registerModule<ZUploadRoiCommand>("upload_roi");
   registerModule<ZNeuronTraceCommand>("trace_neuron");
 #if defined(_FLYEM_)
+  registerModule<ZUploadRoiCommand>("upload_roi");
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
   registerModule<ZSyncSkeletonCommand>("sync_skeleton");
   registerModule<ZBodyProcessCommand>("process_body");
+  registerModule<ZTransferSkeletonCommand>("transfer_skeleton");
 #endif
 }
 
@@ -932,7 +937,12 @@ int ZCommandLine::runGeneral()
     std::cout << "Running command " << commandName << "..." << std::endl;
     ZCommandModule *module = getModule(commandName);
     if (module != NULL) {
-      return module->run(m_input, m_output, config);
+      try {
+        return module->run(m_input, m_output, config);
+      } catch (std::exception &e) {
+        std::cerr << "COMMAND FAILED: " << e.what() << std::endl;
+        return 1;
+      }
     } else {
       std::cerr << "Invalid command module: " << commandName << std::endl;
 
@@ -945,6 +955,10 @@ int ZCommandLine::runGeneral()
 
 int ZCommandLine::runTest()
 {
+  std::string envPath = neutu::Join({GET_TEST_DATA_DIR, "_test", "env.json"});
+  ZJsonObject testEnv;
+  testEnv.load(envPath);
+
 #if 0
   std::cout << GET_TEST_DATA_DIR << std::endl;
   loadConfig(GET_TEST_DATA_DIR + "/../json/command_config.json");
@@ -972,7 +986,7 @@ int ZCommandLine::runTest()
 //  target.setLabelBlockName("labels3");
 //  target.setGrayScaleName("grayscale");
 
-  m_input.push_back("http:emdata2.int.janelia.org:8500:3303:bodies3");
+  m_input.push_back(ZJsonObjectParser::GetValue(testEnv, "dvidSource", ""));
   ZDvidTarget target;
   target.setFromSourceString(m_input[0]);
 
@@ -1002,8 +1016,8 @@ int ZCommandLine::runTest()
 
 #endif
 
-#if 1
-  m_input.push_back("http:emdata1.int.janelia.org:7000:005a:segmentation-labelvol");
+#if 0
+  m_input.push_back(ZJsonObjectParser::GetValue(testEnv, "dvidSource", ""));
   ZDvidTarget target;
   target.setFromSourceString(m_input[0]);
 
@@ -1201,9 +1215,9 @@ ZJsonObject ZCommandLine::getSkeletonizeConfig(ZDvidReader &reader)
   return config;
 }
 
-int ZCommandLine::skeletonizeDvid()
+int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
 {
-  ZDvidTarget target = dvid::MakeTargetFromUrlSpec(m_input[0]);
+//  ZDvidTarget target = dvid::MakeTargetFromUrlSpec(m_input[0]);
 
   if (!target.isValid()) {
     std::cout << "Invalid DVID settings" << std::endl;
@@ -1517,8 +1531,9 @@ int ZCommandLine::runSkeletonize()
     tic();
   }
 
-  if (ZDvidTarget::IsDvidTarget(m_input[0])) {
-    stat = skeletonizeDvid();
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(m_input[0]);
+  if (target.isValid()) {
+    stat = skeletonizeDvid(target);
   } else {
     stat = skeletonizeFile();
   }

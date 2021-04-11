@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <fstream>
+#include <algorithm>
+#include <random>
 
 #include <QDebug>
 #include <QUrl>
@@ -17,6 +19,7 @@
 #include "zdvidutil.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidurl.h"
 
 #include "neutuse/taskwriter.h"
 #include "neutuse/taskfactory.h"
@@ -52,8 +55,8 @@ NeuPrintReader* get_neuprint_reader(const ZJsonObject &obj, const QString &uuid)
   NeuPrintReader *reader = nullptr;
 
   ZJsonObjectParser parser;
-  QString url = parser.getValue(obj, "url", "").c_str();
-  QString token = parser.getValue(obj, "token", "").c_str();
+  QString url = parser.GetValue(obj, "url", "").c_str();
+  QString token = parser.GetValue(obj, "token", "").c_str();
 
   if (!url.isEmpty() && !uuid.isEmpty()) {
     reader = new NeuPrintReader(url);
@@ -80,7 +83,17 @@ void process_body(uint64_t bodyId, int index, int totalCount,
                   const ZDvidReader &reader,
                   std::function<void(uint64_t)> processBody)
 {
-  if (reader.hasBody(bodyId)) {
+  ZNetBufferReader bufferReader;
+  ZDvidUrl dvidUrl(reader.getDvidTarget());
+  bufferReader.hasHead(dvidUrl.getSparsevolUrl(bodyId).c_str());
+  bool hasBody = false;
+  if (bufferReader.getStatusCode() == 200) {
+    hasBody = true;
+  } else if (bufferReader.getStatusCode() != 204) {
+    hasBody = reader.hasBody(bodyId);
+  }
+
+  if (hasBody) {
     int64_t bodyMod = reader.readBodyMutationId(bodyId);
     std::unique_ptr<ZSwcTree> tree =
         std::unique_ptr<ZSwcTree>(reader.readSwc(bodyId));
@@ -130,7 +143,7 @@ int ZSyncSkeletonCommand::run(
   std::function<void(uint64_t)> processBody;
   neutuse::TaskFactory taskFactory;
   taskFactory.setForceUpdate(true);
-  taskFactory.setPriority(parser.getValue(config, "priority", 5));
+  taskFactory.setPriority(parser.GetValue(config, "priority", 5));
 
   if (outputUrl.scheme() == "http") {
     std::string neutuseServer = output;
@@ -210,9 +223,47 @@ int ZSyncSkeletonCommand::run(
         }
       }
 
+      if (config.hasKey("bodyList")) {
+        if (ZJsonValue(config.value("bodyList")).isArray()) {
+          ZJsonArray bodyArray(config.value("bodyList"));
+          for (size_t i = 0; i < bodyArray.size(); ++i) {
+            uint64_t bodyId = ZJsonParser::integerValue(bodyArray.at(i));
+            ZJsonObject bodyJson;
+            bodyJson.setEntry("body ID", bodyId);
+            predefinedBodyList.append(bodyJson);
+          }
+        } else {
+          std::string bodyFilePath =
+              ZJsonParser::stringValue(config["bodyList"]);
+          std::ifstream stream(bodyFilePath);
+          if (stream.is_open()) {
+            ZString line;
+            while (getline(stream, line)) {
+              auto bodyIdArray = line.toUint64Array();
+              for (uint64_t bodyId : bodyIdArray) {
+                ZJsonObject bodyJson;
+                bodyJson.setEntry("body ID", bodyId);
+                predefinedBodyList.append(bodyJson);
+              }
+            }
+          }
+        }
+      }
+
+      bool shuffling = ZJsonObjectParser::GetValue(config, "shuffle", false);
       if (!predefinedBodyList.isEmpty()) {
+        std::vector<size_t> m_indexArray(predefinedBodyList.size());
         for (size_t i = 0; i < predefinedBodyList.size(); ++i) {
-          ZJsonObject bodyJson(predefinedBodyList.value(i));
+          m_indexArray[i] = i;
+        }
+        if (shuffling) {
+          std::random_device rd;
+          std::mt19937 g(rd());
+          std::shuffle(m_indexArray.begin(), m_indexArray.end(), g);
+        }
+        for (size_t i = 0; i < predefinedBodyList.size(); ++i) {
+          size_t index = m_indexArray[i];
+          ZJsonObject bodyJson(predefinedBodyList.value(index));
           uint64_t bodyId = ZJsonParser::integerValue(bodyJson["body ID"]);
           report_progress(i, predefinedBodyList.size());
           process_body(
@@ -222,7 +273,12 @@ int ZSyncSkeletonCommand::run(
         QStringList annotList =
             reader.readKeys(reader.getDvidTarget().getBodyAnnotationName().c_str());
         int index = 1;
-        for (const QString &bodyStr : annotList) {
+        if (shuffling) {
+          std::random_device rd;
+          std::mt19937 g(rd());
+          std::shuffle(annotList.begin(), annotList.end(), g);
+        }
+        foreach (const QString &bodyStr, annotList) {
           report_progress(index - 1, annotList.size());
           uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();
           if (bodyId > 0) {

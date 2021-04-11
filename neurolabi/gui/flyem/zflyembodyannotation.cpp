@@ -26,6 +26,7 @@ const char *ZFlyEmBodyAnnotation::KEY_LOCATION = "location";
 const char *ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS = "out of bounds";
 const char *ZFlyEmBodyAnnotation::KEY_CROSS_MIDLINE = "cross midline";
 const char *ZFlyEmBodyAnnotation::KEY_NEURONTRANSMITTER = "neurotransmitter";
+const char *ZFlyEmBodyAnnotation::KEY_HEMILINEAGE = "hemilineage";
 const char *ZFlyEmBodyAnnotation::KEY_SYNONYM = "synonym";
 const char *ZFlyEmBodyAnnotation::KEY_NOTES = "notes";
 const char *ZFlyEmBodyAnnotation::KEY_CLONAL_UNIT = "clonal unit";
@@ -53,6 +54,7 @@ void ZFlyEmBodyAnnotation::clear()
   m_outOfBounds = false;
   m_crossMidline = false;
   m_neurotransmitter.clear();
+  m_hemilineage.clear();
   m_synonym.clear();
   m_clonalUnit.clear();
   m_autoType.clear();
@@ -109,6 +111,7 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
     obj.setTrueEntry(KEY_OUT_OF_BOUNDS, m_outOfBounds);
     obj.setTrueEntry(KEY_CROSS_MIDLINE, m_crossMidline);
     obj.setNonEmptyEntry(KEY_NEURONTRANSMITTER, m_neurotransmitter);
+    obj.setNonEmptyEntry(KEY_HEMILINEAGE, m_hemilineage);
     obj.setNonEmptyEntry(KEY_NOTES, m_synonym);
     obj.setNonEmptyEntry(KEY_CLONAL_UNIT, m_clonalUnit);
     obj.setNonEmptyEntry(KEY_AUTO_TYPE, m_autoType);
@@ -221,8 +224,9 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
     }
 
     setPrimaryNeurite(
-          objParser.getValue(obj, {KEY_CELL_BODY_FIBER, KEY_PRIMARY_NEURITE},
-                             std::string()));
+          objParser.GetValue(
+            obj, std::vector<std::string>{KEY_CELL_BODY_FIBER, KEY_PRIMARY_NEURITE},
+            std::string()));
     /*
     if (obj.hasKey(KEY_PRIMARY_NEURITE)) {
       setPrimaryNeurite(ZJsonParser::stringValue(obj[KEY_PRIMARY_NEURITE]));
@@ -245,7 +249,12 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setNeurotransmitter(ZJsonParser::stringValue(obj[KEY_NEURONTRANSMITTER]));
     }
 
-    setSynonym(objParser.getValue(obj, {KEY_NOTES, KEY_SYNONYM}, std::string()));
+    if (obj.hasKey(KEY_HEMILINEAGE)) {
+      setHemilineage(ZJsonParser::stringValue(obj[KEY_HEMILINEAGE]));
+    }
+
+    setSynonym(objParser.GetValue(
+                 obj, std::vector<std::string>{KEY_NOTES, KEY_SYNONYM}, std::string()));
     /*
     if (obj.hasKey(KEY_SYNONYM)) {
       setSynonym(ZJsonParser::stringValue(obj[KEY_SYNONYM]));
@@ -301,6 +310,11 @@ bool ZFlyEmBodyAnnotation::getCrossMidline() const
 std::string ZFlyEmBodyAnnotation::getNeurotransmitter() const
 {
   return m_neurotransmitter;
+}
+
+std::string ZFlyEmBodyAnnotation::getHemilineage() const
+{
+  return m_hemilineage;
 }
 
 std::string ZFlyEmBodyAnnotation::getSynonym() const
@@ -390,6 +404,11 @@ void ZFlyEmBodyAnnotation::setNeurotransmitter(const std::string &v)
   m_neurotransmitter = v;
 }
 
+void ZFlyEmBodyAnnotation::setHemilineage(const std::string &v)
+{
+  m_hemilineage = v;
+}
+
 void ZFlyEmBodyAnnotation::setSynonym(const std::string &v)
 {
   m_synonym = v;
@@ -430,6 +449,7 @@ void ZFlyEmBodyAnnotation::print() const
   std::cout << "  Out of Bounds: " << m_outOfBounds << std::endl;
   std::cout << "  Cross Midline: " << m_crossMidline << std::endl;
   std::cout << "  Neurotransmitter: " << m_neurotransmitter << std::endl;
+  std::cout << "  Hemilineage" << m_hemilineage << std::endl;
   std::cout << "  Synonym: " << m_synonym << std::endl;
 }
 
@@ -515,7 +535,9 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
 
   if (getStatusRank(m_status) > getStatusRank(annotation.m_status)) {
 //    m_status = annotation.m_status;
+    uint64_t bodyId = m_bodyId;
     *this = annotation;
+    m_bodyId = bodyId;
   } else if (getStatusRank(m_status) == getStatusRank(annotation.m_status)) {
     if (m_comment.empty()) {
       m_comment = annotation.m_comment;
@@ -564,6 +586,10 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
 
     if (m_neurotransmitter.empty()) {
       m_neurotransmitter = annotation.m_neurotransmitter;
+    }
+
+    if (m_hemilineage.empty()) {
+      m_hemilineage = annotation.m_hemilineage;
     }
 
     if (m_synonym.empty()) {
@@ -645,5 +671,6 @@ bool ZFlyEmBodyAnnotation::operator ==(const ZFlyEmBodyAnnotation &annot) const
       (m_outOfBounds == annot.m_outOfBounds) &&
       (m_crossMidline == annot.m_crossMidline) &&
       (m_neurotransmitter == annot.m_neurotransmitter) &&
+      (m_hemilineage == annot.m_hemilineage) &&
       (m_synonym == annot.m_synonym);
 }

@@ -1910,15 +1910,25 @@ std::string ZDvidUrl::getSynapseLabelszBodiesUrl() const
     return url;
 }
 
+std::string ZDvidUrl::getSynapseLabelszUrl() const
+{
+  return getDataUrl(m_dvidTarget.getSynapseLabelszName());
+}
+
 std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
 {
-  std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
+  std::string url = getSynapseLabelszUrl();
 
   if (!url.empty()) {
     url += "/top/" + ZString::num2str(n);
   }
 
   return url;
+}
+
+std::string ZDvidUrl::getSynapseLabelszReloadUrl() const
+{
+  return applyAdminToken(GetFullUrl(getSynapseLabelszUrl(), "reload"));
 }
 
 std::string ZDvidUrl::GetLabelszIndexTypeStr(dvid::ELabelIndexType type)

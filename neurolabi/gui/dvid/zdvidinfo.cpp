@@ -84,7 +84,7 @@ void ZDvidInfo::set(const ZJsonObject &rootObj)
     if (rootObj.hasKey("Base")) {
       ZJsonObjectParser parser;
       setCompression(
-            parser.getValue(rootObj.value("Base"), KEY_COMPRESSION, ""));
+            parser.GetValue(rootObj.value("Base"), KEY_COMPRESSION, ""));
     }
 
     ZJsonObject obj;
