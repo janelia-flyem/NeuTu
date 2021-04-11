@@ -1661,7 +1661,7 @@ int ZNeuronTracer::getMinSeedObjSize(double seedDensity) const
 
   if (m_screeningSeed) {
 //    if (seedDensity > 0.00005) { //>1 seed in every 20x20x20 block
-    s = int(seedDensity * 1000000); //heuristic threshold estimate
+    s = int(seedDensity * 16000); //heuristic threshold estimate
 //    }
   }
 
@@ -1861,9 +1861,10 @@ ZSwcTree* ZNeuronTracer::trace(Stack *stack, bool doResampleAfterTracing)
   }
   advanceProgress(0.1);
 
-  if (chainArray.size() > 100) {
+  if (chainArray.size() > 500) {
     std::cout << "Screening " << chainArray.size() << " tubes ..." << std::endl;
     chainArray = screenChain(stack, chainArray);
+    std::cout << chainArray.size() << " tubes left." << std::endl;
     m_diag.save(chainArray, "branches3_screen");
   }
 

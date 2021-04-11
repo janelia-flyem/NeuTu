@@ -87,7 +87,9 @@ ZSwcTree* ZNeuronTraceCommand::traceFile(
 
     ZJsonObjectParser parser(inputConfig);
     std::string maskPath = parser.getValue("mask", "");
+    ZStack *mask = nullptr;
     if (!maskPath.empty()) {
+      std::cout << "Using a predefined mask: " << maskPath << std::endl;
       if (!neutu::FileExists(maskPath)) {
         error("Cannot find the mask file " + maskPath + ".");
         return nullptr;
@@ -96,23 +98,23 @@ ZSwcTree* ZNeuronTraceCommand::traceFile(
         error("Failed to recognize the mask file " + maskPath + " as a TIFF");
         return nullptr;
       }
-    }
 
-    ZStack *mask = ZStackReader::Read(maskPath);
-    if (mask == nullptr) {
-      warn("Failed to read mask file " + maskPath + ".");
-    } else {
-      int threshold = parser.getValue("maskThreshold", 0);
-      if (threshold < 0) {
-//        Stack *newMask = tracer.makeMask(mask);
-        tracer._makeMask = [&](Stack */*stack*/) {
-          return tracer.makeMask(mask->c_stack());
-        };
+      mask = ZStackReader::Read(maskPath);
+      if (mask == nullptr) {
+        warn("Failed to read mask file " + maskPath + ".");
       } else {
-        mask->binarize(threshold);
-        tracer._makeMask = [=](Stack */*stack*/) {
-          return C_Stack::clone(mask->c_stack());
-        };
+        int threshold = parser.getValue("maskThreshold", 0);
+        if (threshold < 0) {
+          //        Stack *newMask = tracer.makeMask(mask);
+          tracer._makeMask = [&](Stack */*stack*/) {
+            return tracer.makeMask(mask->c_stack());
+          };
+        } else {
+          mask->binarize(threshold);
+          tracer._makeMask = [=](Stack */*stack*/) {
+            return C_Stack::clone(mask->c_stack());
+          };
+        }
       }
     }
 
