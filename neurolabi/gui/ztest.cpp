@@ -376,7 +376,7 @@ ostream& ZTest::m_failureStream = cerr;
 
 ZTest::ZTest()
 {
-  std::string envPath = neutu::Join({GET_TEST_DATA_DIR, "_test", "env.json"});
+  std::string envPath = neutu::JoinPath({GET_TEST_DATA_DIR, "_test", "env.json"});
   m_testEnv.load(envPath);
 }
 

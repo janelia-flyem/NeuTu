@@ -38,6 +38,11 @@ int ZNeuronTraceCommand::run(
 
   loadTraceConfig(config);
 
+  if (ZJsonObjectParser::GetValue(config, "action", "") == "inspect") {
+    ZNeuronTracerConfig::getInstance().print();
+    return 0;
+  }
+
   ZSwcTree *tree = traceFile(updatedInput[0], inputJson);
 
   if (tree) {
@@ -53,8 +58,9 @@ int ZNeuronTraceCommand::run(
 
 void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
 {
+  ZJsonObject actualConfig = config;
+
   if (config.hasKey("path")) {
-    ZJsonObject actualConfig;
     ZJsonObjectParser parser;
     std::string path = parser.GetValue(config, "path", "");
     if (path.empty() || path == "default") {
@@ -62,10 +68,10 @@ void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
             NeutubeConfig::EConfigItem::CONFIG_DIR) + "/json/trace_config.json";
     }
     actualConfig.load(path);
+  }
 
-    ZNeuronTracerConfig::getInstance().loadJsonObject(actualConfig);
-  } else {
-    ZNeuronTracerConfig::getInstance().loadJsonObject(config);
+  if (!ZNeuronTracerConfig::getInstance().loadJsonObject(actualConfig)) {
+    warn("Configuration Failed", "Failed to load the config.");
   }
 //  ZNeuronTracerConfig::getInstance().setCrossoverTest(false);
 }

@@ -495,7 +495,7 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   {
     std::string dataPath;
 #if defined(PROJECT_PATH)
-    dataPath = neutu::Join({PROJECT_PATH, "..", "data"});
+    dataPath = neutu::JoinPath({PROJECT_PATH, "..", "data"});
 #endif
 
 #ifdef _QT_GUI_USED_

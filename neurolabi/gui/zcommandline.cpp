@@ -12,6 +12,7 @@
 
 #include "QsLog.h"
 #include "tz_utilities.h"
+#include "filesystem/utilities.h"
 //#include "zargumentprocessor.h"
 #include "ztest.h"
 #include "zobject3dscan.h"
@@ -668,10 +669,7 @@ int ZCommandLine::runComputeSeed()
 
 void ZCommandLine::loadTraceConfig()
 {
-  if (m_configJson.hasKey("trace")) {
-    ZNeuronTracerConfig::getInstance().loadJsonObject(
-          ZJsonObject(m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
-  } else {
+  if (!ZNeuronTracerConfig::getInstance().loadJsonObject(m_configJson)) {
     ZNeuronTracerConfig::getInstance().load(m_configDir + "/trace_config.json");
   }
 }
@@ -955,7 +953,7 @@ int ZCommandLine::runGeneral()
 
 int ZCommandLine::runTest()
 {
-  std::string envPath = neutu::Join({GET_TEST_DATA_DIR, "_test", "env.json"});
+  std::string envPath = neutu::JoinPath({GET_TEST_DATA_DIR, "_test", "env.json"});
   ZJsonObject testEnv;
   testEnv.load(envPath);
 
@@ -1653,9 +1651,9 @@ int ZCommandLine::run(int argc, char *argv[], QCoreApplication &app)
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << "Executable directory: " << applicationDir << std::endl;
-  m_configDir = NeutubeConfig::getInstance().getPath(
-        NeutubeConfig::EConfigItem::CONFIG_DIR) + "/json";
-  std::string configPath = m_configDir + "/command_config.json";
+  m_configDir = neutu::JoinPath(NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::EConfigItem::CONFIG_DIR), "json");
+  std::string configPath = neutu::JoinPath(m_configDir, "command_config.json");
 
   if (Is_Arg_Matched(const_cast<char*>("--config"))) {
     configPath = Get_String_Arg(const_cast<char*>("--config"));
