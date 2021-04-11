@@ -62,6 +62,10 @@ public:
       const ZJsonObject &obj, const std::vector<std::string> &candidateKeys,
       const char* defaultValue);
 
+  std::string getValue(const ZJsonObject &obj, const char *key,
+                       const char *defaultValue) const;
+  std::string getValue(const ZJsonObject &obj, const std::string &key,
+                       const char *defaultValue) const;
 
 private:
   ZJsonObject m_obj;

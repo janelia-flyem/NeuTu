@@ -239,6 +239,8 @@ public:
 
   friend std::ostream& operator << (std::ostream &stream, const ZNeuronTracer &t);
 
+  Stack* makeMask(const Stack *stack);
+
 public:
   void test();
 
@@ -268,8 +270,6 @@ private:
 
   std::vector<Locseg_Chain*> screenChain(const Stack *stack,
                                          std::vector<Locseg_Chain*> &chainArray);
-
-  Stack* makeMask(const Stack *stack);
 
   void clearBuffer();
 

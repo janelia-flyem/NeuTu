@@ -9,6 +9,9 @@
 #include "zjsonobjectparser.h"
 #include "zswctree.h"
 #include "zstackreader.h"
+#include "zjsonobjectparser.h"
+#include "zfiletype.h"
+#include "filesystem/utilities.h"
 
 ZNeuronTraceCommand::ZNeuronTraceCommand()
 {
@@ -19,13 +22,23 @@ int ZNeuronTraceCommand::run(
     const std::vector<std::string> &input, const std::string &output,
     const ZJsonObject &config)
 {
-  if(input.empty() || output.empty()) {
+  ZJsonObject inputJson(config.value("_input"));
+
+  ZJsonObjectParser parser(inputJson);
+  std::string additionalInput = parser.getValue("signal", "");
+
+  std::vector<std::string> updatedInput = input;
+  if (!additionalInput.empty() && updatedInput.empty()) {
+    updatedInput.push_back(additionalInput);
+  }
+
+  if(updatedInput.empty() || output.empty()) {
     return 1;
   }
 
   loadTraceConfig(config);
 
-  ZSwcTree *tree = traceFile(input[0]);
+  ZSwcTree *tree = traceFile(updatedInput[0], inputJson);
 
   if (tree) {
     std::cout << "Saving " + output + "..." << std::endl;
@@ -57,7 +70,8 @@ void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
 //  ZNeuronTracerConfig::getInstance().setCrossoverTest(false);
 }
 
-ZSwcTree* ZNeuronTraceCommand::traceFile(const std::string &filePath)
+ZSwcTree* ZNeuronTraceCommand::traceFile(
+    const std::string &filePath, const ZJsonObject &inputConfig)
 {
 //  ZStack signal;
 //  signal.load(filePath);
@@ -71,8 +85,42 @@ ZSwcTree* ZNeuronTraceCommand::traceFile(const std::string &filePath)
     tracer.setIntensityField(signal);
     tracer.setTraceLevel(m_level);
 
+    ZJsonObjectParser parser(inputConfig);
+    std::string maskPath = parser.getValue("mask", "");
+    ZStack *mask = nullptr;
+    if (!maskPath.empty()) {
+      std::cout << "Using a predefined mask: " << maskPath << std::endl;
+      if (!neutu::FileExists(maskPath)) {
+        error("Missing file", "Cannot find the mask file " + maskPath + ".");
+        return nullptr;
+      }
+      if (ZFileType::FileType(maskPath) != ZFileType::EFileType::TIFF) {
+        error("File error", "Failed to recognize the mask file " + maskPath + " as a TIFF");
+        return nullptr;
+      }
+
+      mask = ZStackReader::Read(maskPath);
+      if (mask == nullptr) {
+        warn("File error", "Failed to read mask file " + maskPath + ".");
+      } else {
+        int threshold = parser.getValue("maskThreshold", 0);
+        if (threshold < 0) {
+          //        Stack *newMask = tracer.makeMask(mask);
+          tracer._makeMask = [&](Stack */*stack*/) {
+            return tracer.makeMask(mask->c_stack());
+          };
+        } else {
+          mask->binarize(threshold);
+          tracer._makeMask = [=](Stack */*stack*/) {
+            return C_Stack::clone(mask->c_stack());
+          };
+        }
+      }
+    }
+
     tree = tracer.trace(signal);
 
+    delete mask;
     delete signal;
 
     return tree;
