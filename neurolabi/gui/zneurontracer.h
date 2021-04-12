@@ -216,6 +216,7 @@ public:
   void enableTraceMask(bool on);
   void setOverTrace(bool on);
   void setSeedScreening(bool on);
+  void setChainScreenCount(int c);
 
 public:
   std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
@@ -330,6 +331,7 @@ private:
   int m_recover;
   int m_seedingMethod;
   int m_preferredSignalChannel;
+  int m_chainScreenCount = 0;
 
   //Intermedite buffer
   std::vector<Locseg_Chain*> m_chainArray;

@@ -266,7 +266,7 @@ void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
   writeAnnotation(neuron.getId(), neuron.getAnnotationJson());
 }
 
-void ZDvidWriter::writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation)
+void ZDvidWriter::writeBodyAnnotation(const ZFlyEmBodyAnnotation &annotation)
 {
   writeAnnotation(annotation.getBodyId(), annotation.toJsonObject());
 }
@@ -614,7 +614,13 @@ void ZDvidWriter::createSynapseLabelsz()
   if (!dataName.empty()) {
     createData("labelsz", dataName);
     syncSynapseLabelsz();
+    reloadSynapseLabelsz();
   }
+}
+
+void ZDvidWriter::reloadSynapseLabelsz()
+{
+  post(ZDvidUrl(getDvidTarget()).getSynapseLabelszReloadUrl());
 }
 
 void ZDvidWriter::deleteData(const std::string &type, const std::string &name)

@@ -6,6 +6,7 @@
 #include "ui_flyemtododialog.h"
 #include "flyem/zflyemtodolistmodel.h"
 #include "flyem/widgets/zflyemtodolistview.h"
+#include "zdialogfactory.h"
 
 FlyEmTodoDialog::FlyEmTodoDialog(QWidget *parent) :
   QDialog(parent),
@@ -45,6 +46,8 @@ void FlyEmTodoDialog::init()
           this, &FlyEmTodoDialog::checkSelected);
   connect(ui->uncheckPushButton, &QPushButton::clicked,
           this, &FlyEmTodoDialog::uncheckSelected);
+  connect(ui->deleteSelectedPushButton, &QPushButton::clicked,
+          this, &FlyEmTodoDialog::deleteSelected);
   connect(ui->autoCheckedCheckBox, SIGNAL(stateChanged(int)), this,
           SLOT(onAutoCheckedChanged(int)));
   connect(m_model, &ZFlyEmTodoListModel::checkingTodoItem,
@@ -59,6 +62,32 @@ void FlyEmTodoDialog::setDocument(ZSharedPointer<ZStackDoc> doc)
 void FlyEmTodoDialog::setChecked(bool checked)
 {
   m_model->setSelectedChecked(ui->todoTableView->selectionModel(), checked);
+}
+
+void FlyEmTodoDialog::deleteSelected()
+{
+  const int countThre = 50;
+  auto confirm = [this](int n) {
+    if (n > countThre) {
+      return ZDialogFactory::Ask(
+            "Delete Todos",
+            QString("Do you want to delete %1 todos?\n"
+                    "It may take a while and cannot be undone.\n"
+                    "Turning off the 3D windows before the deletion can reduce "
+                    "waiting time.").
+            arg(n), this);
+    }
+
+    return true;
+  };
+
+  auto undoAllowed = [](int n) {
+    return (n <= countThre);
+  };
+
+  m_model->deleteSelected(
+        ui->todoTableView->selectionModel(), confirm, undoAllowed);
+  updateTable();
 }
 
 void FlyEmTodoDialog::checkSelected()

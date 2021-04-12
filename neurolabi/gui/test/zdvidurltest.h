@@ -364,6 +364,8 @@ TEST(ZDvidUrl, Basic)
             dvidUrl.getSynapseLabelszUrl(1));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1/AllSyn",
             dvidUrl.getSynapseLabelszUrl(1, dvid::ELabelIndexType::ALL_SYN));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/reload",
+            dvidUrl.getSynapseLabelszReloadUrl());
 
   target.setSegmentationName("labelstest");
   target.setMaxLabelZoom(5);

@@ -3,6 +3,8 @@
 
 //#include <QAbstractTableModel>
 
+#include <functional>
+
 #include "common/zsharedpointer.h"
 #include "qt/core/zsortfilterproxymodel.h"
 #include "qt/core/zsortfiltertablemodel.h"
@@ -11,6 +13,7 @@
 class ZStackDoc;
 class ZFlyEmProofDoc;
 class QItemSelectionModel;
+class ZIntPoint;
 
 class ZFlyEmTodoListModel : public ZSortFilterTableModel
 {
@@ -69,6 +72,13 @@ public:
   void setAllVisible();
 
   void setSelectedChecked(QItemSelectionModel *sel, bool checked);
+
+  void deleteSelected(QItemSelectionModel *sel, bool allowingUndo);
+  void deleteSelected(
+      QItemSelectionModel *sel, std::function<bool(int)> confirm,
+      std::function<bool(int)> undoAllowed);
+  QList<ZFlyEmToDoItem*> getSelectedTodoList(QItemSelectionModel *sel) const;
+  QList<ZIntPoint> getSelectedTodoPosList(QItemSelectionModel *sel) const;
 
 signals:
   void locatingItem(ZFlyEmToDoItem *item);

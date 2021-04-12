@@ -579,6 +579,9 @@ public:
       const std::string &dataName, const std::string &key, const QByteArray &data);
   void addUploadTask(std::function<void(ZDvidWriter &writer)> f);
 
+  void removeTodoList(
+      const QList<ZIntPoint> &todoList, bool allowingUndo);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();

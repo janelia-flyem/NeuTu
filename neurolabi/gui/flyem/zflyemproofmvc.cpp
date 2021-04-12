@@ -5312,7 +5312,7 @@ void ZFlyEmProofMvc::commitMerge()
   if (dlg->exec()) {
     mergeCoarseBodyWindow();
     getCompleteDocument()->getMergeProject()->uploadResult(
-          dlg->mergingToLargest());
+          dlg->mergingToHighestStatus(), dlg->mergingToLargest());
 
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {

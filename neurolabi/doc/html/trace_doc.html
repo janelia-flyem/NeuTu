@@ -1,8 +1,21 @@
 <html>
-<head><title>Tracing</title></head>
+
+<head>
+  <title>Tracing</title>
+  <style>
+    .note {
+      background-color: lightgray;
+      border: solid 1px gray;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px;
+      width: 80%;
+    }
+  </style>
+</head>
 
 <body>
-<pre>neuTube --command --trace &lt;input&gt; -o &lt;output&gt; [--config &lt;config_file&gt;] [--level <int>] [--verbose]
+  <pre>neuTube --command --trace &lt;input&gt; -o &lt;output&gt; [--config &lt;config_file&gt;] [--level <int>] [--verbose]
 </pre>
 
 <p>Arguments:</p>
@@ -12,7 +25,7 @@
 
 <li>--trace: run neuTube as neuron tracing command, which only works for dark field image in this version.
 
-<li>&lt;input&gt;: input file, which must be a TIFF file 
+<li>&lt;input&gt;: input file, which must be a TIFF file
 
 <li>-o &lt;output&gt;<output>: output SWC file, which usually ends with .swc extension.</output>
 
@@ -22,6 +35,18 @@
 
 <li>--verbose: output more message if this option is given
 </ul>
+
+<div class="note">
+  <p>Note: The preferred way of running tracing in NeuTu is a little different. </p>
+  <pre>neutu --command --general trace.json -o &lt;output&gt; &lt;input&gt;</pre>
+
+  <pre>
+  {
+    "command": "trace_neuron",
+    "path": "[config_file]|default"
+  }
+  </pre>
+</div>
 
 Configuration file:
 
@@ -76,7 +101,7 @@ A tracing config file is a json file with the following schema:
         },
         "seedMethod": {
           "description": "Seeding method",
-          "type": "integer" 
+          "type": "integer"
         }
       }
     },

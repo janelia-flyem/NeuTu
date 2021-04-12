@@ -2663,7 +2663,7 @@ void ZFlyEmProofDoc::removeTodoItem(
     ZFlyEmToDoList *se = *iter;
     se->removeItem(pos, scope);
     scope = ZFlyEmToDoList::DATA_LOCAL;
-    processObjectModified(se);
+    bufferObjectModified(se);
   }
 
   notifyTodoItemModified(pos);
@@ -6342,6 +6342,35 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedTodoItemPosition() const
 void ZFlyEmProofDoc::executeRemoveTodoCommand()
 {
   executeRemoveTodoItemCommand();
+}
+
+void ZFlyEmProofDoc::removeTodoList(
+    const QList<ZIntPoint> &todoList, bool allowingUndo)
+{
+  if (!todoList.isEmpty()) {
+    if (allowingUndo) {
+      QUndoCommand *command = new QUndoCommand;
+      foreach (const ZIntPoint &item, todoList) {
+        new ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem(
+              this, item.getX(), item.getY(), item.getZ(), command);
+      }
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+      pushUndoCommand(command);
+      endObjectModifiedMode();
+      processObjectModified();
+    } else {
+      beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+      int index = 1;
+      foreach (const ZIntPoint &item, todoList) {
+        std::cout << "====> Removing todo " << index++ << "/" << todoList.size()
+                  << " @" << item.toString() << std::endl;
+        removeTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+        notifyTodoEdited(item);
+      }
+      endObjectModifiedMode();
+      processObjectModified();
+    }
+  }
 }
 
 void ZFlyEmProofDoc::executeRemoveTodoItemCommand()

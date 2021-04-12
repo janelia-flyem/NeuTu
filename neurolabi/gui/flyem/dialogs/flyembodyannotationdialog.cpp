@@ -8,6 +8,23 @@
 
 const QString FlyEmBodyAnnotationDialog::FINALIZED_TEXT = "Finalized";
 
+const QString FlyEmBodyAnnotationDialog::KEY_TYPE = "type";
+const QString FlyEmBodyAnnotationDialog::KEY_INSTANCE = "instance";
+const QString FlyEmBodyAnnotationDialog::KEY_COMMENT = "comment";
+const QString FlyEmBodyAnnotationDialog::KEY_MAJOR_INPUT = "majorInput";
+const QString FlyEmBodyAnnotationDialog::KEY_MAJOR_OUTPUT = "majorOutput";
+const QString FlyEmBodyAnnotationDialog::KEY_PRIMARY_NEURITE = "primaryNeurite";
+const QString FlyEmBodyAnnotationDialog::KEY_LOCATION = "location";
+const QString FlyEmBodyAnnotationDialog::KEY_OUT_OF_BOUNDS = "outOfBounds";
+const QString FlyEmBodyAnnotationDialog::KEY_CROSS_MIDLINE = "crossMidline";
+const QString FlyEmBodyAnnotationDialog::KEY_NEUROTRANSMITTER = "neurotransmitter";
+const QString FlyEmBodyAnnotationDialog::KEY_SYNONYM = "synonym";
+const QString FlyEmBodyAnnotationDialog::KEY_CLONAL_UNIT = "clonalUnit";
+const QString FlyEmBodyAnnotationDialog::KEY_HEMILINEAGE = "hemilineage";
+const QString FlyEmBodyAnnotationDialog::KEY_AUTO_TYPE = "autoType";
+const QString FlyEmBodyAnnotationDialog::KEY_PROPERTY = "property";
+const QString FlyEmBodyAnnotationDialog::KEY_STATUS = "status";
+
 FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent) :
   QDialog(parent),
   ui(new Ui::FlyEmBodyAnnotationDialog)
@@ -15,16 +32,21 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
   ui->setupUi(this);
 
   initNullStatusItem();
+  initWidgetMap();
 
   connect(ui->generatePushButton, &QPushButton::clicked,
           this, &FlyEmBodyAnnotationDialog::fillType);
 
   m_isAdmin = admin;
   if (!m_isAdmin) {
-    ui->typeLineEdit->hide();
+    hideWidget(KEY_TYPE);
+//    ui->typeLineEdit->hide();
     ui->generatePushButton->hide();
-    ui->primaryNeuriteLineEdit->setEnabled(false);
-    ui->clonalUnitLineEdit->setEnabled(false);
+    disableWidget(KEY_PRIMARY_NEURITE);
+    disableWidget(KEY_CLONAL_UNIT);
+    disableWidget(KEY_HEMILINEAGE);
+//    ui->primaryNeuriteLineEdit->setEnabled(false);
+//    ui->clonalUnitLineEdit->setEnabled(false);
 //    neutu::HideLayout(ui->typeLayout, false);
   }
 }
@@ -32,6 +54,39 @@ FlyEmBodyAnnotationDialog::FlyEmBodyAnnotationDialog(bool admin, QWidget *parent
 FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
 {
   delete ui;
+}
+
+void FlyEmBodyAnnotationDialog::disableWidget(const QString &key)
+{
+  if (m_widgetMap.contains(key)) {
+    m_widgetMap[key]->setEnabled(false);
+  }
+}
+
+void FlyEmBodyAnnotationDialog::hideWidget(const QString &key)
+{
+  if (m_widgetMap.contains(key)) {
+    m_widgetMap[key]->hide();
+  }
+}
+
+void FlyEmBodyAnnotationDialog::initWidgetMap()
+{
+  m_widgetMap[KEY_TYPE] = ui->typeLineEdit;
+  m_widgetMap[KEY_INSTANCE] = ui->instanceLineEdit;
+  m_widgetMap[KEY_COMMENT] = ui->commentLineEdit;
+  m_widgetMap[KEY_MAJOR_INPUT] = ui->majorInputLineEdit;
+  m_widgetMap[KEY_MAJOR_OUTPUT] = ui->majorOutputLineEdit;
+  m_widgetMap[KEY_PRIMARY_NEURITE] = ui->primaryNeuriteLineEdit;
+  m_widgetMap[KEY_OUT_OF_BOUNDS] = ui->outOfBoundsCheckBox;
+  m_widgetMap[KEY_CROSS_MIDLINE] = ui->crossMidlineCheckBox;
+  m_widgetMap[KEY_NEUROTRANSMITTER] = ui->neurotransmitterLineEdit;
+  m_widgetMap[KEY_SYNONYM] = ui->SynonymLineEdit;
+  m_widgetMap[KEY_CLONAL_UNIT] = ui->clonalUnitLineEdit;
+  m_widgetMap[KEY_HEMILINEAGE] = ui->hemilineageEdit;
+  m_widgetMap[KEY_AUTO_TYPE] = ui->autoTypeLineEdit;
+  m_widgetMap[KEY_PROPERTY] = ui->propertyComboBox;
+  m_widgetMap[KEY_STATUS] = ui->statusComboBox;
 }
 
 void FlyEmBodyAnnotationDialog::initNullStatusItem()
