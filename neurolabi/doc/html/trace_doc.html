@@ -9,12 +9,13 @@
       border-radius: 10px;
       padding: 10px;
       margin: 10px;
+      width: 80%;
     }
   </style>
 </head>
 
 <body>
-  <pre>neutu --command --trace &lt;input&gt; -o &lt;output&gt; [--config &lt;config_file&gt;] [--level <int>] [--verbose]
+  <pre>neuTube --command --trace &lt;input&gt; -o &lt;output&gt; [--config &lt;config_file&gt;] [--level <int>] [--verbose]
 </pre>
 
 <p>Arguments:</p>
@@ -36,8 +37,15 @@
 </ul>
 
 <div class="note">
-  <p>Note: the tracing command line is a little different in NeuTu. </p>
+  <p>Note: The preferred way of running tracing in NeuTu is a little different. </p>
   <pre>neutu --command --general trace.json -o &lt;output&gt; &lt;input&gt;</pre>
+
+  <pre>
+  {
+    "command": "trace_neuron",
+    "path": "[config_file]|default"
+  }
+  </pre>
 </div>
 
 Configuration file:
