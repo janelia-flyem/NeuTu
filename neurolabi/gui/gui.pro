@@ -54,6 +54,10 @@ win32 {
     }
 }
 
+unix {
+  DEFINES += _UNIX_
+}
+
 app_name = neutu
 
 CONFIG(debug, debug|release) {

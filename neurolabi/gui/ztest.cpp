@@ -387,7 +387,7 @@ ostream& ZTest::m_failureStream = cerr;
 
 ZTest::ZTest()
 {
-  std::string envPath = neutu::Join({GET_TEST_DATA_DIR, "_test", "env.json"});
+  std::string envPath = neutu::JoinPath({GET_TEST_DATA_DIR, "_test", "env.json"});
   m_testEnv.load(envPath);
 }
 
@@ -30853,9 +30853,7 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
   writer.setAdmin(true);
   writer.deleteSkeleton(1505851998);
-#endif
 
-#if 0
   ZSwcTree tree;
   tree.load(GET_TEST_DATA_DIR + "/_test.swc");
 
