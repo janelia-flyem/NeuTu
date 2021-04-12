@@ -12,6 +12,7 @@
 
 #include "QsLog.h"
 #include "tz_utilities.h"
+#include "filesystem/utilities.h"
 //#include "zargumentprocessor.h"
 #include "ztest.h"
 #include "zobject3dscan.h"
@@ -126,9 +127,9 @@ void ZCommandLine::registerModule()
   registerModule<ZBodyExportCommand>("export_body");
   registerModule<ZSparseStackCommand>("sparse_stack");
   registerModule<ZStackFilterCommand>("filter_stack");
-  registerModule<ZUploadRoiCommand>("upload_roi");
   registerModule<ZNeuronTraceCommand>("trace_neuron");
 #if defined(_FLYEM_)
+  registerModule<ZUploadRoiCommand>("upload_roi");
   registerModule<ZSplitTaskUploadCommand>("upload_split_task");
   registerModule<ZSyncSkeletonCommand>("sync_skeleton");
   registerModule<ZBodyProcessCommand>("process_body");
@@ -668,23 +669,21 @@ int ZCommandLine::runComputeSeed()
 
 void ZCommandLine::loadTraceConfig()
 {
-  if (m_configJson.hasKey("trace")) {
-    ZNeuronTracerConfig::getInstance().loadJsonObject(
-          ZJsonObject(m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
-  } else {
+  if (!ZNeuronTracerConfig::getInstance().loadJsonObject(m_configJson)) {
     ZNeuronTracerConfig::getInstance().load(m_configDir + "/trace_config.json");
   }
 }
 
-void ZCommandLine::loadInputJson()
+ZJsonObject ZCommandLine::loadInputJson()
 {
   if (m_input.empty()) {
-    return;
+    return ZJsonObject();
   }
 
+  ZJsonObject obj;
   if (m_input[0] == "json") {
     std::string jsonInput = m_input[1];
-    ZJsonObject obj;
+
     if (ZFileType::FileType(jsonInput) == ZFileType::EFileType::JSON) {
       obj.load(jsonInput);
     } else {
@@ -730,6 +729,8 @@ void ZCommandLine::loadInputJson()
       m_input[0] = ZJsonParser::stringValue(obj["signal"]);
     }
   }
+
+  return obj;
 }
 
 ZSwcTree* ZCommandLine::traceFile()
@@ -928,6 +929,8 @@ int ZCommandLine::runGeneral()
       }
     }
 
+    config.setEntry("_input", m_inputJson);
+
     std::string commandName = ZJsonParser::stringValue(config["command"]);
     std::cout << "Running command " << commandName << "..." << std::endl;
     ZCommandModule *module = getModule(commandName);
@@ -950,7 +953,7 @@ int ZCommandLine::runGeneral()
 
 int ZCommandLine::runTest()
 {
-  std::string envPath = neutu::Join({GET_TEST_DATA_DIR, "_test", "env.json"});
+  std::string envPath = neutu::JoinPath({GET_TEST_DATA_DIR, "_test", "env.json"});
   ZJsonObject testEnv;
   testEnv.load(envPath);
 
@@ -1648,9 +1651,9 @@ int ZCommandLine::run(int argc, char *argv[], QCoreApplication &app)
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << "Executable directory: " << applicationDir << std::endl;
-  m_configDir = NeutubeConfig::getInstance().getPath(
-        NeutubeConfig::EConfigItem::CONFIG_DIR) + "/json";
-  std::string configPath = m_configDir + "/command_config.json";
+  m_configDir = neutu::JoinPath(NeutubeConfig::getInstance().getPath(
+        NeutubeConfig::EConfigItem::CONFIG_DIR), "json");
+  std::string configPath = neutu::JoinPath(m_configDir, "command_config.json");
 
   if (Is_Arg_Matched(const_cast<char*>("--config"))) {
     configPath = Get_String_Arg(const_cast<char*>("--config"));
@@ -1721,7 +1724,7 @@ int ZCommandLine::run(int argc, char *argv[], QCoreApplication &app)
   }
 
 
-  loadInputJson();
+  m_inputJson = loadInputJson();
 
   if (Is_Arg_Matched(const_cast<char*>("-o"))) {
     m_output = Get_String_Arg(const_cast<char*>("-o"));

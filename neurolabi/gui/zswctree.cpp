@@ -176,6 +176,16 @@ bool ZSwcTree::hasRegularNode() const
   return false;
 }
 
+void ZSwcTree::addRoot(Swc_Tree_Node *tn, bool updatingComponent)
+{
+  forceVirtualRoot();
+  SwcTreeNode::setParent(
+        tn, root(), SwcTreeNode::EChildPosition::CHILD_POS_FIRST);
+  if (updatingComponent) {
+    deprecate(ALL_COMPONENT);
+  }
+}
+
 void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
 {
   if (node != NULL) {
@@ -2083,7 +2093,18 @@ ZSwcBranch* ZSwcTree::extractBranch(int label)
   return (new ZSwcBranch(upperEnd, lowerEnd));
 }
 
-vector<Swc_Tree_Node*> ZSwcTree::getTerminalArray()
+std::vector<Swc_Tree_Node*> ZSwcTree::getRegularRootArray()
+{
+  std::vector<Swc_Tree_Node*> nodeArray;
+  ZSwcTree::RegularRootIterator iter(this);
+  while (iter.hasNext()) {
+    nodeArray.push_back(iter.next());
+  }
+
+  return nodeArray;
+}
+
+std::vector<Swc_Tree_Node*> ZSwcTree::getTerminalArray()
 {
   updateIterator(SWC_TREE_ITERATOR_LEAF, _FALSE_);
 
@@ -2721,22 +2742,34 @@ void ZSwcTree::merge(Swc_Tree *tree, bool freeInput)
       m_tree = New_Swc_Tree();
     }
 
-    Swc_Tree_Merge(data(), tree);
+    ZSwcTree wrapper;
+    wrapper.setData(tree, LEAVE_ALONE);
+    merge(&wrapper, false);
+
+//    Swc_Tree_Merge(data(), tree);
 
     if (freeInput) {
       free(tree);
     }
 
-    deprecate(ALL_COMPONENT);
+//    deprecate(ALL_COMPONENT);
   }
 }
 
 void ZSwcTree::merge(ZSwcTree *tree, bool freeInput)
 {
   if (tree != NULL) {
-    Swc_Tree *data = tree->data();
+//    Swc_Tree *data = tree->data();
+
+    auto nodeArray = tree->getRegularRootArray();
+    for (Swc_Tree_Node *tn : nodeArray) {
+      addRoot(tn, false);
+    }
+
+    deprecate(ALL_COMPONENT);
+
+//    merge(data, true);
     tree->setData(NULL, ZSwcTree::LEAVE_ALONE);
-    merge(data, true);
     if (freeInput) {
       delete tree;
     }

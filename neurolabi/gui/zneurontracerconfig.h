@@ -17,8 +17,8 @@ public:
     return config;
   }
 
-  void load(const std::string &configPath);
-  void loadJsonObject(const ZJsonObject &jsonObj);
+  bool load(const std::string &configPath);
+  bool loadJsonObject(const ZJsonObject &jsonObj);
 
   double getMinAutoScore() const { return m_minAutoScore; }
   double getMinManualScore() const { return m_minManualScore; }

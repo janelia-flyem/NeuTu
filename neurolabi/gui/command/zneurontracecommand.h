@@ -15,7 +15,7 @@ public:
 
 private:
   void loadTraceConfig(const ZJsonObject &config);
-  ZSwcTree* traceFile(const std::string &filePath);
+  ZSwcTree* traceFile(const std::string &filePath, const ZJsonObject &inputConfig);
 
 private:
   int m_level = 0;

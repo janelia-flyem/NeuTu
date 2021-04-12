@@ -5,6 +5,7 @@
 
 #include "common/utilities.h"
 #include "common/math.h"
+#include "filesystem/utilities.h"
 
 #ifdef _USE_GTEST_
 
@@ -149,6 +150,16 @@ TEST(common, math)
 
   ASSERT_EQ(1, neutu::iround(1.1));
   ASSERT_EQ(2, neutu::iround(1.6));
+}
+
+TEST(filesystem, utilities)
+{
+  ASSERT_EQ("tif", neutu::FileExtension("test.tif"));
+#if defined(_UNIX_)
+  ASSERT_EQ("/test1/test2.tif", neutu::JoinPath("/test1", "test2.tif"));
+  ASSERT_EQ("/test1/test2/test3.tif", neutu::JoinPath("/test1", "test2", "test3.tif"));
+  ASSERT_EQ("/test1/test2/test3.tif", neutu::JoinPath("/test1/", "test2/", "test3.tif"));
+#endif
 }
 
 #endif
