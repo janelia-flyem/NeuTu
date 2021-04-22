@@ -115,6 +115,11 @@ bool FlyEmBodyAnnotationDialog::isInstanceChanged() const
   return ui->instanceLineEdit->text().toStdString() != m_oldInstance;
 }
 
+bool FlyEmBodyAnnotationDialog::isStatusChanged() const
+{
+  return getStatus() != m_oldStatus;
+}
+
 void FlyEmBodyAnnotationDialog::setComment(const std::string &comment)
 {
   ui->commentLineEdit->setText(QString::fromStdString(comment));
@@ -292,6 +297,7 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setBodyId(annotation.getBodyId());
   setPrevUser(annotation.getUser());
   setPrevNamingUser(annotation.getNamingUser());
+  setPrevStatusUser(annotation.getStatusUser());
 
   setComment(annotation.getComment());
   setStatus(annotation.getStatus());
@@ -329,6 +335,7 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   } else {
     annotation.setNamingUser(m_prevNamingUser);
   }
+  annotation.setStatusUser(isStatusChanged() ? user : m_prevStatusUser);
   annotation.setMajorInput(getMajorInput());
   annotation.setMajorOutput(getMajorOutput());
   annotation.setPrimaryNeurite(getPrimaryNeurite());
@@ -364,6 +371,11 @@ void FlyEmBodyAnnotationDialog::setPrevNamingUser(const std::string &name)
   m_prevNamingUser = name;
 }
 
+void FlyEmBodyAnnotationDialog::setPrevStatusUser(const std::string &name)
+{
+  m_prevStatusUser = name;
+}
+
 void FlyEmBodyAnnotationDialog::setBodyId(uint64_t bodyId)
 {
   m_bodyId = bodyId;
@@ -380,6 +392,8 @@ void FlyEmBodyAnnotationDialog::hideFinalizedStatus()
 
 void FlyEmBodyAnnotationDialog::setStatus(const std::string &status)
 {
+  m_oldStatus = status;
+
   int index = 0;
   if (!status.empty()) {
     index = ui->statusComboBox->findText(status.c_str(), Qt::MatchExactly);

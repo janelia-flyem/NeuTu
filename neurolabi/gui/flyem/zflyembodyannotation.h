@@ -22,6 +22,7 @@ public:
 //  inline const std::string& getType() const { return m_type; }
   inline const std::string& getUser() const { return m_userName; }
   inline const std::string& getNamingUser() const { return m_namingUser; }
+  inline const std::string& getStatusUser() const { return m_statusUser; }
 
   std::string getMajorInput() const;
   std::string getMajorOutput() const;
@@ -53,6 +54,7 @@ public:
   inline void setComment(const std::string &comment) { m_comment = comment; }
   inline void setUser(const std::string &user) { m_userName = user; }
   inline void setNamingUser(const std::string &user) { m_namingUser = user; }
+  inline void setStatusUser(const std::string &user) { m_statusUser = user; }
   inline void setInstance(const std::string &instance) { m_instance = instance; }
   void setMajorInput(const std::string &v);
   void setMajorOutput(const std::string &v);
@@ -114,6 +116,7 @@ public:
   static const char *KEY_COMMENT;
   static const char *KEY_USER;
   static const char *KEY_NAMING_USER;
+  static const char *KEY_STATUS_USER;
   static const char *KEY_INSTANCE;
   static const char *KEY_MAJOR_INPUT;
   static const char *KEY_MAJOR_OUTPUT;
@@ -141,6 +144,7 @@ private:
   std::string m_type;
   std::string m_userName;
   std::string m_namingUser;
+  std::string m_statusUser;
 
   std::string m_instance;
   std::string m_property;
