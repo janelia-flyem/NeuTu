@@ -9,7 +9,7 @@ FORMS += \
     $$PWD/flyemorthocontrolform.ui \
     $$PWD/flyemproofcontrolform.ui \
     $$PWD/flyemsplitcontrolform.ui \
-    $$PWD/zflyembodyannotationdialog.ui \
+    $$PWD/zflyembookmarkannotationdialog.ui \
     $$PWD/zflyembookmarkfilter.ui \
     $$PWD/zflyemhackathonconfigdlg.ui
 
