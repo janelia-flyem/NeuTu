@@ -1512,7 +1512,7 @@ std::string ZDvidUrl::getTileUrl(
     url.appendNumber(resLevel);
   }
 
-  return url;
+  return std::move(url);
 }
 
 std::string ZDvidUrl::getTileUrl(
@@ -1529,7 +1529,7 @@ std::string ZDvidUrl::getTileUrl(
     url.appendNumber(z0);
   }
 
-  return url;
+  return std::move(url);
 }
 
 std::string ZDvidUrl::getReposInfoUrl() const
@@ -1582,7 +1582,7 @@ std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
     url.appendNumber(z);
   }
 
-  return url;
+  return std::move(url);
 }
 
 std::string ZDvidUrl::getLocalSupervoxelIdUrl(int x, int y, int z) const
@@ -2111,7 +2111,7 @@ std::string ZDvidUrl::GetResultKeyFromTaskKey(const std::string &key)
     newKey = "";
   }
 
-  return newKey;
+  return std::move(newKey);
 }
 
 std::string ZDvidUrl::ExtractSplitTaskKey(const std::string &url)

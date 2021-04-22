@@ -31852,7 +31852,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = dvid::GetMergeConfig(
         1, std::vector<uint64_t>({2, 3, 4, 5, 6, 7, 8}),
         [](uint64_t id1, uint64_t id2) {
@@ -31865,6 +31865,43 @@ void ZTest::test(MainWindow *host)
     std::cout << bodyId << " ";
   }
   std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("vnc-prod");
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("vnc-prod");
+  ZJsonObject obj = reader->readJsonObject(
+        ZDvidUrl(reader->getDvidTarget()).getRepoInfoUrl());
+  ZJsonObject dataObj(obj.value("DataInstances"));
+  dataObj.print();
+  const std::string roiData = ZDvidData::GetName(ZDvidData::ERole::ROI_KEY);
+//  std::vector<std::string> roiList;
+  dataObj.forEachValue([&](const std::string &key, ZJsonValue v) {
+    ZJsonObject dataObj(v);
+    const std::string type = ZJsonObjectParser::GetValue(
+          ZJsonObject(dataObj.value("Base")), "TypeName", "");
+    if (type == "roi" && !reader->hasKey(roiData.c_str(), key.c_str())) {
+      std::cout << key << ": " << type << std::endl;
+      ZJsonObject roiRef = ZJsonObject().setEntry(
+            "->", ZJsonObject().setEntry("type", "roi").setEntry("key", key));
+      std::cout << roiRef.dumpString(0) << std::endl;
+      writer->writeJson(roiData, key, roiRef);
+    }
+//      roiRef.setEntry()
+//      writer->writeJson(roiData, key, "{\"->\"}");
+//      roiList.push_back(key);
+  });
+
+//  ZDvidWriter writer;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("vnc-prod");
+  std::vector<std::string> roiList = reader->readDataInstancesOfType("labelmap");
+  for (auto s : roiList) {
+    std::cout << s << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

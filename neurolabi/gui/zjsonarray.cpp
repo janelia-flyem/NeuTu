@@ -201,6 +201,21 @@ std::vector<bool> ZJsonArray::toBoolArray() const
   return array;
 }
 
+std::vector<std::string> ZJsonArray::toStringArray() const
+{
+  std::vector<std::string> array;
+  if (m_data != NULL) {
+    for (size_t i = 0; i < size(); ++i) {
+      const json_t *value = at(i);
+      if (json_is_string(value)) {
+        array.push_back(json_string_value(value));
+      }
+    }
+  }
+
+  return array;
+}
+
 ZJsonArray& ZJsonArray::operator << (double e)
 {
   if (m_data == NULL) {

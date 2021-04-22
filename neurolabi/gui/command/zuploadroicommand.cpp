@@ -17,7 +17,6 @@ namespace {
 
 const size_t ROI_TYPE_DATA = 0;
 const size_t ROI_TYPE_MESH = 1;
-const QVector<QString> DATA_EXT = {"sobj", "obj"};
 
 }
 
@@ -28,6 +27,8 @@ int ZUploadRoiCommand::run(
   if(input.empty() || output.empty()) {
     return 1;
   }
+
+  const QVector<QString> DATA_EXT = {"sobj", "obj"};
 
   ZJsonObjectParser parser;
 
@@ -66,7 +67,7 @@ int ZUploadRoiCommand::run(
     QStringList fileList =
         dir.entryList(QStringList() << "*." + DATA_EXT[masterRoiType]);
     qDebug() << fileList;
-    for (const QString &masterFileName : fileList) {
+    foreach (const QString &masterFileName, fileList) {
       int extLength = DATA_EXT[masterRoiType].length() + 1;
 //      bool hasTifExt = false;
       QString imgExt;
@@ -94,7 +95,7 @@ int ZUploadRoiCommand::run(
 #ifdef _DEBUG_
         qDebug() << "Mesh file:" << meshFilePath;
 #endif
-        if (!QFileInfo(meshFilePath).exists()) {
+        if (!QFileInfo::exists(meshFilePath)) {
           qWarning() << meshFilePath << " does not exist. Abort!";
           break;
         }
@@ -108,7 +109,7 @@ int ZUploadRoiCommand::run(
 #ifdef _DEBUG_
         qDebug() << "Data file:" << roiFilePath;
 #endif
-        if (!QFileInfo(roiFilePath).exists()) {
+        if (!QFileInfo::exists(roiFilePath)) {
           qWarning() << roiFilePath << " does not exist. Abort!";
           break;
         }
