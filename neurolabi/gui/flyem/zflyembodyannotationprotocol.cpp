@@ -182,7 +182,6 @@ std::vector<std::vector<uint64_t>> ZFlyEmBodyAnnotationProtocal::getConflictBody
       const auto &conflictSet = m_conflictStatus[i];
       if (conflictSet.count(ZString(anno.getStatus()).lower()) > 0) {
         potentialConflict[i].push_back(bodyId);
-        break;
       }
     }
   }

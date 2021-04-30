@@ -21,13 +21,14 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   json.setEntry("body ID", 123);
   json.setEntry("name", "KC");
   json.setEntry("class", "neuron");
-  json.setEntry("user", "zhaot");
+  json.setEntry("user", "test_user");
   json.setEntry("naming user", "mock");
   json.setEntry("clonal unit", "clonal unit test");
   json.setEntry("auto-type", "auto type test");
   json.setEntry("property", "Distinct");
   json.setEntry(ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "neurite test");
   json.setEntry(ZFlyEmBodyAnnotation::KEY_SYNONYM, "note test");
+  json.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER, "test_user2");
 
   annot.loadJsonObject(json);
 
@@ -36,7 +37,8 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("test", annot.getComment());
   ASSERT_EQ("KC", annot.getName());
   ASSERT_EQ("neuron", annot.getType());
-  ASSERT_EQ("zhaot", annot.getUser());
+  ASSERT_EQ("test_user", annot.getUser());
+  ASSERT_EQ("test_user2", annot.getStatusUser());
   ASSERT_EQ("mock", annot.getNamingUser());
   ASSERT_EQ("clonal unit test", annot.getClonalUnit());
   ASSERT_EQ("auto type test", annot.getAutoType());
@@ -64,6 +66,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("", annot.getProperty());
   ASSERT_EQ("", annot.getPrimaryNeurite());
   ASSERT_EQ("", annot.getSynonym());
+  ASSERT_EQ("", annot.getStatusUser());
 
   ZJsonObject json3;
   json3.setEntry(ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER, "neurite test");

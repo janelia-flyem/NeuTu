@@ -16,6 +16,7 @@ const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
 const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "naming user";
+const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER = "status user";
 const char *ZFlyEmBodyAnnotation::KEY_INSTANCE = "instance";
 const char *ZFlyEmBodyAnnotation::KEY_PROPERTY = "property";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_INPUT = "major input";
@@ -39,26 +40,7 @@ ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 /*member dependent*/
 void ZFlyEmBodyAnnotation::clear()
 {
-  m_bodyId = 0;
-  m_status.clear();
-  m_comment.clear();
-  m_name.clear();
-  m_type.clear();
-  m_userName.clear();
-  m_namingUser.clear();
-  m_instance.clear();
-  m_majorInput.clear();
-  m_majorOutput.clear();
-  m_primaryNeurite.clear();
-  m_location.clear();
-  m_outOfBounds = false;
-  m_crossMidline = false;
-  m_neurotransmitter.clear();
-  m_hemilineage.clear();
-  m_synonym.clear();
-  m_clonalUnit.clear();
-  m_autoType.clear();
-  m_property.clear();
+  *this = ZFlyEmBodyAnnotation();
 }
 
 void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
@@ -102,6 +84,9 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
       obj.setEntry(KEY_NAMING_USER, m_namingUser);
     }
 
+    if (!m_statusUser.empty()) {
+      obj.setEntry(KEY_STATUS_USER, m_statusUser);
+    }
 
     obj.setNonEmptyEntry(KEY_INSTANCE, m_instance);
     obj.setNonEmptyEntry(KEY_MAJOR_INPUT, m_majorInput);
@@ -209,6 +194,10 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 
     if (obj.hasKey(KEY_NAMING_USER)) {
       setNamingUser(ZJsonParser::stringValue(obj[KEY_NAMING_USER]));
+    }
+
+    if (obj.hasKey(KEY_STATUS_USER)) {
+      setStatusUser(ZJsonParser::stringValue(obj[KEY_STATUS_USER]));
     }
 
     if (obj.hasKey(KEY_INSTANCE)) {
@@ -548,6 +537,10 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
       m_namingUser = annotation.m_namingUser;
     }
 
+    if (m_statusUser.empty()) {
+      m_statusUser = annotation.m_statusUser;
+    }
+
     if (m_instance.empty()) {
       m_instance = annotation.m_instance;
       m_namingUser = annotation.m_namingUser;
@@ -649,7 +642,8 @@ bool ZFlyEmBodyAnnotation::isFinalized() const
 bool ZFlyEmBodyAnnotation::hasSameUserStatus(const ZFlyEmBodyAnnotation &annot) const
 {
   return (m_userName == annot.m_userName) &&
-      (m_namingUser == annot.m_namingUser);
+      (m_namingUser == annot.m_namingUser) &&
+      (m_statusUser == annot.m_statusUser);
 }
 
 //member dependent

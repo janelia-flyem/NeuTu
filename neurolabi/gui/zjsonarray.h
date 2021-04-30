@@ -71,6 +71,8 @@ public:
    */
   std::vector<bool> toBoolArray() const;
 
+  std::vector<std::string> toStringArray() const;
+
   ZJsonArray& operator << (double e);
 
   /*!

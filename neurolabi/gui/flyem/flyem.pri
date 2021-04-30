@@ -10,7 +10,6 @@ FORMS += \
     $$PWD/flyemorthocontrolform.ui \
     $$PWD/flyemproofcontrolform.ui \
     $$PWD/flyemsplitcontrolform.ui \
-    $$PWD/zflyembodyannotationdialog.ui \
     $$PWD/zflyembookmarkannotationdialog.ui \
     $$PWD/zflyembookmarkfilter.ui \
     $$PWD/zflyemhackathonconfigdlg.ui
@@ -49,7 +48,6 @@ HEADERS += \
     $$PWD/zflyembody3ddoccommand.h \
     $$PWD/zflyembody3ddockeyprocessor.h \
     $$PWD/zflyembody3ddocmenufactory.h \
-    $$PWD/zflyembodyannotationdialog.h \
     $$PWD/zflyembodyannotationprotocol.h \
     $$PWD/zflyembodycoloroption.h \
     $$PWD/zflyembodycolorscheme.h \
@@ -188,7 +186,6 @@ SOURCES += \
     $$PWD/zflyembody3ddoccommand.cpp \
     $$PWD/zflyembody3ddockeyprocessor.cpp \
     $$PWD/zflyembody3ddocmenufactory.cpp \
-    $$PWD/zflyembodyannotationdialog.cpp \
     $$PWD/zflyembodyannotationprotocol.cpp \
     $$PWD/zflyembodycoloroption.cpp \
     $$PWD/zflyembodycolorscheme.cpp \

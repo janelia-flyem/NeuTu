@@ -29,6 +29,7 @@ public:
   void setBodyId(uint64_t bodyId);
   void setPrevUser(const std::string &name);
   void setPrevNamingUser(const std::string &name);
+  void setPrevStatusUser(const std::string &name);
   void setType(const std::string &type);
   void setInstance(const std::string &instance);
   void setComment(const std::string &comment);
@@ -65,6 +66,7 @@ public:
   std::string getClonalUnit() const;
   std::string getHemilineage() const;
   bool isInstanceChanged() const;
+  bool isStatusChanged() const;
 
   void setDefaultStatusList(const QList<QString> statusList);
   void addAdminStatus(const QString &status);
@@ -93,10 +95,12 @@ private:
   bool m_isAdmin = false;
 
   std::string m_oldInstance;
+  std::string m_oldStatus;
 
   //Non-editable fields
   uint64_t m_bodyId = 0;
   std::string m_prevNamingUser;
+  std::string m_prevStatusUser;
 
   QList<QString> m_defaultStatusList;
   QSet<QString> m_adminSatutsList;

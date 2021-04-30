@@ -114,46 +114,84 @@ TEST(ZJsonArray, basic)
 
 TEST(ZJsonObject, basic)
 {
-  ZJsonObject obj;
-  ASSERT_EQ(std::string("{}"), obj.dumpString());
+  {
+    ZJsonObject obj;
+    ASSERT_EQ(std::string("{}"), obj.dumpString());
 
-  ZJsonObject entry;
-  obj.setEntry("key", entry);
-  ASSERT_TRUE(obj.hasKey("key"));
+    ZJsonObject entry;
+    obj.setEntry("key", entry);
+    ASSERT_TRUE(obj.hasKey("key"));
 
-  ZJsonObject entry2;
-  obj.addEntry("key2", entry2);
-  ASSERT_TRUE(obj.hasKey("key"));
+    ZJsonObject entry2;
+    obj.addEntry("key2", entry2);
+    ASSERT_TRUE(obj.hasKey("key"));
 
-  obj.addEntry("key3", "test");
-  ASSERT_EQ("test", ZJsonParser::stringValue(obj["key3"]));
+    obj.addEntry("key3", "test");
+    ASSERT_EQ("test", ZJsonParser::stringValue(obj["key3"]));
 
-  obj.addEntry("key3", "test2");
-  ASSERT_EQ("test", ZJsonParser::stringValue(obj["key3"]));
+    obj.addEntry("key3", "test2");
+    ASSERT_EQ("test", ZJsonParser::stringValue(obj["key3"]));
 
-  obj.addEntry("key4", "test2");
-  ASSERT_EQ("test2", ZJsonParser::stringValue(obj["key4"]));
+    obj.addEntry("key4", "test2");
+    ASSERT_EQ("test2", ZJsonParser::stringValue(obj["key4"]));
 
-  ZJsonObject obj2;
-  obj2.setEntry("key5", "test3");
-  obj2.setEntry("key4", "test5");
+    ZJsonObject obj2;
+    obj2.setEntry("key5", "test3");
+    obj2.setEntry("key4", "test5");
 
-  obj.addEntryFrom(obj2);
-  ASSERT_EQ("test3", ZJsonParser::stringValue(obj["key5"]));
-  ASSERT_EQ("test2", ZJsonParser::stringValue(obj["key4"]));
+    obj.addEntryFrom(obj2);
+    ASSERT_EQ("test3", ZJsonParser::stringValue(obj["key5"]));
+    ASSERT_EQ("test2", ZJsonParser::stringValue(obj["key4"]));
 
-  obj.setNonEmptyEntry("key6", "");
-  ASSERT_FALSE(obj.hasKey("key6"));
+    obj.setNonEmptyEntry("key6", "");
+    ASSERT_FALSE(obj.hasKey("key6"));
 
-  obj.setNonEmptyEntry("key6", " ");
-  ASSERT_TRUE(obj.hasKey("key6"));
+    obj.setNonEmptyEntry("key6", " ");
+    ASSERT_TRUE(obj.hasKey("key6"));
 
-  obj.setTrueEntry("key7", false);
-  ASSERT_FALSE(obj.hasKey("key7"));
+    obj.setTrueEntry("key7", false);
+    ASSERT_FALSE(obj.hasKey("key7"));
 
-  obj.setTrueEntry("key7", true);
-  ASSERT_TRUE(obj.hasKey("key7"));
+    obj.setTrueEntry("key7", true);
+    ASSERT_TRUE(obj.hasKey("key7"));
+  }
 
+  {
+    ZJsonObject obj;
+    obj.setEntry("test", 1).
+        setEntry("test2", true).
+        setEntry("test3", "value").
+        setEntry("test4", int64_t(100)).
+        setEntry("test5", uint64_t(200)).
+        setEntry("test6", 1.0).
+        setEntry("test7", {"v1", "v2", "v3"});
+    ASSERT_EQ(1, ZJsonObjectParser::GetValue(obj, "test", 0));
+    ASSERT_EQ(true, ZJsonObjectParser::GetValue(obj, "test2", false));
+    ASSERT_EQ("value", ZJsonObjectParser::GetValue(obj, "test3", ""));
+    ASSERT_EQ(100, ZJsonObjectParser::GetValue(obj, "test4", int64_t(0)));
+    ASSERT_EQ(200, ZJsonObjectParser::GetValue(obj, "test5", uint64_t(0)));
+    ASSERT_EQ(1.0, ZJsonObjectParser::GetValue(obj, "test6", 0.0));
+    ZJsonArray array(obj.value("test7"));
+    ASSERT_EQ(3, array.size());
+    auto stringArray = array.toStringArray();
+    ASSERT_EQ("v1", stringArray[0]);
+    ASSERT_EQ("v2", stringArray[1]);
+    ASSERT_EQ("v3", stringArray[2]);
+
+    std::vector<double> darray{1.0, 2.0, 3.0, 4.0, 5.0};
+    std::vector<int> iarray{1, 2, 3, 4};
+    obj.setEntry("test8", darray.data(), darray.size()).
+        setEntry("test9", iarray.data(), iarray.size());
+    auto darray2 = ZJsonArray(obj.value("test8")).toNumberArray();
+    auto iarray2 = ZJsonArray(obj.value("test9")).toIntegerArray();
+    ASSERT_EQ(5, darray2.size());
+    ASSERT_EQ(4, iarray2.size());
+    ASSERT_EQ(1.0, darray2[0]);
+    ASSERT_EQ(5.0, darray2[4]);
+    ASSERT_EQ(1, iarray2[0]);
+    ASSERT_EQ(4, iarray2[3]);
+
+  }
 }
 
 TEST(ZJsonParser, basic)

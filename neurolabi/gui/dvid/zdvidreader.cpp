@@ -252,16 +252,24 @@ void ZDvidReader::updateDataStatus()
   }
 }
 
-/*
-std::vector<std::string> ZDvidReader::readDataInstances(const std::string &type)
+std::vector<std::string> ZDvidReader::readDataInstancesOfType(
+    const std::string &type)
 {
   std::vector<std::string> dataList;
 
   ZJsonObject meta = readInfo();
+  ZJsonObject datains(meta.value("DataInstances"));
 
-  //
-  ZJsonValue datains = meta.value("DataInstances");
+  datains.forEachValue([&](const std::string &key, ZJsonValue v) {
+    ZJsonObject dataObj(v);
+    std::string dataType = ZJsonObjectParser::GetValue(
+          ZJsonObject(dataObj.value("Base")), "TypeName", "");
+    if (type == dataType) {
+      dataList.push_back(key);
+    }
+  });
 
+  /*
   if(datains.isObject())
   {
     ZJsonObject insList(datains);
@@ -281,10 +289,10 @@ std::vector<std::string> ZDvidReader::readDataInstances(const std::string &type)
       }
     }
   }
+  */
 
   return dataList;
 }
-*/
 
 void ZDvidReader::updateSegmentationData()
 {
