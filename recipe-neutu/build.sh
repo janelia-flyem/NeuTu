@@ -55,6 +55,16 @@ do
 done
 echo "app name: $app_name"
 
+for x in neutube-develop neutube-alpha neutube-beta neutube neutube-di
+do
+  if [ ${NEUTU_TARGET} == "$x" ]
+  then
+    app_base_name=neuTube
+    app_name=$app_base_name
+    break
+  fi
+done
+
 build_dir=neurolabi/build
 if [ "$app_name" == 'neutu_d' ] || [ "$app_name" == 'neu3_d' ]
 then
@@ -75,6 +85,9 @@ edition=flyem
 if [ "$app_base_name" == 'neu3' ]
 then
   edition=neu3
+elif [ "$app_base_name" == 'neuTube' ]
+then
+  edition=neutube
 fi
 
 #if [ ! -z "$additional_qflag" ]

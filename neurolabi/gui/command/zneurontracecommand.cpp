@@ -73,6 +73,8 @@ void ZNeuronTraceCommand::loadTraceConfig(const ZJsonObject &config)
   if (!ZNeuronTracerConfig::getInstance().loadJsonObject(actualConfig)) {
     warn("Configuration Failed", "Failed to load the config.");
   }
+
+  m_diagnosis = ZJsonObjectParser::GetValue(config, "diagnosis", false);
 //  ZNeuronTracerConfig::getInstance().setCrossoverTest(false);
 }
 
@@ -90,6 +92,7 @@ ZSwcTree* ZNeuronTraceCommand::traceFile(
     ZNeuronTracer tracer;
     tracer.setIntensityField(signal);
     tracer.setTraceLevel(m_level);
+    tracer.setDiagnosis(m_diagnosis);
 
     ZJsonObjectParser parser(inputConfig);
     std::string maskPath = parser.getValue("mask", "");
