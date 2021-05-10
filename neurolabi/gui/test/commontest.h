@@ -161,6 +161,10 @@ TEST(filesystem, utilities)
   ASSERT_EQ("/test1/test2/test3.tif", neutu::JoinPath("/test1/", "test2/", "test3.tif"));
   ASSERT_EQ("/test1", neutu::Absolute("/test1", "test2.tif"));
   ASSERT_EQ("/test2/test1", neutu::Absolute("test1", "/test2"));
+  ASSERT_EQ("/test1", neutu::Absolute("/test1", "/test2"));
+  ASSERT_EQ("/test2/../test1", neutu::Absolute("../test1", "/test2"));
+//  std::cout << neutu::Absolute("test1", "test2") << std::endl;
+//  std::cout << neutu::Absolute("test1", "") << std::endl;
 #endif
 }
 
