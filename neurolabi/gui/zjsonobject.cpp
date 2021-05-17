@@ -527,15 +527,38 @@ void ZJsonObject::forEachValue(std::function<void (ZJsonValue)> f) const
   forEachValue([&](const std::string &, ZJsonValue v) {
     f(v);
   });
-  /*
+}
+
+bool ZJsonObject::all(
+    std::function<bool(const std::string &key, ZJsonValue)> f) const
+{
   if (!isEmpty()) {
     const char *key;
     json_t *value;
     json_object_foreach(m_data, key, value) {
-      f(ZJsonValue(value, ESetDataOption::SET_INCREASE_REF_COUNT));
+      if (!f(key, ZJsonValue(value, ESetDataOption::SET_INCREASE_REF_COUNT))) {
+        return false;
+      }
     }
   }
-  */
+
+  return true;
+}
+
+bool ZJsonObject::all(
+    std::function<bool(const std::string &key)> f) const
+{
+  if (!isEmpty()) {
+    const char *key;
+    json_t *value;
+    json_object_foreach(m_data, key, value) {
+      if (!f(key)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 std::string ZJsonObject::dumpJanssonString(size_t flags) const

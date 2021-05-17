@@ -169,10 +169,10 @@ TEST(ZJsonObject, basic)
     ASSERT_EQ(true, ZJsonObjectParser::GetValue(obj, "test2", false));
     ASSERT_EQ("value", ZJsonObjectParser::GetValue(obj, "test3", ""));
     ASSERT_EQ(100, ZJsonObjectParser::GetValue(obj, "test4", int64_t(0)));
-    ASSERT_EQ(200, ZJsonObjectParser::GetValue(obj, "test5", uint64_t(0)));
+    ASSERT_EQ(uint64_t(200), ZJsonObjectParser::GetValue(obj, "test5", uint64_t(0)));
     ASSERT_EQ(1.0, ZJsonObjectParser::GetValue(obj, "test6", 0.0));
     ZJsonArray array(obj.value("test7"));
-    ASSERT_EQ(3, array.size());
+    ASSERT_EQ(3, int(array.size()));
     auto stringArray = array.toStringArray();
     ASSERT_EQ("v1", stringArray[0]);
     ASSERT_EQ("v2", stringArray[1]);
@@ -184,8 +184,8 @@ TEST(ZJsonObject, basic)
         setEntry("test9", iarray.data(), iarray.size());
     auto darray2 = ZJsonArray(obj.value("test8")).toNumberArray();
     auto iarray2 = ZJsonArray(obj.value("test9")).toIntegerArray();
-    ASSERT_EQ(5, darray2.size());
-    ASSERT_EQ(4, iarray2.size());
+    ASSERT_EQ(5, int(darray2.size()));
+    ASSERT_EQ(4, int(iarray2.size()));
     ASSERT_EQ(1.0, darray2[0]);
     ASSERT_EQ(5.0, darray2[4]);
     ASSERT_EQ(1, iarray2[0]);
@@ -240,7 +240,7 @@ TEST(ZJsonArray, Iter)
     ZJsonArray result = array.filter([](const ZJsonValue &value) {
       return (ZJsonParser::integerValue(value.getData()) > 3);
     });
-    ASSERT_EQ(2, result.size());
+    ASSERT_EQ(2, int(result.size()));
     auto intArray = result.toIntegerArray();
     ASSERT_EQ(4, intArray[0]);
     ASSERT_EQ(5, intArray[1]);

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <algorithm>
 
+#include "common/utilities.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 #include "zjsonobjectparser.h"
@@ -32,6 +33,7 @@ const char *ZFlyEmBodyAnnotation::KEY_SYNONYM = "synonym";
 const char *ZFlyEmBodyAnnotation::KEY_NOTES = "notes";
 const char *ZFlyEmBodyAnnotation::KEY_CLONAL_UNIT = "clonal unit";
 const char *ZFlyEmBodyAnnotation::KEY_AUTO_TYPE = "auto-type";
+const char *ZFlyEmBodyAnnotation::KEY_TIMESTAMP = "timestamp";
 
 ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 {
@@ -101,6 +103,10 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
     obj.setNonEmptyEntry(KEY_CLONAL_UNIT, m_clonalUnit);
     obj.setNonEmptyEntry(KEY_AUTO_TYPE, m_autoType);
     obj.setNonEmptyEntry(KEY_PROPERTY, m_property);
+
+    if (m_timestamp > 0) {
+      obj.setEntry(KEY_TIMESTAMP, m_timestamp);
+    }
   }
 
   return obj;
@@ -258,11 +264,9 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setAutoType(ZJsonParser::stringValue(obj[KEY_AUTO_TYPE]));
     }
 
-    /*
-    process_annotation_key<std::string>(
-          obj, KEY_MAJOR_OUTPUT,
-          std::bind(&ZFlyEmBodyAnnotation::setMajorOutput, this, std::placeholders::_1));
-          */
+    if (obj.hasKey(KEY_TIMESTAMP)) {
+      m_timestamp = ZJsonParser::integerValue(obj[KEY_TIMESTAMP]);
+    }
   }
 }
 
@@ -358,6 +362,11 @@ std::string ZFlyEmBodyAnnotation::getAutoType() const
   return m_autoType;
 }
 
+int64_t ZFlyEmBodyAnnotation::getTimestamp() const
+{
+  return m_timestamp;
+}
+
 void ZFlyEmBodyAnnotation::setMajorInput(const std::string &v)
 {
   m_majorInput = v;
@@ -416,6 +425,16 @@ void ZFlyEmBodyAnnotation::setAutoType(const std::string &v)
 void ZFlyEmBodyAnnotation::setProperty(const std::string &v)
 {
   m_property = v;
+}
+
+void ZFlyEmBodyAnnotation::updateTimestamp()
+{
+  m_timestamp = neutu::GetTimeStamp();
+}
+
+void ZFlyEmBodyAnnotation::UpdateTimeStamp(ZJsonObject &obj)
+{
+  obj.setEntry(KEY_TIMESTAMP, neutu::GetTimeStamp());
 }
 
 /*member dependent*/
@@ -520,6 +539,10 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
 {
   if (m_bodyId == 0) {
     m_bodyId = annotation.getBodyId();
+  }
+
+  if (m_timestamp < annotation.m_timestamp) {
+    m_timestamp = annotation.m_timestamp;
   }
 
   if (getStatusRank(m_status) > getStatusRank(annotation.m_status)) {

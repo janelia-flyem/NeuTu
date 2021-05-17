@@ -180,6 +180,7 @@ public:
   void findLoopInStack();
   void bwthin();
   void skeletonize();
+  void exportSlice();
 
 public:
   void setViewInfo(const QString &info);

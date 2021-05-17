@@ -69,7 +69,7 @@ TEST(ZFlyEmBodyColorScheme, Basic)
   ASSERT_EQ(0xFF00FF00, scheme.getBodyColorCode(6));
   ASSERT_EQ(1, scheme.getBodyColorIndex(1));
   ASSERT_EQ(-1, scheme.getBodyColorIndex(20000));
-  ASSERT_EQ(0, scheme.getBodyColorCode(20000));
+  ASSERT_EQ(uint32_t(0), scheme.getBodyColorCode(20000));
   ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(20000));
   ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColorFromIndex(-1));
 
@@ -79,7 +79,7 @@ TEST(ZFlyEmBodyColorScheme, Basic)
   ASSERT_EQ(QColor(0, 0, 0, 255), scheme.getBodyColor(20000));
 
   scheme.setDefaultColor(1000);
-  ASSERT_EQ(1000, scheme.getBodyColorCodeFromIndex(-1));
+  ASSERT_EQ(uint32_t(1000), scheme.getBodyColorCodeFromIndex(-1));
 
   uint64_t src[] = {1, 1, 1, 2, 3, 20000, 20000, 6, 6};
   uint32_t dst[9];
@@ -116,9 +116,9 @@ TEST(ZFlyEmGeneralBodyColorScheme, Basic)
 
   ASSERT_EQ(3, scheme.getColorNumber());
   ASSERT_EQ(0, scheme.getBodyColorIndex(1));
-  ASSERT_EQ(2, scheme.getBodyColorCode(1));
+  ASSERT_EQ(uint32_t(2), scheme.getBodyColorCode(1));
   ASSERT_EQ(QColor(0, 0, 2, 0), scheme.getBodyColor(1));
-  ASSERT_EQ(100, scheme.getBodyColorCode(10));
+  ASSERT_EQ(uint32_t(100), scheme.getBodyColorCode(10));
   ASSERT_EQ(-1, scheme.getBodyColorIndex(3));
 }
 
@@ -129,7 +129,7 @@ TEST(ZFlyEmCompositeBodyColorScheme, Basic)
   ASSERT_EQ(-1, scheme.getBodyColorIndex(1));
 
   scheme.setDefaultColor(100);
-  ASSERT_EQ(100, scheme.getBodyColorCode(1));
+  ASSERT_EQ(uint32_t(100), scheme.getBodyColorCode(1));
   ASSERT_EQ(QColor(0, 0, 100, 0).name().toStdString(),
             scheme.getBodyColor(1).name().toStdString());
 
@@ -146,9 +146,9 @@ TEST(ZFlyEmCompositeBodyColorScheme, Basic)
 
   ASSERT_EQ(3, scheme.getColorNumber());
   ASSERT_EQ(1, scheme.getBodyColorIndex(1));
-  ASSERT_EQ(2, scheme.getBodyColorCode(1));
+  ASSERT_EQ(uint32_t(2), scheme.getBodyColorCode(1));
   ASSERT_EQ(QColor(0, 0, 2, 0), scheme.getBodyColor(1));
-  ASSERT_EQ(100, scheme.getBodyColorCode(10));
+  ASSERT_EQ(uint32_t(100), scheme.getBodyColorCode(10));
   ASSERT_EQ(-1, scheme.getBodyColorIndex(3));
 
   subscheme = new ZFLyEmMockBodyColorScheme;
@@ -166,11 +166,11 @@ TEST(ZFlyEmCompositeBodyColorScheme, Basic)
   ASSERT_EQ(1, scheme.getBodyColorIndex(1));
   ASSERT_EQ(3, scheme.getBodyColorIndex(3));
   for (uint64_t bodyId = 0; bodyId < 7; ++bodyId) {
-    ASSERT_EQ(int(bodyId + 1), scheme.getBodyColorCode(bodyId));
+    ASSERT_EQ(uint32_t(bodyId + 1), scheme.getBodyColorCode(bodyId));
   }
 
   scheme.setDefaultColor(10);
-  ASSERT_EQ(10, scheme.getBodyColorCode(7));
+  ASSERT_EQ(uint32_t(10), scheme.getBodyColorCode(7));
 
   uint64_t src[] = {1, 1, 1, 2, 3, 20000, 20000, 6, 6};
   uint32_t dst[9];
@@ -189,7 +189,7 @@ TEST(ZFlyEmRandomBodyColorScheme, Basic)
   ASSERT_EQ(65535, scheme.getBodyColorIndex(65535));
   ASSERT_EQ(scheme.getBodyColor(65536), scheme.getBodyColorFromIndex(1));
   ASSERT_EQ(2, scheme.getBodyColorIndex(2));
-  ASSERT_EQ(0, scheme.getBodyColorCode(0));
+  ASSERT_EQ(uint32_t(0), scheme.getBodyColorCode(0));
   ASSERT_EQ(QColor(0, 0, 0, 0).name().toStdString(),
             scheme.getBodyColor(0).name().toStdString());
 }
@@ -248,13 +248,13 @@ TEST(ZFlyEmBodyIdColorScheme, Basic)
     ASSERT_EQ(0, scheme.getBodyColorCode(100));
     scheme.setColor(100, 101);
     ASSERT_EQ(5, scheme.getColorNumber());
-    ASSERT_EQ(101, scheme.getBodyColorCode(100));
+    ASSERT_EQ(uint32_t(101), scheme.getBodyColorCode(100));
     scheme.setColor(100, 102);
     ASSERT_EQ(6, scheme.getColorNumber());
-    ASSERT_EQ(102, scheme.getBodyColorCode(100));
+    ASSERT_EQ(uint32_t(102), scheme.getBodyColorCode(100));
     scheme.setColor(1000, 101);
     ASSERT_EQ(6, scheme.getColorNumber());
-    ASSERT_EQ(101, scheme.getBodyColorCode(1000));
+    ASSERT_EQ(uint32_t(101), scheme.getBodyColorCode(1000));
   }
 
   {
@@ -270,7 +270,7 @@ TEST(ZFlyEmBodyIdColorScheme, Basic)
     scheme.setColor(3, 100);
     ASSERT_EQ(3, scheme.getColorNumber());
     ASSERT_EQ(ZFlyEmBodyIdColorScheme::COLOR_CAPACITY, scheme.getBodyColorCode(2));
-    ASSERT_EQ(100, scheme.getBodyColorCode(3));
+    ASSERT_EQ(uint32_t(100), scheme.getBodyColorCode(3));
   }
 
   {
@@ -317,7 +317,7 @@ TEST(ZFlyEmSequencerColorScheme, Basic)
   ASSERT_EQ(QColor(0, 255, 0).name().toStdString(),
             scheme.getBodyColor(3).name().toStdString());
   ASSERT_EQ(QColor(0, 0, 255), scheme.getBodyColor(5));
-  ASSERT_EQ(0, scheme.getBodyColorCode(2));
+  ASSERT_EQ(uint32_t(0), scheme.getBodyColorCode(2));
   ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(2));
   ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
   ASSERT_EQ(4, scheme.getColorNumber());

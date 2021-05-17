@@ -8248,3 +8248,11 @@ void MainWindow::on_actionSubtract_Background_Adaptive_triggered()
     frame->subtractBackgroundAdaptive();
   }
 }
+
+void MainWindow::on_actionExportSlice_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    frame->exportSlice();
+  }
+}

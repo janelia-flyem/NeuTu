@@ -6,25 +6,12 @@
 #include <fstream>
 #include <regex>
 #include <cstdio>
+#include <chrono>
+#include <ctime>
+#include <locale>
+#include <iomanip>
 
 #include "common/neutudefs.h"
-
-/*
-bool neutu::FileExists(const std::string &path)
-{
-  if (path.empty()) {
-    return false;
-  }
-
-  FILE* fp = fopen(path.c_str(), "r");
-  if (fp != NULL) {
-    fclose(fp);
-    return true;
-  }
-
-  return false;
-}
-*/
 
 bool neutu::HasEnv(const std::string &name, const std::string &value)
 {
@@ -123,29 +110,23 @@ int64_t neutu::ToInt64(const std::string &s)
   return std::strtoll(s.c_str(), &se, 10);
 }
 
-/*
-void neutu::RangePartitionProcess(
-    int x0, int x1, int block, int n, std::function<void(int, int)> f)
+int64_t neutu::GetTimeStamp()
 {
-  if (f) {
-    if (x1 >= x0) {
-      if (n > 0) {
-        int currentMin = x0;
-        int length = (x1 - x0 + 1);
-        x0 =
-        int dx = (length / n / block) * block;
-
-        int currentMax = x0 + dx - 1;
-        for (int i = 0; i < n; i++) {
-          if (i < remain) {
-            currentMax += 1;
-          }
-          f(currentMin, currentMax);
-          currentMin = currentMax + 1;
-          currentMax += dx;
-        }
-      }
-    }
-  }
+  return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
 }
-*/
+
+std::string neutu::GetUtcTimeString()
+{
+  time_t now = time(0);
+  std::ostringstream stream;
+  tm *ltm = gmtime(&now);
+  stream << 1900 + ltm->tm_year << '-'
+         << std::setfill('0') << std::setw(2) << 1 + ltm->tm_mon << '-'
+         << std::setfill('0') << std::setw(2) << ltm->tm_mday << ' '
+         << std::setfill('0') << std::setw(2) << ltm->tm_hour << ':'
+         << std::setfill('0') << std::setw(2) << ltm->tm_min << ':'
+         << std::setfill('0') << std::setw(2) << ltm->tm_sec
+         << "+00:00";
+  return stream.str();
+}

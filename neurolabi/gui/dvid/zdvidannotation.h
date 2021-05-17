@@ -200,6 +200,8 @@ public: //Json APIs
   static bool RemoveRelation(ZJsonArray &json, const std::string &rel);
   static bool RemoveRelation(ZJsonObject &json, const std::string &rel);
 
+  static std::string GetProperty(ZJsonObject &json, const std::string &key);
+
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           const std::string &value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
@@ -208,6 +210,7 @@ public: //Json APIs
                           bool value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           int value);
+  static void RemoveProperty(ZJsonObject &json, const std::string &key);
 
   static void Annotate(ZJsonObject &json, const std::string &annot);
 
@@ -226,6 +229,10 @@ public: //Json APIs
   static std::string GetMatchingRelation(const std::string &relType);
 
   static EKind GetKind(const ZJsonObject &json);
+  static bool IsChecked(const ZJsonObject &json);
+
+  static bool HasSameSubProp(const ZJsonObject &json1, const ZJsonObject &json2);
+  static void UpdateTime(ZJsonObject &json ,const ZJsonObject &oldJson);
 
 protected:
   double getRadius(int z, neutu::EAxis sliceAxis) const;
@@ -235,6 +242,10 @@ private:
 
 public:
   static const char* KEY_COMMENT;
+  static const char* KEY_CREATED_TIME;
+  static const char* KEY_MODIFIED_TIME;
+  static const char* KEY_CHECKED_TIME;
+
   static double DEFAULT_POST_SYN_RADIUS;
   static double DEFAULT_PRE_SYN_RADIUS;
 

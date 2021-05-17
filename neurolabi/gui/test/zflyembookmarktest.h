@@ -50,6 +50,17 @@ TEST(ZFlyEmBookmark, basic)
   bookmark.setUser("test4");
   ASSERT_EQ("test5", bookmark.getPrevUser());
 
+  ASSERT_FALSE(bookmark.isChecked());
+  bookmark.setChecked(true);
+  ASSERT_TRUE(bookmark.isChecked());
+  bookmark.setChecked(false);
+  ASSERT_FALSE(bookmark.isChecked());
+
+  ASSERT_FALSE(bookmark.isCustom());
+  bookmark.setCustom(true);
+  ASSERT_TRUE(bookmark.isCustom());
+  bookmark.setCustom(false);
+  ASSERT_FALSE(bookmark.isCustom());
 }
 
 TEST(ZFlyEmBookmark, json)
@@ -73,7 +84,7 @@ TEST(ZFlyEmBookmark, json)
     ZJsonObjectParser parser(bookmark.getPropJson());
     ASSERT_EQ("test2", bookmark.getUserName());
     ASSERT_EQ("test", bookmark.getPrevUser());
-    ASSERT_EQ(1612556183314, bookmark.getTimestamp());
+    ASSERT_EQ(1612556183314ll, bookmark.getTimestamp());
 
 //    std::cout << bookmark.getTime().toStdString() << std::endl;
 //    ASSERT_EQ("1612556183314", parser.getValue("timestamp", ""));
@@ -89,7 +100,7 @@ TEST(ZFlyEmBookmark, json)
     ASSERT_EQ("test", bookmark.getUserName());
 //    ASSERT_EQ("", bookmark.getUserName());
     ASSERT_EQ("", bookmark.getPrevUser());
-    ASSERT_EQ(1612556183313, bookmark.getTimestamp());
+    ASSERT_EQ(1612556183313ll, bookmark.getTimestamp());
     ASSERT_FALSE(bookmark.isChecked());
   }
 
@@ -108,7 +119,7 @@ TEST(ZFlyEmBookmark, json)
     ASSERT_EQ(1612556183312, bookmark.getTimestamp());
     ASSERT_EQ("traced", bookmark.getStatus());
     ASSERT_TRUE(bookmark.isChecked());
-    ASSERT_EQ(1536878688, bookmark.getBodyId());
+    ASSERT_EQ(1536878688ull, bookmark.getBodyId());
     ASSERT_EQ(2, bookmark.getTags().size());
     ASSERT_EQ("tag1", bookmark.getTags()[0]);
     ASSERT_EQ("tag2", bookmark.getTags()[1]);
@@ -124,7 +135,7 @@ TEST(ZFlyEmBookmarkArray, json)
         GET_TEST_DATA_DIR + "/_test/json/clio_annotations_test.json");
   ASSERT_EQ(1, bookmarkArray.size());
   ZFlyEmBookmark bookmark = bookmarkArray[0];
-  ASSERT_EQ(1536878688, bookmark.getBodyId());
+  ASSERT_EQ(1536878688ull, bookmark.getBodyId());
   ASSERT_EQ("test", bookmark.getUserName());
 
   std::cout << bookmarkArray.toAnnotationJson() << std::endl;
@@ -141,7 +152,7 @@ TEST(ZFlyEmBookmarkArray, json)
 
   bookmark = bookmarkArray[1];
   ASSERT_EQ(0, bookmark.getBodyId());
-  ASSERT_EQ(1606934682320, bookmark.getTimestamp());
+  ASSERT_EQ(1606934682320ll, bookmark.getTimestamp());
   ASSERT_EQ(
         ZFlyEmBookmark::EBookmarkType::FALSE_MERGE, bookmark.getBookmarkType());
   ASSERT_EQ("zhaot", bookmark.getUserName());

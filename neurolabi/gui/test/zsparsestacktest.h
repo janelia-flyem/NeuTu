@@ -5,6 +5,7 @@
 #include "zsparsestack.h"
 #include "neutubeconfig.h"
 #include "zstackfactory.h"
+#include "zobject3dscan.h"
 
 #ifdef _USE_GTEST_
 

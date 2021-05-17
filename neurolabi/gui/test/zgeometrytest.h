@@ -329,7 +329,7 @@ TEST(ZGeometry, Raster)
       nbrs.push_back(ZIntPoint(x, y, z));
     });
 
-    ASSERT_EQ(26, nbrs.size());
+    ASSERT_EQ(size_t(26), nbrs.size());
     ASSERT_EQ(ZIntPoint(0, 1, 2), nbrs[0]);
     ASSERT_EQ(ZIntPoint(2, 3, 4), nbrs[25]);
   }
@@ -340,7 +340,7 @@ TEST(ZGeometry, Raster)
       nbrs.push_back(ZIntPoint(x, y, z));
     });
 
-    ASSERT_EQ(6, nbrs.size());
+    ASSERT_EQ(size_t(6), nbrs.size());
     ASSERT_EQ(ZIntPoint(0, 2, 3), nbrs[0]);
     ASSERT_EQ(ZIntPoint(2, 2, 3), nbrs[1]);
   }
@@ -351,7 +351,7 @@ TEST(ZGeometry, Raster)
       nbrs.push_back(ZIntPoint(x, y, z));
     });
 
-    ASSERT_EQ(26, nbrs.size());
+    ASSERT_EQ(size_t(26), nbrs.size());
     ASSERT_EQ(ZIntPoint(-1, 0, 0), nbrs[0]);
     ASSERT_EQ(ZIntPoint(1, 0, 0), nbrs[1]);
     ASSERT_EQ(ZIntPoint(0, -1, 0), nbrs[2]);

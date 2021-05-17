@@ -4,9 +4,11 @@
 #include <sstream>
 #include <QColor>
 
+#include "common/utilities.h"
 #include "common/math.h"
 #include "geometry/zcuboid.h"
 #include "zjsonarray.h"
+#include "zjsonobjectparser.h"
 #include "zpainter.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
@@ -15,6 +17,10 @@
 #include "zdvidutil.h"
 
 const char* ZDvidAnnotation::KEY_COMMENT = "comment";
+const char* ZDvidAnnotation::KEY_CREATED_TIME = "createdTime";
+const char* ZDvidAnnotation::KEY_MODIFIED_TIME = "modifiedTime";
+const char* ZDvidAnnotation::KEY_CHECKED_TIME = "checkedTime";
+
 double ZDvidAnnotation::DEFAULT_PRE_SYN_RADIUS = 7.0;
 double ZDvidAnnotation::DEFAULT_POST_SYN_RADIUS = 3.0;
 
@@ -691,24 +697,151 @@ ZDvidAnnotation::EKind ZDvidAnnotation::GetKind(const std::string &name)
   return ZDvidAnnotation::EKind::KIND_INVALID;
 }
 
+namespace {
+
+bool includes_same_prop(const ZJsonObject &prop1, const ZJsonObject &prop2)
+{
+  return prop1.all([&](const std::string &key) {
+    if (key == "user" || key == "checked" || key == "timestamp" ||
+        key == "custom" ||
+        key == ZDvidAnnotation::KEY_CREATED_TIME ||
+        key == ZDvidAnnotation::KEY_MODIFIED_TIME ||
+        key == ZDvidAnnotation::KEY_CHECKED_TIME) {
+      return true;
+    }
+
+    return ZJsonObjectParser::GetValue(prop1, key, "") ==
+        ZJsonObjectParser::GetValue(prop2, key, "");
+  });
+}
+
+bool is_same_prop(const ZJsonObject &prop1, const ZJsonObject &prop2)
+{
+  return includes_same_prop(prop1, prop2) && includes_same_prop(prop2, prop1);
+}
+
+ZJsonObject get_prop(const ZJsonObject &json)
+{
+  return ZJsonObject(json.value("Prop"));
+}
+
+ZJsonObject add_prop(ZJsonObject &json)
+{
+  ZJsonObject propJson = json.value("Prop");
+
+  if (!json.hasKey("Prop")) {
+    json.setEntry("Prop", propJson);
+  }
+
+  return propJson;
+}
+
+std::string get_created_time(const ZJsonObject &json)
+{
+  return ZJsonObjectParser::GetValue(
+              get_prop(json), ZDvidAnnotation::KEY_CREATED_TIME, "");
+}
+
+std::string get_modified_time(const ZJsonObject &json)
+{
+  return ZJsonObjectParser::GetValue(
+              get_prop(json), ZDvidAnnotation::KEY_MODIFIED_TIME, "");
+}
+
+std::string get_checked_time(const ZJsonObject &json)
+{
+  return ZJsonObjectParser::GetValue(
+              get_prop(json), ZDvidAnnotation::KEY_CHECKED_TIME, "");
+}
+
+}
+
+std::string ZDvidAnnotation::GetProperty(
+    ZJsonObject &json, const std::string &key)
+{
+  return ZJsonObjectParser::GetValue(get_prop(json), key, "");
+}
+
+bool ZDvidAnnotation::IsChecked(const ZJsonObject &json)
+{
+  ZJsonObject propJson = get_prop(json);
+  std::string checked = ZJsonObjectParser::GetValue(propJson, "checked", "0");
+
+  return checked == "1";
+}
+
+bool ZDvidAnnotation::HasSameSubProp(
+    const ZJsonObject &json1, const ZJsonObject &json2)
+{
+  return is_same_prop(get_prop(json1), get_prop(json2));
+}
+
+void ZDvidAnnotation::UpdateTime(ZJsonObject &json, const ZJsonObject &oldJson)
+{
+  std::string timeString = neutu::GetUtcTimeString();
+  std::string modifiedTime;
+  std::string createdTime;
+  std::string checkedTime;
+
+  if (oldJson.isEmpty()) {
+    createdTime = timeString;
+//    AddProperty(json, ZDvidAnnotation::KEY_CREATED_TIME, timeString);
+  } else {
+    if (HasSameSubProp(json, oldJson) == false) {
+      modifiedTime = timeString;
+    } else if (get_modified_time(json).empty()) {
+      // use old modified time if the new json doesn't have one
+      modifiedTime = get_modified_time(oldJson);
+    }
+
+    if (get_created_time(json).empty()) {
+      createdTime = get_created_time(oldJson);
+    }
+  }
+
+  if (IsChecked(json)) {
+    if (IsChecked(oldJson) == false) {
+      checkedTime = timeString;
+//      AddProperty(json, ZDvidAnnotation::KEY_CHECKED_TIME, timeString);
+    } else {
+      if (get_checked_time(json).empty()) {
+        checkedTime = get_checked_time(oldJson);
+      }
+    }
+  } else {
+    get_prop(json).removeKey("checkedTime");
+  }
+
+  if (createdTime.empty() == false) {
+    AddProperty(json, ZDvidAnnotation::KEY_CREATED_TIME, createdTime);
+  }
+  if (modifiedTime.empty() == false) {
+    AddProperty(json, ZDvidAnnotation::KEY_MODIFIED_TIME, modifiedTime);
+  }
+  if (checkedTime.empty() == false) {
+    AddProperty(json, ZDvidAnnotation::KEY_CHECKED_TIME, checkedTime);
+  }
+}
+
 void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, const std::string &value)
 {
+  ZJsonObject propJson = add_prop(json);
+  propJson.setEntry(key, value);
+/*
   ZJsonObject propJson = json.value("Prop");
   propJson.setEntry(key, value);
-  if (!propJson.hasKey("Prop")) {
+  if (!json.hasKey("Prop")) {
     json.setEntry("Prop", propJson);
   }
+  */
 }
 
 void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, const char *value)
 {
-  ZJsonObject propJson = json.value("Prop");
+  ZJsonObject propJson = add_prop(json);
   propJson.setEntry(key, value);
-  if (!propJson.hasKey("Prop")) {
-    json.setEntry("Prop", propJson);
-  }
 }
 
 void ZDvidAnnotation::Annotate(ZJsonObject &json, const std::string &annot)
@@ -724,23 +857,17 @@ void ZDvidAnnotation::AddProperty(
   } else {
     AddProperty(json, key, "0");
   }
-  /*
-  ZJsonObject propJson = json.value("Prop");
-  if (value == true) {
-    propJson.setEntry(key, "1");
-  } else {
-    propJson.setEntry(key, "0");
-  }
-  if (!propJson.hasKey("Prop")) {
-    json.setEntry("Prop", propJson);
-  }
-  */
 }
 
 void ZDvidAnnotation::AddProperty(
     ZJsonObject &json, const std::string &key, int value)
 {
   AddProperty(json, key, std::to_string(value));
+}
+
+void ZDvidAnnotation::RemoveProperty(ZJsonObject &json, const std::string &key)
+{
+  get_prop(json).removeKey(key.c_str());
 }
 
 std::vector<ZIntPoint> ZDvidAnnotation::GetPartners(const ZJsonObject &json)

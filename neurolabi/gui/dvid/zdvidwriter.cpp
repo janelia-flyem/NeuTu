@@ -1883,7 +1883,9 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
             << std::endl;
 #endif
 
-  writeJson(url.getTodoListElementsUrl(), itemJson);
+  writePointAnnotation(getDvidTarget().getTodoListName(), itemJson);
+
+//  writeJson(url.getTodoListElementsUrl(), itemJson);
 }
 
 bool ZDvidWriter::writeLabel(const ZArray &label)
@@ -2112,7 +2114,6 @@ void ZDvidWriter::deleteSynapse(int x, int y, int z)
 void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonObject &annotationJson)
 {
-//  ZDvidUrl url(getDvidTarget());
   ZJsonArray json;
   json.append(annotationJson);
 
@@ -2122,7 +2123,14 @@ void ZDvidWriter::writePointAnnotation(
 void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonArray &annotationJson)
 {
-  ZDvidUrl url(getDvidTarget());
+  ZDvidUrl url(getDvidTarget(), m_admin);
+
+  for (size_t i = 0; i < annotationJson.size(); ++i) {
+    ZJsonObject newJson = ZJsonObject(annotationJson.value(i));
+    ZJsonObject oldJson = getDvidReader().readAnnotationJson(
+          dataName, ZDvidAnnotation::GetPosition(newJson));
+    ZDvidAnnotation::UpdateTime(newJson, oldJson);
+  }
 
 #ifdef _DEBUG_
   std::cout << annotationJson.dumpString(0) << std::endl;

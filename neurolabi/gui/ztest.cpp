@@ -31904,6 +31904,34 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 0
+  std::cout << neutu::GetTimeStamp() << std::endl;
+  std::cout << neutu::GetUtcTimeString() << std::endl;
+#endif
+
+#if 1
+  ZJsonObject obj;
+  obj.decode("{\"Pos\":[720,887,1023],\"Kind\":\"Note\",\"Tags\":[],"
+    "\"Prop\":{\"checked\":\"0\",\"user\":\"zhaot\"},\"Rels\":[]}", true);
+  ZJsonObject oldObj;
+
+  ZDvidAnnotation::UpdateTime(obj, oldObj);
+  obj.print();
+
+  obj.decode("{\"Pos\":[720,887,1023],\"Kind\":\"Note\",\"Tags\":[],"
+    "\"Prop\":{\"checked\":\"0\",\"user\":\"zhaot\", \"createdTime\": \"2021-04-15 23:04:16+00:00\"},\"Rels\":[]}", true);
+  oldObj = obj.clone();
+  ZDvidAnnotation::UpdateTime(obj, oldObj);
+  obj.print();
+
+  obj.decode("{\"Pos\":[720,887,1023],\"Kind\":\"Note\",\"Tags\":[],"
+    "\"Prop\":{\"checked\":\"1\",\"user\":\"zhaot\", \"createdTime\": \"2021-04-15 23:04:16+00:00\"},\"Rels\":[]}", true);
+  ZDvidAnnotation::UpdateTime(obj, oldObj);
+  obj.print();
+
+
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

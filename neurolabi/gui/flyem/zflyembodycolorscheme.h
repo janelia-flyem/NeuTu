@@ -25,7 +25,7 @@ public:
   virtual QColor getBodyColor(uint64_t bodyId) const;
   virtual uint32_t getBodyColorCode(uint64_t bodyId) const;
   virtual QColor getBodyColorFromIndex(int index) const;
-  virtual int getBodyColorCodeFromIndex(int index) const;
+  virtual uint32_t getBodyColorCodeFromIndex(int index) const;
   virtual void update() {}
 
   virtual QHash<uint64_t, int> getColorIndexMap() const;

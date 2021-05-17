@@ -16,6 +16,7 @@
 #include "zneurontracerconfig.h"
 #include "flyem/zglobaldvidrepo.h"
 #include "common/utilities.h"
+#include "filesystem/utilities.h"
 
 #if 0
 #ifdef _QT5_
@@ -98,6 +99,11 @@ void sync_log_dir(const std::string &srcDir, const std::string &destDir)
     }
 }
 
+std::string get_main_config_path(const std::string &configDir)
+{
+  return neutu::JoinPath(configDir, "json", "config.json");
+}
+
 
 struct MainConfig {
   bool isGuiEnabled() const
@@ -129,15 +135,17 @@ void SetFlyEmConfigpath(
   ZJsonArray defaultConfigCandidate(configObj.value("flyem"));
 
   QFileInfo rootConfigFileInfo(rootConfigPath);
-  QFileInfo configFileInfo;
-//  QDir appDir((GET_APPLICATION_DIR).c_str());
-  QDir rootDir = rootConfigFileInfo.absoluteDir();
 
-  for (size_t i = 0; i < defaultConfigCandidate.size(); ++i) {
-    std::string path = ZJsonParser::stringValue(configObj["flyem"], i);
-    configFileInfo.setFile(rootDir, path.c_str());
-    if (configFileInfo.exists()) {
-      break;
+  QFileInfo configFileInfo;
+  if (!rootConfigPath.isEmpty()) {
+    QDir rootDir = rootConfigFileInfo.absoluteDir();
+
+    for (size_t i = 0; i < defaultConfigCandidate.size(); ++i) {
+      std::string path = ZJsonParser::stringValue(configObj["flyem"], i);
+      configFileInfo.setFile(rootDir, path.c_str());
+      if (configFileInfo.exists()) {
+        break;
+      }
     }
   }
 
@@ -324,7 +332,9 @@ int run_command_line(int argc, char *argv[])
   config.setApplicationDir(appDir);
 
 #if defined(_FLYEM_)
-  LoadFlyEmConfig(MainConfig(), false);
+  MainConfig mainConfig;
+  mainConfig.configPath = get_main_config_path(config.getConfigDir()).c_str();
+  LoadFlyEmConfig(mainConfig, false);
 #endif
 
   init_log();
@@ -366,7 +376,7 @@ void configure(MainConfig &mainConfig)
 
   if (mainConfig.configPath.isEmpty()) {
     mainConfig.configPath =
-        QFileInfo(QDir((GET_CONFIG_DIR + "/json").c_str()), "config.json").
+        QFileInfo(get_main_config_path(GET_CONFIG_DIR).c_str()).
         absoluteFilePath();
   }
 
