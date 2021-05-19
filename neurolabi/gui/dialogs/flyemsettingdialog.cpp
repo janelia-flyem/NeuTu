@@ -119,6 +119,7 @@ void FlyEmSettingDialog::loadSetting()
 #endif
   ui->meshThreSpinBox->setValue(
         NeutubeConfig::GetMeshSplitThreshold() / 1000000);
+  ui->scrollCooldownSpinBox->setValue(NeutubeConfig::GetScrollCooldown());
   ui->crossWidthSpinBox->setValue(NeutubeConfig::Get3DCrossWidth());
   ui->posFormatLineEdit->setText(
         QString::fromStdString(NeutubeConfig::GetPointPosFormat()));
@@ -263,6 +264,7 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::UseDefaultTaskServer(usingDefaultTaskServer());
   NeutubeConfig::SetNamingSynapse(namingSynapse());
   NeutubeConfig::SetNamingPsd(namingPsd());
+  NeutubeConfig::SetScrollCooldown(ui->scrollCooldownSpinBox->value());
   NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
   NeutubeConfig::Set3DCrossWidth(ui->crossWidthSpinBox->value());
   if (!ui->posFormatLineEdit->text().trimmed().isEmpty()) {

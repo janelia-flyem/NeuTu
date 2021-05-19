@@ -292,6 +292,8 @@ public:
    */
   bool isDepthScrollable();
 
+  void ignoreScroll(bool on);
+  void pauseScroll();
 
   void setViewPortFrozen(bool state);
   void setDepthFrozen(bool state);
@@ -697,6 +699,8 @@ protected:
   bool m_depthFrozen;
   bool m_viewPortFrozen;
   bool m_viewChangeEventBlocked;
+  bool m_ignoringScroll = false;
+  int64_t m_scrollPausedTime = 0;
 
   ZScrollSliceStrategy *m_sliceStrategy;
 

@@ -1054,8 +1054,35 @@ bool ZStackView::isDepthScrollable()
   return m_depthControl->isEnabled();
 }
 
+void ZStackView::ignoreScroll(bool on)
+{
+  m_ignoringScroll = on;
+}
+
+void ZStackView::pauseScroll()
+{
+  m_ignoringScroll = true;
+  m_scrollPausedTime = neutu::GetTimeStamp();
+}
+
 void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
+  if (m_scrollPausedTime > 0) {
+    if (neutu::GetTimeStamp() - m_scrollPausedTime >
+        NeutubeConfig::GetScrollCooldown()) {
+      m_ignoringScroll = false;
+      m_scrollPausedTime = 0;
+    } else {
+#ifdef _DEBUG_
+      std::cout << "Mouse scroll ignored: " << neutu::GetTimeStamp() << " - " << m_scrollPausedTime << std::endl;
+#endif
+    }
+  }
+
+  if (m_ignoringScroll) {
+    return;
+  }
+
   int numSteps = -event->delta();
 
 #ifdef _DEBUG_0
@@ -1112,29 +1139,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
         */
 
         m_sliceStrategy->scroll(step);
-//        updateSliceViewParam();
-
         updateDataInfo(event->pos());
-
-#if 0
-//        int newPos = m_depthControl->value() + numSteps * ratio;
-        if ((newPos >= m_depthControl->minimum()) &&
-            (newPos <= m_depthControl->maximum())) {
-          setSliceIndex(newPos);
-          //m_depthControl->setValue(newPos);
-
-          QPointF pos = imageWidget()->canvasCoordinate(event->pos());
-          int z = sliceIndex();
-          if (buddyPresenter()->interactiveContext().isProjectView()) {
-            z = -1;
-          }
-
-          ZPoint pt = ZPoint(pos.x(), pos.y(), z);
-//          pt.shiftSliceAxisInverse(getSliceAxis());
-          setInfo(buddyDocument()->rawDataInfo(
-                    pt.x(), pt.y(), pt.z(), getSliceAxis()));
-        }
-#endif
       }
       setAttribute(Qt::WA_TransparentForMouseEvents, false);
     }
@@ -1145,6 +1150,8 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
       decreaseZoomRatio(event->pos().x(), event->pos().y());
     }
   }
+
+  pauseScroll();
 }
 
 void ZStackView::resizeEvent(QResizeEvent *event)
