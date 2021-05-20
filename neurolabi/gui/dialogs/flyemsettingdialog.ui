@@ -375,6 +375,16 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="scollCooldownAdaptiveCheckBox">
+       <property name="text">
+        <string>Acaptive</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_8">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

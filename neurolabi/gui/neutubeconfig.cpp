@@ -30,6 +30,7 @@ using namespace std;
 const char *NeutubeConfig::KEY_3D_CROSS_WIDTH = "3d_cross_width";
 const char *NeutubeConfig::KEY_MESH_SPLIT_THRE = "mesh_split_thre";
 const char *NeutubeConfig::KEY_SCROLL_COOLDOWN = "scroll_cooldown";
+const char *NeutubeConfig::KEY_SCROLL_COOLDOWN_ADAPTIVE = "scroll_cooldown_adaptive";
 
 NeutubeConfig::NeutubeConfig()
   #ifdef _QT_GUI_USED_
@@ -1138,6 +1139,25 @@ int NeutubeConfig::getScrollCooldown() const
   return 100;
 }
 
+void NeutubeConfig::useAdaptiveScrollCooldown(bool on)
+{
+//  m_scrollCooldown = t;
+#ifdef _QT_GUI_USED_
+  m_settings.setValue(KEY_SCROLL_COOLDOWN_ADAPTIVE, on);
+#endif
+}
+
+bool NeutubeConfig::adatpiveScrollCooldown() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_SCROLL_COOLDOWN_ADAPTIVE)) {
+    return m_settings.value(KEY_SCROLL_COOLDOWN_ADAPTIVE).toBool();
+  }
+#endif
+
+  return true;
+}
+
 void NeutubeConfig::SetScrollCooldown(int t)
 {
   getInstance().setScrollCooldown(t);
@@ -1146,6 +1166,16 @@ void NeutubeConfig::SetScrollCooldown(int t)
 int NeutubeConfig::GetScrollCooldown()
 {
   return getInstance().getScrollCooldown();
+}
+
+void NeutubeConfig::UseAdaptiveScrollCooldown(bool on)
+{
+  getInstance().useAdaptiveScrollCooldown(on);
+}
+
+bool NeutubeConfig::AdatpiveScrollCooldown()
+{
+  return getInstance().adatpiveScrollCooldown();
 }
 
 void NeutubeConfig::setMeshSplitThreshold(size_t thre)

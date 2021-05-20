@@ -1119,6 +1119,8 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     numSteps /= 120;
   }
 
+  QElapsedTimer timer;
+  timer.start();
   if (event->modifiers() == Qt::NoModifier ||
       event->modifiers() == Qt::ShiftModifier) {
     if (isDepthScrollable()) {
@@ -1151,7 +1153,10 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     }
   }
 
-  pauseScroll();
+  auto delay = timer.elapsed();
+  if (!NeutubeConfig::AdatpiveScrollCooldown() || delay > 100) {
+    pauseScroll();
+  }
 }
 
 void ZStackView::resizeEvent(QResizeEvent *event)

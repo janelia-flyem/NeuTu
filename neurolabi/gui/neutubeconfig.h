@@ -108,8 +108,14 @@ public:
   void setScrollCooldown(int t);
   int getScrollCooldown() const;
 
+  void useAdaptiveScrollCooldown(bool on);
+  bool adatpiveScrollCooldown() const;
+
   static void SetScrollCooldown(int t);
   static int GetScrollCooldown();
+
+  static void UseAdaptiveScrollCooldown(bool on);
+  static bool AdatpiveScrollCooldown();
 
   void setMeshSplitThreshold(size_t thre);
   size_t getMeshSplitThreshold() const;
@@ -519,6 +525,7 @@ private:
   static const char *KEY_3D_CROSS_WIDTH;
   static const char *KEY_MESH_SPLIT_THRE;
   static const char *KEY_SCROLL_COOLDOWN;
+  static const char *KEY_SCROLL_COOLDOWN_ADAPTIVE;
 
 #ifdef _QT_GUI_USED_
 //  QDebug *m_traceStream;
