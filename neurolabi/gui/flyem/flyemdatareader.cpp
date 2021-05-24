@@ -89,7 +89,8 @@ ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
   if (reader.getDvidTarget().hasBodyLabel()) {
     ZDvidUrl url(reader.getDvidTarget());
 
-    QByteArray data = reader.readBuffer(url.getBodyAnnotationUrl(bodyId));
+    QByteArray data = reader.readBuffer(
+          ZDvidUrl::AppendSourceQuery(url.getBodyAnnotationUrl(bodyId)));
     annotation.loadJsonString(data.constData());
     annotation.setBodyId(bodyId);
   }
@@ -101,7 +102,8 @@ std::vector<ZFlyEmToDoItem> FlyEmDataReader::ReadToDoItem(
     const ZDvidReader &reader, const ZIntCuboid &box)
 {
   ZDvidUrl dvidUrl(reader.getDvidTarget());
-  ZJsonArray obj = reader.readJsonArray(dvidUrl.getTodoListUrl(box));
+  ZJsonArray obj = reader.readJsonArray(
+        ZDvidUrl::AppendSourceQuery(dvidUrl.getTodoListUrl(box)));
 
   std::vector<ZFlyEmToDoItem> itemArray(obj.size());
 

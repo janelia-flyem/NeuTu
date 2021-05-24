@@ -1,6 +1,7 @@
 #include "zdvidurl.h"
 #include <sstream>
 #include <iostream>
+#include <cassert>
 
 #include "dvid/zdviddata.h"
 #if defined(_QT_GUI_USED_)
@@ -810,6 +811,17 @@ std::string ZDvidUrl::AppendRangeQuery(
 
   return newUrl;
 
+}
+
+std::string ZDvidUrl::AppendSourceQuery(const std::string &url)
+{
+#ifdef _DEBUG_
+  assert(!(ZString(url).contains("?app=") || ZString(url).contains("?u=") ||
+           ZString(url).contains("&app=") || ZString(url).contains("&u=")));
+#endif
+  return AppendQuery(
+        AppendQuery(url, "u", NeutubeConfig::GetUserName()),
+        "app", NeutubeConfig::GetSoftwareName());
 }
 
 std::string ZDvidUrl::getSupervoxelUrl

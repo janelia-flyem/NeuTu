@@ -48,12 +48,13 @@ dvid::ENodeStatus ZDvidGlobal::Memo::ReadNodeStatus(const ZDvidTarget &target)
     status = dvid::ENodeStatus::INVALID;
   } else {
     int statusCode = 0;
-    dvid::MakeHeadRequest(repoUrl, statusCode);
+    dvid::MakeHeadRequest(ZDvidUrl::AppendSourceQuery(repoUrl), statusCode);
     if (statusCode != 200) {
       status = dvid::ENodeStatus::OFFLINE;
     } else {
       ZJsonObject obj =
-          ZNetworkUtils::ReadJsonObjectMemo(url.getCommitInfoUrl());
+          ZNetworkUtils::ReadJsonObjectMemo(
+            ZDvidUrl::AppendSourceQuery(url.getCommitInfoUrl()));
       if (obj.hasKey("Locked")) {
         bool locked = ZJsonParser::booleanValue(obj["Locked"]);
         if (locked) {
