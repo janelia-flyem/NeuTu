@@ -1,15 +1,19 @@
 #ifndef FLYEMBODYANNOTATIONDIALOG_H
 #define FLYEMBODYANNOTATIONDIALOG_H
 
+#include <cstdint>
+#include <string>
+#include <functional>
+
 #include <QDialog>
 #include <QList>
 #include <QSet>
 #include <QMap>
 
-#include <cstdint>
-#include <string>
-
 class ZFlyEmBodyAnnotation;
+class QLineEdit;
+class QCheckBox;
+class QComboBox;
 
 namespace Ui {
 class FlyEmBodyAnnotationDialog;
@@ -73,6 +77,28 @@ public:
   void updateStatusBox();
   void updatePropertyBox();
 
+  QVariant getValue(const QString &key) const;
+  void setValue(const QString &key, const QVariant &value);
+
+public:
+  static const QString FINALIZED_TEXT;
+  static const QString KEY_TYPE;
+  static const QString KEY_INSTANCE;
+  static const QString KEY_COMMENT;
+  static const QString KEY_MAJOR_INPUT;
+  static const QString KEY_MAJOR_OUTPUT;
+  static const QString KEY_PRIMARY_NEURITE;
+  static const QString KEY_LOCATION;
+  static const QString KEY_OUT_OF_BOUNDS;
+  static const QString KEY_CROSS_MIDLINE;
+  static const QString KEY_NEUROTRANSMITTER;
+  static const QString KEY_SYNONYM;
+  static const QString KEY_CLONAL_UNIT;
+  static const QString KEY_HEMILINEAGE;
+  static const QString KEY_AUTO_TYPE;
+  static const QString KEY_PROPERTY;
+  static const QString KEY_STATUS;
+
 private:
   void hideFinalizedStatus();
   void showFinalizedStatus();
@@ -83,6 +109,32 @@ private:
   void initNullStatusItem();
   void initWidgetMap();
 
+  enum class EWidgetType {
+    LINE_EDIT, CHECK_BOX, COMBO_BOX
+  };
+
+  struct ValueManager {
+    QWidget *m_widget = nullptr;
+    EWidgetType m_type = EWidgetType::LINE_EDIT;
+    std::function<QVariant()> m_getter;
+    std::function<void(const QVariant&)> m_setter;
+
+    ValueManager() {}
+    ValueManager(QWidget *widget, EWidgetType type,
+                 std::function<QVariant()> getter = nullptr,
+                 std::function<void(const QVariant&)> setter = nullptr) :
+      m_widget(widget), m_type(type), m_getter(getter), m_setter(setter) {}
+  };
+
+  void registerWidget(
+      const QString &key, QWidget *widget, EWidgetType type,
+      std::function<QVariant()> getter = nullptr,
+      std::function<void(const QVariant&)> setter = nullptr);
+  void registerWidget(const QString &key, QLineEdit *widget);
+  void registerWidget(const QString &key, QComboBox *widget);
+  void registerWidget(const QString &key, QCheckBox *widget);
+
+  QWidget *getWidget(const QString &key) const;
   void disableWidget(const QString &key);
   void hideWidget(const QString &key);
 
@@ -104,25 +156,7 @@ private:
 
   QList<QString> m_defaultStatusList;
   QSet<QString> m_adminSatutsList;
-  QMap<QString, QWidget*> m_widgetMap;
-
-  static const QString FINALIZED_TEXT;
-  static const QString KEY_TYPE;
-  static const QString KEY_INSTANCE;
-  static const QString KEY_COMMENT;
-  static const QString KEY_MAJOR_INPUT;
-  static const QString KEY_MAJOR_OUTPUT;
-  static const QString KEY_PRIMARY_NEURITE;
-  static const QString KEY_LOCATION;
-  static const QString KEY_OUT_OF_BOUNDS;
-  static const QString KEY_CROSS_MIDLINE;
-  static const QString KEY_NEUROTRANSMITTER;
-  static const QString KEY_SYNONYM;
-  static const QString KEY_CLONAL_UNIT;
-  static const QString KEY_HEMILINEAGE;
-  static const QString KEY_AUTO_TYPE;
-  static const QString KEY_PROPERTY;
-  static const QString KEY_STATUS;
+  QMap<QString, ValueManager> m_widgetMap;
 };
 
 #endif // FLYEMBODYANNOTATIONDIALOG_H
