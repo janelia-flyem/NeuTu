@@ -823,7 +823,7 @@ void ZStackFrame::exportSlice()
     QString savePath = ZDialogFactory::GetSaveFileName("Save Slice", "", this);
     if (!savePath.isEmpty()) {
       Stack slice = C_Stack::sliceView(
-            stack->data(), view()->getCurrentZ() - stack->getOffset().getX(), 0);
+            stack->data(), view()->getCurrentZ() - stack->getOffset().getZ(), 0);
       C_Stack::write(savePath.toStdString(), &slice);
     }
   }
