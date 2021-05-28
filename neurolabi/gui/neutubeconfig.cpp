@@ -27,6 +27,11 @@
 
 using namespace std;
 
+const char *NeutubeConfig::KEY_3D_CROSS_WIDTH = "3d_cross_width";
+const char *NeutubeConfig::KEY_MESH_SPLIT_THRE = "mesh_split_thre";
+const char *NeutubeConfig::KEY_SCROLL_COOLDOWN = "scroll_cooldown";
+const char *NeutubeConfig::KEY_SCROLL_COOLDOWN_ADAPTIVE = "scroll_cooldown_adaptive";
+
 NeutubeConfig::NeutubeConfig()
   #ifdef _QT_GUI_USED_
     : m_settings(QSettings::UserScope, "NeuTu-be")
@@ -87,9 +92,15 @@ void NeutubeConfig::init(const std::string &userName)
   m_loggingProfile = false;
   m_verboseLevel = 1;
 
-#ifdef _QT_GUI_USED_
+#ifdef _QT_GUI_USED_2
+  if (m_settings.contains("3d_cross_width")) {
+    m_3dcrossWidth = m_settings.value("3d_cross_width").toDouble();
+  }
   if (m_settings.contains("mesh_split_thre")) {
     m_meshSplitThreshold = m_settings.value("mesh_split_thre").toInt();
+  }
+  if (m_settings.contains("scroll_cooldown")) {
+    m_scrollCooldown = m_settings.value("scroll_cooldown").toInt();
   }
 #endif
 
@@ -1082,15 +1093,21 @@ bool NeutubeConfig::IsAdvancedMode()
 
 void NeutubeConfig::set3DCrossWidth(double w)
 {
-  m_3dcrossWidth = w;
+//  m_3dcrossWidth = w;
 #ifdef _QT_GUI_USED_
-  m_settings.setValue("3d_cross_width", w);
+  m_settings.setValue(KEY_3D_CROSS_WIDTH, w);
 #endif
 }
 
 double NeutubeConfig::get3DCrossWidth() const
 {
-  return m_3dcrossWidth;
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_3D_CROSS_WIDTH)) {
+    return m_settings.value(KEY_3D_CROSS_WIDTH).toDouble();
+  }
+#endif
+
+  return 5.0;
 }
 
 void NeutubeConfig::Set3DCrossWidth(int w)
@@ -1103,17 +1120,82 @@ int NeutubeConfig::Get3DCrossWidth()
   return getInstance().get3DCrossWidth();
 }
 
+void NeutubeConfig::setScrollCooldown(int t)
+{
+//  m_scrollCooldown = t;
+#ifdef _QT_GUI_USED_
+  m_settings.setValue(KEY_SCROLL_COOLDOWN, t);
+#endif
+}
+
+int NeutubeConfig::getScrollCooldown() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_SCROLL_COOLDOWN)) {
+    return m_settings.value(KEY_SCROLL_COOLDOWN).toInt();
+  }
+#endif
+
+  return 100;
+}
+
+void NeutubeConfig::useAdaptiveScrollCooldown(bool on)
+{
+//  m_scrollCooldown = t;
+#ifdef _QT_GUI_USED_
+  m_settings.setValue(KEY_SCROLL_COOLDOWN_ADAPTIVE, on);
+#endif
+}
+
+bool NeutubeConfig::adatpiveScrollCooldown() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_SCROLL_COOLDOWN_ADAPTIVE)) {
+    return m_settings.value(KEY_SCROLL_COOLDOWN_ADAPTIVE).toBool();
+  }
+#endif
+
+  return true;
+}
+
+void NeutubeConfig::SetScrollCooldown(int t)
+{
+  getInstance().setScrollCooldown(t);
+}
+
+int NeutubeConfig::GetScrollCooldown()
+{
+  return getInstance().getScrollCooldown();
+}
+
+void NeutubeConfig::UseAdaptiveScrollCooldown(bool on)
+{
+  getInstance().useAdaptiveScrollCooldown(on);
+}
+
+bool NeutubeConfig::AdatpiveScrollCooldown()
+{
+  return getInstance().adatpiveScrollCooldown();
+}
+
 void NeutubeConfig::setMeshSplitThreshold(size_t thre)
 {
-  m_meshSplitThreshold = thre;
+//  m_meshSplitThreshold = thre;
 #ifdef _QT_GUI_USED_
-  m_settings.setValue("mesh_split_thre", int(thre));
+  m_settings.setValue(KEY_MESH_SPLIT_THRE, int(thre));
 #endif
 }
 
 size_t NeutubeConfig::getMeshSplitThreshold() const
 {
-  return m_meshSplitThreshold;
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_MESH_SPLIT_THRE)) {
+    return  m_settings.value(KEY_MESH_SPLIT_THRE).toULongLong();
+  }
+#endif
+
+  return 5000000;
+//  return m_meshSplitThreshold;
 }
 
 void NeutubeConfig::SetMeshSplitThreshold(size_t thre)

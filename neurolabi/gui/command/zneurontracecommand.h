@@ -19,6 +19,7 @@ private:
 
 private:
   int m_level = 0;
+  bool m_diagnosis = false;
 };
 
 #endif // ZNEURONTRACECOMMAND_H

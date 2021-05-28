@@ -1954,7 +1954,8 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
 
       QString frac = QString::number(i) + " of " + QString::number(cleaveIndexToMeshIds.size());
 
-      std::string response = writer.post(urlCleave, jsonBody);
+      std::string response = writer.post(
+            ZDvidUrl::AppendSourceQuery(urlCleave), jsonBody);
       QString labelStr;
       if (writer.isStatusOk()) {
         QJsonDocument responseDoc = QJsonDocument::fromJson(response.c_str());
@@ -2108,7 +2109,7 @@ ZJsonArray TaskBodyCleave::readAuxiliaryOutput(const ZDvidReader &reader) const
   if (reader.hasData(instance)) {
     std::string key(std::to_string(m_bodyId));
     std::string url = ZDvidUrl(m_bodyDoc->getDvidTarget()).getKeyUrl(instance, key);
-    result = reader.readJsonArray(url);
+    result = reader.readJsonArray(ZDvidUrl::AppendSourceQuery(url));
   }
 
   return result;

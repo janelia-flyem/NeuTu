@@ -584,6 +584,7 @@ ZStackOperator
 ZMouseEventRightButtonPressMapper::getOperation(const ZMouseEvent &event) const
 {
   ZStackOperator op = initOperation(event);
+  op.setOperation(ZStackOperator::OP_VIEW_PAUSE_SCROLL);
 
   return op;
 }

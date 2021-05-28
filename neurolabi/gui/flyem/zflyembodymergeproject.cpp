@@ -1993,8 +1993,9 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
     ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
     if (bodyMerger != NULL) {
       QByteArray buffer = getDvidReader().readBuffer(
-            ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-              neutu::GetCurrentUserName()));
+            ZDvidUrl::AppendSourceQuery(
+              ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
+              neutu::GetCurrentUserName())));
       bodyMerger->decodeJsonString(buffer.data());
 
       /*

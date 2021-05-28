@@ -154,7 +154,8 @@ void ZDvidWriter::writeSwc(uint64_t bodyId, ZSwcTree *tree)
     ZDvidUrl dvidUrl(getDvidTarget());
     dvidUrl.setAdmin(m_admin);
 
-    post(dvidUrl.getSkeletonUrl(bodyId), tree->toString(), false);
+    post(ZDvidUrl::AppendSourceQuery(dvidUrl.getSkeletonUrl(bodyId)),
+         tree->toString(), false);
   }
 }
 
@@ -176,7 +177,7 @@ void ZDvidWriter::writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom)
 
   if (!url.empty()) {
     QByteArray payload = mesh.writeToMemory("obj");
-    post(url, payload, false);
+    post(ZDvidUrl::AppendSourceQuery(url), payload, false);
 
     /*
     url = ZDvidUrl::GetMeshInfoUrl(url);
@@ -215,7 +216,7 @@ void ZDvidWriter::writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId)
   std::string url = dvidUrl.getSupervoxelMeshUrl(svId);
   if (!url.empty()) {
     QByteArray payload = mesh.writeToMemory("drc");
-    post(url, payload, false);
+    post(ZDvidUrl::AppendSourceQuery(url), payload, false);
   }
 }
 
@@ -226,7 +227,8 @@ void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
     char* buffer = C_Stack::toMrawBuffer(stack->data(), &length);
     ZDvidUrl dvidUrl(getDvidTarget());
     dvidUrl.setAdmin(m_admin);
-    post(dvidUrl.getThumbnailUrl(bodyId), buffer, length, false);
+    post(ZDvidUrl::AppendSourceQuery(dvidUrl.getThumbnailUrl(bodyId)),
+         buffer, length, false);
     free(buffer);
   }
 }
@@ -249,7 +251,7 @@ void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
     std::string url = ZDvidUrl(getDvidTarget(), m_admin).getBodyAnnotationUrl(
           bodyId, getDvidTarget().getBodyLabelName());
 #if defined(_ENABLE_LIBDVIDCPP_)
-    post(url, obj);
+    post(ZDvidUrl::AppendSourceQuery(url), obj);
 #else
     QString command = QString(
           "curl -i -X POST -H \"Content-Type: application/json\" "
@@ -575,7 +577,8 @@ void ZDvidWriter::syncAnnotationToLabel(
     std::cout << jsonObj.dumpString(0) << std::endl;
 #endif
 
-    post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
+    post(ZDvidUrl::AppendSourceQuery(
+           url.getAnnotationSyncUrl(name, queryString)), jsonObj);
   }
 }
 
@@ -587,7 +590,8 @@ void ZDvidWriter::syncData(
     ZDvidUrl url(getDvidTarget(), m_admin);
     ZJsonObject jsonObj;
     jsonObj.setEntry("sync", syncDataName);
-    post(url.getDataSyncUrl(dataName, queryString), jsonObj);
+    post(ZDvidUrl::AppendSourceQuery(url.getDataSyncUrl(dataName, queryString)),
+         jsonObj);
   }
 }
 
@@ -598,7 +602,7 @@ void ZDvidWriter::syncLabelsz(
     ZDvidUrl url(getDvidTarget(), m_admin);
     ZJsonObject jsonObj;
     jsonObj.setEntry("sync", annotationName);
-    post(url.getLabelszSyncUrl(dataName), jsonObj);
+    post(ZDvidUrl::AppendSourceQuery(url.getLabelszSyncUrl(dataName)), jsonObj);
   }
 }
 
@@ -620,7 +624,8 @@ void ZDvidWriter::createSynapseLabelsz()
 
 void ZDvidWriter::reloadSynapseLabelsz()
 {
-  post(ZDvidUrl(getDvidTarget()).getSynapseLabelszReloadUrl());
+  post(ZDvidUrl::AppendSourceQuery(
+         ZDvidUrl(getDvidTarget()).getSynapseLabelszReloadUrl()));
 }
 
 void ZDvidWriter::deleteData(const std::string &type, const std::string &name)
@@ -632,7 +637,7 @@ void ZDvidWriter::deleteData(const std::string &type, const std::string &name)
   ZDvidUrl dvidUrl(getDvidTarget(), m_admin);
   std::string url = dvidUrl.applyAdminToken(
         dvidUrl.GetFullUrl(dvidUrl.getDataUrl(name), type));
-  del(url);
+  del(ZDvidUrl::AppendSourceQuery(url));
 }
 
 void ZDvidWriter::createData(
@@ -680,7 +685,7 @@ void ZDvidWriter::deleteKey(const char* dataName, const char* key)
 
   ZDvidUrl dvidUrl(getDvidTarget(), m_admin);
   std::string url = dvidUrl.getKeyUrl(dataName, key);
-  del(url);
+  del(ZDvidUrl::AppendSourceQuery(url));
 
 }
 
@@ -733,7 +738,7 @@ void ZDvidWriter::deleteMesh(uint64_t bodyId)
 void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
 {
   ZDvidUrl url(getDvidTarget(), m_admin);
-  del(url.getBodyAnnotationUrl(bodyId));
+  del(ZDvidUrl::AppendSourceQuery(url.getBodyAnnotationUrl(bodyId)));
 }
 
 void ZDvidWriter::invalidateBody(uint64_t bodyId)
@@ -777,7 +782,8 @@ bool ZDvidWriter::lockNode(const std::string &message)
   messageArrayJson.append(message);
   messageJson.setEntry("log", messageArrayJson);
 
-  post(ZDvidUrl(getDvidTarget()).getLockUrl(), messageJson.dumpString(0), true);
+  post(ZDvidUrl::AppendSourceQuery(
+         ZDvidUrl(getDvidTarget()).getLockUrl()), messageJson.dumpString(0), true);
 
   return getStatusCode() == 200;
 
@@ -802,7 +808,8 @@ std::string ZDvidWriter::createBranch()
 {
   std::string uuid;
 
-  std::string response = post(ZDvidUrl(getDvidTarget()).getBranchUrl());
+  std::string response = post(
+        ZDvidUrl::AppendSourceQuery(ZDvidUrl(getDvidTarget()).getBranchUrl()));
 
   if (getStatusCode() == 200) {
     ZJsonObject obj;
@@ -1348,7 +1355,7 @@ std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
         dataName, oldLabel);
 
   QByteArray payload = obj.toDvidPayload();
-  ZString response = post(url, payload, false);
+  ZString response = post(ZDvidUrl::AppendSourceQuery(url), payload, false);
 
   uint64_t newBodyId = 0;
   uint64_t remainderId = oldLabel;
@@ -1388,7 +1395,7 @@ uint64_t ZDvidWriter::writeSplit(
   }
 
   QByteArray payload = obj.toDvidPayload();
-  ZString response = post(url, payload, false);
+  ZString response = post(ZDvidUrl::AppendSourceQuery(url), payload, false);
 
   if (!response.empty()) {
 #ifdef _DEBUG_
@@ -1640,7 +1647,7 @@ uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLab
     }
 
     QByteArray payload = obj.toDvidPayload();
-    ZString response = post(url, payload, false);
+    ZString response = post(ZDvidUrl::AppendSourceQuery(url), payload, false);
 
     if (!response.empty()) {
 #ifdef _DEBUG_
@@ -1822,7 +1829,7 @@ void ZDvidWriter::deletePointAnnotation(
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidUrl url(getDvidTarget(), m_admin);
-  del(url.getAnnotationUrl(dataName, x, y, z));
+  del(ZDvidUrl::AppendSourceQuery(url.getAnnotationUrl(dataName, x, y, z)));
 #else
   UNUSED_PARAMETER(&dataName);
   UNUSED_PARAMETER(x);
@@ -1861,7 +1868,7 @@ void ZDvidWriter::deleteToDoItem(int x, int y, int z)
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidUrl url(getDvidTarget(), m_admin);
-  del(url.getTodoListDeleteUrl(x, y, z));
+  del(ZDvidUrl::AppendSourceQuery(url.getTodoListDeleteUrl(x, y, z)));
 #else
   UNUSED_PARAMETER(x);
   UNUSED_PARAMETER(y);
@@ -1883,7 +1890,9 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
             << std::endl;
 #endif
 
-  writeJson(url.getTodoListElementsUrl(), itemJson);
+  writePointAnnotation(getDvidTarget().getTodoListName(), itemJson);
+
+//  writeJson(url.getTodoListElementsUrl(), itemJson);
 }
 
 bool ZDvidWriter::writeLabel(const ZArray &label)
@@ -1922,7 +1931,8 @@ bool ZDvidWriter::writeLabel(const ZArray &label)
                                label.getStartCoordinate(0),
                                label.getStartCoordinate(1),
                                label.getStartCoordinate(2));
-        post(ZDvidUrl::AppendQuery(urlStr, "mutate", true),
+        post(ZDvidUrl::AppendSourceQuery(
+               ZDvidUrl::AppendQuery(urlStr, "mutate", true)),
              label.getDataPointer<char>(), label.getByteNumber(), false);
       }
     }
@@ -1940,7 +1950,8 @@ void ZDvidWriter::writeLabel(const ZArray &label, int zoom)
                                     label.getStartCoordinate(0),
                                     label.getStartCoordinate(1),
                                     label.getStartCoordinate(2), zoom);
-    post(ZDvidUrl::AppendQuery(urlStr, "mutate", true),
+    post(ZDvidUrl::AppendSourceQuery(
+           ZDvidUrl::AppendQuery(urlStr, "mutate", true)),
          label.getDataPointer<char>(), label.getByteNumber(), false);
   }
 }
@@ -2101,7 +2112,7 @@ void ZDvidWriter::deleteSynapse(int x, int y, int z)
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidUrl url(getDvidTarget());
-  del(url.getSynapseUrl(x, y, z));
+  del(ZDvidUrl::AppendSourceQuery(url.getSynapseUrl(x, y, z)));
 #else
   UNUSED_PARAMETER(x);
   UNUSED_PARAMETER(y);
@@ -2112,7 +2123,6 @@ void ZDvidWriter::deleteSynapse(int x, int y, int z)
 void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonObject &annotationJson)
 {
-//  ZDvidUrl url(getDvidTarget());
   ZJsonArray json;
   json.append(annotationJson);
 
@@ -2122,7 +2132,14 @@ void ZDvidWriter::writePointAnnotation(
 void ZDvidWriter::writePointAnnotation(
     const std::string &dataName, const ZJsonArray &annotationJson)
 {
-  ZDvidUrl url(getDvidTarget());
+  ZDvidUrl url(getDvidTarget(), m_admin);
+
+  for (size_t i = 0; i < annotationJson.size(); ++i) {
+    ZJsonObject newJson = ZJsonObject(annotationJson.value(i));
+    ZJsonObject oldJson = getDvidReader().readAnnotationJson(
+          dataName, ZDvidAnnotation::GetPosition(newJson));
+    ZDvidAnnotation::UpdateTime(newJson, oldJson);
+  }
 
 #ifdef _DEBUG_
   std::cout << annotationJson.dumpString(0) << std::endl;
@@ -2158,7 +2175,7 @@ void ZDvidWriter::writeSynapse(const ZJsonArray &synapseJson)
 #ifdef _DEBUG_
   std::cout << synapseJson.dumpString(2) << std::endl;
 #endif
-  writeJson(url.getSynapseElementsUrl(), synapseJson);
+  writeJson(ZDvidUrl::AppendSourceQuery(url.getSynapseElementsUrl()), synapseJson);
 }
 
 void ZDvidWriter::moveSynapse(const ZIntPoint &from, const ZIntPoint &to)

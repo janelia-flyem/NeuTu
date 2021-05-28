@@ -1711,6 +1711,7 @@ void C_Stack::drawInteger(Stack *canvas, int n, int dx, int dy, int dz,
 Stack C_Stack::sliceView(const Mc_Stack *stack, int slice, int channel)
 {
   Stack scStack;
+  scStack.text = NULL;
   C_Stack::view(stack, &scStack, channel);
 
   return sliceView(&scStack, slice);

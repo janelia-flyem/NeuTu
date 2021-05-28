@@ -923,6 +923,7 @@ int ZCommandLine::runGeneral()
     ZJsonObject config;
     if (ZFileType::FileType(m_generalConfig) == ZFileType::EFileType::JSON) {
       config.load(m_generalConfig);
+      config.setEntry("_source", m_generalConfig);
     } else {
       if (!config.decode(m_generalConfig, true)) {
         std::cerr << "Invalid config json: " << m_generalConfig << std::endl;

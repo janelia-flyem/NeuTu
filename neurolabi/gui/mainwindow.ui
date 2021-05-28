@@ -79,6 +79,7 @@
      </property>
      <addaction name="actionMask"/>
      <addaction name="actionSWC_Rescaling"/>
+     <addaction name="actionExportSlice"/>
     </widget>
     <widget class="QMenu" name="menuOpen_Recent">
      <property name="statusTip">
@@ -1593,6 +1594,11 @@
   <action name="actionSubtract_Background_Adaptive">
    <property name="text">
     <string>Subtract Background (Adaptive)</string>
+   </property>
+  </action>
+  <action name="actionExportSlice">
+   <property name="text">
+    <string>Current Slice</string>
    </property>
   </action>
  </widget>

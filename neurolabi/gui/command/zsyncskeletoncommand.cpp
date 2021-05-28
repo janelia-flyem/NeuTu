@@ -15,6 +15,7 @@
 
 #include "zjsonobjectparser.h"
 #include "zswctree.h"
+#include "filesystem/utilities.h"
 
 #include "zdvidutil.h"
 #include "dvid/zdvidtarget.h"
@@ -373,8 +374,12 @@ int ZSyncSkeletonCommand::run(
             predefinedBodyList.append(bodyJson);
           }
         } else {
+          std::string sourceFile = ZJsonParser::stringValue(config["_source"]);
           std::string bodyFilePath =
-              ZJsonParser::stringValue(config["bodyList"]);
+              neutu::Absolute(
+                ZJsonParser::stringValue(config["bodyList"]),
+                neutu::ParentPath(sourceFile));
+
           std::ifstream stream(bodyFilePath);
           if (stream.is_open()) {
             ZString line;

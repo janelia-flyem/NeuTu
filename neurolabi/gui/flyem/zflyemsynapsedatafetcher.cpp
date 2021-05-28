@@ -113,7 +113,8 @@ void ZFlyEmSynapseDataFetcher::fetchFunc()
         LINFO() << "Reading synapses: ";
         QElapsedTimer timer;
         timer.start();
-        ZJsonArray data = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
+        ZJsonArray data = m_reader.readJsonArray(
+              ZDvidUrl::AppendSourceQuery(dvidUrl.getSynapseUrl(dataBox)));
         LINFO() << "Synapse reading time: " << timer.elapsed();
 
         {

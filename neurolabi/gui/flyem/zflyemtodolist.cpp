@@ -68,7 +68,8 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
 
   if (!dataBox.isEmpty()) {
     ZDvidUrl dvidUrl(m_dvidTarget);
-    ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getTodoListUrl(dataBox));
+    ZJsonArray obj = m_reader.readJsonArray(
+          ZDvidUrl::AppendSourceQuery(dvidUrl.getTodoListUrl(dataBox)));
 
     for (size_t i = 0; i < obj.size(); ++i) {
       ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);

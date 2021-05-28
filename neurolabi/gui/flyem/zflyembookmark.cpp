@@ -44,8 +44,8 @@ void ZFlyEmBookmark::init()
 
   m_bodyId = 0;
   m_bookmarkType = EBookmarkType::LOCATION;
-  m_isChecked = false;
-  setCustom(false);
+//  m_isChecked = false;
+//  setCustom(false);
 
   m_isInTable = true;
 
@@ -62,7 +62,7 @@ void ZFlyEmBookmark::clear()
 {
   m_bodyId = 0;
   m_bookmarkType = EBookmarkType::LOCATION;
-  m_isChecked = false;
+//  m_isChecked = false;
   setCustom(false);
 //  m_bookmarkRole = ROLE_USER;
 //  m_isCustom = false;
@@ -71,6 +71,7 @@ void ZFlyEmBookmark::clear()
   m_status.clear();
 //  m_time.clear();
   m_tags.clear();
+  m_propJson.clear();
 }
 
 void ZFlyEmBookmark::print() const
@@ -100,6 +101,25 @@ QString ZFlyEmBookmark::getDvidKey() const
   return QString("%1_%2_%3").arg(neutu::iround(getCenter().x())).
       arg(neutu::iround(getCenter().y())).
       arg(neutu::iround(getCenter().z()));
+}
+
+bool ZFlyEmBookmark::isChecked() const
+{
+  return ZJsonObjectParser::GetValue(m_propJson, "checked", "") == "1";
+}
+
+void ZFlyEmBookmark::setChecked(bool checked)
+{
+  if (checked) {
+    m_propJson.setEntry("checked", "1");
+  } else {
+    m_propJson.removeKey("checked");
+  }
+}
+
+bool ZFlyEmBookmark::isCustom() const
+{
+  return ZJsonObjectParser::GetValue(m_propJson, "custom", "") == "1";
 }
 
 ZJsonObject ZFlyEmBookmark::toDvidAnnotationJson() const
@@ -306,7 +326,7 @@ ZJsonObject ZFlyEmBookmark::toJsonObject(bool ignoringComment) const
   location[2] = m_location.getZ();
   */
   obj.setEntry("location", location, 3);
-  obj.setEntry("checked", m_isChecked);
+  obj.setEntry("checked", isChecked());
   if (isCustom()) {
     obj.setEntry("custom", isCustom());
   }
@@ -341,7 +361,13 @@ void ZFlyEmBookmark::setCustom(bool state)
     m_role = ROLE_ASSIGNED;
   }
   */
-  m_isCustom = state;
+//  m_isCustom = state;
+  if (state) {
+    m_propJson.setEntry("custom", "1");
+  } else {
+    m_propJson.removeKey("custom");
+  }
+
   if (state == true) {
     setHitProtocal(ZStackObject::EHitProtocol::HIT_DATA_POS);
   } else {

@@ -56,43 +56,147 @@ FlyEmBodyAnnotationDialog::~FlyEmBodyAnnotationDialog()
   delete ui;
 }
 
-void FlyEmBodyAnnotationDialog::disableWidget(const QString &key)
+void FlyEmBodyAnnotationDialog::registerWidget(
+    const QString &key, QWidget *widget, EWidgetType type,
+    std::function<QVariant()> getter,
+    std::function<void(const QVariant&)> setter)
+{
+  m_widgetMap[key] = ValueManager{widget, type, getter, setter};
+}
+
+void FlyEmBodyAnnotationDialog::registerWidget(
+    const QString &key, QLineEdit *widget)
+{
+  registerWidget(key, widget, EWidgetType::LINE_EDIT);
+}
+
+void FlyEmBodyAnnotationDialog::registerWidget(
+    const QString &key, QComboBox *widget)
+{
+  registerWidget(key, widget, EWidgetType::COMBO_BOX);
+}
+
+void FlyEmBodyAnnotationDialog::registerWidget(
+    const QString &key, QCheckBox *widget)
+{
+  registerWidget(key, widget, EWidgetType::CHECK_BOX);
+}
+
+QWidget* FlyEmBodyAnnotationDialog::getWidget(const QString &key) const
 {
   if (m_widgetMap.contains(key)) {
-    m_widgetMap[key]->setEnabled(false);
+    return m_widgetMap[key].m_widget;
+  }
+
+  return nullptr;
+}
+
+void FlyEmBodyAnnotationDialog::disableWidget(const QString &key)
+{
+  QWidget *widget = getWidget(key);
+  if (widget) {
+    widget->setEnabled(false);
   }
 }
 
 void FlyEmBodyAnnotationDialog::hideWidget(const QString &key)
 {
-  if (m_widgetMap.contains(key)) {
-    m_widgetMap[key]->hide();
+  QWidget *widget = getWidget(key);
+  if (widget) {
+    widget->hide();
   }
 }
 
 void FlyEmBodyAnnotationDialog::initWidgetMap()
 {
-  m_widgetMap[KEY_TYPE] = ui->typeLineEdit;
-  m_widgetMap[KEY_INSTANCE] = ui->instanceLineEdit;
-  m_widgetMap[KEY_COMMENT] = ui->commentLineEdit;
-  m_widgetMap[KEY_MAJOR_INPUT] = ui->majorInputLineEdit;
-  m_widgetMap[KEY_MAJOR_OUTPUT] = ui->majorOutputLineEdit;
-  m_widgetMap[KEY_PRIMARY_NEURITE] = ui->primaryNeuriteLineEdit;
-  m_widgetMap[KEY_OUT_OF_BOUNDS] = ui->outOfBoundsCheckBox;
-  m_widgetMap[KEY_CROSS_MIDLINE] = ui->crossMidlineCheckBox;
-  m_widgetMap[KEY_NEUROTRANSMITTER] = ui->neurotransmitterLineEdit;
-  m_widgetMap[KEY_SYNONYM] = ui->SynonymLineEdit;
-  m_widgetMap[KEY_CLONAL_UNIT] = ui->clonalUnitLineEdit;
-  m_widgetMap[KEY_HEMILINEAGE] = ui->hemilineageEdit;
-  m_widgetMap[KEY_AUTO_TYPE] = ui->autoTypeLineEdit;
-  m_widgetMap[KEY_PROPERTY] = ui->propertyComboBox;
-  m_widgetMap[KEY_STATUS] = ui->statusComboBox;
+  registerWidget(
+        KEY_TYPE, ui->typeLineEdit, EWidgetType::LINE_EDIT, nullptr,
+        [this](const QVariant &value) {
+    this->setType(value.toString().toStdString());
+  });
+  registerWidget(KEY_INSTANCE, ui->instanceLineEdit, EWidgetType::LINE_EDIT, nullptr,
+                 [this](const QVariant &value) {
+    this->setInstance(value.toString().toStdString());
+  });
+  registerWidget(KEY_COMMENT, ui->commentLineEdit);
+  registerWidget(KEY_MAJOR_INPUT, ui->majorInputLineEdit);
+  registerWidget(KEY_MAJOR_OUTPUT, ui->majorOutputLineEdit);
+  registerWidget(KEY_PRIMARY_NEURITE, ui->primaryNeuriteLineEdit);
+  registerWidget(KEY_OUT_OF_BOUNDS, ui->outOfBoundsCheckBox);
+  registerWidget(KEY_CROSS_MIDLINE, ui->crossMidlineCheckBox);
+  registerWidget(KEY_NEUROTRANSMITTER, ui->neurotransmitterLineEdit);
+  registerWidget(KEY_SYNONYM, ui->SynonymLineEdit);
+  registerWidget(KEY_CLONAL_UNIT, ui->clonalUnitLineEdit);
+  registerWidget(KEY_HEMILINEAGE, ui->hemilineageEdit);
+  registerWidget(KEY_AUTO_TYPE, ui->autoTypeLineEdit);
+  registerWidget(KEY_PROPERTY, ui->propertyComboBox);
+  registerWidget(
+        KEY_STATUS, ui->statusComboBox, EWidgetType::COMBO_BOX, nullptr,
+        [this](const QVariant &value) {
+    this->setStatus(value.toString().toStdString());
+  });
 }
 
 void FlyEmBodyAnnotationDialog::initNullStatusItem()
 {
   ui->statusComboBox->clear();
   ui->statusComboBox->addItem("---");
+}
+
+QVariant FlyEmBodyAnnotationDialog::getValue(const QString &key) const
+{
+  if (m_widgetMap.contains(key)) {
+    auto vm = m_widgetMap.value(key);
+    if (vm.m_getter) {
+      return vm.m_getter();
+    }
+
+    switch (vm.m_type) {
+    case EWidgetType::LINE_EDIT:
+      return qobject_cast<QLineEdit*>(vm.m_widget)->text();
+    case EWidgetType::CHECK_BOX:
+      return qobject_cast<QCheckBox*>(vm.m_widget)->isChecked();
+    case EWidgetType::COMBO_BOX:
+      return (qobject_cast<QComboBox*>(vm.m_widget)->currentIndex() > 0) ?
+            qobject_cast<QComboBox*>(vm.m_widget)->currentText() : "";
+    }
+  }
+
+  return QVariant();
+}
+
+void FlyEmBodyAnnotationDialog::setValue(
+    const QString &key, const QVariant &value)
+{
+  if (m_widgetMap.contains(key)) {
+    auto vm = m_widgetMap.value(key);
+    if (vm.m_setter) {
+      vm.m_setter(value);
+    } else {
+      switch (vm.m_type) {
+      case EWidgetType::LINE_EDIT:
+        qobject_cast<QLineEdit*>(vm.m_widget)->setText(value.toString());
+        break;
+      case EWidgetType::CHECK_BOX:
+        qobject_cast<QCheckBox*>(vm.m_widget)->setChecked(value.toBool());
+        break;
+      case EWidgetType::COMBO_BOX:
+      {
+        int index = 0;
+        QString str = value.toString();
+        QComboBox *widget = qobject_cast<QComboBox*>(vm.m_widget);
+        if (!str.isEmpty()) {
+          index = widget->findText(str, Qt::MatchExactly);
+        }
+
+        if (index >= 0) {
+          widget->setCurrentIndex(index);
+        }
+      }
+        break;
+      }
+    }
+  }
 }
 
 void FlyEmBodyAnnotationDialog::setType(const std::string &type)
@@ -122,7 +226,8 @@ bool FlyEmBodyAnnotationDialog::isStatusChanged() const
 
 void FlyEmBodyAnnotationDialog::setComment(const std::string &comment)
 {
-  ui->commentLineEdit->setText(QString::fromStdString(comment));
+  setValue(KEY_COMMENT, QString::fromStdString(comment));
+//  ui->commentLineEdit->setText(QString::fromStdString(comment));
 }
 
 void FlyEmBodyAnnotationDialog::setMajorInput(const std::string &v)
@@ -187,7 +292,6 @@ void FlyEmBodyAnnotationDialog::setAutoType(const std::string &v)
 {
   ui->autoTypeLineEdit->setText(QString::fromStdString(v));
 }
-
 
 uint64_t FlyEmBodyAnnotationDialog::getBodyId() const
 {
@@ -299,7 +403,7 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setPrevNamingUser(annotation.getNamingUser());
   setPrevStatusUser(annotation.getStatusUser());
 
-  setComment(annotation.getComment());
+//  setComment(annotation.getComment());
   setStatus(annotation.getStatus());
   setInstance(annotation.getName());
   setType(annotation.getType());

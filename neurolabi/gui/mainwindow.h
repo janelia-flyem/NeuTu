@@ -529,6 +529,8 @@ private slots:
 
   void on_actionSubtract_Background_Adaptive_triggered();
 
+  void on_actionExportSlice_triggered();
+
 private:
   void createActions();
   void createFileActions();

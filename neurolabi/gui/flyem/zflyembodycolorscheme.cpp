@@ -19,7 +19,7 @@ QColor ZFlyEmBodyColorScheme::getBodyColor(uint64_t bodyId) const
   return GetColorFromCode(getBodyColorCode(bodyId));
 }
 
-int ZFlyEmBodyColorScheme::getBodyColorCodeFromIndex(int index) const
+uint32_t ZFlyEmBodyColorScheme::getBodyColorCodeFromIndex(int index) const
 {
   if (index >= 0 && index < m_colorTable.size()) {
     return m_colorTable[index];

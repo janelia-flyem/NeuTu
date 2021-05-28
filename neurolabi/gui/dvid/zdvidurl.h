@@ -19,7 +19,6 @@ public:
   ZDvidUrl(const ZDvidTarget &target, bool admin = false);
   ZDvidUrl(const ZDvidTarget &target, const std::string &uuid, bool replacing);
 
-
   void setDvidTarget(const ZDvidTarget &target);
   void setDvidTarget(
       const ZDvidTarget &target, const std::string &uuid, bool replacing = true);
@@ -411,6 +410,8 @@ public:
       const std::string &url, const ZIntCuboid &box, bool exact);
   static std::string AppendRangeQuery(
       const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact);
+
+  static std::string AppendSourceQuery(const std::string &url);
 
 private:
   std::string getSplitUrl(

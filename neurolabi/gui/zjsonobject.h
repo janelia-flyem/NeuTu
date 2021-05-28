@@ -215,6 +215,8 @@ public:
   void forEachValue(
       std::function<void(const std::string &key, ZJsonValue)> f) const;
   void forEachValue(std::function<void(ZJsonValue)> f) const;
+  bool all(std::function<bool(const std::string &key, ZJsonValue)> f) const;
+  bool all(std::function<bool(const std::string &key)> f) const;
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

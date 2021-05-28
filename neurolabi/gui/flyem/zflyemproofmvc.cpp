@@ -2558,7 +2558,7 @@ void ZFlyEmProofMvc::startMergeProfile()
   startMergeProfile(29783151, 60000);
 }
 
-void ZFlyEmProofMvc::copyLink(const QString &option)
+void ZFlyEmProofMvc::copyLink(const QString &/*option*/)
 {
   //TODO
   /*

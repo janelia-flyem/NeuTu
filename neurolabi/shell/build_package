@@ -7,9 +7,9 @@ green=`tput setaf 2`
 reset=`tput sgr0`
 
 pkg=$1
-if [[ t$pkg != "tneutu" ]] && [[ t$pkg != "tneu3" ]]
+if [[ "${pkg}" != "neutu" ]] && [[ "${pkg}" != "neu3" ]] && [[ "${pkg}" != "neutube" ]]
 then
-  echo "Usage: build_package <neutu/neu3>"
+  echo "Usage: build_package <neutu/neu3/neutube>"
   exit 1
 fi
 

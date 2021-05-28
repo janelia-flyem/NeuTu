@@ -825,6 +825,19 @@ void ZStackFrame::dragEnterEvent(QDragEnterEvent *event)
   }
 }
 
+void ZStackFrame::exportSlice()
+{
+  ZStack *stack = document()->getStack();
+  if (stack->hasData()) {
+    QString savePath = ZDialogFactory::GetSaveFileName("Save Slice", "", this);
+    if (!savePath.isEmpty()) {
+      Stack slice = C_Stack::sliceView(
+            stack->data(), view()->getCurrentDepth() - stack->getOffset().getZ(), 0);
+      C_Stack::write(savePath.toStdString(), &slice);
+    }
+  }
+}
+
 void ZStackFrame::dropEvent(QDropEvent *event)
 {
   QList<QUrl> urls = event->mimeData()->urls();

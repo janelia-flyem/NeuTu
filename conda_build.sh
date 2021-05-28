@@ -2,7 +2,7 @@
 set -e
 if [ $# == 0 ]
 then
-  echo "Usage: sh conda_build.sh <neutu/neu3/neutu-develop/neu3-develop/neutu-debug/neu3-debug>"
+  echo "Usage: sh conda_build.sh <neutu/neu3/neutu-develop/neu3-develop/neutu-debug/neu3-debug/neutube-develop>"
   exit 1
 fi
 

@@ -4777,6 +4777,15 @@ bool ZStackPresenter::process(ZStackOperator &op)
       buddyDocument()->executeRemoveSelectedObjectCommand();
     }
     break;
+  case ZStackOperator::OP_VIEW_DISABLE_SCROLL:
+    getContextView()->ignoreScroll(true);
+    break;
+  case ZStackOperator::OP_VIEW_ENABLE_SCROLL:
+    getContextView()->ignoreScroll(false);
+    break;
+  case ZStackOperator::OP_VIEW_PAUSE_SCROLL:
+    getContextView()->pauseScroll();
+    break;
   default:
     processed = false;
     break;

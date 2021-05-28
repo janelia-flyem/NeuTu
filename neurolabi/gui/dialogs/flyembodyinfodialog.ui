@@ -607,7 +607,7 @@
      <item>
       <widget class="QPushButton" name="hideButton">
        <property name="text">
-        <string>HIde</string>
+        <string>Hide</string>
        </property>
        <property name="default">
         <bool>true</bool>

@@ -69,7 +69,8 @@ ZIntCuboid ZDvidSynapseEnsemble::updateUnsync(const ZIntCuboid &box)
     ZDvidUrl dvidUrl(m_dvidTarget);
     QElapsedTimer timer;
     timer.start();
-    ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
+    ZJsonArray obj = m_reader.readJsonArray(
+          ZDvidUrl::AppendSourceQuery(dvidUrl.getSynapseUrl(dataBox)));
     LINFO() << "Synapse reading time: " << timer.elapsed();
 
     for (size_t i = 0; i < obj.size(); ++i) {
@@ -333,7 +334,8 @@ bool ZDvidSynapseEnsemble::isReady() const
 void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(label, false));
+  ZJsonArray obj = m_reader.readJsonArray(
+        ZDvidUrl::AppendSourceQuery(dvidUrl.getSynapseUrl(label, false)));
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -995,7 +997,8 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray objArray = m_reader.readJsonArray(
-          dvidUrl.getSynapseUrl(synapse.getPosition(), 1, 1, 1));
+          ZDvidUrl::AppendSourceQuery(
+            dvidUrl.getSynapseUrl(synapse.getPosition(), 1, 1, 1)));
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));

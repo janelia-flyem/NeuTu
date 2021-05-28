@@ -41,6 +41,7 @@ public:
   std::string getType() const;
   std::string getInferredType() const;
   std::string getAutoType() const;
+  int64_t getTimestamp() const;
 //  std::string getAutoName() const;
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
@@ -68,6 +69,15 @@ public:
   void setClonalUnit(const std::string &v);
   void setAutoType(const std::string &v);
   void setProperty(const std::string &v);
+
+  void updateTimestamp();
+
+  /*!
+   * \brief Add a timestamp field to a json object
+   *
+   * This function can be used to update timestamp in an annotation json.
+   */
+  static void UpdateTimeStamp(ZJsonObject &obj);
 
   /*!
    * \brief Load the data from a json string
@@ -132,6 +142,7 @@ public:
   static const char *KEY_CLONAL_UNIT;
   static const char *KEY_AUTO_TYPE;
   static const char *KEY_PROPERTY;
+  static const char *KEY_TIMESTAMP;
 
 private:
   static std::string GetOldFormatKey(const ZJsonObject &obj);
@@ -159,6 +170,7 @@ private:
   std::string m_synonym;
   std::string m_clonalUnit;
   std::string m_autoType;
+  int64_t m_timestamp = 0;
 };
 
 #endif // ZFLYEMBODYANNOTATION_H

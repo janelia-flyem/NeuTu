@@ -48,10 +48,11 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(10, partition.size());
-  for (int i = 1; i <= 10; ++i) {
-    ASSERT_EQ(i, partition[i-1].first);
-    ASSERT_EQ(i, partition[i-1].second);
+
+  ASSERT_EQ(size_t(10), partition.size());
+  for (size_t i = 1; i <= 10; ++i) {
+    ASSERT_EQ(int(i), partition[i-1].first);
+    ASSERT_EQ(int(i), partition[i-1].second);
   }
 
   partition.clear();
@@ -59,10 +60,10 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(10, partition.size());
-  for (int i = 1; i <= 10; ++i) {
-    ASSERT_EQ(i, partition[i-1].first);
-    ASSERT_EQ(i, partition[i-1].second);
+  ASSERT_EQ(size_t(10), partition.size());
+  for (size_t i = 1; i <= 10; ++i) {
+    ASSERT_EQ(int(i), partition[i-1].first);
+    ASSERT_EQ(int(i), partition[i-1].second);
   }
 
   partition.clear();
@@ -70,7 +71,7 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(1, partition.size());
+  ASSERT_EQ(size_t(1), partition.size());
   ASSERT_EQ(1, partition[0].first);
   ASSERT_EQ(10, partition[0].second);
 
@@ -80,10 +81,10 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(10, partition.size());
+  ASSERT_EQ(size_t(10), partition.size());
   for (size_t i = 1; i <= 10; ++i) {
-    ASSERT_EQ(i, partition[i-1].first);
-    ASSERT_EQ(i, partition[i-1].second);
+    ASSERT_EQ(int(i), partition[i-1].first);
+    ASSERT_EQ(int(i), partition[i-1].second);
   }
 
   partition.clear();
@@ -91,7 +92,7 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(2, partition.size());
+  ASSERT_EQ(size_t(2), partition.size());
   ASSERT_EQ(1, partition[0].first);
   ASSERT_EQ(5, partition[0].second);
   ASSERT_EQ(6, partition[1].first);
@@ -102,7 +103,7 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(3, partition.size());
+  ASSERT_EQ(size_t(3), partition.size());
   ASSERT_EQ(1, partition[0].first);
   ASSERT_EQ(4, partition[0].second);
   ASSERT_EQ(5, partition[1].first);
@@ -115,7 +116,7 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(3, partition.size());
+  ASSERT_EQ(size_t(3), partition.size());
   ASSERT_EQ(1, partition[0].first);
   ASSERT_EQ(4, partition[0].second);
   ASSERT_EQ(5, partition[1].first);
@@ -128,17 +129,17 @@ TEST(common, utilities)
     partition.push_back(std::pair<int, int>(x0, x1));
   });
 
-  ASSERT_EQ(300, partition.size());
+  ASSERT_EQ(size_t(300), partition.size());
   ASSERT_EQ(2345, partition[0].first);
   ASSERT_EQ(2455667, partition[partition.size() - 1].second);
   for (size_t i = 1; i < partition.size(); ++i) {
     ASSERT_EQ(partition[i-1].second + 1, partition[i].first);
   }
 
-  ASSERT_EQ(123456, neutu::ToInt64("123456"));
-  ASSERT_EQ(-123456, neutu::ToInt64("-123456"));
-  ASSERT_EQ(123456, neutu::ToUint64("123456"));
-  ASSERT_LE(0, neutu::ToUint64("-123456"));
+  ASSERT_EQ(123456ll, neutu::ToInt64("123456"));
+  ASSERT_EQ(-123456ll, neutu::ToInt64("-123456"));
+  ASSERT_EQ(123456ull, neutu::ToUint64("123456"));
+  ASSERT_LE(0ull, neutu::ToUint64("-123456"));
   ASSERT_EQ(18446744073709550592ull, neutu::ToUint64("18446744073709550592"));
   ASSERT_EQ(-1844674407370955059, neutu::ToInt64("-1844674407370955059"));
 }
@@ -159,6 +160,12 @@ TEST(filesystem, utilities)
   ASSERT_EQ("/test1/test2.tif", neutu::JoinPath("/test1", "test2.tif"));
   ASSERT_EQ("/test1/test2/test3.tif", neutu::JoinPath("/test1", "test2", "test3.tif"));
   ASSERT_EQ("/test1/test2/test3.tif", neutu::JoinPath("/test1/", "test2/", "test3.tif"));
+  ASSERT_EQ("/test1", neutu::Absolute("/test1", "test2.tif"));
+  ASSERT_EQ("/test2/test1", neutu::Absolute("test1", "/test2"));
+  ASSERT_EQ("/test1", neutu::Absolute("/test1", "/test2"));
+  ASSERT_EQ("/test2/../test1", neutu::Absolute("../test1", "/test2"));
+//  std::cout << neutu::Absolute("test1", "test2") << std::endl;
+//  std::cout << neutu::Absolute("test1", "") << std::endl;
 #endif
 }
 

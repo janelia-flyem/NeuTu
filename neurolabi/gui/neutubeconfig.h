@@ -105,6 +105,18 @@ public:
   static void Set3DCrossWidth(int w);
   static int Get3DCrossWidth();
 
+  void setScrollCooldown(int t);
+  int getScrollCooldown() const;
+
+  void useAdaptiveScrollCooldown(bool on);
+  bool adatpiveScrollCooldown() const;
+
+  static void SetScrollCooldown(int t);
+  static int GetScrollCooldown();
+
+  static void UseAdaptiveScrollCooldown(bool on);
+  static bool AdatpiveScrollCooldown();
+
   void setMeshSplitThreshold(size_t thre);
   size_t getMeshSplitThreshold() const;
 
@@ -504,10 +516,16 @@ private:
   bool m_loggingProfile;
   int m_verboseLevel;
   bool m_advancedMode = false;
-  size_t m_meshSplitThreshold = 5000000;
-  int m_3dcrossWidth = 5;
+//  size_t m_meshSplitThreshold = 5000000;
+//  int m_scrollCooldown = 100;
+//  int m_3dcrossWidth = 5;
 
   ZMessageReporter *m_messageReporter; //Obsolete
+
+  static const char *KEY_3D_CROSS_WIDTH;
+  static const char *KEY_MESH_SPLIT_THRE;
+  static const char *KEY_SCROLL_COOLDOWN;
+  static const char *KEY_SCROLL_COOLDOWN_ADAPTIVE;
 
 #ifdef _QT_GUI_USED_
 //  QDebug *m_traceStream;

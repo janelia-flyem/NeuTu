@@ -84,6 +84,12 @@ public:
   }
   void setLocation(const ZIntPoint &pt);
 
+  bool isChecked() const;
+  void setChecked(bool checked);
+
+  bool isCustom() const;
+
+  /*
   bool isChecked() const {
     return m_isChecked;
   }
@@ -96,6 +102,7 @@ public:
   void setChecked(bool checked) {
     m_isChecked = checked;
   }
+  */
 
   QString getDvidKey() const;
 
@@ -160,8 +167,8 @@ private:
 //  ZIntPoint m_location;
   EBookmarkType m_bookmarkType;
 //  EBookmarkRole m_bookmarkRole;
-  bool m_isChecked;
-  bool m_isCustom;
+//  bool m_isChecked;
+//  bool m_isCustom;
   bool m_isInTable;
   ZJsonObject m_propJson;
 //  QString m_decorationText;

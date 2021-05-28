@@ -1199,8 +1199,35 @@ bool ZStackView::isDepthScrollable()
   return m_depthControl->isEnabled();
 }
 
+void ZStackView::ignoreScroll(bool on)
+{
+  m_ignoringScroll = on;
+}
+
+void ZStackView::pauseScroll()
+{
+  m_ignoringScroll = true;
+  m_scrollPausedTime = neutu::GetTimeStamp();
+}
+
 void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
+  if (m_scrollPausedTime > 0) {
+    if (neutu::GetTimeStamp() - m_scrollPausedTime >
+        NeutubeConfig::GetScrollCooldown()) {
+      m_ignoringScroll = false;
+      m_scrollPausedTime = 0;
+    } else {
+#ifdef _DEBUG_
+      std::cout << "Mouse scroll ignored: " << neutu::GetTimeStamp() << " - " << m_scrollPausedTime << std::endl;
+#endif
+    }
+  }
+
+  if (m_ignoringScroll) {
+    return;
+  }
+
   int numSteps = -event->delta();
 
 #ifdef _DEBUG_0
@@ -1237,6 +1264,8 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     numSteps /= 120;
   }
 
+  QElapsedTimer timer;
+  timer.start();
   if (event->modifiers() == Qt::NoModifier ||
       event->modifiers() == Qt::ShiftModifier) {
     if (isDepthScrollable()) {
@@ -1251,9 +1280,6 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
         int step = numSteps * ratio;
 
         imageWidget()->moveCutDepth(step);
-//        m_sliceStrategy->scroll(step);
-//        updateSliceViewParam();
-
         updateDataInfo(event->pos());
       }
       setAttribute(Qt::WA_TransparentForMouseEvents, false);
@@ -1264,6 +1290,11 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
     } else if (numSteps > 0) {
       decreaseZoomRatio(event->pos().x(), event->pos().y());
     }
+  }
+
+  auto delay = timer.elapsed();
+  if (!NeutubeConfig::AdatpiveScrollCooldown() || delay > 100) {
+    pauseScroll();
   }
 }
 

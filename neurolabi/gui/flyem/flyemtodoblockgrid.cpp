@@ -223,7 +223,7 @@ bool FlyEmTodoBlockGrid::setExistingSelection(const ZIntPoint &itemPos, bool sel
 std::vector<ZFlyEmToDoItem> FlyEmTodoBlockGrid::getIntersectTodoList(
     const ZAffineRect &plane) const
 {
-
+  return std::vector<ZFlyEmToDoItem>();
 }
 */
 #endif

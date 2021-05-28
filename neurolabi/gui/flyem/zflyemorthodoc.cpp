@@ -136,7 +136,8 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
       ZDvidUrl dvidUrl(getDvidTarget());
       QElapsedTimer timer;
       timer.start();
-      ZJsonArray obj = getDvidReader().readJsonArray(dvidUrl.getSynapseUrl(box));
+      ZJsonArray obj = getDvidReader().readJsonArray(
+            ZDvidUrl::AppendSourceQuery(dvidUrl.getSynapseUrl(box)));
       LINFO() << "Synapse reading time: " << timer.elapsed();
 
       QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();

@@ -40,47 +40,47 @@ TEST(ZDvidLabelSlice, Selection)
   }
 
   merger->pushMap(2, 3);
-  ASSERT_EQ(4, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
-  ASSERT_EQ(2, slice.getSelected(neutu::ELabelSource::MAPPED).size());
+  ASSERT_EQ(size_t(4), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(2), slice.getSelected(neutu::ELabelSource::MAPPED).size());
 
   merger->pushMap(100, 200);
   merger->pushMap(150, 200);
   slice.addSelection(
         std::vector<uint64_t>({200, 300}), neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(8, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
-  ASSERT_EQ(4, slice.getSelected(neutu::ELabelSource::MAPPED).size());
+  ASSERT_EQ(size_t(8), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(4), slice.getSelected(neutu::ELabelSource::MAPPED).size());
 
   slice.addSelection(100, neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(8, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
-  ASSERT_EQ(4, slice.getSelected(neutu::ELabelSource::MAPPED).size());
+  ASSERT_EQ(size_t(8), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(4), slice.getSelected(neutu::ELabelSource::MAPPED).size());
 
   slice.addSelection(std::vector<uint64_t>({100}), neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(8, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
-  ASSERT_EQ(4, slice.getSelected(neutu::ELabelSource::MAPPED).size());
+  ASSERT_EQ(size_t(8), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(4), slice.getSelected(neutu::ELabelSource::MAPPED).size());
 
   slice.xorSelection(1, neutu::ELabelSource::ORIGINAL);
-  ASSERT_EQ(7, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(7), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_FALSE(slice.isBodySelected(1, neutu::ELabelSource::ORIGINAL));
 
   slice.xorSelection(1, neutu::ELabelSource::ORIGINAL);
-  ASSERT_EQ(8, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(8), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_TRUE(slice.isBodySelected(1, neutu::ELabelSource::ORIGINAL));
 
   slice.xorSelection(200, neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(5, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(5), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_FALSE(slice.isBodySelected(100, neutu::ELabelSource::ORIGINAL));
 
   slice.xorSelection(200, neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(8, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(8), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_TRUE(slice.isBodySelected(100, neutu::ELabelSource::ORIGINAL));
 
   slice.xorSelection(std::vector<uint64_t>({200}), neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(5, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(5), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_FALSE(slice.isBodySelected(100, neutu::ELabelSource::ORIGINAL));
 
   slice.xorSelectionGroup(
         std::vector<uint64_t>({200, 200}), neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(8, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(8), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_TRUE(slice.isBodySelected(100, neutu::ELabelSource::ORIGINAL));
 
   std::cout << neutu::ToString(slice.getSelected(neutu::ELabelSource::ORIGINAL),
@@ -88,7 +88,7 @@ TEST(ZDvidLabelSlice, Selection)
 
   slice.xorSelection(
         std::vector<uint64_t>({1, 100, 500}), neutu::ELabelSource::ORIGINAL);
-  ASSERT_EQ(3, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(3), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_FALSE(slice.isBodySelected(100, neutu::ELabelSource::ORIGINAL));
   ASSERT_TRUE(slice.isBodySelected(500, neutu::ELabelSource::ORIGINAL));
 
@@ -103,14 +103,14 @@ TEST(ZDvidLabelSlice, Selection)
 //                 slice.getSelected(neutu::ELabelSource::ORIGINAL), ", ")
 //            << std::endl;
 
-  ASSERT_EQ(5, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(5), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
   ASSERT_TRUE(slice.isBodySelected(100, neutu::ELabelSource::ORIGINAL));
   ASSERT_TRUE(slice.isBodySelected(500, neutu::ELabelSource::ORIGINAL));
 
   slice.setSelection(
         std::vector<uint64_t>({200, 300}), neutu::ELabelSource::MAPPED);
-  ASSERT_EQ(4, slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
-  ASSERT_EQ(2, slice.getSelected(neutu::ELabelSource::MAPPED).size());
+  ASSERT_EQ(size_t(4), slice.getSelected(neutu::ELabelSource::ORIGINAL).size());
+  ASSERT_EQ(size_t(2), slice.getSelected(neutu::ELabelSource::MAPPED).size());
 
 //  merger->print();
   slice.startSelection();
@@ -119,7 +119,7 @@ TEST(ZDvidLabelSlice, Selection)
   slice.endSelection();
 
   ASSERT_TRUE(slice.getSelector().getSelectedSet().empty());
-  ASSERT_EQ(3, slice.getSelector().getDeselectedSet().size());
+  ASSERT_EQ(size_t(3), slice.getSelector().getDeselectedSet().size());
 
   /*
   std::cout << neutu::ToString(
