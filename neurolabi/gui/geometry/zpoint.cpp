@@ -16,6 +16,7 @@
 #include "tz_coordinate_3d.h"
 #include "tz_geo3d_utils.h"
 
+#include "neulib/math/utilities.h"
 #include "common/math.h"
 #include "zintpoint.h"
 #include "zgeometry.h"
@@ -404,11 +405,6 @@ ZIntPoint ZPoint::toIntPoint() const
         neulib::ifloor(x()), neulib::ifloor(y()), neulib::ifloor(z()));
 }
 
-ZIntPoint ZPoint::roundToIntPoint() const
-{
-  return ZIntPoint(neutu::nround(x()), neutu::nround(y()), neutu::nround(z()));
-}
-
 ZPoint ZPoint::rounded() const
 {
   return ZPoint(neutu::nround(x()), neutu::nround(y()), neutu::nround(z()));
@@ -428,6 +424,11 @@ std::vector<double> ZPoint::toArray() const
 void ZPoint::flipZ()
 {
   m_z = -m_z;
+}
+
+ZIntPoint ZPoint::roundToIntPoint() const
+{
+  return ZIntPoint(neulib::nround(x()), neulib::nround(y()), neulib::nround(z()));
 }
 
 void ZPoint::rotate(double theta, double psi)

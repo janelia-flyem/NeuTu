@@ -35,7 +35,7 @@ TEST(FlyEmTodoBlockGrid, Source)
   {
     ZFlyEmToDoItem item = grid.getItem({160, 160, 160});
     ASSERT_FALSE(item.isValid());
-    source->saveItem(ZFlyEmToDoItem(1160, 160, 160));
+    source->saveItem(ZFlyEmToDoItem(160, 160, 160));
     ASSERT_FALSE(grid.getItem({160, 160, 160}).isValid());
     grid.syncItemToCache({160, 160, 160});
     ASSERT_TRUE(grid.getItem({160, 160, 160}).isValid());
