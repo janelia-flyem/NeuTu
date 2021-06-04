@@ -437,9 +437,10 @@ void ZFlyEmBodyAnnotation::UpdateTimeStamp(ZJsonObject &obj)
   obj.setEntry(KEY_TIMESTAMP, neutu::GetTimeStamp());
 }
 
-/*member dependent*/
 void ZFlyEmBodyAnnotation::print() const
 {
+  toJsonObject().print();
+  /*
   std::cout << "Body annotation:" << std::endl;
   std::cout << "  Body ID: " << m_bodyId << std::endl;
   std::cout << "  Type: " << m_type << std::endl;
@@ -459,6 +460,7 @@ void ZFlyEmBodyAnnotation::print() const
   std::cout << "  Neurotransmitter: " << m_neurotransmitter << std::endl;
   std::cout << "  Hemilineage" << m_hemilineage << std::endl;
   std::cout << "  Synonym: " << m_synonym << std::endl;
+  */
 }
 
 /*member dependent*/

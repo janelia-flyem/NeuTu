@@ -62,6 +62,7 @@ TEST(ZDvidTarget, Basic)
     ASSERT_EQ("bodies", target.getBodyLabelName());
     ASSERT_EQ("bodyinfo", target.getBodyInfoName());
     ASSERT_EQ("skeletons", target.getSkeletonName());
+    ASSERT_EQ("annotations", target.getBodyAnnotationName());
 
     target.setBodyLabelName("bodies2");
     ASSERT_EQ("bodies2", target.getBodyLabelName());

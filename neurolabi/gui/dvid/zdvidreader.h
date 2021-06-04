@@ -307,15 +307,19 @@ public:
 
   std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth,
-      bool ignoringZero = true);
+      bool ignoringZero = true) const;
+  std::set<uint64_t> readBodyId(
+      const ZAffineRect &rect, bool ignoringZero = true) const;
   std::set<uint64_t> readBodyId(const ZIntPoint &firstCorner,
                                 const ZIntPoint &lastCorner,
-                                bool ignoringZero = true);
+                                bool ignoringZero = true) const;
   std::set<uint64_t> readBodyId(
-      const ZIntCuboid &range, int zoom, bool ignoringZero = true);
-  std::set<uint64_t> readBodyId(size_t minSize);
-  std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize);
-  std::set<uint64_t> readBodyId(const ZDvidFilter &filter);
+      const ZIntCuboid &range, int zoom, bool ignoringZero = true) const;
+  std::set<uint64_t> readBodyId(
+      const ZIntCuboid &range, int zoom, size_t minBodySize, bool ignoringZero) const;
+  std::set<uint64_t> readBodyId(size_t minSize) const;
+  std::set<uint64_t> readBodyId(size_t minSize, size_t maxSize) const;
+  std::set<uint64_t> readBodyId(const ZDvidFilter &filter) const;
   std::set<uint64_t> readAnnnotatedBodySet();
 
   bool hasKey(const QString &dataName, const QString &key) const;
@@ -395,15 +399,14 @@ public:
   /*!
    * (\a x0, \a y0, \a z0) is the retrieval center.
    */
-  ZArray *readLabels64Lowtis(int x0, int y0, int z0, double vx1, double vy1, double vz1,
+  ZArray* readLabels64Lowtis(int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
       int width, int height, int zoom, int cx, int cy, bool centerCut) const;
-  ZArray *readLabels64Lowtis(
+  ZArray* readLabels64Lowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
       int width, int height, int zoom, int cx, int cy, bool centerCut) const;
-  ZArray *readLabels64Lowtis(
+  ZArray* readLabels64Lowtis(
       const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
-
 
   //Read grayscale data
   ZStack *readGrayScaleLowtis(int x0, int y0, int z0,
@@ -451,8 +454,8 @@ public:
   std::vector<size_t> readBodySize(
       const std::vector<uint64_t> &bodyArray, neutu::EBodyLabelType type) const;
 
-  std::tuple<size_t, size_t, ZIntCuboid> readBodySizeInfo(
-      uint64_t bodyId, neutu::EBodyLabelType type) const;
+  std::tuple</*voxelCount=*/size_t, /*blockCount=*/size_t, /*range=*/ZIntCuboid>
+  readBodySizeInfo( uint64_t bodyId, neutu::EBodyLabelType type) const;
 
   int64_t readBodyMutationId(uint64_t bodyId) const;
 

@@ -126,6 +126,7 @@ public:
   void rotate(double theta, double psi, const ZPoint &center);
 
   ZIntPoint toIntPoint() const;
+  ZIntPoint roundToIntPoint() const;
 
   friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);
 

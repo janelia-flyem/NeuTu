@@ -14,6 +14,7 @@
 #include "tz_coordinate_3d.h"
 #include "tz_geo3d_utils.h"
 
+#include "neulib/math/utilities.h"
 #include "common/math.h"
 #include "zintpoint.h"
 #include "zgeometry.h"
@@ -384,6 +385,11 @@ ZPoint ZPoint::operator - () const
 ZIntPoint ZPoint::toIntPoint() const
 {
   return ZIntPoint(neutu::iround(x()), neutu::iround(y()), neutu::iround(z()));
+}
+
+ZIntPoint ZPoint::roundToIntPoint() const
+{
+  return ZIntPoint(neulib::nround(x()), neulib::nround(y()), neulib::nround(z()));
 }
 
 void ZPoint::rotate(double theta, double psi)
