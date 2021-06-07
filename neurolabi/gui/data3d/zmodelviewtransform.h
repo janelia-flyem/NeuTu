@@ -58,6 +58,7 @@ public:
   bool rightHanded() const;
 
   void moveCutDepth(double d);
+  void addCutDepth(double d);
   void setCutDepth(const ZPoint &startPlane, double d);
   double getCutDepth(const ZPoint &startPlane) const;
 

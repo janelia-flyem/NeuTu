@@ -199,6 +199,11 @@ void ZModelViewTransform::moveCutDepth(double d)
   m_cutPlane.addOffset(m_rightHanded ? d : -d, getSliceAxis());
 }
 
+void ZModelViewTransform::addCutDepth(double d)
+{
+  m_cutPlane.addOffset(d, getSliceAxis());
+}
+
 double ZModelViewTransform::getCutDepth(const ZPoint &startPlane) const
 {
   double d = 0.0;

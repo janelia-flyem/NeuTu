@@ -1736,7 +1736,7 @@ void ZImageWidget::moveCutDepth(double dz)
   }
 
   if (dz != 0.0) {
-    m_sliceViewTransform.moveCutDepth(dz);
+    m_sliceViewTransform.addCutDepth(dz);
     notifyTransformChanged();
   }
 }

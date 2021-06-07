@@ -120,6 +120,7 @@ public:
   void setScaleFixingCanvasMapped(double s, double a, double b);
 
   void moveCutDepth(double z);
+  void addCutDepth(double z);
   void setCutDepth(const ZPoint &startPlane, double d);
   double getCutDepth(const ZPoint &startPlane) const;
 

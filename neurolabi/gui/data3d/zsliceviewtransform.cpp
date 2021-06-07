@@ -191,6 +191,11 @@ void ZSliceViewTransform::moveCutDepth(double z)
   m_modelViewTransform.moveCutDepth(z);
 }
 
+void ZSliceViewTransform::addCutDepth(double z)
+{
+  m_modelViewTransform.addCutDepth(z);
+}
+
 void ZSliceViewTransform::setCutDepth(const ZPoint &startPlane, double d)
 {
   m_modelViewTransform.setCutDepth(startPlane, d);

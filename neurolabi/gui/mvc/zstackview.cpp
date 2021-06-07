@@ -3585,6 +3585,11 @@ void ZStackView::processDepthSliderValueChange(int sliceIndex)
     double prevDepth = imageWidget()->getCutDepth();
 //        imageWidget()->getCutCenter().getValue(getSliceAxis());
     imageWidget()->moveCutDepth(sliceIndex - prevDepth);
+#ifdef _DEBUG_
+    std::cout << "🦋 " << "slice index: " << sliceIndex
+              << "; prev depth: " << prevDepth
+              << "; new depth: " << imageWidget()->getCutDepth() << std::endl;
+#endif
 //  }
 //  imageWidget()->setCutCenter(0, 0, sliceIndex);
   /*
