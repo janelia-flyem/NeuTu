@@ -651,12 +651,17 @@ private:
 
   void updateBodyMessage(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annot);
+  void updateBodyMessage(
+      uint64_t bodyId, const ZJsonObject &annot);
   void updateSupervoxelMessge(uint64_t bodyId);
   void setSelectedBodyStatus(const std::string &status);
 //  void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void annotateBody(
       uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation,
       const ZFlyEmBodyAnnotation &oldAnnotation);
+  void annotateBody(
+      uint64_t bodyId, const ZJsonObject &annotation,
+      const ZJsonObject &oldAnnotation);
   void warnAbouBodyLockFail(uint64_t bodyId);
 //  NeuPrintReader *getNeuPrintReader();
 
@@ -670,6 +675,10 @@ private:
   bool requestingSplitResult(const QString &title);
 
   void prepareWindow(Z3DWindow *window);
+
+private:
+  template<typename T>
+  void updateBodyMessageG(uint64_t bodyId, const T &annot);
 
 protected:
   bool m_showSegmentation;

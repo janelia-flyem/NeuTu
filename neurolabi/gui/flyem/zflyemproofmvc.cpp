@@ -130,6 +130,7 @@
 #include "dialogs/tipdetectordialog.h"
 #include "dialogs/neuprintdatasetdialog.h"
 #include "dialogs/neuroglancerlinkdialog.h"
+#include "dialogs/zgenericbodyannotationdialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -3104,29 +3105,34 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 //  emit highlightModeEnabled(hl);
 }
 
-void ZFlyEmProofMvc::updateBodyMessage(
-    uint64_t bodyId, const ZFlyEmBodyAnnotation &annot)
+template<typename T>
+void ZFlyEmProofMvc::updateBodyMessageG(uint64_t bodyId, const T &annot)
 {
   ZWidgetMessage msg("", neutu::EMessageType::INFORMATION,
                      ZWidgetMessage::TARGET_CUSTOM_AREA);
-  /*
-  if (annot.isEmpty()) {
-    msg.setMessage(QString("%1 is not annotated.").arg(bodyId));
-  } else {
-    msg.setMessage(annot.toString().c_str());
-  }
-  */
 
   if (annot.isEmpty()) {
     msg.setMessage(QString("%1 is not annotated.").arg(bodyId));
   } else {
-    QString str = QString::fromStdString(annot.toString());
+    QString str = QString::fromStdString(ZFlyEmBodyAnnotation::Brief(bodyId, annot));
     if (!getCompleteDocument()->isMergable(annot)) {
       str = "<font color=\"#FF0000\">" + str + "</font>";
     }
     msg.setMessage(str);
   }
   emit messageGenerated(msg);
+}
+
+void ZFlyEmProofMvc::updateBodyMessage(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annot)
+{
+  return updateBodyMessageG(bodyId, annot);
+}
+
+void ZFlyEmProofMvc::updateBodyMessage(
+    uint64_t bodyId, const ZJsonObject &annot)
+{
+  return updateBodyMessageG(bodyId, annot);
 }
 
 void ZFlyEmProofMvc::updateSupervoxelMessge(uint64_t bodyId)
@@ -3730,6 +3736,17 @@ void ZFlyEmProofMvc::annotateBody(
   }
 }
 
+void ZFlyEmProofMvc::annotateBody(
+    uint64_t bodyId, const ZJsonObject &annotation,
+    const ZJsonObject &oldAnnotation)
+{
+  if (ZFlyEmProofUtil::AnnotateBody(
+        bodyId, annotation, oldAnnotation, getCompleteDocument(), this)) {
+    updateBodyMessage(bodyId, annotation);
+    updateViewButton();
+  }
+}
+
 void ZFlyEmProofMvc::warn(const QString &msg)
 {
   emit messageGenerated(
@@ -3758,26 +3775,39 @@ void ZFlyEmProofMvc::warnAbouBodyLockFail(uint64_t bodyId)
 
 void ZFlyEmProofMvc::annotateSelectedBody()
 {
+  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+  if (!reader.isReady()) {
+    emit errorGenerated("Invalid DVID reader.");
+    return;
+  }
+
   std::set<uint64_t> bodyIdArray =
       getCurrentSelectedBodyId(neutu::ELabelSource::ORIGINAL);
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
-        FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
-        dlg->updateStatusBox();
-        dlg->updatePropertyBox();
-        dlg->setBodyId(bodyId);
-        ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-        ZFlyEmBodyAnnotation annotation;
-        if (reader.isReady()) {
-          annotation =
-              FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
-          dlg->loadBodyAnnotation(annotation);
-        }
+        ZGenericBodyAnnotationDialog *genericDlg =
+            m_dlgManager->getGenericAnnotationDlg();
+        if (genericDlg) {
+          ZJsonObject oldAnnotation = reader.readBodyAnnotationJson(bodyId);
+          genericDlg->loadJsonObject(oldAnnotation);
+          if (genericDlg->exec()) {
+            annotateBody(bodyId, genericDlg->toJsonObject(), oldAnnotation);
+          }
+        } else {
+          FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
+          dlg->updateStatusBox();
+          dlg->updatePropertyBox();
+          dlg->setBodyId(bodyId);
 
-        if (dlg->exec() && dlg->getBodyId() == bodyId) {
-          annotateBody(bodyId, dlg->getBodyAnnotation(), annotation);
+          ZFlyEmBodyAnnotation annotation =
+                FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+          dlg->loadBodyAnnotation(annotation);
+
+          if (dlg->exec() && dlg->getBodyId() == bodyId) {
+            annotateBody(bodyId, dlg->getBodyAnnotation(), annotation);
+          }
         }
 
         checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
@@ -7160,10 +7190,12 @@ void ZFlyEmProofMvc::updateViewButton()
           getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
       if (bodySet.size() == 1) {
         uint64_t bodyId = *(bodySet.begin());
-        ZFlyEmBodyAnnotation annot =
-            getCompleteDocument()->getRecordedAnnotation(bodyId);
-        if (annot.getBodyId() == bodyId) {
-          ZString status(annot.getStatus());
+        ZString status(
+              getCompleteDocument()->getRecordedAnnotationStatus(bodyId));
+//        ZFlyEmBodyAnnotation annot =
+//            getCompleteDocument()->getRecordedAnnotation(bodyId);
+//        if (annot.getBodyId() == bodyId) {
+//          ZString status(annot.getStatus());
           status.toLower();
           int rank = getCompleteDocument()->getBodyStatusRank(status);
           auto pred = [&, this](
@@ -7185,7 +7217,7 @@ void ZFlyEmProofMvc::updateViewButton()
                 pred("roughly traced"));
           getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
                 pred("traced"));
-        }
+//        }
       } else {
         getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
         getViewButton(EViewButton::ANNOTATE_TRACED)->hide();

@@ -81,6 +81,16 @@ ZFlyEmNeuronBodyInfo FlyEmDataReader::ReadBodyInfo(
   return bodyInfo;
 }
 
+ZJsonObject FlyEmDataReader::ReadGenericBodyAnnotation(
+    const ZDvidReader &reader, uint64_t bodyId)
+{
+  if (reader.getDvidTarget().hasBodyLabel()) {
+    return reader.readBodyAnnotationJson(bodyId);
+  }
+
+  return ZJsonObject();
+}
+
 ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
     const ZDvidReader &reader, uint64_t bodyId)
 {

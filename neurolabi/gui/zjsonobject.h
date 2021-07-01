@@ -70,6 +70,7 @@ public:
    * The reference count of \a obj will be increased after the function call.
    */
   ZJsonObject& setEntry(const char *key, json_t *obj);
+  ZJsonObject& setEntry(const std::string &key, json_t *obj);
 
   /*!
    * \brief Set an entry without increasing the reference count
@@ -84,6 +85,7 @@ public:
   ZJsonObject& setEntry(const char *key, const std::string &value);
   ZJsonObject& setEntry(const char *key, const char *value);
   ZJsonObject& setEntry(const std::string &key, const std::string &value);
+  ZJsonObject& setEntry(const std::string &key, const char *value);
 
   /*!
    * \brief Set an entry to a string array
@@ -128,6 +130,7 @@ public:
    * \brief setEntry Set an entry of the object with a boolean
    */
   ZJsonObject& setEntry(const char *key, bool v);
+  ZJsonObject& setEntry(const std::string &key, bool v);
 
   /*!
    * \brief Set the entry if the value is true.

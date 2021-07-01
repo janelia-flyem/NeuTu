@@ -24,7 +24,7 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
   void prepareNameMap();
   void prepareNameMap(const ZJsonValue &bodyInfoObj);
-  void updateNameMap(const ZFlyEmBodyAnnotation &annotation);
+//  void updateNameMap(const ZFlyEmBodyAnnotation &annotation);
   void updateNameMap(uint64_t bodyId, const QString &name);
 
   QHash<uint64_t, int> getColorIndexMap() const override;

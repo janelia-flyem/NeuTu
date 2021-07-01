@@ -109,7 +109,7 @@ public:
       const ZFlyEmBodyAnnotation &annotation,
       const std::function<int(const std::string&)> &getStatusRank);
 
-  std::string toString() const;
+  std::string brief(uint64_t bodyId = 0) const;
 
   bool isFinalized() const;
 
@@ -118,6 +118,24 @@ public:
 
 public:
   static int GetStatusRank(const std::string &status);
+  static std::string GetName(const ZJsonObject &obj);
+  static std::string GetStatus(const ZJsonObject &obj);
+  static uint64_t GetBodyId(const ZJsonObject &obj);
+  static std::string GetType(const ZJsonObject &obj);
+
+  static std::string GetName(const ZFlyEmBodyAnnotation &obj);
+  static std::string GetStatus(const ZFlyEmBodyAnnotation &obj);
+  static std::string GetType(const ZFlyEmBodyAnnotation &obj);
+
+  static void SetStatus(ZJsonObject &obj, const std::string &status);
+  static void SetBodyId(ZJsonObject &obj, const uint64_t bodyId);
+
+  static std::string Brief(uint64_t bodyId, const ZJsonObject &obj);
+  static std::string Brief(uint64_t bodyId, const ZFlyEmBodyAnnotation &obj);
+
+  static ZJsonObject MergeAnnotation(
+      const ZJsonObject &target, const ZJsonObject &source,
+      const std::function<int(const std::string&)>& getStatusRank);
 
   static const char *KEY_BODY_ID;
   static const char *KEY_STATUS;

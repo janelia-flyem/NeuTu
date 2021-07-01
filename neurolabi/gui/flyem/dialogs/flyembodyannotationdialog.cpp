@@ -547,7 +547,7 @@ void FlyEmBodyAnnotationDialog::setDefaultStatusList(
 
 void FlyEmBodyAnnotationDialog::addAdminStatus(const QString &status)
 {
-  m_adminSatutsList.insert(status);
+  m_adminStatusSet.insert(status);
 }
 
 void FlyEmBodyAnnotationDialog::updateStatusBox()
@@ -577,7 +577,7 @@ void FlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->addItem(status.c_str());
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
-    if (m_adminSatutsList.contains(status.c_str())) {
+    if (m_adminStatusSet.contains(status.c_str())) {
       ui->statusComboBox->setEnabled(m_isAdmin);
     }
   }

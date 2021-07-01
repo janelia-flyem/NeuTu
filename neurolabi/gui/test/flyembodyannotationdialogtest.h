@@ -25,8 +25,8 @@ TEST(FlyEmBodyAnnotationDialog, Basic)
         "}");
   dlg.loadBodyAnnotation(annotation);
   ASSERT_EQ(annotation, dlg.getBodyAnnotation())
-      << annotation.toString()
-      << dlg.getBodyAnnotation().toString();
+      << annotation.brief()
+      << dlg.getBodyAnnotation().brief();
   ASSERT_TRUE(annotation.hasSameUserStatus(dlg.getBodyAnnotation()));
 
   annotation.loadJsonString(

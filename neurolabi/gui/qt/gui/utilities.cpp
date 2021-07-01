@@ -131,6 +131,20 @@ void neutu::DrawText(QPainter &painter, const QPoint &pos, const QStringList &te
 
 void neutu::HideLayout(QLayout *layout, bool removing)
 {
+  ClearLayout(layout, [&](QLayoutItem*item) {
+    if (removing) {
+      layout->removeItem(item);
+    }
+  });
+
+  if (layout) {
+    layout->setSizeConstraint(QLayout::SetNoConstraint);
+  }
+}
+
+void neutu::ClearLayout(
+    QLayout *layout,  std::function<void(QLayoutItem*)> processChild)
+{
   if (layout) {
     for (int i = 0; i < layout->count(); ++i) {
       QLayoutItem *item = layout->itemAt(i);
@@ -138,11 +152,28 @@ void neutu::HideLayout(QLayout *layout, bool removing)
       if (widget) {
         widget->hide();
       }
-      if (removing) {
-        layout->removeItem(item);
+      if (processChild) {
+        processChild(item);
       }
     }
+  }
+}
 
-    layout->setSizeConstraint(QLayout::SetNoConstraint);
+void neutu::ClearLayout(QLayout *layout)
+{
+  if (layout) {
+    for (int i = 0; i < layout->count(); ++i) {
+      QLayoutItem *item = layout->itemAt(i);
+      QWidget *widget = item->widget();
+      if (widget) {
+        widget->hide();
+        widget->deleteLater();
+      }
+      QLayout *layout = item->layout();
+      if (layout) {
+        ClearLayout(layout);
+        layout->deleteLater();
+      }
+    }
   }
 }

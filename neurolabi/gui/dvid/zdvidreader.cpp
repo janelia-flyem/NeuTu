@@ -5932,6 +5932,14 @@ ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
         with_source_query(url.getBodyAnnotationUrl(bodyId)).c_str());
 }
 
+ZJsonObject ZDvidReader::readBodyAnnotationSchema() const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonObject(
+        with_source_query(url.getBodyAnnotationSchemaUrl()).c_str());
+}
+
 namespace {
 
 bool is_valid_buffer(const QByteArray &buffer)

@@ -36,7 +36,7 @@ class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
 class ZFlyEmTodoFilterDialog;
-class ZFlyEmBodyAnnotationProtocal;
+class ZFlyEmBodyAnnotationProtocol;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -157,7 +157,7 @@ public:
 
   ZFlyEmProofDoc* getDataDocument() const;
 //  bool isAdmin() const;
-  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
+  const ZFlyEmBodyAnnotationProtocol& getBodyStatusProtocol() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
 //  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);

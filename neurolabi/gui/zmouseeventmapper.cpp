@@ -274,7 +274,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       if (dataBox.contains(dataPos.toIntPoint())) {
         //        if (m_doc->getStack()->containsRaw(rawStackPosition)) {
         bool hitTestOn =
-            (/*m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||*/
+            (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_ADD_NODE ||
              m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_CONNECT ||
              m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_EXTEND ||
              m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
@@ -282,14 +282,19 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
         if (hitTestOn) {
           hitTest(op, event);
           bool selectionOn =
-              ((/*m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT ||*/
+              ((m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_ADD_NODE ||
                 m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF) &&
                m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF);
 
           if (selectionOn) {
             if (op.getHitObject() != NULL) {
               if (op.getHitObject()->isSelectable()) {
-                processSelectionOperation(op, event);
+                if (m_context->swcEditMode() == ZInteractiveContext::SWC_EDIT_ADD_NODE) {
+                  selectionOn = (op.getHitObject()->getType() == ZStackObject::EType::SWC);
+                }
+                if (selectionOn) {
+                  processSelectionOperation(op, event);
+                }
               }
             }
           }

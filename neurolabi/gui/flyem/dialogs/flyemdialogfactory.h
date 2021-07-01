@@ -6,6 +6,8 @@
 //class ZFlyEmBodyAnnotationDialog;
 class ZFlyEmProofDoc;
 class FlyEmBodyAnnotationDialog;
+class ZGenericBodyAnnotationDialog;
+class ZJsonObject;
 
 class FlyEmDialogFactory
 {
@@ -16,6 +18,8 @@ public:
 //      ZFlyEmProofDoc *doc, QWidget *parent);
   static FlyEmBodyAnnotationDialog* MakeBodyAnnotationDialog(
       ZFlyEmProofDoc *doc, QWidget *parent);
+  static ZGenericBodyAnnotationDialog* MakeBodyAnnotaitonDialog(
+      ZFlyEmProofDoc *doc, ZJsonObject config, QWidget *parent);
 };
 
 

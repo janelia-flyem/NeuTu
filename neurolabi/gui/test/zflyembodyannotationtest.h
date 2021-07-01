@@ -7,6 +7,7 @@
 #include "flyem/zflyembodyannotationprotocol.h"
 #include "neutubeconfig.h"
 #include "zjsonobjectparser.h"
+#include "flyem/zflyemproofutil.h"
 
 #ifdef _USE_GTEST_
 
@@ -161,9 +162,84 @@ TEST(ZFlyEmBodyAnnotation, merge)
   ASSERT_EQ(uint64_t(1), annotation1.getBodyId());
 }
 
+TEST(ZFlyEmBodyAnnotation, mergeJson)
+{
+  ZJsonObject annotation1;
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, 1);
+  ZJsonObject annotation2;
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, 2);
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS, "Orphan");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS, "");
+
+  annotation1 = ZFlyEmBodyAnnotation::MergeAnnotation(
+        annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Orphan", ZFlyEmBodyAnnotation::GetStatus(annotation1));
+  ASSERT_EQ(1, int(ZJsonObjectParser::GetValue(
+                     annotation1, ZFlyEmBodyAnnotation::KEY_BODY_ID, 0)));
+
+  ZFlyEmBodyAnnotation::SetStatus(annotation1, "Orphan");
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Orphan hotknife");
+  annotation1 = ZFlyEmBodyAnnotation::MergeAnnotation(
+        annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Orphan hotknife", ZFlyEmBodyAnnotation::GetStatus(annotation1));
+  ASSERT_EQ(1, int(ZFlyEmBodyAnnotation::GetBodyId(annotation1)));
+
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Leaves");
+  annotation1 = ZFlyEmBodyAnnotation::MergeAnnotation(
+        annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Leaves", ZFlyEmBodyAnnotation::GetStatus(annotation1));
+  ASSERT_EQ(uint64_t(1), ZFlyEmBodyAnnotation::GetBodyId(annotation1));
+
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Hard to trace");
+  annotation1 = ZFlyEmBodyAnnotation::MergeAnnotation(
+        annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Hard to trace", ZFlyEmBodyAnnotation::GetStatus(annotation1));
+
+  ZFlyEmBodyAnnotation::SetStatus(annotation1, "Not examined");
+  annotation1 = ZFlyEmBodyAnnotation::MergeAnnotation(
+        annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Hard to trace", ZFlyEmBodyAnnotation::GetStatus(annotation1));
+  ASSERT_EQ(uint64_t(1), ZFlyEmBodyAnnotation::GetBodyId(annotation1));
+
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Partially traced");
+  annotation1 = ZFlyEmBodyAnnotation::MergeAnnotation(
+        annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Partially traced", ZFlyEmBodyAnnotation::GetStatus(annotation1));
+  ASSERT_EQ(uint64_t(1), ZFlyEmBodyAnnotation::GetBodyId(annotation1));
+
+  /*
+  annotation2.setStatus("Prelim Roughly traced");
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Prelim Roughly traced", annotation1.getStatus());
+
+  annotation2.setStatus("Roughly traced");
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Roughly traced", annotation1.getStatus());
+  ASSERT_EQ(uint64_t(1), annotation1.getBodyId());
+
+  annotation2.setStatus("Anchor");
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Roughly traced", annotation1.getStatus());
+
+  annotation2.setStatus("Traced in ROI");
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Traced in ROI", annotation1.getStatus());
+  ASSERT_EQ(uint64_t(1), annotation1.getBodyId());
+
+  annotation2.setStatus("traced");
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("traced", annotation1.getStatus());
+
+  annotation2.setStatus("Finalized");
+  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("Finalized", annotation1.getStatus());
+  ASSERT_EQ(uint64_t(1), annotation1.getBodyId());
+  */
+}
+
 TEST(ZFlyEmBodyAnnotation, Merger)
 {
-  ZFlyEmBodyAnnotationProtocal annotMerger;
+  ZFlyEmBodyAnnotationProtocol annotMerger;
   ZJsonObject jsonObj;
   jsonObj.load(GET_BENCHMARK_DIR + "/body_status.json");
   annotMerger.loadJsonObject(jsonObj);
@@ -180,6 +256,17 @@ TEST(ZFlyEmBodyAnnotation, Merger)
   ASSERT_TRUE(annotMerger.isFinal("Finalized"));
   ASSERT_FALSE(annotMerger.isFinal("Hard to trace"));
 
+}
+
+TEST(ZFlyEmBodyAnnotation, Json)
+{
+  ZJsonObject obj;
+  obj.setEntry("instance", "test");
+  obj.setEntry("status", "Traced");
+  obj.setEntry("class", "test type");
+  ASSERT_EQ("test", ZFlyEmBodyAnnotation::GetName(obj));
+  ASSERT_EQ("Traced", ZFlyEmBodyAnnotation::GetStatus(obj));
+  ASSERT_EQ("test type", ZFlyEmBodyAnnotation::GetType(obj));
 }
 
 #endif

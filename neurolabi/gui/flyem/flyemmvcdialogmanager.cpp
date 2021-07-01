@@ -4,10 +4,12 @@
 
 #include "common/utilities.h"
 #include "logging/zlog.h"
+#include "zjsonobject.h"
 
 #include "zdialogfactory.h"
 
 #include "zflyemproofmvc.h"
+#include "zflyemproofdoc.h"
 #include "service/neuprintreader.h"
 #include "dvid/zdvidannotation.h"
 
@@ -249,6 +251,22 @@ FlyEmBodyAnnotationDialog *FlyEmMvcDialogManager::getAnnotationDlg()
   }
 
   return m_annotationDlg;
+}
+
+ZGenericBodyAnnotationDialog* FlyEmMvcDialogManager::getGenericAnnotationDlg()
+{
+  if (isNull(m_genericAnnotationDlg)) {
+    auto *doc = m_parent->getCompleteDocument();
+//    auto reader = doc->getDvidReader();
+
+    ZJsonObject schema = doc->getBodyAnnotationSchema();
+    if (!schema.isEmpty()) {
+      m_genericAnnotationDlg = FlyEmDialogFactory::MakeBodyAnnotaitonDialog(
+            doc, schema, m_parent);
+    }
+  }
+
+  return m_genericAnnotationDlg;
 }
 
 template<typename T>

@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "logging/zlog.h"
 #include "zspinboxwithslider.h"
 #include "zspinboxwithscrollbar.h"
 #include "zspinbox.h"
@@ -58,16 +59,13 @@ QWidget* ZIntParameter::actualCreateWidget(QWidget* parent)
     connect(this, &ZIntParameter::valueWillChange, sb, &ZSpinBox::setValue);
     connect(this, &ZIntParameter::rangeChanged, sb, &ZSpinBox::setRange);
     return sb;
-  } else if (m_style == "SPINBOXWITHSCROLLBAR") {
-    ZSpinBoxWithScrollBar* sbws = new ZSpinBoxWithScrollBar(m_value, m_min, m_max, m_step, m_tracking, m_prefix,
-                                                            m_suffix, parent);
-    connect(sbws, &ZSpinBoxWithScrollBar::valueChanged, this, &ZIntParameter::setValue);
-    connect(this, &ZIntParameter::valueWillChange, sbws, &ZSpinBoxWithScrollBar::setValue);
-    connect(this, &ZIntParameter::rangeChanged, sbws, &ZSpinBoxWithScrollBar::setDataRange);
-    return sbws;
   } else {
-    ZSpinBoxWithSlider* sbws = new ZSpinBoxWithSlider(m_value, m_min, m_max, m_step, m_tracking, m_prefix, m_suffix,
-                                                      parent);
+    if (!m_style.isEmpty() && m_style != "SPINBOXWITHSCROLLBAR"
+        && m_style != "DEFAULT") {
+      ZWARN << "Unknown widget style: " + m_style + ". Fall back to default style.";
+    }
+    ZSpinBoxWithSlider* sbws = new ZSpinBoxWithSlider(
+          m_value, m_min, m_max, m_step, m_tracking, m_prefix, m_suffix, parent);
     connect(sbws, &ZSpinBoxWithSlider::valueChanged, this, &ZIntParameter::setValue);
     connect(this, &ZIntParameter::valueWillChange, sbws, &ZSpinBoxWithSlider::setValue);
     connect(this, &ZIntParameter::rangeChanged, sbws, &ZSpinBoxWithSlider::setDataRange);

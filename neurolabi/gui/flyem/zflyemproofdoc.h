@@ -220,6 +220,7 @@ public:
   void enhanceTileContrast(neutu::EAxis axis, bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void annotateBody(uint64_t bodyId, const ZJsonObject &annotation);
 //  void useBodyNameMap(bool on);
 
   bool selectBody(uint64_t bodyId);
@@ -244,11 +245,13 @@ public:
   void downloadSynapseFunc();
 
   void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+  void recordBodyAnnotation(uint64_t bodyId, const ZJsonObject &anno);
   void removeSelectedAnnotation(uint64_t bodyId);
   template <typename InputIterator>
   void removeSelectedAnnotation(
       const InputIterator &first, const InputIterator &last);
-  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
+//  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
+  std::string getRecordedAnnotationStatus(uint64_t bodyId) const;
 
   void verifyBodyAnnotationMap();
 
@@ -293,6 +296,9 @@ public:
 
   void exportGrayscale(
       const ZIntCuboid &box, int dsIntv, const QString &fileName) const;
+
+  bool usingGenericBodyAnnotation() const;
+  ZJsonObject getBodyAnnotationSchema() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -528,8 +534,9 @@ public:
   void diagnose() const override;
 
   const ZContrastProtocol& getContrastProtocol() const;
-  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
+  const ZFlyEmBodyAnnotationProtocol& getBodyStatusProtocol() const;
   bool isMergable(const ZFlyEmBodyAnnotation &annot) const;
+  bool isMergable(const ZJsonObject &annot) const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
@@ -823,6 +830,14 @@ private:
   ZDvidReader& getBookmarkReader();
   ZDvidWriter& getBookmarkWriter();
 
+  template<typename T>
+  void mergeSelected(
+      ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+
+  template<typename T>
+  void mergeSelectedWithoutConflict(
+      ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+
 //  void notifyUserBookmkarModified();
 
 private slots:
@@ -882,6 +897,7 @@ protected:
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
   bool m_supervoxelMode = false;
+  ZJsonObject m_bodyAnnotationSchema;
 
   bool m_isAdmin = false;
 
@@ -897,6 +913,7 @@ protected:
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
 
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+  QMap<uint64_t, ZJsonObject> m_genericAnnotationMap;
 
   ZFlyEmRoiManager *m_roiManager = nullptr;
 

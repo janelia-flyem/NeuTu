@@ -22,7 +22,7 @@ public:
     return m_contrastProtocol;
   }
 
-  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const {
+  const ZFlyEmBodyAnnotationProtocol& getBodyStatusProtocol() const {
     return m_bodyStatusProtocol;
   }
 
@@ -34,7 +34,7 @@ public:
 
 private:
   ZContrastProtocol m_contrastProtocol;
-  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocol m_bodyStatusProtocol;
 
 };
 

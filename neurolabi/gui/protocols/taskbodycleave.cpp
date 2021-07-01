@@ -1246,7 +1246,7 @@ bool TaskBodyCleave::cleaveVerified(
           m_bodyId, neutu::EBodyLabelType::BODY);
 
     if (cleaveSize + cleaveSize > bodySize) {
-      const ZFlyEmBodyAnnotationProtocal &bodyStatusProtocol =
+      const ZFlyEmBodyAnnotationProtocol &bodyStatusProtocol =
           m_bodyDoc->getBodyStatusProtocol();
       if (!bodyStatusProtocol.isEmpty()) {
         if (bodyStatusProtocol.preservingId(annot.getStatus())) {

@@ -1165,7 +1165,7 @@ void ZFlyEmBodySplitProject::resetStatusAfterUpload()
 }
 
 void ZFlyEmBodySplitProject::setBodyStatusProtocol(
-    const ZFlyEmBodyAnnotationProtocal &protocol)
+    const ZFlyEmBodyAnnotationProtocol &protocol)
 {
   m_bodyStatusProtocol = protocol;
 }

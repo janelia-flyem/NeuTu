@@ -291,6 +291,7 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
     dialogs/neuroglancerlinkdialog.h \
+    dialogs/zparameterdialog.h \
     dvid/zdvidglobal.h \
     dvid/zdvidstacksource.h \
     protocols/protocolassignment.h \
@@ -835,6 +836,7 @@ SOURCES += main.cpp \
     dialogs/neuprintdatasetdialog.cpp \
     dialogs/neuroglancerlinkdialog.cpp \
     dialogs/userfeedbackdialog.cpp \
+    dialogs/zparameterdialog.cpp \
     dialogs/zsynapsepropertydialog.cpp \
     dvid/zdvidglobal.cpp \
     dvid/zdvidstacksource.cpp \

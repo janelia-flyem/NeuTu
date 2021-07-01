@@ -75,7 +75,7 @@ public:
     return m_dataFrame;
   }
 
-  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocol &protocol);
 
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
@@ -140,10 +140,25 @@ public:
   bool preservingId(const std::string &status) const;
 
   QString composeStatusConflictMessage(
+      const QMap<uint64_t, std::string> &statusMap) const;
+  QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  QString composeStatusConflictMessage(
+      const QMap<uint64_t, ZJsonObject> &annotMap) const;
+
+  QString composeStatusExclusionMessage(
+      const QMap<uint64_t, std::string> &statusMap) const;
+  QString composeStatusExclusionMessage(
+      const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  QString composeStatusExclusionMessage(
+      const QMap<uint64_t, ZJsonObject> &annotMap) const;
+
   QString composeFinalStatusMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
-  const ZFlyEmBodyAnnotationProtocal& getAnnotationMerger() const {
+  QString composeFinalStatusMessage(
+      const QMap<uint64_t, ZJsonObject> &annotMap) const;
+
+  const ZFlyEmBodyAnnotationProtocol& getAnnotationMerger() const {
     return m_bodyStatusProtocol;
   }
 
@@ -240,11 +255,17 @@ private:
   int getCachedStatusRank(uint64_t bodyId) const;
   size_t getCachedSize(uint64_t bodyId) const;
 
+  std::string getBodyStatus(uint64_t bodyId) const;
+
+  template<typename T>
+  QString composeFinalStatusMessage(
+      const QMap<uint64_t, T> &annotMap) const;
+
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
-  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocol m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
   bool m_isAdmin = false;
@@ -252,6 +273,7 @@ private:
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationCache;
+  QMap<uint64_t, ZJsonObject> m_genericAnnotationCache;
   QMap<uint64_t, size_t> m_bodySizeCache;
   QMap<uint64_t, std::vector<uint64_t>> m_mergeMap;
 

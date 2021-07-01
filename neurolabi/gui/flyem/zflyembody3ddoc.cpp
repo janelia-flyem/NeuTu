@@ -516,7 +516,7 @@ bool ZFlyEmBody3dDoc::isAdmin() const
 }
 */
 
-const ZFlyEmBodyAnnotationProtocal& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
+const ZFlyEmBodyAnnotationProtocol& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
 {
   return getDataDocument()->getBodyStatusProtocol();
 }
@@ -4496,7 +4496,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     meshProcessingTime += timer.elapsed();
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   uploadingMesh = true;
 #endif
 

@@ -86,7 +86,8 @@ TEST(ZDvidAnnotation, Json)
 
 //  std::cout << ZJsonParser::stringValue(propJson.value("test").getData()) << std::endl;
 
-  ASSERT_EQ("1", ZJsonParser::stringValue(propJson.value("test").getData()));
+  ASSERT_EQ("1", ZJsonParser::stringValue(propJson.value("test").getData()))
+      << propJson.dumpString(0);
 
   ZDvidAnnotation::AddProperty(jsonObj, "test2", "true");
   ASSERT_EQ("true", ZJsonParser::stringValue(propJson.value("test2").getData()));

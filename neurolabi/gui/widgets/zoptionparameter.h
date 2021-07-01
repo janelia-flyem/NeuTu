@@ -39,6 +39,10 @@ public:
   inline T2 associatedData() const
   { return m_associatedData; }
 
+  inline const QList<T>& options() {
+    return m_options;
+  }
+
   void addOption(const T& value)
   {
     if (m_options.indexOf(value) != -1) {
@@ -233,6 +237,10 @@ Q_OBJECT
 public:
   explicit ZStringStringOptionParameter(const QString& name, QObject* parent = nullptr, const QString& prefix = "",
                                         const QString& suffix = "");
+
+  void clearValue() {
+    m_value = "";
+  }
 };
 
 class ZIntIntOptionParameter : public ZOptionParameter<int, int>

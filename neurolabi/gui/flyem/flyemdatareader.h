@@ -36,6 +36,8 @@ public:
       const ZDvidReader &reader, uint64_t bodyId);
   static ZFlyEmBodyAnnotation ReadBodyAnnotation(
       const ZDvidReader &reader, uint64_t bodyId);
+  static ZJsonObject ReadGenericBodyAnnotation(
+      const ZDvidReader &reader, uint64_t bodyId);
 
   static std::vector<ZFlyEmToDoItem> ReadToDoItem(
       const ZDvidReader &reader, const ZIntCuboid &box);
