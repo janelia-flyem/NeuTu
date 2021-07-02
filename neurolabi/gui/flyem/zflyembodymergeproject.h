@@ -162,6 +162,8 @@ public:
     return m_bodyStatusProtocol;
   }
 
+  void setBodyAnnotationSchema(const ZJsonObject &schema);
+
 signals:
   void progressAdvanced(double dp);
   void progressStarted();
@@ -261,6 +263,8 @@ private:
   QString composeFinalStatusMessage(
       const QMap<uint64_t, T> &annotMap) const;
 
+  bool usingGenericBodyAnnotation() const;
+
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
@@ -276,6 +280,7 @@ private:
   QMap<uint64_t, ZJsonObject> m_genericAnnotationCache;
   QMap<uint64_t, size_t> m_bodySizeCache;
   QMap<uint64_t, std::vector<uint64_t>> m_mergeMap;
+  ZJsonObject m_bodyAnnotationSchema;
 
   ZProgressSignal *m_progressSignal;
 };

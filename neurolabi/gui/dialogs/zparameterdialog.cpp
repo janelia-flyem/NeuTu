@@ -372,7 +372,11 @@ void ZParameterDialog::setValue(const QString &name, const QString &value)
   ZStringStringOptionParameter *optionParam =
       qobject_cast<ZStringStringOptionParameter*>(getParameter(name));
   if (optionParam) {
-    updateOptions(optionParam, p.defaultOptions, value);
+    QStringList newOptions =
+        updateOptions(optionParam, p.defaultOptions, value);
+    if (!newOptions.isEmpty()) {
+      p.defaultValue = newOptions[0];
+    }
     optionParam->set(value);
   } else {
     setValue<QString>(name, value);

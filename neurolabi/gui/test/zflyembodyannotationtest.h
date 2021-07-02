@@ -207,6 +207,98 @@ TEST(ZFlyEmBodyAnnotation, mergeJson)
   ASSERT_EQ("Partially traced", ZFlyEmBodyAnnotation::GetStatus(annotation1));
   ASSERT_EQ(uint64_t(1), ZFlyEmBodyAnnotation::GetBodyId(annotation1));
 
+  ZFlyEmBodyAnnotation::SetStatus(annotation1, "Prelim Roughly traced");
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Prelim Roughly traced");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_LOCATION, "test location");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_LOCATION, "test location 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, "hemilineage 2");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, "");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS, true);
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 1");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 10ll);
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 20ll);
+  ZJsonObject merged = ZFlyEmBodyAnnotation::MergeAnnotation(
+        annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("test location", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_LOCATION, ""));
+  ASSERT_EQ("hemilineage 2", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, ""));
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS, false));
+  ASSERT_EQ("name 2", ZFlyEmBodyAnnotation::GetName(merged));
+  ASSERT_EQ("user 2", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_NAMING_USER, ""));
+  ASSERT_EQ(20, ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0));
+  ASSERT_EQ(uint64_t(1), ZFlyEmBodyAnnotation::GetBodyId(annotation1));
+
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Roughly traced");
+  merged = ZFlyEmBodyAnnotation::MergeAnnotation(
+          annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("test location 2", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_LOCATION, ""));
+  ASSERT_EQ("hemilineage 2", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, ""));
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS, false));
+  ASSERT_EQ("name 2", ZFlyEmBodyAnnotation::GetName(merged));
+  ASSERT_EQ("user 2", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_NAMING_USER, ""));
+  ASSERT_EQ(20, ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0));
+  ASSERT_EQ(uint64_t(1), ZFlyEmBodyAnnotation::GetBodyId(annotation1));
+
+
+  annotation1.clear();
+  annotation2.clear();
+  ZFlyEmBodyAnnotation::SetStatus(annotation1, "Traced");
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Roughly traced");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_LOCATION, "test location");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_LOCATION, "test location 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, "hemilineage 2");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, "");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS, true);
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 1");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 10ll);
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 20ll);
+  merged = ZFlyEmBodyAnnotation::MergeAnnotation(
+          annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("test location", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_LOCATION, ""));
+  ASSERT_EQ("", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, ""));
+  ASSERT_FALSE(ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS, false));
+  ASSERT_EQ("", ZFlyEmBodyAnnotation::GetName(merged));
+  ASSERT_EQ("user 1", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_NAMING_USER, ""));
+  ASSERT_EQ(10, ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0));
+
+  annotation1.clear();
+  annotation2.clear();
+  ZFlyEmBodyAnnotation::SetStatus(annotation1, "Prelim Roughly traced");
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Prelim Roughly traced");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 1");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 1");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 20ll);
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 10ll);
+  merged = ZFlyEmBodyAnnotation::MergeAnnotation(
+          annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("name 1", ZFlyEmBodyAnnotation::GetName(merged));
+  ASSERT_EQ("user 1", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_NAMING_USER, ""));
+  ASSERT_EQ(20, ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0));
+
+
+
   /*
   annotation2.setStatus("Prelim Roughly traced");
   annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);

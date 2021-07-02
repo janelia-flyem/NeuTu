@@ -680,6 +680,9 @@ private:
   template<typename T>
   void updateBodyMessageG(uint64_t bodyId, const T &annot);
 
+  template<typename T>
+  void processLabelSliceSelectionChangeG();
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;

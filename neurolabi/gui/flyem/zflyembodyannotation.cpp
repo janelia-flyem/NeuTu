@@ -795,13 +795,13 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
     if (sourceTimeStamp > targetTimeStamp) {
       result.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, sourceTimeStamp);
     }
-  } else if (getStatusRank(targetStatus) > getStatusRank(sourceStatus)) { //smaller rank means higher priority
+  } else if (getStatusRank(targetStatus) > getStatusRank(sourceStatus)) { //source has higher priority
     uint64_t bodyId = ZFlyEmBodyAnnotation::GetBodyId(target);
     result = source.clone();
     if (bodyId > 0) {
       ZFlyEmBodyAnnotation::SetBodyId(result, bodyId);
     }
-  } else { //getStatusRank(targetStatus) < getStatusRank(sourceStatus)
+  } else { //target has higher priority
     result = target.clone();
   }
 

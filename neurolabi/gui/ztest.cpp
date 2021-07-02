@@ -32005,14 +32005,17 @@ void ZTest::test(MainWindow *host)
     obj.print();
   }
 
-  dlg->setValue("test4", "t1");
+//  dlg->setValue("test4", "t1");
 //  dlg->build();
-  dlg->exec();
+//  dlg->exec();
 
   dlg->resetValues();
 //  dlg->build();
   dlg->exec();
+  obj = dlg->toJsonObject();
+  obj.print();
 
+  /*
   dlg->loadJsonObject(obj);
   dlg->setLabel("dialog label");
 
@@ -32022,6 +32025,7 @@ void ZTest::test(MainWindow *host)
   dlg->loadJsonObject(ZJsonObject());
   dlg->setLabel("");
   dlg->exec();
+  */
 #endif
 
 #if 0

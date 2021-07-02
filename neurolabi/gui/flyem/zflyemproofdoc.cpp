@@ -175,12 +175,19 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getRecordedAnnotation(uint64_t bodyId) cons
 
 std::string ZFlyEmProofDoc::getRecordedAnnotationStatus(uint64_t bodyId) const
 {
+  if (usingGenericBodyAnnotation()) {
+    return ZFlyEmBodyAnnotation::GetStatus(m_genericAnnotationMap.value(bodyId));
+  } else {
+    return ZFlyEmBodyAnnotation::GetStatus(m_annotationMap.value(bodyId));
+  }
+  /*
   if (m_annotationMap.contains(bodyId)) {
     return m_annotationMap.value(bodyId).getStatus();
   } else if (m_genericAnnotationMap.contains(bodyId)) {
     return ZJsonObjectParser::GetValue(
           m_genericAnnotationMap.value(bodyId), "status", "");
   }
+  */
 
   return "";
 }
@@ -227,6 +234,50 @@ ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation(
 
   return finalAnnotation;
 }
+
+ZJsonObject ZFlyEmProofDoc::getFinalAnnotation(
+    const std::vector<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZJsonObject&)> processAnnotation)
+{
+  ZJsonObject finalAnnotation;
+  if (getDvidReader().isReady()) {
+//    std::pair<std::vector<uint64_t>, std::vector<QColor>> coloringList;
+    for (std::vector<uint64_t>::const_iterator iter = bodyList.begin();
+         iter != bodyList.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      ZJsonObject annotation =
+          FlyEmDataReader::ReadGenericBodyAnnotation(getDvidReader(), bodyId);
+      recordBodyAnnotation(bodyId, annotation);
+
+      if (processAnnotation) {
+        processAnnotation(bodyId, annotation);
+      }
+      /*
+      std::string color = getBodyStatusProtocol().getColorCode(
+            annotation.getStatus());
+      if (color.empty() == false) {
+        coloringList.first.push_back(bodyId);
+        coloringList.second.push_back(QColor(color.c_str()));
+      }
+      */
+
+      if (!annotation.isEmpty()) {
+        if (finalAnnotation.isEmpty()) {
+          finalAnnotation = annotation;
+        } else {
+          finalAnnotation = ZFlyEmBodyAnnotation::MergeAnnotation(
+                finalAnnotation, annotation,  [=](const std::string &status) {
+            return getMergeProject()->getStatusRank(status);
+          });
+        }
+      }
+    }
+//    setBodyColor(coloringList.first, coloringList.second);
+  }
+
+  return finalAnnotation;
+}
+
 
 QList<QString> ZFlyEmProofDoc::getAdminBodyStatusList() const
 {
@@ -591,15 +642,40 @@ void ZFlyEmProofDoc::recordBodyAnnotation(
   m_genericAnnotationMap[bodyId] = anno;
 }
 
+template<typename T>
+void ZFlyEmProofDoc::clearBodyAnnotationMap(QMap<uint64_t, T> &annotationMap) const
+{
+  std::set<uint64_t> selected = getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
+  std::vector<uint64_t> keysToRemove;
+  for (auto iter = annotationMap.begin(); iter != annotationMap.end(); ++iter) {
+    uint64_t bodyId = iter.key();
+    if (selected.count(bodyId) == 0) {
+//      KWARN << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
+      keysToRemove.push_back(bodyId);
+    }
+  }
+
+  for (std::vector<uint64_t>::const_iterator iter = keysToRemove.begin();
+       iter != keysToRemove.end(); ++iter) {
+    annotationMap.remove(*iter);
+  }
+}
+
 void ZFlyEmProofDoc::clearBodyAnnotationMap()
 {
+  if (usingGenericBodyAnnotation()) {
+    clearBodyAnnotationMap(m_genericAnnotationMap);
+  } else {
+    clearBodyAnnotationMap(m_annotationMap);
+  }
+  /*
   std::set<uint64_t> selected = getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
   std::vector<uint64_t> keysToRemove;
   for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
     if (selected.count(bodyId) == 0) {
-      KWARN << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
+//      KWARN << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
       keysToRemove.push_back(bodyId);
     }
   }
@@ -608,13 +684,15 @@ void ZFlyEmProofDoc::clearBodyAnnotationMap()
        iter != keysToRemove.end(); ++iter) {
     m_annotationMap.remove(*iter);
   }
+  */
 }
 
-void ZFlyEmProofDoc::verifyBodyAnnotationMap()
+template<typename T>
+void ZFlyEmProofDoc::verifyBodyAnnotationMapG(
+    const QMap<uint64_t, T> &annotationMap)
 {
   std::set<uint64_t> selected = getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
-  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
-       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+  for (auto iter = annotationMap.begin(); iter != annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
     if (selected.count(bodyId) == 0) {
       emit messageGenerated(
@@ -624,6 +702,15 @@ void ZFlyEmProofDoc::verifyBodyAnnotationMap()
               ZWidgetMessage::ETarget::TARGET_TEXT_APPENDING |
               ZWidgetMessage::ETarget::TARGET_KAFKA));
     }
+  }
+}
+
+void ZFlyEmProofDoc::verifyBodyAnnotationMap()
+{
+  if (usingGenericBodyAnnotation()) {
+    verifyBodyAnnotationMapG(m_genericAnnotationMap);
+  } else {
+    verifyBodyAnnotationMapG(m_annotationMap);
   }
 }
 
@@ -721,7 +808,7 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(
 
 void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
 {
-  if (!m_annotationMap.isEmpty()) {
+  if (!usingGenericBodyAnnotation()) {
     mergeSelectedWithoutConflict(supervisor, m_annotationMap);
   } else {
     mergeSelectedWithoutConflict(supervisor, m_genericAnnotationMap);
@@ -856,9 +943,6 @@ void ZFlyEmProofDoc::mergeSelected(
   clearBodyAnnotationMap();
 
   QMap<uint64_t, QVector<QString> > nameMap;
-//  std::vector<uint64_t> roughlyTracedBodyArray; //temporary hack to handle 'Roughly traced'
-//  std::vector<uint64_t> finalizedBodyArray;
-
   for (auto iter = annotationMap.begin(); iter != annotationMap.end(); ++iter) {
     const auto& anno = iter.value();
     std::string status = ZFlyEmBodyAnnotation::GetStatus(anno);
@@ -880,7 +964,6 @@ void ZFlyEmProofDoc::mergeSelected(
         nameMap[mappedBodyId] = QVector<QString>();
       }
       nameMap[mappedBodyId].append(name.c_str());
-//      nameMap[iter.key()] = anno.getName().c_str();
     }
   }
 
@@ -912,19 +995,6 @@ void ZFlyEmProofDoc::mergeSelected(
             NULL);
     }
   }
-
-  /*
-  if (roughlyTracedBodyArray.size() > 1) {
-    QString detail = getAnnotationFinalizedWarningDetail(
-          roughlyTracedBodyArray, "Roughly traced");
-    okToContinue = ZDialogFactory::Ask(
-          "Merging multiple roughly-traced bodies",
-          "The following bodies have conflict statuses: "
-          "<font color=\"#FF0000\">You should NOT merge them unless you want to be resposible for any side effects.</font>"
-          "<p>Do you want to continue?</p>" +
-          detail,
-          NULL);
-  }*/
 
   if (okToContinue) {
     if (nameMap.size() > 1) {
@@ -990,148 +1060,11 @@ void ZFlyEmProofDoc::mergeSelected(
 
 void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
 {
-  if (!m_annotationMap.isEmpty()) {
+  if (!usingGenericBodyAnnotation()) {
     mergeSelected(supervisor, m_annotationMap);
   } else {
     mergeSelected(supervisor, m_genericAnnotationMap);
   }
-#if 0
-  bool okToContinue = true;
-
-  clearBodyAnnotationMap();
-
-  QMap<uint64_t, QVector<QString> > nameMap;
-//  std::vector<uint64_t> roughlyTracedBodyArray; //temporary hack to handle 'Roughly traced'
-//  std::vector<uint64_t> finalizedBodyArray;
-
-  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
-       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
-    const auto& anno = iter.value();
-    std::string status = ZFlyEmBodyAnnotation::GetStatus(anno);
-    if (!getMergeProject()->isMergableStatus(status)) {
-      ZDialogFactory::Warn(
-            "Cannot Merge",
-            QString("Body (%1) with status %2 cannot be merged with any other body.").
-            arg(iter.key()).arg(status.c_str()),
-            NULL);
-      okToContinue = false;
-      break;
-    }
-
-    if (!anno.getName().empty()) {
-      uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
-
-      if (!nameMap.contains(mappedBodyId)) {
-        nameMap[mappedBodyId] = QVector<QString>();
-      }
-      nameMap[mappedBodyId].append(ZFlyEmBodyAnnotation::GetName(anno).c_str());
-//      nameMap[iter.key()] = anno.getName().c_str();
-    }
-  }
-
-  if (okToContinue) {
-    QString msg = getMergeProject()->composeStatusExclusionMessage(
-          m_annotationMap);
-    if (!msg.isEmpty()) {
-      ZDialogFactory::Warn("Hard Body Status Conflict", msg, nullptr);
-      okToContinue = false;
-    }
-  }
-
-  if (okToContinue) {
-    QString msg = getMergeProject()->composeFinalStatusMessage(m_annotationMap);
-    if (!msg.isEmpty()) {
-      okToContinue = ZDialogFactory::Ask(
-            "Merging Body with Final Status",
-            msg + "<p>Do you want to continue?</p>",
-            NULL);
-    }
-  }
-
-  if (okToContinue) {
-    QString msg = getMergeProject()->composeStatusConflictMessage(m_annotationMap);
-    if (!msg.isEmpty()) {
-      okToContinue = ZDialogFactory::Ask(
-            "Body Status Conflict",
-            msg + "<p>Do you want to continue?</p>",
-            NULL);
-    }
-  }
-
-  /*
-  if (roughlyTracedBodyArray.size() > 1) {
-    QString detail = getAnnotationFinalizedWarningDetail(
-          roughlyTracedBodyArray, "Roughly traced");
-    okToContinue = ZDialogFactory::Ask(
-          "Merging multiple roughly-traced bodies",
-          "The following bodies have conflict statuses: "
-          "<font color=\"#FF0000\">You should NOT merge them unless you want to be resposible for any side effects.</font>"
-          "<p>Do you want to continue?</p>" +
-          detail,
-          NULL);
-  }*/
-
-  if (okToContinue) {
-    if (nameMap.size() > 1) {
-      QString detail = getAnnotationNameWarningDetail(nameMap);
-      okToContinue = ZDialogFactory::Ask(
-            "Conflict to Resolve",
-            "You are about to merge multiple names. Do you want to continue?" +
-            detail,
-            NULL);
-    }
-  }
-
-  if (okToContinue) {
-    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
-
-    ZFlyEmBodyMerger::TLabelSet labelSet;
-    for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
-         iter != sliceList.end(); ++iter) {
-      const ZDvidLabelSlice *labelSlice = *iter;
-      const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
-
-      if (selected.size() > 1){
-        for (std::set<uint64_t>::const_iterator iter = selected.begin();
-             iter != selected.end(); ++iter) {
-          if (supervisor != NULL) {
-            if (supervisor->checkOut(*iter, neutu::EBodySplitMode::NONE)) {
-              labelSet.insert(*iter);
-            } else {
-              labelSet.clear();
-              std::string owner = supervisor->getOwner(*iter);
-              if (owner.empty()) {
-                //            owner = "unknown user";
-                emit messageGenerated(
-                      ZWidgetMessage(
-                        QString("Failed to merge. Is the librarian sever (%1) ready?").
-                        arg(getDvidTarget().getSupervisor().c_str()),
-                        neutu::EMessageType::ERROR));
-              } else {
-                emit messageGenerated(
-                      ZWidgetMessage(
-                        QString("Failed to merge. %1 has been locked by %2").
-                        arg(*iter).arg(owner.c_str()), neutu::EMessageType::ERROR));
-              }
-              break;
-            }
-          } else {
-            labelSet.insert(*iter);
-          }
-        }
-      }
-    }
-
-    if (!labelSet.empty()) {
-      m_bodyMerger.pushMap(labelSet);
-      m_bodyMerger.undo();
-
-      ZFlyEmProofDocCommand::MergeBody *command =
-          new ZFlyEmProofDocCommand::MergeBody(this);
-      pushUndoCommand(command);
-    }
-  }
-#endif
 }
 
 void ZFlyEmProofDoc::annotateBody(
@@ -1633,6 +1566,7 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 //    m_dvidTarget = target;
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(getDvidReader().getDvidTarget());
+    m_mergeProject->setBodyAnnotationSchema(m_bodyAnnotationSchema);
 
     if (supervisorNeeded()) {
       flowInfo << "->Prepare DVID data instances";

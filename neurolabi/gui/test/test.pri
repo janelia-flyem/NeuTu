@@ -12,7 +12,7 @@ HEADERS += \
     $$PWD/zdvidtargetfactorytest.h \
     $$PWD/zdvidtargettest.h \
   $$PWD/zdvidurltest.h \
-    $$PWD/zflyembodyannotationprotocaltest.h \
+#    $$PWD/zflyembodyannotationprotocaltest.h \
   $$PWD/zflyembodyannotationprotocoltest.h \
   $$PWD/zflyembodycolorschemetest.h \
   $$PWD/zflyembookmarktest.h \

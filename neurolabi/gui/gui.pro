@@ -167,8 +167,9 @@ equals(SANITIZE_BUILD, "address") {
 }
 
 unix {
-    QMAKE_CXXFLAGS += -Wno-deprecated
+    QMAKE_CXXFLAGS_WARN_ON += -Wno-deprecated
     macx {
+        QMAKE_CXXFLAGS_WARN_ON += -Wno-deprecated-copy
         LIBS += -framework AppKit -framework IOKit \
             -framework ApplicationServices \
             -framework CoreFoundation

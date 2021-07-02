@@ -3143,8 +3143,74 @@ void ZFlyEmProofMvc::updateSupervoxelMessge(uint64_t bodyId)
                        ZWidgetMessage::TARGET_CUSTOM_AREA));
 }
 
+template<typename T>
+void ZFlyEmProofMvc::processLabelSliceSelectionChangeG()
+{
+  if (!showingAnnotations()) {
+    // Checking for annotations can be very slow, so allow clients to disable it when not needed.
+    return;
+  }
+
+  auto doc = getCompleteDocument();
+  ZDvidLabelSlice *labelSlice = doc->getActiveLabelSlice(neutu::EAxis::Z);
+  if (labelSlice != NULL){
+    if (labelSlice->isSupervoxel()) {
+      std::vector<uint64_t> selected =
+          labelSlice->getSelector().getSelectedList();
+      if (selected.size() > 0) {
+        updateSupervoxelMessge(selected.front());
+      }
+    } else {
+      std::vector<uint64_t> selected =
+          labelSlice->getSelector().getSelectedList();
+      if (selected.size() > 0) {
+        std::pair<std::vector<uint64_t>, std::vector<std::string>> coloringList;
+
+        auto processAnnotation =
+            [&](uint64_t bodyId, const T& annot) {
+          std::string color = doc->getBodyStatusProtocol().getColorCode(
+                ZFlyEmBodyAnnotation::GetStatus(annot));
+          coloringList.first.push_back(bodyId);
+          coloringList.second.push_back(color);
+        };
+        T finalAnnotation =
+            doc->getFinalAnnotation(selected, processAnnotation);
+        doc->setBodyColorFromStatus(coloringList.first, coloringList.second);
+
+        updateBodyMessage(selected.front(), finalAnnotation);
+      }
+
+      std::vector<uint64_t> deselected =
+          labelSlice->getSelector().getDeselectedList();
+
+      getCompleteDocument()->removeSelectedAnnotation(
+            deselected.begin(), deselected.end());
+
+      //for testing
+      /*
+      for (uint64_t bodyId : selected) {
+        labelSlice->setLabelColor(bodyId, Qt::black);
+      }
+      */
+    }
+
+    updateViewButton();
+  }
+
+#ifdef _DEBUG_
+  getCompleteDocument()->verifyBodyAnnotationMap();
+#endif
+}
+
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 {
+  if (getCompleteDocument()->usingGenericBodyAnnotation()) {
+    processLabelSliceSelectionChangeG<ZJsonObject>();
+  } else {
+    processLabelSliceSelectionChangeG<ZFlyEmBodyAnnotation>();
+  }
+
+#if 0
   if (!showingAnnotations()) {
     // Checking for annotations can be very slow, so allow clients to disable it when not needed.
     return;
@@ -3168,7 +3234,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
         auto processAnnotation =
             [&](uint64_t bodyId, const ZFlyEmBodyAnnotation& annot) {
           std::string color = doc->getBodyStatusProtocol().getColorCode(
-                annot.getStatus());
+                ZFlyEmBodyAnnotation::GetStatus(annot));
           coloringList.first.push_back(bodyId);
           coloringList.second.push_back(color);
         };
@@ -3198,6 +3264,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
 #ifdef _DEBUG_
   getCompleteDocument()->verifyBodyAnnotationMap();
+#endif
 #endif
 }
 

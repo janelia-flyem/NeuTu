@@ -257,6 +257,8 @@ public:
 
   ZFlyEmBodyAnnotation getFinalAnnotation(const std::vector<uint64_t> &bodyList,
       std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
+  ZJsonObject getFinalAnnotation(const std::vector<uint64_t> &bodyList,
+      std::function<void(uint64_t, const ZJsonObject&)> processAnnotation);
 
   /*!
    * \brief Remove unselected bodies from annotation map.
@@ -837,6 +839,12 @@ private:
   template<typename T>
   void mergeSelectedWithoutConflict(
       ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+
+  template<typename T>
+  void verifyBodyAnnotationMapG(const QMap<uint64_t, T> &annotationMap);
+
+  template<typename T>
+  void clearBodyAnnotationMap(QMap<uint64_t, T> &annotationMap) const;
 
 //  void notifyUserBookmkarModified();
 
