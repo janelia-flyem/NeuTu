@@ -31970,20 +31970,20 @@ void ZTest::test(MainWindow *host)
 #if 1
   ZParameterDialog *dlg = new ZParameterDialog(host);
 
-  dlg->addStringParameter("test");
+//  dlg->addStringParameter("test");
 //  dlg->build();
 
-  dlg->addStringParameter("test");
-  dlg->addStringParameter("test2");
+//  dlg->addStringParameter("test");
+//  dlg->addStringParameter("test2");
   dlg->addStringParameter("test4", {"t1", "t2"});
-  dlg->addIntParameter("int1", 10, 0, 99);
-  dlg->addIntParameter("int2", 10, 0, 99);
-  dlg->addBoolParameter("test5");
+//  dlg->addIntParameter("int1", 10, 0, 99);
+//  dlg->addIntParameter("int2", 10, 0, 99);
+//  dlg->addBoolParameter("test5");
 
-  dlg->setValue("test", QString("my test"));
-  dlg->setValue("int1", 50);
+//  dlg->setValue("test", QString("my test"));
+//  dlg->setValue("int1", 50);
   dlg->setValue("test4", "t3");
-  dlg->setValue("test5", true);
+//  dlg->setValue("test5", true);
 
 //  dlg->resetValues();
 //  dlg->show();
@@ -31992,14 +31992,14 @@ void ZTest::test(MainWindow *host)
 
   ZJsonObject obj;
   if (dlg->exec()) {
-    std::cout << dlg->getStringValue("test").toStdString() << std::endl;
-    std::cout << dlg->getStringValue("test2").toStdString() << std::endl;
-    std::cout << dlg->getIntValue("int1") << std::endl;
-    std::cout << dlg->getStringValue("test4").toStdString() << std::endl;
+//    std::cout << dlg->getStringValue("test").toStdString() << std::endl;
+//    std::cout << dlg->getStringValue("test2").toStdString() << std::endl;
+//    std::cout << dlg->getIntValue("int1") << std::endl;
+//    std::cout << dlg->getStringValue("test4").toStdString() << std::endl;
 
-    std::cout << dlg->getIntValue("int2") << std::endl;
+//    std::cout << dlg->getIntValue("int2") << std::endl;
 
-    std::cout << dlg->getBoolValue("test5") << std::endl;
+//    std::cout << dlg->getBoolValue("test5") << std::endl;
 
     obj = dlg->toJsonObject();
     obj.print();

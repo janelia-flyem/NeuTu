@@ -213,6 +213,10 @@ protected:
 
   QString comboBoxItemString(const T& value) const;
 
+  void setAssociatedData(const T2 &data) {
+    m_associatedData = data;
+  }
+
 private:
   QList<T> m_options;
   T2 m_associatedData;
@@ -240,6 +244,7 @@ public:
 
   void clearValue() {
     m_value = "";
+    setAssociatedData("");
   }
 };
 
