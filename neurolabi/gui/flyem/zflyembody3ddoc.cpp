@@ -3635,6 +3635,10 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
     return mesh;
   }
 
+  //Temporary fix: Disable mesh fetching to avoid mesh inconsistency
+  bool usingObjMesh = false;
+  bool usingNgMesh = false;
+
   if (config.getLabelType() == neutu::EBodyLabelType::SUPERVOXEL) {
     if (!isCoarseLevel(zoom)) {
       mesh = readSupervoxelMesh(reader, config.getBodyId());
@@ -3644,7 +3648,6 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
       }
     }
   } else {
-    bool usingNgMesh = false; //Temporary fix: Disable ng mesh to avoid mesh inconsistency
     if (!isCoarseLevel(zoom) && usingNgMesh) { //Skip coarse Level
       //Checking order: merged mesh -> ngmesh -> normal mesh
       std::string mergeKey =
@@ -3668,16 +3671,16 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
           }
         }
       }
-
-      if (mesh == nullptr) {
-        mesh = reader.readMesh(config.getBodyId(), zoom);
-        /*
-        if (mesh != NULL) {
-          *acturalMeshZoom = zoom;
-        }
-        */
-      }
     }
+  }
+
+  if (usingObjMesh && (mesh == nullptr)) {
+    mesh = reader.readMesh(config.getBodyId(), zoom);
+    /*
+    if (mesh != NULL) {
+      *acturalMeshZoom = zoom;
+    }
+    */
   }
 
   if (mesh && config.getDsLevel() > 0) {
@@ -3731,7 +3734,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
             config.getLabelType() == neutu::EBodyLabelType::BODY) {
           std::shared_ptr<ZMesh> meshClone(mesh->clone());
           getDataDocument()->addUploadTask([=](ZDvidWriter &writer) {
-            {
+            if (usingObjMesh) {
               QByteArray data = meshClone->writeToMemory("obj");
               writer.writeDataToKeyValue(
                     writer.getDvidTarget().getMeshName(),
@@ -3742,7 +3745,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 #endif
             }
 
-            {
+            if (usingNgMesh) {
               ZDvidInfo info = writer.getDvidReader().readLabelInfo();
               ZResolution res = info.getVoxelResolution();
               double sx = res.getVoxelSize(neutu::EAxis::X, res.getUnit());
