@@ -340,6 +340,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_SPLIT_START:
     action = new QAction("Launch Split", parent);
     break;
+  case ACTION_BODY_ACTIVATE_MERGE_LINK:
+    action = new QAction("Activate Merge Link", parent);
+    break;
   case ACTION_BODY_CHANGE_COLOR:
     action = new QAction("Change Body Color", parent);
     break;

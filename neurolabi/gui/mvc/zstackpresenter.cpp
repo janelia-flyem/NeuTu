@@ -370,6 +370,10 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodySplitTriggered()));
       break;
+    case ZActionFactory::ACTION_BODY_ACTIVATE_MERGE_LINK:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyActivateMergeLinkTriggered()));
+      break;
     case ZActionFactory::ACTION_SPLIT_DATA:
       connect(action, SIGNAL(triggered()), this, SLOT(runSeededWatershed()));
       break;
@@ -2769,6 +2773,11 @@ void ZStackPresenter::slotTest()
 void ZStackPresenter::notifyBodySplitTriggered()
 {
   emit bodySplitTriggered();
+}
+
+void ZStackPresenter::notifyActivateMergeLinkTriggered()
+{
+  emit activateMergeLinkTriggered();
 }
 
 void ZStackPresenter::notifyOrthoViewTriggered()

@@ -377,6 +377,7 @@ public slots:
   void selectConnectedNode();
 
   void notifyBodySplitTriggered();
+  void notifyActivateMergeLinkTriggered();
   void notifyBodyDecomposeTriggered();
   void notifyBodyCropTriggered();
   void notifyBodyChopTriggered();
@@ -436,6 +437,7 @@ public slots:
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
+  void activateMergeLinkTriggered();
   void bodyAnnotationTriggered();
   void bodyExpertStatusTriggered();
   void bodyConnectionTriggered();

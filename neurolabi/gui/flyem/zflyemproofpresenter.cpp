@@ -1352,6 +1352,8 @@ bool ZFlyEmProofPresenter::processCustomOperator(
         !isSplitWindow());
   getAction(ZActionFactory::ACTION_BODY_DECOMPOSE)->setVisible(
         isSplitWindow());
+  getAction(ZActionFactory::ACTION_BODY_ACTIVATE_MERGE_LINK)->setVisible(
+        !isSplitWindow());
 
   return processed;
 }
