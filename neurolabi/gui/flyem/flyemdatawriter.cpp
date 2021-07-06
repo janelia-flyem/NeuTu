@@ -31,7 +31,7 @@ void FlyEmDataWriter::UpdateBodyStatus(
   annot.print();
 #endif
   annot.setStatus(newStatus);
-  writer.writeBodyAnnotation(annot);
+  writer.writeBodyAnnotation(bodyId, annot);
 
 #ifdef _DEBUG_
   ZFlyEmBodyAnnotation newAnnot =
@@ -41,6 +41,7 @@ void FlyEmDataWriter::UpdateBodyStatus(
 #endif
 }
 
+#if 0
 void FlyEmDataWriter::RewriteBody(ZDvidWriter &writer, uint64_t bodyId)
 {
   uint64_t newBodyId = 0;
@@ -59,13 +60,14 @@ void FlyEmDataWriter::RewriteBody(ZDvidWriter &writer, uint64_t bodyId)
 
         if (!annotation.isEmpty()) {
           writer.deleteBodyAnnotation(bodyId);
-          annotation.setBodyId(newBodyId);
-          writer.writeBodyAnnotation(annotation);
+//          annotation.setBodyId(newBodyId);
+          writer.writeBodyAnnotation(newBodyId, annotation);
         }
       }
     }
   }
 }
+#endif
 
 void FlyEmDataWriter::UploadUserDataConfig(
     ZDvidWriter &writer, const FlyEmDataConfig &config)

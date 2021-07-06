@@ -1,0 +1,22 @@
+#ifndef FLYEMBODYANNOTATIONLOCALIO_H
+#define FLYEMBODYANNOTATIONLOCALIO_H
+
+#include "flyembodyannotationio.h"
+
+#include <unordered_map>
+
+class FlyEmBodyAnnotationLocalIO : public FlyEmBodyAnnotationIO
+{
+public:
+  FlyEmBodyAnnotationLocalIO();
+
+  ZJsonObject readBodyAnnotation(uint64_t bodyId) override;
+  void deleteBodyAnnotation(uint64_t bodyId) override;
+  void writeBodyAnnotation(uint64_t bodyId, const ZJsonObject &obj) override;
+  bool hasBodyAnnotation(uint64_t bodyId) override;
+
+private:
+  std::unordered_map<uint64_t, ZJsonObject> m_store;
+};
+
+#endif // FLYEMBODYANNOTATIONLOCALIO_H

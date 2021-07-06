@@ -77,6 +77,7 @@
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/flyembodyannotationdialog.h"
+#include "zdialogfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -4582,7 +4583,13 @@ void ZFlyEmBody3dDoc::waitForSplitToBeDone()
 
 void ZFlyEmBody3dDoc::startBodyAnnotation()
 {
-
+  if (getDataDocument()->usingGenericBodyAnnotation()) {
+    ZDialogFactory::Warn(
+          "Under Development",
+          "Annotating body in 3D for this dataset has not been supported yet.",
+          getParent3DWindow());
+    return;
+  }
 //  ZFlyEmBodyAnnotationDialog *dlg =
 //      new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
   startBodyAnnotation(getBodyAnnotationDlg());

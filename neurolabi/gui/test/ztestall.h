@@ -107,5 +107,7 @@
 #include "test/zdviddialogtest.h"
 #include "test/zflyembookmarktest.h"
 #include "test/zflyembodyannotationprotocoltest.h"
+#include "test/flyembodyannotationiotest.h"
+#include "test/flyembodyannotationmanagertest.h"
 
 #endif // ZTESTALL_H

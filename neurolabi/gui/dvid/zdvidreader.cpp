@@ -5924,6 +5924,12 @@ bool ZDvidReader::hasBodyAnnotation() const
   return hasData(getDvidTarget().getBodyAnnotationName());
 }
 
+bool ZDvidReader::hasBodyAnnotation(uint64_t bodyId) const
+{
+  return hasKey(getDvidTarget().getBodyAnnotationName().c_str(),
+                QString("%1").arg(bodyId));
+}
+
 ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
 {
   ZDvidUrl url(getDvidTarget());
@@ -6018,6 +6024,7 @@ QList<ZJsonObject> ZDvidReader::readJsonObjectsFromKeys(const QString &dataName,
         if (!buffers[i].isEmpty()) {
             obj.decodeString(buffers[i].constData());
         }
+        obj.denull();
         // note: object must be appened even if empty!  returned list elements
         //  must correspond to input key list
         objects.append(obj);

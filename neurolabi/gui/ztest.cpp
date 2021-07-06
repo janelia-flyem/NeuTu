@@ -366,6 +366,8 @@
 #include "flyem/zflyemarbdoc.h"
 #include "flyem/zflyemrandombodycolorscheme.h"
 #include "flyem/dialogs/zgenericbodyannotationdialog.h"
+#include "flyem/flyembodyannotationmanager.h"
+#include "flyem/flyembodyannotationproofdocio.h"
 
 /*
 #include "ext/http/HTTPRequest.hpp"
@@ -31967,7 +31969,7 @@ void ZTest::test(MainWindow *host)
   obj.print();
 #endif
 
-#if 1
+#if 0
   ZParameterDialog *dlg = new ZParameterDialog(host);
 
 //  dlg->addStringParameter("test");
@@ -32053,6 +32055,88 @@ void ZTest::test(MainWindow *host)
   dlg->exec();
   dlg->toJsonObject().print();
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+
+  ZFlyEmProofDoc doc;
+  doc.setDvid(ZDvidEnv(reader->getDvidTarget()));
+
+  FlyEmBodyAnnotationProofDocIO io;
+  io.setDocument(&doc);
+  uint64_t bodyId = 5901284581;
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+  ZJsonObject obj;
+  obj.setEntry("status", "Traced");
+
+  bodyId = 1;
+
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+  io.writeBodyAnnotation(bodyId, obj);
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+  io.deleteBodyAnnotation(bodyId);
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+
+  ZFlyEmProofDoc doc;
+  doc.setDvid(ZDvidEnv(reader->getDvidTarget()));
+
+  auto io = std::shared_ptr<FlyEmBodyAnnotationProofDocIO>(
+        new FlyEmBodyAnnotationProofDocIO);
+  io->setDocument(&doc);
+
+  FlyEmBodyAnnotationManager manager;
+  manager.setIO(io);
+
+  uint64_t bodyId = 5901284581;
+  manager.getAnnotation(bodyId).print();
+  manager.getAnnotation(bodyId).print();
+
+  manager.invalidateCache(bodyId);
+  manager.getAnnotation(bodyId).print();
+
+  manager.invalidateCache();
+  manager.getAnnotation(bodyId).print();
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  QStringList keyList = {"1", "5901278576", "3"};
+  auto result = reader->readKeyValues("segmentation_annotations", keyList);
+
+  std::cout << result.size() << std::endl;
+
+  ZJsonArray resultJson;
+  foreach (const auto &buffer, result) {
+    ZJsonObject obj;
+    if (! buffer.isEmpty()) {
+      obj.decode(buffer.constData(), false);
+    }
+    obj.denull();
+    resultJson.append(obj);
+  }
+  resultJson.print();
 #endif
 
   std::cout << "Done." << std::endl;

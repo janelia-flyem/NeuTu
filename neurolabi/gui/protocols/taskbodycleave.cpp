@@ -429,8 +429,8 @@ QJsonArray TaskBodyCleave::createFromGuiBodyId(ZFlyEmBody3dDoc *bodyDoc)
     bool ok = false;
     double min = std::numeric_limits<double>::min();
     double max = std::numeric_limits<double>::max();
-    double bodyId = QInputDialog::getDouble(window, "Create Body Cleave Task", "Body ID",
-                                            0, min, max, 0, &ok);
+    double bodyId = QInputDialog::getDouble(
+          window, "Create Body Cleave Task", "Body ID", 0, min, max, 0, &ok);
     if (ok && (bodyId != 0)) {
       QJsonObject json;
       json[KEY_BODY_ID] = QJsonValue(bodyId);

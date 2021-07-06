@@ -398,7 +398,7 @@ std::string FlyEmBodyAnnotationDialog::getHemilineage() const
 void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
-  setBodyId(annotation.getBodyId());
+//  setBodyId(annotation.getBodyId());
   setPrevUser(annotation.getUser());
   setPrevNamingUser(annotation.getNamingUser());
   setPrevStatusUser(annotation.getStatusUser());
@@ -427,7 +427,7 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
 ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
 {
   ZFlyEmBodyAnnotation annotation;
-  annotation.setBodyId(getBodyId());
+//  annotation.setBodyId(getBodyId());
   annotation.setStatus(getStatus());
   annotation.setType(getType());
   annotation.setInstance(getInstance());

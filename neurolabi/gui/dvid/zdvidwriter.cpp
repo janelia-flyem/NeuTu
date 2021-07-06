@@ -268,15 +268,24 @@ void ZDvidWriter::writeAnnotation(const ZFlyEmNeuron &neuron)
   writeAnnotation(neuron.getId(), neuron.getAnnotationJson());
 }
 
-void ZDvidWriter::writeBodyAnnotation(const ZFlyEmBodyAnnotation &annotation)
+void ZDvidWriter::writeBodyAnnotation(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
 {
-  writeAnnotation(annotation.getBodyId(), annotation.toJsonObject());
+  writeAnnotation(bodyId, annotation.toJsonObject());
 }
 
+/*
 void ZDvidWriter::removeBodyAnnotation(uint64_t bodyId)
 {
   ZDvidUrl url(getDvidTarget());
   deleteKey(url.getBodyAnnotationName(), ZString::num2str(bodyId));
+}
+*/
+
+void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
+{
+  ZDvidUrl url(getDvidTarget(), m_admin);
+  del(ZDvidUrl::AppendSourceQuery(url.getBodyAnnotationUrl(bodyId)));
 }
 
 void ZDvidWriter::writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj)
@@ -735,17 +744,13 @@ void ZDvidWriter::deleteMesh(uint64_t bodyId)
 }
 */
 
-void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
-{
-  ZDvidUrl url(getDvidTarget(), m_admin);
-  del(ZDvidUrl::AppendSourceQuery(url.getBodyAnnotationUrl(bodyId)));
-}
-
+/*
 void ZDvidWriter::invalidateBody(uint64_t bodyId)
 {
   deleteBodyAnnotation(bodyId);
   deleteSkeleton(bodyId);
 }
+*/
 
 void ZDvidWriter::writeBodyInfo(uint64_t bodyId)
 {

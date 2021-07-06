@@ -1746,19 +1746,21 @@ ZFlyEmProofPresenter* ZFlyEmProofMvc::getCompletePresenter() const
   return qobject_cast<ZFlyEmProofPresenter*>(getPresenter());
 }
 
-void ZFlyEmProofMvc::mergeSelected()
+void ZFlyEmProofMvc::mergeBodies()
 {
   if (getCompleteDocument() != NULL) {
-    getCompleteDocument()->mergeSelected(getSupervisor());
+    getCompleteDocument()->mergeBodies(getSupervisor());
   }
 }
 
+/*
 void ZFlyEmProofMvc::mergeSelectedWithoutConflict()
 {
   if (getCompleteDocument() != NULL) {
     getCompleteDocument()->mergeSelectedWithoutConflict(getSupervisor());
   }
 }
+*/
 
 
 void ZFlyEmProofMvc::unmergeSelected()
@@ -2554,19 +2556,22 @@ void ZFlyEmProofMvc::diagnose()
                            neutu::EnumValue(se->getSliceAxis()))));
   }
 
+#if 0
   {
     QList<QString> bodyStatusList = getCompleteDocument()->getBodyStatusList();
     emit messageGenerated("Body statuses:");
     for (const QString &status : qAsConst(bodyStatusList)) {
-      emit messageGenerated(QString("%1: %2").
-                            arg(status, getCompleteDocument()->getMergeProject()->
-                                getStatusRank(status.toStdString())));
-      if (!getCompleteDocument()->getMergeProject()->isMergableStatus(
+      emit messageGenerated(
+            QString("%1: %2").
+            arg(status, getCompleteDocument()->getBodyAnnotationManager()->
+                getStatusRank(status.toStdString())));
+      if (!getCompleteDocument()->getBodyAnnotationManager()->isMergableStatus(
             status.toStdString())) {
         emit messageGenerated("  not mergable");
       }
     }
   }
+#endif
 
   {
     NeuPrintReader *reader = ZGlobal::GetInstance().getNeuPrintReader();
@@ -2674,7 +2679,7 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(bodyChopTriggered()),
             this, SLOT(chopBody()));
   connect(getCompletePresenter(), SIGNAL(bodyMergeTriggered()),
-          this, SLOT(mergeSelected()));
+          this, SLOT(mergeBodies()));
   connect(getCompletePresenter(), SIGNAL(bodyUnmergeTriggered()),
           this, SLOT(unmergeSelected()));
   //  connect(getCompletePresenter(), SIGNAL(labelSliceSelectionChanged()),
@@ -2775,7 +2780,7 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(annotatingTodo()),
           this, SLOT(annotateTodo()));
   connect(getCompletePresenter(), SIGNAL(mergingBody()),
-          this, SLOT(mergeSelected()));
+          this, SLOT(mergeBodies()));
   connect(getCompletePresenter(), SIGNAL(uploadingMerge()),
           this, SLOT(commitMerge()));
 //  connect(getCompletePresenter(), SIGNAL(goingToBody()), this, SLOT());
@@ -3183,8 +3188,8 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChangeG()
       std::vector<uint64_t> deselected =
           labelSlice->getSelector().getDeselectedList();
 
-      getCompleteDocument()->removeSelectedAnnotation(
-            deselected.begin(), deselected.end());
+//      getCompleteDocument()->removeSelectedAnnotation(
+//            deselected.begin(), deselected.end());
 
       //for testing
       /*
@@ -3197,18 +3202,21 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChangeG()
     updateViewButton();
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   getCompleteDocument()->verifyBodyAnnotationMap();
 #endif
 }
 
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 {
+  processLabelSliceSelectionChangeG<ZJsonObject>();
+  /*
   if (getCompleteDocument()->usingGenericBodyAnnotation()) {
     processLabelSliceSelectionChangeG<ZJsonObject>();
   } else {
     processLabelSliceSelectionChangeG<ZFlyEmBodyAnnotation>();
   }
+  */
 
 #if 0
   if (!showingAnnotations()) {
@@ -3553,7 +3561,7 @@ void ZFlyEmProofMvc::testBodyMerge()
 
     locateBody(bodyId, appending);
 
-    mergeSelectedWithoutConflict();
+//    mergeSelectedWithoutConflict();
 
 //    std::vector<uint64_t> bodyArray;
 //    bodyArray.push_back(bodyId);
@@ -3856,9 +3864,13 @@ void ZFlyEmProofMvc::annotateSelectedBody()
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
         ZGenericBodyAnnotationDialog *genericDlg =
             m_dlgManager->getGenericAnnotationDlg();
+        ZJsonObject oldAnnotation =
+            getCompleteDocument()->getBodyAnnotation(bodyId);
         if (genericDlg) {
-          ZJsonObject oldAnnotation = reader.readBodyAnnotationJson(bodyId);
+
+//          ZJsonObject oldAnnotation = reader.readBodyAnnotationJson(bodyId);
           genericDlg->loadJsonObject(oldAnnotation);
+          genericDlg->setLabel(QString("Body ID: %1").arg(bodyId));
           if (genericDlg->exec()) {
             annotateBody(bodyId, genericDlg->toJsonObject(), oldAnnotation);
           }
@@ -3868,8 +3880,10 @@ void ZFlyEmProofMvc::annotateSelectedBody()
           dlg->updatePropertyBox();
           dlg->setBodyId(bodyId);
 
-          ZFlyEmBodyAnnotation annotation =
-                FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+          ZFlyEmBodyAnnotation annotation;
+          annotation.loadJsonObject(oldAnnotation);
+//          =
+//                FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
           dlg->loadBodyAnnotation(annotation);
 
           if (dlg->exec() && dlg->getBodyId() == bodyId) {
@@ -7257,8 +7271,7 @@ void ZFlyEmProofMvc::updateViewButton()
           getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
       if (bodySet.size() == 1) {
         uint64_t bodyId = *(bodySet.begin());
-        ZString status(
-              getCompleteDocument()->getRecordedAnnotationStatus(bodyId));
+        ZString status(getCompleteDocument()->getBodyStatus(bodyId));
 //        ZFlyEmBodyAnnotation annot =
 //            getCompleteDocument()->getRecordedAnnotation(bodyId);
 //        if (annot.getBodyId() == bodyId) {

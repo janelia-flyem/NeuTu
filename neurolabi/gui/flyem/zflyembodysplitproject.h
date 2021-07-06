@@ -29,6 +29,7 @@ class ZStackViewParam;
 class ZWidgetMessage;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBookmarkArray;
+class FlyEmBodyAnnotationManager;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -306,6 +307,7 @@ private:
   void updateBodyDep(
       uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer);
 
+  FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
 
 private:
   ZDvidReader m_reader;

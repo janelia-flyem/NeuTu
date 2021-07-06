@@ -51,8 +51,21 @@ void ZFlyEmSplitUploadOptionDialog::setDvidTarget(const ZDvidTarget &target)
   m_dvidReader.open(target);
 }
 
+void ZFlyEmSplitUploadOptionDialog::processAnnotation(
+    ZJsonObject &annotation, bool usingDescription)
+{
+  if (newComment()) {
+    ZFlyEmBodyAnnotation::SetComment(
+          annotation, getComment().toStdString(), usingDescription);
+  }
+  if (ui->statusCheckBox->isChecked()) {
+    ZFlyEmBodyAnnotation::SetStatus(annotation, getStatus().toStdString());
+  }
+}
+
+#if 0
 ZFlyEmBodyAnnotation ZFlyEmSplitUploadOptionDialog::getAnnotation(
-    uint64_t bodyId, uint64_t newBodyId) const
+    uint64_t bodyId) const
 {
   ZFlyEmBodyAnnotation annot;
   if (passingAnnotation()) {
@@ -69,13 +82,16 @@ ZFlyEmBodyAnnotation ZFlyEmSplitUploadOptionDialog::getAnnotation(
     annot.setStatus(getStatus().toStdString());
   }
 
+  /*
   if (!annot.isEmpty()) {
     annot.setBodyId(newBodyId);
 //    annot.setStatus("Not examined");
   }
+  */
 
   return annot;
 }
+#endif
 
 bool ZFlyEmSplitUploadOptionDialog::passingAnnotation() const
 {

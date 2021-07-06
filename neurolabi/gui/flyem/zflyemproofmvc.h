@@ -244,7 +244,7 @@ public slots:
 
   void setDvidTarget();
 
-  void mergeSelected();
+  void mergeBodies();
   void unmergeSelected();
 
   void setSegmentationVisible(bool visible);
@@ -552,7 +552,7 @@ private:
   void runFullSplitFunc();
   void runLocalSplitFunc();
 
-  void mergeSelectedWithoutConflict();
+//  void mergeSelectedWithoutConflict();
 //  void notifyBookmarkUpdated();
 
 //  void syncDvidBookmark();
@@ -760,7 +760,7 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
 
   connect(panel, SIGNAL(segmentVisibleChanged(bool)),
           this, SLOT(setSegmentationVisible(bool)));
-  connect(panel, SIGNAL(mergingSelected()), this, SLOT(mergeSelected()));
+  connect(panel, SIGNAL(mergingSelected()), this, SLOT(mergeBodies()));
 //  connect(panel, SIGNAL(edgeModeToggled(bool)),
 //          this, SLOT(toggleEdgeMode(bool)));
   connect(panel, SIGNAL(dvidSetTriggered()), this, SLOT(setDvidTarget()));

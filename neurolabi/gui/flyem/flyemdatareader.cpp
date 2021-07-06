@@ -102,7 +102,7 @@ ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
     QByteArray data = reader.readBuffer(
           ZDvidUrl::AppendSourceQuery(url.getBodyAnnotationUrl(bodyId)));
     annotation.loadJsonString(data.constData());
-    annotation.setBodyId(bodyId);
+//    annotation.setBodyId(bodyId);
   }
 
   return annotation;

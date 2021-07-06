@@ -18,6 +18,10 @@ HEADERS += \
     $$PWD/auth/flyemauthtokendialog.h \
     $$PWD/auth/flyemauthtokenhandler.h \
     $$PWD/auth/flyemauthtokenstorage.h \
+    $$PWD/flyembodyannotationio.h \
+    $$PWD/flyembodyannotationlocalio.h \
+    $$PWD/flyembodyannotationmanager.h \
+    $$PWD/flyembodyannotationproofdocio.h \
     $$PWD/flyemdataframeoptiondialog.h \
     $$PWD/flyemdef.h \
     $$PWD/flyemorthocontrolform.h \
@@ -151,6 +155,10 @@ SOURCES += \
     $$PWD/auth/flyemauthtokendialog.cpp \
     $$PWD/auth/flyemauthtokenhandler.cpp \
     $$PWD/auth/flyemauthtokenstorage.cpp \
+    $$PWD/flyembodyannotationio.cpp \
+    $$PWD/flyembodyannotationlocalio.cpp \
+    $$PWD/flyembodyannotationmanager.cpp \
+    $$PWD/flyembodyannotationproofdocio.cpp \
     $$PWD/flyemdataframeoptiondialog.cpp \
     $$PWD/flyemorthocontrolform.cpp \
     $$PWD/flyemproofcontrolform.cpp \

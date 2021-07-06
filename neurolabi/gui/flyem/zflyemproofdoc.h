@@ -43,6 +43,7 @@ class ZFlyEmRoiManager;
 class ZStackBlockGrid;
 class ZDvidEnv;
 class ZRoiProvider;
+class FlyEmBodyAnnotationManager;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -176,6 +177,8 @@ public:
     return &m_bodyMerger;
   }
 
+  FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
+
   ZFlyEmBodyMergeProject* getMergeProject() {
     return m_mergeProject;
   }
@@ -184,8 +187,15 @@ public:
     return m_mergeProject;
   }
 
-  void mergeSelected(ZFlyEmSupervisor *supervisor);
-  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
+  ZJsonObject getBodyAnnotation(uint64_t bodyId) const;
+
+  void mergeBodies(ZFlyEmSupervisor *supervisor);
+  void mergeBodies(
+      const std::vector<std::pair<uint64_t, uint64_t>> &targets,
+      ZFlyEmSupervisor *supervisor);
+
+//  void mergeSelected(ZFlyEmSupervisor *supervisor);
+//  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
   void backupMergeOperation();
@@ -244,16 +254,17 @@ public:
 
   void downloadSynapseFunc();
 
-  void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
-  void recordBodyAnnotation(uint64_t bodyId, const ZJsonObject &anno);
-  void removeSelectedAnnotation(uint64_t bodyId);
+//  void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+//  void recordBodyAnnotation(uint64_t bodyId, const ZJsonObject &anno);
+//  void removeSelectedAnnotation(uint64_t bodyId);
   template <typename InputIterator>
   void removeSelectedAnnotation(
       const InputIterator &first, const InputIterator &last);
 //  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
-  std::string getRecordedAnnotationStatus(uint64_t bodyId) const;
+//  std::string getRecordedAnnotationStatus(uint64_t bodyId);
+  std::string getBodyStatus(uint64_t bodyId);
 
-  void verifyBodyAnnotationMap();
+//  void verifyBodyAnnotationMap();
 
   ZFlyEmBodyAnnotation getFinalAnnotation(const std::vector<uint64_t> &bodyList,
       std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
@@ -265,7 +276,7 @@ public:
    *
    * This is a temporary solution to inconsistent selection update.
    */
-  void clearBodyAnnotationMap();
+//  void clearBodyAnnotationMap();
 
   void activateBodyColorMap(const QString &colorMapName, bool updating);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
@@ -832,21 +843,27 @@ private:
   ZDvidReader& getBookmarkReader();
   ZDvidWriter& getBookmarkWriter();
 
+  /*
   template<typename T>
   void mergeSelected(
       ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+      */
 
+  /*
   template<typename T>
   void mergeSelectedWithoutConflict(
       ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+      */
 
-  template<typename T>
-  void verifyBodyAnnotationMapG(const QMap<uint64_t, T> &annotationMap);
+//  template<typename T>
+//  void verifyBodyAnnotationMapG(const QMap<uint64_t, T> &annotationMap);
 
   template<typename T>
   void clearBodyAnnotationMap(QMap<uint64_t, T> &annotationMap) const;
 
 //  void notifyUserBookmkarModified();
+
+  std::vector<std::pair<uint64_t, uint64_t>> getMergeCandidate() const;
 
 private slots:
   void processBodyMergeUploaded();
@@ -920,9 +937,10 @@ protected:
   QMap<ZFlyEmBodyColorOption::EColorOption,
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
 
-  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
-  QMap<uint64_t, ZJsonObject> m_genericAnnotationMap;
+//  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+//  QMap<uint64_t, ZJsonObject> m_genericAnnotationMap;
 
+  FlyEmBodyAnnotationManager *m_bodyAnnotationManager = nullptr;
   ZFlyEmRoiManager *m_roiManager = nullptr;
 
   ZFlyEmProofDocTracingHelper m_tracingHelper;
@@ -945,6 +963,7 @@ void ZFlyEmProofDoc::selectBody(
   }
 }
 
+/*
 template <typename InputIterator>
 void ZFlyEmProofDoc::removeSelectedAnnotation(
     const InputIterator &first, const InputIterator &last)
@@ -953,6 +972,6 @@ void ZFlyEmProofDoc::removeSelectedAnnotation(
     removeSelectedAnnotation(*iter);
   }
 }
-
+*/
 
 #endif // ZFLYEMPROOFDOC_H

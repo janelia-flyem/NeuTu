@@ -717,16 +717,6 @@ void FlyEmBodyInfoDialog::setBodyHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(
           i, new QStandardItem(m_bodyColumnHeaderList[i]));
   }
-  /*
-    model->setHorizontalHeaderItem(BODY_ID_COLUMN, new QStandardItem("Body ID"));
-    model->setHorizontalHeaderItem(
-          BODY_PRIMARY_NEURITE, new QStandardItem("CBF"));
-    model->setHorizontalHeaderItem(BODY_TYPE_COLUMN, new QStandardItem("type"));
-    model->setHorizontalHeaderItem(BODY_NAME_COLUMN, new QStandardItem("instance"));
-    model->setHorizontalHeaderItem(BODY_NPRE_COLUMN, new QStandardItem("# pre"));
-    model->setHorizontalHeaderItem(BODY_NPOST_COLUMN, new QStandardItem("# post"));
-    model->setHorizontalHeaderItem(BODY_STATUS_COLUMN, new QStandardItem("status"));
-    */
 }
 
 void FlyEmBodyInfoDialog::setFilterHeaders(QStandardItemModel * model) {
@@ -2601,20 +2591,26 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
               m_currentDvidTarget.getBodyAnnotationName());
         QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
         QList<QString> keyList;
+        QList<uint64_t> keyBodyList;
         for (size_t i=0; i<bodyList.size(); i++) {
             if (!m_bodyNames.contains(bodyList[i]) &&
                 !m_namelessBodies.contains(bodyList[i]) &&
                 bodyAnnotationKeys.contains(QString::number(bodyList[i]))) {
                 keyList.append(QString::number(bodyList[i]));
+                keyBodyList.append(bodyList[i]);
             }
         }
 
         // grab all the possible annotations at once, then those that have names,
         //  put in our name stash
-        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(bodyAnnotationName, keyList);
+        QList<ZJsonObject> bodyAnnotationList = reader.readJsonObjectsFromKeys(
+              bodyAnnotationName, keyList);
 
-        foreach (ZJsonObject bodyData, bodyAnnotationList) {
-            uint64_t tempBodyID = ZJsonParser::integerValue(bodyData["body ID"]);
+//        foreach (ZJsonObject bodyData, bodyAnnotationList) {
+        for (int i = 0; i < keyList.size(); ++i) {
+            ZJsonObject bodyData = bodyAnnotationList.at(i);
+            uint64_t tempBodyID = keyBodyList[i];
+//            uint64_t tempBodyID = ZJsonParser::integerValue(bodyData["body ID"]);
             std::string name = get_annotation_name(bodyData);
             if (name.empty()) {
               m_namelessBodies.insert(tempBodyID);

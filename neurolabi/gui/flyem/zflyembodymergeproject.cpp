@@ -58,6 +58,7 @@
 #include "flyemdatareader.h"
 #include "flyemdatawriter.h"
 #include "zflyemproofutil.h"
+#include "flyembodyannotationmanager.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -467,6 +468,7 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 //  m_annotationCache.clear();
 }
 
+/*
 QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
     std::function<bool(const ZFlyEmBodyStatus&)> pred) const
 {
@@ -482,7 +484,9 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
 
   return statusList;
 }
+*/
 
+#if 0
 QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
 {
   const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
@@ -549,6 +553,7 @@ bool ZFlyEmBodyMergeProject::preservingId(const std::string &status) const
 {
   return m_bodyStatusProtocol.preservingId(status);
 }
+#endif
 
 namespace {
 
@@ -605,6 +610,7 @@ QString compose_body_status_message(
 
 }
 
+#if 0
 template<typename T>
 QString ZFlyEmBodyMergeProject::composeFinalStatusMessage(
     const QMap<uint64_t, T> &annotMap) const
@@ -644,20 +650,23 @@ QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
     const QMap<uint64_t, std::string> &statusMap) const
 {
   QString msg;
-  const std::vector<std::vector<uint64_t>> &conflictSet =
-      m_bodyStatusProtocol.getConflictBody(statusMap);
-  int itemCount = 0;
-  for (const std::vector<uint64_t> &bodyArray : conflictSet) {
-    msg += compose_body_status_message(bodyArray, statusMap, itemCount);
-    if (itemCount >= 5) {
-      break;
+  if (getBodyAnnotationManager()) {
+    const std::vector<std::vector<uint64_t>> &conflictSet =
+        getBodyAnnotationManager()->getBodyStatusProtocol().getConflictBody(
+          statusMap);
+    int itemCount = 0;
+    for (const std::vector<uint64_t> &bodyArray : conflictSet) {
+      msg += compose_body_status_message(bodyArray, statusMap, itemCount);
+      if (itemCount >= 5) {
+        break;
+      }
     }
-  }
 
-  if (!msg.isEmpty()) {
-    msg = "The following bodies have conflicting statuses: " + msg +
-        "<font color=\"#FF0000\">You should NOT merge them "
+    if (!msg.isEmpty()) {
+      msg = "The following bodies have conflicting statuses: " + msg +
+          "<font color=\"#FF0000\">You should NOT merge them "
         "unless you want to be resposible for any side effects.</font>";
+    }
   }
 
   return msg;
@@ -708,6 +717,7 @@ QString ZFlyEmBodyMergeProject::composeStatusExclusionMessage(
 {
   return composeStatusExclusionMessage(body_map_to_status_map(annotMap));
 }
+#endif
 
 void ZFlyEmBodyMergeProject::uploadMeshMerge(
     uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
@@ -727,6 +737,14 @@ bool ZFlyEmBodyMergeProject::usingGenericBodyAnnotation() const
 
 int ZFlyEmBodyMergeProject::getCachedStatusRank(uint64_t bodyId) const
 {
+  int rank = 0;
+  if (getBodyAnnotationManager()) {
+    return getBodyAnnotationManager()->getStatusRank(
+          getBodyAnnotationManager()->getBodyStatus(bodyId));
+  }
+
+  return rank;
+  /*
   std::string status;
   if (usingGenericBodyAnnotation()) {
     status = ZFlyEmBodyAnnotation::GetStatus(
@@ -740,11 +758,16 @@ int ZFlyEmBodyMergeProject::getCachedStatusRank(uint64_t bodyId) const
   }
 
   return m_bodyStatusProtocol.getStatusRank(status);
+  */
 }
 
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
 {
+  if (getBodyAnnotationManager()) {
+    getBodyAnnotationManager()->mergeAnnotation(targetId, bodyIdArray);
+  }
+#if 0
   const ZDvidReader &reader = m_writer.getDvidReader();
   if (reader.isReady()) {
     if (!usingGenericBodyAnnotation()) {
@@ -800,6 +823,8 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
       }
     }
   }
+#endif
+
 }
 
 void ZFlyEmBodyMergeProject::updateMergeMap()
@@ -851,6 +876,16 @@ void ZFlyEmBodyMergeProject::setBodyAnnotationSchema(const ZJsonObject &schema)
 
 void ZFlyEmBodyMergeProject::refreshBodyAnnotationCache()
 {
+  if (getBodyAnnotationManager()) {
+    foreach (uint64_t targetId, m_mergeMap.keys()) {
+      std::vector<uint64_t> idArray = m_mergeMap[targetId];
+      idArray.push_back(targetId);
+      for (uint64_t bodyId : idArray) {
+        getBodyAnnotationManager()->invalidateCache(bodyId);
+      }
+    }
+  }
+  /*
   m_annotationCache.clear();
   m_genericAnnotationCache.clear();
   const ZDvidReader &reader = m_writer.getDvidReader();
@@ -879,6 +914,7 @@ void ZFlyEmBodyMergeProject::refreshBodyAnnotationCache()
       }
     }
   }
+  */
 }
 
 void ZFlyEmBodyMergeProject::updateAffliatedData(
@@ -886,7 +922,10 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
     ZWidgetMessage &warnMsg)
 {
   for (uint64_t bodyId : bodyArray) {
-    m_writer.deleteBodyAnnotation(bodyId);
+    if (getBodyAnnotationManager()) {
+      getBodyAnnotationManager()->removeAnnotation(bodyId);
+    }
+//    m_writer.deleteBodyAnnotation(bodyId);
     m_writer.deleteSkeleton(bodyId);
   }
 
@@ -1004,6 +1043,7 @@ std::string get_status(
 
 }
 
+/*
 std::string ZFlyEmBodyMergeProject::getBodyStatus(uint64_t bodyId) const
 {
   std::string status;
@@ -1014,7 +1054,9 @@ std::string ZFlyEmBodyMergeProject::getBodyStatus(uint64_t bodyId) const
   }
   return status;
 }
+*/
 
+/*
 bool ZFlyEmBodyMergeProject::preserved(uint64_t bodyId) const
 {
   return (preservingId(getBodyStatus(bodyId)));
@@ -1026,6 +1068,7 @@ bool ZFlyEmBodyMergeProject::hasName(uint64_t bodyId) const
         has_name(bodyId, m_genericAnnotationCache) :
         has_name(bodyId, m_annotationCache);
 }
+*/
 
 bool ZFlyEmBodyMergeProject::mergeVerified(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray) const
@@ -1034,42 +1077,26 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
 
   QString bodyStatusMsg;
   QString bodyNameMsg;
-  if (!bodyArray.empty()) {
-    if (!hasName(targetId) && hasName(bodyArray.front())) {
+  if (!bodyArray.empty() && getBodyAnnotationManager()) {
+    if (!getBodyAnnotationManager()->hasName(targetId)
+        && getBodyAnnotationManager()->hasName(bodyArray.front())) {
       msg += QString("The name of ID %1 will be transfered to ID %2\n").
           arg(bodyArray.front()).arg(targetId);
     }
 
-    if (!usingGenericBodyAnnotation()) {
-      for (uint64_t bodyId : bodyArray) {
-        if (preserved(bodyId)) {
-          bodyStatusMsg += QString("ID: %1, Status: %2;\n").
-              arg(bodyId).
-              arg(getBodyStatus(bodyId).c_str());
-        }
-
-        if (hasName(bodyId)) {
-          bodyNameMsg += QString("ID: %1, Name: %2;\n").
-              arg(bodyId).
-              arg(get_name(bodyId, m_annotationCache).c_str());
-        }
+    for (uint64_t bodyId : bodyArray) {
+      if (getBodyAnnotationManager()->preserved(bodyId)) {
+        bodyStatusMsg += QString("ID: %1, Status: %2;\n").
+            arg(bodyId).
+            arg(getBodyAnnotationManager()->getBodyStatus(bodyId).c_str());
       }
-    } else {
-      for (uint64_t bodyId : bodyArray) {
-        if (preserved(bodyId)) {
-          bodyStatusMsg += QString("ID: %1, Status: %2;\n").
-              arg(bodyId).
-              arg(getBodyStatus(bodyId).c_str());
-        }
 
-        if (hasName(bodyId)) {
-          bodyNameMsg += QString("ID: %1, Name: %2;\n").
-              arg(bodyId).
-              arg(get_name(bodyId, m_genericAnnotationCache).c_str());
-        }
+      if (getBodyAnnotationManager()->hasName(bodyId)) {
+        bodyNameMsg += QString("ID: %1, Name: %2;\n").
+            arg(bodyId).
+            arg(getBodyAnnotationManager()->getBodyName(bodyId).c_str());
       }
     }
-
   }
 
   bool okToContinue = true;
@@ -1713,11 +1740,13 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 }
 #endif
 
+/*
 void ZFlyEmBodyMergeProject::setBodyStatusProtocol(
     const ZFlyEmBodyAnnotationProtocol &protocol)
 {
   m_bodyStatusProtocol = protocol;
 }
+*/
 
 uint64_t ZFlyEmBodyMergeProject::getSelectedBodyId() const
 {
@@ -1786,15 +1815,24 @@ ZStackDoc* ZFlyEmBodyMergeProject::getDocument() const
 
 ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger() const
 {
-  if (getDocument<ZFlyEmBodyMergeDoc>() != NULL) {
+  if (getDocument<ZFlyEmBodyMergeDoc>()) {
     return getDocument<ZFlyEmBodyMergeDoc>()->getBodyMerger();
   }
 
-  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+  if (getDocument<ZFlyEmProofDoc>()) {
     return getDocument<ZFlyEmProofDoc>()->getBodyMerger();
   }
 
-  return NULL;
+  return nullptr;
+}
+
+FlyEmBodyAnnotationManager* ZFlyEmBodyMergeProject::getBodyAnnotationManager() const
+{
+  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+    return getDocument<ZFlyEmProofDoc>()->getBodyAnnotationManager();
+  }
+
+  return nullptr;
 }
 
 /*
@@ -1979,10 +2017,12 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
   return label;
 }
 
+/*
 void ZFlyEmBodyMergeProject::setAdmin(bool admin)
 {
   m_isAdmin = admin;
 }
+*/
 
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
