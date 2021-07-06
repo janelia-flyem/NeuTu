@@ -217,8 +217,8 @@ TEST(ZFlyEmBodyAnnotation, mergeJson)
   annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 1");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
-  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 10ll);
-  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 20ll);
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, int64_t(10));
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, int64_t(20));
   ZJsonObject merged = ZFlyEmBodyAnnotation::MergeAnnotation(
         annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("test location", ZJsonObjectParser::GetValue(
@@ -263,8 +263,8 @@ TEST(ZFlyEmBodyAnnotation, mergeJson)
   annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 1");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
-  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 10ll);
-  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 20ll);
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, int64_t(10));
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, int64_t(20));
   merged = ZFlyEmBodyAnnotation::MergeAnnotation(
           annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("test location", ZJsonObjectParser::GetValue(
@@ -287,8 +287,8 @@ TEST(ZFlyEmBodyAnnotation, mergeJson)
   annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 1");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
-  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 20ll);
-  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 10ll);
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, int64_t(20));
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, int64_t(10));
   merged = ZFlyEmBodyAnnotation::MergeAnnotation(
           annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
   ASSERT_EQ("name 1", ZFlyEmBodyAnnotation::GetName(merged));

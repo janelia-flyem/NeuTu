@@ -2,6 +2,7 @@
 #define FLYEMBODYANNOTATIONLOCALIO_H
 
 #include "flyembodyannotationio.h"
+#include "zjsonobject.h"
 
 #include <unordered_map>
 
