@@ -1186,6 +1186,7 @@ public slots: //undoable commands
   virtual bool executeRemoveObjectCommand(ZStackObjectRole::TRole role);
   virtual bool executeRemoveSelectedObjectCommand();
   virtual bool executeRemoveSelectedObjectCommand(ZStackObjectRole::TRole role);
+  virtual bool executeRemoveSwcWithSelectedNode();
   //bool executeRemoveUnselectedObjectCommand();
 
   virtual bool executeMoveObjectCommand(

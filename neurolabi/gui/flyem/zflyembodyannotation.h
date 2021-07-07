@@ -38,7 +38,7 @@ public:
 
   std::string getName() const;
 
-  std::string getType() const;
+  std::string getClass() const;
   std::string getInferredType() const;
   std::string getAutoType() const;
   int64_t getTimestamp() const;
@@ -121,11 +121,11 @@ public:
   static std::string GetName(const ZJsonObject &obj);
   static std::string GetStatus(const ZJsonObject &obj);
 //  static uint64_t GetBodyId(const ZJsonObject &obj);
-  static std::string GetType(const ZJsonObject &obj);
+  static std::string GetClass(const ZJsonObject &obj);
 
   static std::string GetName(const ZFlyEmBodyAnnotation &obj);
   static std::string GetStatus(const ZFlyEmBodyAnnotation &obj);
-  static std::string GetType(const ZFlyEmBodyAnnotation &obj);
+  static std::string GetClass(const ZFlyEmBodyAnnotation &obj);
 
   static std::string GetComment(const ZJsonObject &obj);
   static void SetComment(
@@ -146,7 +146,7 @@ public:
 //  static const char *KEY_BODY_ID;
   static const char *KEY_STATUS;
   static const char *KEY_NAME;
-  static const char *KEY_TYPE;
+  static const char *KEY_CLASS;
   static const char *KEY_COMMENT;
   static const char *KEY_DESCRIPTION;
   static const char *KEY_USER;

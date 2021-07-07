@@ -8572,6 +8572,29 @@ bool ZStackDoc::executeRemoveSelectedObjectCommand()
   return false;
 }
 
+bool ZStackDoc::executeRemoveSwcWithSelectedNode()
+{
+  QList<ZSwcTree*> swcList = getObjectList<ZSwcTree>();
+  QList<ZStackObject*> objList;
+  foreach(ZSwcTree *tree, swcList) {
+    if (!tree->getSelectedNode().empty()) {
+      objList.append(dynamic_cast<ZStackObject*>(tree));
+    }
+  }
+
+  if (!objList.isEmpty()) {
+    ZStackDocCommand::ObjectEdit::RemoveObject *command =
+        new ZStackDocCommand::ObjectEdit::RemoveObject(this, NULL);
+    command->setRemoval(objList);
+    command->setLogMessage(QString("Remove swc with selected nodes"));
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
 void ZStackDoc::setParentDoc(ZSharedPointer<ZStackDoc> parentDoc)
 {
   m_parentDoc = parentDoc;

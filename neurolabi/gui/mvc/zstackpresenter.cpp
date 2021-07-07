@@ -3140,6 +3140,13 @@ bool ZStackPresenter::process(ZStackOperator &op)
       exitSwcExtendMode();
     }
     break;
+  case ZStackOperator::OP_SWC_DELETE_SELECTED_HOST:
+    buddyDocument()->executeRemoveSwcWithSelectedNode();
+    if (m_interactiveContext.swcEditMode() ==
+        ZInteractiveContext::SWC_EDIT_EXTEND) {
+      exitSwcExtendMode();
+    }
+    break;
   case ZStackOperator::OP_SWC_SELECT_SINGLE_NODE:
     buddyDocument()->recordSwcTreeNodeSelection();
     buddyDocument()->deselectAllSwcTreeNodes();

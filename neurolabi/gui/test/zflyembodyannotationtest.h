@@ -43,7 +43,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("Hard to trace", annot.getStatus());
   ASSERT_EQ("test", annot.getComment());
   ASSERT_EQ("KC", annot.getName());
-  ASSERT_EQ("neuron", annot.getType());
+  ASSERT_EQ("neuron", annot.getClass());
   ASSERT_EQ("test_user", annot.getUser());
   ASSERT_EQ("test_user2", annot.getStatusUser());
   ASSERT_EQ("mock", annot.getNamingUser());
@@ -72,7 +72,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("", annot.getStatus());
   ASSERT_EQ("", annot.getComment());
   ASSERT_EQ("", annot.getName());
-  ASSERT_EQ("", annot.getType());
+  ASSERT_EQ("", annot.getClass());
   ASSERT_EQ("", annot.getUser());
   ASSERT_EQ("", annot.getNamingUser());
   ASSERT_EQ("", annot.getProperty());
@@ -358,7 +358,7 @@ TEST(ZFlyEmBodyAnnotation, Json)
   obj.setEntry("class", "test type");
   ASSERT_EQ("test", ZFlyEmBodyAnnotation::GetName(obj));
   ASSERT_EQ("Traced", ZFlyEmBodyAnnotation::GetStatus(obj));
-  ASSERT_EQ("test type", ZFlyEmBodyAnnotation::GetType(obj));
+  ASSERT_EQ("test type", ZFlyEmBodyAnnotation::GetClass(obj));
 }
 
 #endif

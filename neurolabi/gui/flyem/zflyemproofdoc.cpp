@@ -793,7 +793,8 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
           ptArray.push_back(pos);
           Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
           if (SwcTreeNode::isRegular(parent)) {
-            edgeMap[pos] = SwcTreeNode::center(parent).roundToIntPoint();
+            Swc_Tree_Node *root = SwcTreeNode::regularRoot(tn);
+            edgeMap[pos] = SwcTreeNode::center(root).roundToIntPoint();
           }
         }
       }

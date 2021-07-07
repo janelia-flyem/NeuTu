@@ -12,7 +12,7 @@
 
 //const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "body ID"; // Obsolete
 const char *ZFlyEmBodyAnnotation::KEY_NAME = "name";
-const char *ZFlyEmBodyAnnotation::KEY_TYPE = "class";
+const char *ZFlyEmBodyAnnotation::KEY_CLASS = "class";
 const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
 const char *ZFlyEmBodyAnnotation::KEY_DESCRIPTION = "description";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
@@ -66,7 +66,7 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
   }
 
   if (!m_type.empty()) {
-    obj.setEntry(KEY_TYPE, m_type);
+    obj.setEntry(KEY_CLASS, m_type);
   }
 
   if (!m_status.empty()) {
@@ -192,8 +192,8 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setName(ZJsonParser::stringValue(obj[KEY_NAME]));
     }
 
-    if (obj.hasKey(KEY_TYPE)) {
-      setType(ZJsonParser::stringValue(obj[KEY_TYPE]));
+    if (obj.hasKey(KEY_CLASS)) {
+      setType(ZJsonParser::stringValue(obj[KEY_CLASS]));
     }
 
     if (obj.hasKey(KEY_USER)) {
@@ -339,7 +339,7 @@ std::string ZFlyEmBodyAnnotation::getName() const
 //  return getAutoName();
 }
 
-std::string ZFlyEmBodyAnnotation::getType() const
+std::string ZFlyEmBodyAnnotation::getClass() const
 {
   return m_type;
 //  if (!m_type.empty()) {
@@ -651,8 +651,8 @@ std::string ZFlyEmBodyAnnotation::brief(uint64_t bodyId) const
       stream << getName();
     }
 
-    if (!getType().empty()) {
-      stream << ":" << getType();
+    if (!getClass().empty()) {
+      stream << ":" << getClass();
     }
 
     stream << " (" << bodyId << ")";
@@ -725,9 +725,9 @@ uint64_t ZFlyEmBodyAnnotation::GetBodyId(const ZJsonObject &obj)
 }
 */
 
-std::string ZFlyEmBodyAnnotation::GetType(const ZJsonObject &obj)
+std::string ZFlyEmBodyAnnotation::GetClass(const ZJsonObject &obj)
 {
-  return ZJsonObjectParser::GetValue(obj, KEY_TYPE, "");
+  return ZJsonObjectParser::GetValue(obj, KEY_CLASS, "");
 }
 
 void ZFlyEmBodyAnnotation::SetStatus(ZJsonObject &obj, const std::string &status)
@@ -752,9 +752,9 @@ std::string ZFlyEmBodyAnnotation::GetStatus(const ZFlyEmBodyAnnotation &obj)
   return obj.getStatus();
 }
 
-std::string ZFlyEmBodyAnnotation::GetType(const ZFlyEmBodyAnnotation &obj)
+std::string ZFlyEmBodyAnnotation::GetClass(const ZFlyEmBodyAnnotation &obj)
 {
-  return obj.getType();
+  return obj.getClass();
 }
 
 ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
@@ -861,8 +861,8 @@ std::string ZFlyEmBodyAnnotation::Brief(uint64_t bodyId, const ZJsonObject &obj)
       stream << GetName(obj);
     }
 
-    if (!GetType(obj).empty()) {
-      stream << ":" << GetType(obj);
+    if (!GetClass(obj).empty()) {
+      stream << ":" << GetClass(obj);
     }
 
     stream << " (" << bodyId << ")";

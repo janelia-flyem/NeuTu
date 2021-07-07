@@ -406,7 +406,7 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
 //  setComment(annotation.getComment());
   setStatus(annotation.getStatus());
   setInstance(annotation.getName());
-  setType(annotation.getType());
+  setType(annotation.getClass());
   setComment(annotation.getComment());
 
   setMajorInput(annotation.getMajorInput());
