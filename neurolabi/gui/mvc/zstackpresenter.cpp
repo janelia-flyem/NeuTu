@@ -2414,10 +2414,12 @@ void ZStackPresenter::enterSwcMoveMode()
   }
 }
 
-void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
+void ZStackPresenter::enterSwcAddNodeMode(
+    double x, double y, ZStackObjectRole::TRole role)
 {
   interactiveContext().setSwcEditMode(ZInteractiveContext::SWC_EDIT_ADD_NODE);
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
+  stroke->setRole(role);
 #if 0
   if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
     stroke->setWidth(
@@ -2451,11 +2453,17 @@ void ZStackPresenter::trySwcAddNodeMode()
   trySwcAddNodeMode(pos.x(), pos.y());
 }
 
+void ZStackPresenter::enterSwcAddNodeMode(ZStackObjectRole::TRole role)
+{
+  QPointF pos = mapFromGlobalToStack(QCursor::pos());
+  enterSwcAddNodeMode(pos.x(), pos.y(), role);
+}
+
 void ZStackPresenter::trySwcAddNodeMode(double x, double y)
 {
   if (interactiveContext().strokeEditMode() !=
       ZInteractiveContext::STROKE_DRAW) {
-    enterSwcAddNodeMode(x, y);
+    enterSwcAddNodeMode(x, y, ZStackObjectRole::ROLE_NONE);
   }
 }
 
@@ -3248,7 +3256,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_SWC_ADD_NODE:
   {
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
-    ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
+    ZStackObjectRole::TRole role = stroke->getRole().getRole();
     if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI ||
         paintingRoi()) {
       role = ZStackObjectRole::ROLE_ROI;
@@ -3257,7 +3265,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
           m_mouseEventProcessor.getLatestStackPosition(),
           stroke->getWidth() / 2.0, role)) {
       //status = MOUSE_COMMAND_EXECUTED;
-      if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI) {
+      if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI ||
+          stroke->hasRole(ZStackObjectRole::ROLE_MERGE_LINK)) {
         buddyDocument()->selectSwcTreeNode(
               m_mouseEventProcessor.getLatestStackPosition(), false);
         enterSwcExtendMode();

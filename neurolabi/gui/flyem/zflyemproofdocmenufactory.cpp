@@ -158,7 +158,6 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
             if (ZStackDocHelper::AllowingBodySplit(doc)) {
               config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
             }
-            config.append(ZActionFactory::ACTION_BODY_ACTIVATE_MERGE_LINK);
           }
 
           config.appendSeparator();
@@ -205,6 +204,8 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     config.appendSeparator();
     /* Synapse actions */
     if (!doc->getDvidTarget().readOnly()) {
+      config.append(ZActionFactory::ACTION_BODY_ACTIVATE_MERGE_LINK);
+      config.appendSeparator();
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
       config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);

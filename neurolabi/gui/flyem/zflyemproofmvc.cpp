@@ -2640,6 +2640,8 @@ void ZFlyEmProofMvc::customInit()
 {
   connect(getPresenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplitTriggered()));
+  connect(getPresenter(), SIGNAL(activateMergeLinkTriggered()),
+          this, SLOT(activateBodyMergeLink()));
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
           this, SLOT(annotateSelectedBody()));
   connect(getPresenter(), &ZStackPresenter::bodyExpertStatusTriggered,
@@ -3846,6 +3848,11 @@ void ZFlyEmProofMvc::warnAbouBodyLockFail(uint64_t bodyId)
   emit messageGenerated(
         ZWidgetMessage(getCompleteDocument()->getBodyLockFailMessage(bodyId),
                        neutu::EMessageType::ERROR));
+}
+
+void ZFlyEmProofMvc::activateBodyMergeLink()
+{
+  getPresenter()->enterSwcAddNodeMode(ZStackObjectRole::ROLE_MERGE_LINK);
 }
 
 void ZFlyEmProofMvc::annotateSelectedBody()

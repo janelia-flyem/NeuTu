@@ -768,7 +768,7 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
 {
   std::vector<std::pair<uint64_t, uint64_t>> result;
 
-  auto objList = getObjectList<ZSwcTree>();
+  auto objList = getObjectList(ZStackObjectRole::ROLE_MERGE_LINK);
   if (objList.isEmpty()) {
     std::set<uint64_t> bodySet = getSelectedBodySet(
           neutu::ELabelSource::ORIGINAL);
@@ -783,7 +783,8 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
     std::vector<ZIntPoint> ptArray;
 
     std::unordered_map<ZIntPoint, ZIntPoint> edgeMap;
-    foreach (const ZSwcTree *tree, objList) {
+    foreach (ZStackObject *obj, objList) {
+      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
       ZSwcTree::DepthFirstIterator iter(tree);
       while (iter.hasNext()) {
         Swc_Tree_Node *tn = iter.next();
@@ -806,7 +807,11 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
     }
 
     for (const auto &edge : edgeMap) {
-      result.emplace_back(ptIdMap[edge.first], ptIdMap[edge.second]);
+      const auto fromId = ptIdMap[edge.first];
+      const auto toId = ptIdMap[edge.second];
+      if (fromId != toId) {
+        result.emplace_back(fromId, toId);
+      }
     }
   }
 
@@ -1145,14 +1150,25 @@ void ZFlyEmProofDoc::mergeBodies(
 
     if (okToContinue) {
 //      m_bodyMerger.pushMap(labelSet);
+      ZFlyEmBodyMerger::TLabelMap labelMap;
       for (const auto &pair : targets) {
-        m_bodyMerger.pushMap(pair.first, pair.second);
+        if (m_bodyMerger.getFinalLabel(pair.first) !=
+            m_bodyMerger.getFinalLabel(pair.second)) {
+          labelMap[pair.first] = pair.second;
+        }
       }
-      m_bodyMerger.undo();
+      if (!labelMap.isEmpty()) {
+        m_bodyMerger.pushMap(labelMap);
+#ifdef _DEBUG_
+        std::cout << "Merging ..." << std::endl;
+        m_bodyMerger.print();
+#endif
+        m_bodyMerger.undo();
 
-      ZFlyEmProofDocCommand::MergeBody *command =
-          new ZFlyEmProofDocCommand::MergeBody(this);
-      pushUndoCommand(command);
+        ZFlyEmProofDocCommand::MergeBody *command =
+            new ZFlyEmProofDocCommand::MergeBody(this);
+        pushUndoCommand(command);
+      }
     }
   }
 }

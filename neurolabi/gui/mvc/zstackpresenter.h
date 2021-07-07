@@ -308,6 +308,9 @@ public:
 
   void setHighContrastProtocal(const ZJsonObject &obj);
 
+  void enterSwcAddNodeMode(double x, double y, ZStackObjectRole::TRole role);
+  void enterSwcAddNodeMode(ZStackObjectRole::TRole role);
+
 public: //test functions
   void testBiocytinProjectionMask();
 
@@ -337,7 +340,6 @@ public slots:
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
   void enterSwcMoveMode();
-  void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
   void enterEraseStrokeMode(double x, double y);
