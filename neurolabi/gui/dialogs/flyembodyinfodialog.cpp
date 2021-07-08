@@ -1065,7 +1065,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
             if (ok) {
                 // grab the previously retrieved data and modify it:
                 ZJsonObject bodyData = bodyAnnotationList[i];
-                bodyData.setEntry("body ID", bodyID);
+                bodyData.setEntry("body ID", int64_t(bodyID));
 
                 std::string name = get_annotation_name(bodyData);
                 if (!name.empty()) {
