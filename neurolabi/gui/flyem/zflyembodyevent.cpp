@@ -18,6 +18,9 @@ ZFlyEmBodyEvent::UPDATE_MULTIRES = 8;
 const ZFlyEmBodyEvent::TUpdateFlag
 ZFlyEmBodyEvent::UPDATE_SEGMENTATION = 16;
 
+const ZFlyEmBodyEvent::TUpdateFlag
+ZFlyEmBodyEvent::SYNC_BODY_COLOR = 32;
+
 ZFlyEmBodyEvent::ZFlyEmBodyEvent()
 {
 

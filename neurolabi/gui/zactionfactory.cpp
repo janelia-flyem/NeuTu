@@ -29,7 +29,7 @@ bool ZActionFactory::IsRegularAction(EAction actionKey)
 
 namespace  {
 
-static QAction* CreateColorAction(ZFlyEmBodyColorOption::EColorOption option,
+QAction* create_color_action(ZFlyEmBodyColorOption::EColorOption option,
                                   QObject *parent)
 {
   QAction *action =
@@ -67,7 +67,16 @@ QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
     action = MakeAction(actionKey, parent);
   }
 
+  if (action) {
+    m_actionMap[action] = actionKey;
+  }
+
   return action;
+}
+
+ZActionFactory::EAction ZActionFactory::getActionKey(QAction *action) const
+{
+  return m_actionMap.value(action, ACTION_NULL);
 }
 
 QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
@@ -340,8 +349,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_SPLIT_START:
     action = new QAction("Launch Split", parent);
     break;
-  case ACTION_BODY_ACTIVATE_MERGE_LINK:
+  case ACTION_MERGE_LINK_ACTIVATE:
     action = new QAction("Activate Merge Link", parent);
+    break;
+  case ACTION_MERGE_LINK_CLEAR:
+    action = new QAction("Clear Merge Links", parent);
     break;
   case ACTION_BODY_CHANGE_COLOR:
     action = new QAction("Change Body Color", parent);
@@ -658,27 +670,27 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setShortcut(Qt::Key_F2);
     break;
   case ACTION_BODY_COLOR_NORMAL:
-    action = CreateColorAction(
+    action = create_color_action(
           ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, parent);
     break;
   case ACTION_BODY_COLOR_NAME:
-    action = CreateColorAction(
+    action = create_color_action(
           ZFlyEmBodyColorOption::BODY_COLOR_NAME, parent);
     break;
   case ACTION_BODY_COLOR_SEQUENCER:
-    action = CreateColorAction(
+    action = create_color_action(
           ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, parent);
     break;
   case ACTION_BODY_COLOR_SEQUENCER_NORMAL:
-    action = CreateColorAction(
+    action = create_color_action(
           ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL, parent);
     break;
   case ACTION_BODY_COLOR_RANDOM:
-    action = CreateColorAction(
+    action = create_color_action(
           ZFlyEmBodyColorOption::BODY_COLOR_RANDOM, parent);
     break;
   case ACTION_BODY_COLOR_PROTOCOL:
-    action = CreateColorAction(
+    action = create_color_action(
           ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, parent);
     break;
   case ACTION_INFORMATION:

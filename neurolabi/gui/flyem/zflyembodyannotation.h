@@ -19,7 +19,7 @@ public:
   inline const std::string& getStatus() const { return m_status; }
   inline const std::string& getComment() const { return m_comment; }
 //  inline const std::string& getName() const { return m_name; }
-//  inline const std::string& getType() const { return m_type; }
+  inline const std::string& getType() const { return m_type; }
   inline const std::string& getUser() const { return m_userName; }
   inline const std::string& getNamingUser() const { return m_namingUser; }
   inline const std::string& getStatusUser() const { return m_statusUser; }
@@ -51,7 +51,7 @@ public:
     m_status = status;
   }
   inline void setName(const std::string &name) { m_name = name; }
-  inline void setType(const std::string &c) { m_type = c; }
+  inline void setClass(const std::string &c) { m_class = c; }
   inline void setComment(const std::string &comment) { m_comment = comment; }
   inline void setUser(const std::string &user) { m_userName = user; }
   inline void setNamingUser(const std::string &user) { m_namingUser = user; }
@@ -122,16 +122,24 @@ public:
   static std::string GetStatus(const ZJsonObject &obj);
 //  static uint64_t GetBodyId(const ZJsonObject &obj);
   static std::string GetClass(const ZJsonObject &obj);
+  static std::string GetUser(const ZJsonObject &obj);
+  static std::string GetNamingUser(const ZJsonObject &obj);
 
   static std::string GetName(const ZFlyEmBodyAnnotation &obj);
   static std::string GetStatus(const ZFlyEmBodyAnnotation &obj);
   static std::string GetClass(const ZFlyEmBodyAnnotation &obj);
+  static std::string GetType(const ZFlyEmBodyAnnotation &obj);
 
   static std::string GetComment(const ZJsonObject &obj);
   static void SetComment(
       ZJsonObject &obj, const std::string &comment, bool usingDescription);
 
   static void SetStatus(ZJsonObject &obj, const std::string &status);
+  static void SetUser(ZJsonObject &obj, const std::string &user);
+  static void SetNamingUser(ZJsonObject &obj, const std::string &user);
+  static void UpdateUserFields(
+      ZJsonObject &obj, const std::string &user, const ZJsonObject &oldObj);
+  static std::string GetType(const ZJsonObject &obj);
 //  static void SetBodyId(ZJsonObject &obj, const uint64_t bodyId);
 
   static std::string Brief(uint64_t bodyId, const ZJsonObject &obj);
@@ -147,9 +155,11 @@ public:
   static const char *KEY_STATUS;
   static const char *KEY_NAME;
   static const char *KEY_CLASS;
+  static const char *KEY_TYPE;
   static const char *KEY_COMMENT;
   static const char *KEY_DESCRIPTION;
   static const char *KEY_USER;
+  static const char *KEY_NAMING_USER_OLD;
   static const char *KEY_NAMING_USER;
   static const char *KEY_STATUS_USER;
   static const char *KEY_INSTANCE;
@@ -177,6 +187,7 @@ private:
   std::string m_status;
   std::string m_comment;
   std::string m_name;
+  std::string m_class;
   std::string m_type;
   std::string m_userName;
   std::string m_namingUser;

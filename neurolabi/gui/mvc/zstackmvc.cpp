@@ -126,7 +126,9 @@ void ZStackMvc::createPresenter()
 void ZStackMvc::createPresenter(neutu::EAxis axis)
 {
   createPresenter();
-  if (m_presenter != NULL) {
+  if (m_presenter) {
+    connect(m_presenter, SIGNAL(actionTriggered(ZActionFactory::EAction)),
+            this, SLOT(processAction(ZActionFactory::EAction)));
     m_presenter->setSliceAxis(axis);
   }
 }
@@ -731,4 +733,11 @@ double ZStackMvc::getHeightZoomRatio() const
 void ZStackMvc::shortcutTest()
 {
   std::cout << "Shortcut triggered: ZStackMvc::shortcutTest()" << std::endl;
+}
+
+void ZStackMvc::processAction(ZActionFactory::EAction action)
+{
+#ifdef _DEBUG_
+  LINFO() << "Action triggerd: " << action;
+#endif
 }

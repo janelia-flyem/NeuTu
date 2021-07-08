@@ -474,6 +474,7 @@ private:
   void updateBodyFunc();
 
   void processBodySetBuffer();
+  void syncBodyColor();
 
   QMap<uint64_t, ZFlyEmBodyEvent> makeEventMap(bool synced, ZFlyEmBodyManager *bm);
   QMap<uint64_t, ZFlyEmBodyEvent> makeEventMapUnsync(ZFlyEmBodyManager *bm);

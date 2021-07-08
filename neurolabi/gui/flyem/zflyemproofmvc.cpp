@@ -3879,7 +3879,11 @@ void ZFlyEmProofMvc::annotateSelectedBody()
           genericDlg->loadJsonObject(oldAnnotation);
           genericDlg->setLabel(QString("Body ID: %1").arg(bodyId));
           if (genericDlg->exec()) {
-            annotateBody(bodyId, genericDlg->toJsonObject(), oldAnnotation);
+            ZJsonObject newAnnotation = genericDlg->toJsonObject();
+            std::string user = neutu::GetCurrentUserName();
+            ZFlyEmBodyAnnotation::UpdateUserFields(
+                  newAnnotation, user, oldAnnotation);
+            annotateBody(bodyId, newAnnotation, oldAnnotation);
           }
         } else {
           FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
@@ -4046,7 +4050,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode
     } else {
       QString msg = QString("Invalid body id: %1").arg(bodyId);
       emit messageGenerated(
-            ZWidgetMessage(msg, neutu::EMessageType::ERROR, ZWidgetMessage::TARGET_DIALOG));
+            ZWidgetMessage(msg, neutu::EMessageType::ERROR,
+                           ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
     }
 
@@ -7364,5 +7369,22 @@ void ZFlyEmProofMvc::showAnnotations(bool show)
 bool ZFlyEmProofMvc::showingAnnotations()
 {
   return s_showAnnotations;
+}
+
+void ZFlyEmProofMvc::processAction(ZActionFactory::EAction action)
+{
+  bool processed = false;
+  switch (action) {
+  case ZActionFactory::ACTION_MERGE_LINK_CLEAR:
+    getDocument()->executeRemoveObjectCommand(ZStackObjectRole::ROLE_MERGE_LINK);
+    processed = true;
+    break;
+  default:
+    break;
+  }
+
+  if (!processed) {
+    ZStackMvc::processAction(action);
+  }
 }
 

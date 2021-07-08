@@ -214,7 +214,7 @@ TEST(ZFlyEmBodyAnnotation, mergeJson)
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, "hemilineage 2");
   annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_HEMILINEAGE, "");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS, true);
-  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 1");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD, "user 1");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
   annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
   annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, int64_t(10));
@@ -359,6 +359,32 @@ TEST(ZFlyEmBodyAnnotation, Json)
   ASSERT_EQ("test", ZFlyEmBodyAnnotation::GetName(obj));
   ASSERT_EQ("Traced", ZFlyEmBodyAnnotation::GetStatus(obj));
   ASSERT_EQ("test type", ZFlyEmBodyAnnotation::GetClass(obj));
+
+  ZFlyEmBodyAnnotation::SetUser(obj, "test_user");
+  ASSERT_EQ("test_user", ZJsonObjectParser::GetValue(obj, "user", ""));
+  ASSERT_EQ("test_user", ZFlyEmBodyAnnotation::GetUser(obj));
+
+  ZFlyEmBodyAnnotation::SetNamingUser(obj, "test_user2");
+  ASSERT_EQ("test_user2", ZJsonObjectParser::GetValue(obj, "instance_user", ""));
+  ASSERT_EQ("test_user2", ZFlyEmBodyAnnotation::GetNamingUser(obj));
+
+  obj.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD, "test_user");
+  ASSERT_EQ("test_user2", ZFlyEmBodyAnnotation::GetNamingUser(obj));
+  obj.removeKey(ZFlyEmBodyAnnotation::KEY_NAMING_USER);
+  ASSERT_EQ("test_user", ZFlyEmBodyAnnotation::GetNamingUser(obj));
+  ZFlyEmBodyAnnotation::SetNamingUser(obj, "test_user3");
+  ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetNamingUser(obj));
+  ASSERT_FALSE(obj.hasKey(ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD));
+
+  ZJsonObject oldObj;
+  oldObj.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "old instance");
+  ASSERT_EQ("old instance", ZFlyEmBodyAnnotation::GetName(oldObj));
+
+  obj.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "old instance");
+  ZFlyEmBodyAnnotation::UpdateUserFields(obj, "test_user4", oldObj);
+  ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetNamingUser(obj));
+  ASSERT_EQ("test_user4", ZFlyEmBodyAnnotation::GetUser(obj));
+
 }
 
 #endif

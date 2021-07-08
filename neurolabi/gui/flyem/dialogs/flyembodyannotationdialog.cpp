@@ -429,7 +429,7 @@ ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
   ZFlyEmBodyAnnotation annotation;
 //  annotation.setBodyId(getBodyId());
   annotation.setStatus(getStatus());
-  annotation.setType(getType());
+  annotation.setClass(getType());
   annotation.setInstance(getInstance());
   annotation.setComment(getComment());
   std::string user = neutu::GetCurrentUserName();

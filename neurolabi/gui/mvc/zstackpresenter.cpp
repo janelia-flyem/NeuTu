@@ -370,9 +370,13 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodySplitTriggered()));
       break;
-    case ZActionFactory::ACTION_BODY_ACTIVATE_MERGE_LINK:
+    case ZActionFactory::ACTION_MERGE_LINK_ACTIVATE:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyActivateMergeLinkTriggered()));
+      break;
+    case ZActionFactory::ACTION_MERGE_LINK_CLEAR:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyActionTriggered()));
       break;
     case ZActionFactory::ACTION_SPLIT_DATA:
       connect(action, SIGNAL(triggered()), this, SLOT(runSeededWatershed()));
@@ -4139,5 +4143,13 @@ void ZStackPresenter::setSliceAxis(neutu::EAxis axis)
        iter != m_activeDecorationList.end(); ++iter) {
     ZStackObject *obj = *iter;
     obj->setSliceAxis(axis);
+  }
+}
+
+void ZStackPresenter::notifyActionTriggered()
+{
+  QAction *action = qobject_cast<QAction*>(sender());
+  if (action) {
+    emit actionTriggered(m_actionFactory->getActionKey(action));
   }
 }

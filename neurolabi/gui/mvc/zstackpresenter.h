@@ -436,6 +436,8 @@ public slots:
 
   void processObjectModified(const ZStackObjectInfoSet &objSet);
 
+  void notifyActionTriggered();
+
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
@@ -463,6 +465,7 @@ signals:
   void uncheckingBookmark();
   void savingStack();
   void movingCrossHairTo(int x, int y);
+  void actionTriggered(ZActionFactory::EAction action);
 
 protected:
   void init();

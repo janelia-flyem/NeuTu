@@ -446,6 +446,7 @@ public slots:
   void copyLink(const QString &option);
 
   void processObjectModified(const ZStackObjectInfoSet &objSet) override;
+  void processAction(ZActionFactory::EAction action) override;
 
 protected slots:
   void detachCoarseBodyWindow();

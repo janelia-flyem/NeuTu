@@ -184,6 +184,23 @@ void ZFlyEmBody3dDoc::updateBodyFunc()
 {
 }
 
+void ZFlyEmBody3dDoc::syncBodyColor()
+{
+  QList<ZMesh*> meshList = getMeshList();
+  foreach (ZMesh *mesh, meshList) {
+    uint64_t label = mesh->getLabel();
+    if (label > 0) {
+      QColor color = getBodyColor(label);
+      QColor currentColor = mesh->getColor();
+      if (color.rgb() != currentColor.rgb()) {
+        mesh->setColor(color.red(), color.green(), color.blue());
+        bufferObjectModified(mesh);
+      }
+    }
+  }
+  processObjectModified();
+}
+
 void ZFlyEmBody3dDoc::enableNodeSeeding(bool on)
 {
   m_nodeSeeding = on;
@@ -641,6 +658,9 @@ void ZFlyEmBody3dDoc::processEventFunc(const ZFlyEmBodyEvent &event)
     }
     if (event.updating(ZFlyEmBodyEvent::UPDATE_SEGMENTATION)) {
       updateSegmentation();
+    }
+    if (event.updating(ZFlyEmBodyEvent::SYNC_BODY_COLOR)) {
+      syncBodyColor();
     }
     break;
   default:
