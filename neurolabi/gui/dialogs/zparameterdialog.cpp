@@ -151,13 +151,18 @@ void ZParameterDialog::build()
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
-    QPushButton *okButton = new QPushButton(this);
-    buttonLayout->addWidget(okButton);
-    okButton->setText("OK");
 
     QPushButton *cancelButton = new QPushButton(this);
     buttonLayout->addWidget(cancelButton);
     cancelButton->setText("Cancel");
+    cancelButton->setAutoDefault(false);
+    cancelButton->setDefault(false);
+
+    QPushButton *okButton = new QPushButton(this);
+    buttonLayout->addWidget(okButton);
+    okButton->setText("OK");
+    okButton->setAutoDefault(true);
+    okButton->setDefault(true);
 
     m_layout->addLayout(buttonLayout);
 
