@@ -180,6 +180,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       if (doc->getTag() == neutu::Document::ETag::FLYEM_BODY_3D ||
           doc->getTag() == neutu::Document::ETag::FLYEM_BODY_3D_COARSE) {
         config.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
+//        config.append(ZActionFactory::ACTION_FLYEM_SYNC_BODY_COLOR);
 
         if (ReadyForAction(doc, ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {
           config.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
@@ -188,6 +189,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     } else if (doc->getTag() == neutu::Document::ETag::FLYEM_MESH) {
 #if !defined(_NEU3_)
       config.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
+      config.append(ZActionFactory::ACTION_FLYEM_SYNC_BODY_COLOR);
 #endif
     }
 

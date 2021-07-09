@@ -594,6 +594,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("Try to fetch the latest data from DVID");
     action->setIcon(QFontIcon::icon(0x21bb));
     break;
+  case ACTION_FLYEM_SYNC_BODY_COLOR:
+    action = new QAction("Sync Body Colors", parent);
+    break;
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
     action->setToolTip("Update bodies from DVID");

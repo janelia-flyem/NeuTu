@@ -346,6 +346,8 @@ public:
 
   ZMesh* getRoiMesh(const QString &name) const;
 
+  void syncBodyColor();
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;
@@ -474,7 +476,6 @@ private:
   void updateBodyFunc();
 
   void processBodySetBuffer();
-  void syncBodyColor();
 
   QMap<uint64_t, ZFlyEmBodyEvent> makeEventMap(bool synced, ZFlyEmBodyManager *bm);
   QMap<uint64_t, ZFlyEmBodyEvent> makeEventMapUnsync(ZFlyEmBodyManager *bm);

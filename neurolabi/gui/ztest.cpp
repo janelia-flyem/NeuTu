@@ -32030,12 +32030,19 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 0
+#if 1
   ZParameterDialog *dlg = new ZParameterDialog(host);
   ZJsonObject config;
-  config.load(GET_TEST_DATA_DIR + "/bnschema.json");
+  config.load(GET_BENCHMARK_DIR + "/bnschema.json");
   dlg->configure(config);
-  dlg->exec();
+  if (dlg->exec()) {
+    dlg->toJsonObject().print();
+  }
+
+  if (dlg->exec()) {
+    dlg->toJsonObject().print();
+  }
+
 #endif
 
 #if 0
@@ -32120,7 +32127,7 @@ void ZTest::test(MainWindow *host)
   manager.getAnnotation(bodyId).print();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   QStringList keyList = {"1", "5901278576", "3"};
   auto result = reader->readKeyValues("segmentation_annotations", keyList);
