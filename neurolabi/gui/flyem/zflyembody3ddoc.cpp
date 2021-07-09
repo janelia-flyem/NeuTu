@@ -193,11 +193,31 @@ void ZFlyEmBody3dDoc::syncBodyColor()
       QColor color = getBodyColor(label);
       QColor currentColor = mesh->getColor();
       if (color.rgb() != currentColor.rgb()) {
-        mesh->setColor(color.red(), color.green(), color.blue());
+        mesh->pushObjectColor(
+              QColor(color.red(), color.green(), color.blue(), currentColor.alpha()));
         bufferObjectModified(mesh);
       }
     }
   }
+
+  QList<ZSwcTree*> treeList = getSwcList();
+  foreach (ZSwcTree *tree, treeList) {
+    if (tree) {
+      uint64_t bodyId =
+          ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+            tree->getSource());
+      if (bodyId > 0) {
+        QColor color = getBodyColor(bodyId);
+        QColor currentColor = tree->getColor();
+        if (color.rgb() != currentColor.rgb()) {
+          tree->setColor(
+                QColor(color.red(), color.green(), color.blue(), currentColor.alpha()));
+          bufferObjectModified(tree);
+        }
+      }
+    }
+  }
+
   processObjectModified();
 }
 
@@ -1046,7 +1066,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
     }
   }
 
-
+//  syncBodyColor();
 //  emit messageGenerated(ZWidgetMessage("3D Body view updated."));
   std::cout << "====Processing done====" << std::endl;
 }
@@ -1631,18 +1651,19 @@ void ZFlyEmBody3dDoc::processEvent()
     updateBodyModelSelection();
   }
 
-  if (m_eventQueue.empty()) {
-    return;
-  }
-
-  QString threadId = QString("processEvent()");
+  QString threadId("processEvent()");
 
   if (!m_futureMap.isAlive(threadId)) {
-    m_futureMap.removeDeadThread();
-    QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmBody3dDoc::processEventFunc);
-    m_futureMap[threadId] = future;
+    if (!m_eventQueue.empty()) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(this, &ZFlyEmBody3dDoc::processEventFunc);
+      m_futureMap[threadId] = future;
+    } else {
+
+    }
   }
+  syncBodyColor();
 }
 
 /*
@@ -1832,21 +1853,23 @@ void ZFlyEmBody3dDoc::addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
 
   ZFlyEmBodyEvent event(action, bodyId);
   event.addUpdateFlag(flag);
-  ZFlyEmBodyConfig config = getBodyManager().getBodyConfig(bodyId);
-  if (config.getBodyId() > 0) {
-    event.setBodyConfig(config);
-  } else {
-    if (event.getAction() == ZFlyEmBodyEvent::EAction::ADD &&
-        getBodyType() != flyem::EBodyType::SKELETON) {
-      if (ZFlyEmBodyManager::encodesTar(bodyId)) {
-        event.setDsLevel(0);
-      } else {
-        event.setDsLevel(getMaxDsLevel());
+  if (bodyId > 0) {
+    ZFlyEmBodyConfig config = getBodyManager().getBodyConfig(bodyId);
+    if (config.getBodyId() > 0) {
+      event.setBodyConfig(config);
+    } else {
+      if (event.getAction() == ZFlyEmBodyEvent::EAction::ADD &&
+          getBodyType() != flyem::EBodyType::SKELETON) {
+        if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+          event.setDsLevel(0);
+        } else {
+          event.setDsLevel(getMaxDsLevel());
+        }
       }
     }
-  }
 
-  event.setBodyColor(getBodyColor(bodyId));
+    event.setBodyColor(getBodyColor(bodyId));
+  }
 
   addEvent(event);
 //  m_eventQueue.enqueue(event);
@@ -4140,11 +4163,11 @@ QColor ZFlyEmBody3dDoc::getBodyColor(uint64_t bodyId)
         ZFlyEmProofDocUtil::GetActiveLabelSlice(getDataDocument(), neutu::EAxis::Z);
 
     if (labelSlice != NULL) {
-      if (getBodyType() == flyem::EBodyType::SPHERE) { //using the original color
-        color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::MAPPED);
-      } else {
+//      if (getBodyType() == flyem::EBodyType::SPHERE) { //using the original color
+//        color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::MAPPED);
+//      } else {
         color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::ORIGINAL);
-      }
+//      }
       color.setAlpha(255);
     }
   }

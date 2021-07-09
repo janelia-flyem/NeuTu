@@ -168,7 +168,7 @@ bool ZFlyEmBodyEvent::isNull() const
 
 bool ZFlyEmBodyEvent::isValid() const
 {
-  return hasValidBody() && !isNull();
+  return (hasValidBody() || updating(SYNC_BODY_COLOR)) && !isNull();
 }
 
 ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(

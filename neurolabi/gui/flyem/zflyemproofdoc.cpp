@@ -783,6 +783,7 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
     std::vector<ZIntPoint> ptArray;
 
     std::unordered_map<ZIntPoint, ZIntPoint> edgeMap;
+    std::vector<ZIntPoint> rootList;
     foreach (ZStackObject *obj, objList) {
       ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
       ZSwcTree::DepthFirstIterator iter(tree);
@@ -794,7 +795,9 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
           Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
           if (SwcTreeNode::isRegular(parent)) {
             Swc_Tree_Node *root = SwcTreeNode::regularRoot(tn);
-            edgeMap[pos] = SwcTreeNode::center(root).roundToIntPoint();
+            ZIntPoint rootPos = SwcTreeNode::center(root).roundToIntPoint();
+            edgeMap[pos] = rootPos;
+            rootList.push_back(rootPos);
           }
         }
       }
@@ -803,17 +806,63 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
     std::vector<uint64_t> bodyList =
         getDvidReader().readBodyIdAt(ptArray);
     std::unordered_map<ZIntPoint, uint64_t> ptIdMap;
+    std::unordered_map<uint64_t, int> bodyIndexMap;
     for (size_t i = 0; i < ptArray.size(); ++i) {
       ptIdMap[ptArray[i]] = bodyList[i];
+      bodyIndexMap[bodyList[i]] = i;
     }
 
+    //Build graph
+    ZGraph graph;
+    for (const auto &edge : edgeMap) {
+      const auto fromId = ptIdMap[edge.first];
+      const auto toId = ptIdMap[edge.second];
+      if (fromId > 0 && toId > 0 && fromId != toId) {
+        graph.addEdge(bodyIndexMap[fromId], bodyIndexMap[toId]);
+      }
+    }
+
+#ifdef _DEBUG_
+    std::cout << "Merge link graph: " << std::endl;
+    graph.print();
+#endif
+
+    const std::vector<ZGraph*> &subgraphs = graph.getConnectedSubgraph();
+    for (const ZGraph *sg : subgraphs) {
+      std::set<int> vertexSet = sg->getConnectedVertexSet();
+      if (vertexSet.size() > 1) {
+        uint64_t rootId = 0;
+        for (const ZIntPoint &rootPos : rootList) {
+          rootId = ptIdMap[rootPos];
+          int rootIndex = bodyIndexMap[rootId];
+          if (vertexSet.count(rootIndex) > 0) {
+            //Root found
+            break;
+          }
+        }
+
+        if (rootId > 0) {
+          for (int vertex : vertexSet) {
+            uint64_t fromId = bodyList[vertex];
+            if (fromId != rootId) {
+              result.emplace_back(fromId, rootId);
+            }
+          }
+        }
+      }
+    }
+
+    /*
+    std::unordered_map<uint64_t, uint64_t> toMap;
     for (const auto &edge : edgeMap) {
       const auto fromId = ptIdMap[edge.first];
       const auto toId = ptIdMap[edge.second];
       if (fromId != toId) {
+        toMap[fromId] = toId;
         result.emplace_back(fromId, toId);
       }
     }
+    */
   }
 
   return result;
