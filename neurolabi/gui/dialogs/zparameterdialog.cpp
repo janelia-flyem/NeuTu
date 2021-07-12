@@ -22,6 +22,7 @@ ZParameterDialog::ZParameterDialog(QWidget *parent) : QDialog(parent)
 {
   m_layout = new QVBoxLayout(this);
   m_label = new QLabel(this);
+  m_label->setTextFormat(Qt::RichText);
   m_label->hide();
 }
 

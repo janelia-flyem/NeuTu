@@ -32032,6 +32032,8 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZParameterDialog *dlg = new ZParameterDialog(host);
+  dlg->setLabel("<em>test</em>");
+
   ZJsonObject config;
   config.load(GET_BENCHMARK_DIR + "/bnschema.json");
   dlg->configure(config);
@@ -32039,10 +32041,11 @@ void ZTest::test(MainWindow *host)
     dlg->toJsonObject().print();
   }
 
+  /*
   if (dlg->exec()) {
     dlg->toJsonObject().print();
   }
-
+  */
 #endif
 
 #if 0
