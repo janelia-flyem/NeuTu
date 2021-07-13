@@ -32040,7 +32040,6 @@ void ZTest::test(MainWindow *host)
   if (dlg->exec()) {
     dlg->toJsonObject().print();
   }
-
   /*
   if (dlg->exec()) {
     dlg->toJsonObject().print();
