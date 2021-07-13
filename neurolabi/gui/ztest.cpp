@@ -32030,7 +32030,7 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 1
+#if 0
   ZParameterDialog *dlg = new ZParameterDialog(host);
   dlg->setLabel("<em>test</em>");
 
@@ -32146,6 +32146,12 @@ void ZTest::test(MainWindow *host)
     resultJson.append(obj);
   }
   resultJson.print();
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("CNShalf");
+  int zoom = ZDvidGlobal::Memo::ReadMaxLabelZoom(reader->getDvidTarget());
+  std::cout << "Max zoom: " << zoom << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

@@ -3,6 +3,7 @@
 #include "qt/network/znetworkutils.h"
 
 #include "zjsonparser.h"
+#include "zjsonobjectparser.h"
 
 #include "zdvidurl.h"
 #include "zdvidinfo.h"
@@ -91,6 +92,14 @@ ZJsonObject ZDvidGlobal::Memo::ReadRepoInfo(const ZDvidTarget &target)
   return ZNetworkUtils::ReadJsonObjectMemo(dvidUrl.getRepoInfoUrl());
 }
 
+ZJsonObject ZDvidGlobal::Memo::ReadDataStatus(const ZDvidTarget &target)
+{
+  ZDvidUrl dvidUrl(target);
+
+  return ZNetworkUtils::ReadJsonObjectMemo(
+        dvidUrl.getKeyUrl("neutu_config", "data_status"));
+}
+
 ZDvidVersionDag ZDvidGlobal::Memo::ReadVersionDag(const ZDvidTarget &target)
 {
   ZDvidVersionDag dag;
@@ -141,16 +150,25 @@ int ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(const ZDvidTarget &target)
 int ZDvidGlobal::Memo::ReadMaxLabelZoom(const ZDvidTarget &target)
 {
   int zoom = 0;
-  if (target.hasMultiscaleSegmentation()) {
-    ZJsonObject infoJson = ReadDataInfoJson(target, target.getSegmentationName());
-    ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
-    if (!v.isEmpty()) {
-      zoom = v.toInteger();
+
+  ZJsonObject obj = ReadDataStatus(target);
+  if (obj.hasKey(target.getSegmentationName())) {
+    ZJsonObject segObj(obj.value(target.getSegmentationName()));
+    zoom = ZJsonObjectParser::GetValue(segObj, "maxDownresLevel", 0);
+  }
+
+  if (zoom == 0) {
+    if (target.hasMultiscaleSegmentation()) {
+      ZJsonObject infoJson = ReadDataInfoJson(target, target.getSegmentationName());
+      ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
+      if (!v.isEmpty()) {
+        zoom = v.toInteger();
+      }
+    } else if (target.hasSegmentation()) {
+      zoom = ReadMaxZoomFromDataName(target, [&](int level) {
+        return target.getSegmentationName(level);
+      });
     }
-  } else if (target.hasSegmentation()) {
-    zoom = ReadMaxZoomFromDataName(target, [&](int level) {
-      return target.getSegmentationName(level);
-    });
   }
 
   return zoom;
