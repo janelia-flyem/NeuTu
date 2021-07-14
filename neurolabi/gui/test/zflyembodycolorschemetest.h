@@ -245,7 +245,7 @@ TEST(ZFlyEmBodyIdColorScheme, Basic)
     ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(2));
     ASSERT_EQ(QColor(0, 0, 0, 0), scheme.getBodyColor(0));
 
-    ASSERT_EQ(0, scheme.getBodyColorCode(100));
+    ASSERT_EQ(0, int(scheme.getBodyColorCode(100)));
     scheme.setColor(100, 101);
     ASSERT_EQ(5, scheme.getColorNumber());
     ASSERT_EQ(uint32_t(101), scheme.getBodyColorCode(100));

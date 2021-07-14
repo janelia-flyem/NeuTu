@@ -74,9 +74,11 @@ public:
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
 
-  void writeBodyAnnotation(const ZFlyEmBodyAnnotation &annotation);
-  void removeBodyAnnotation(uint64_t bodyId);
+  void writeBodyAnnotation(
+      uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void deleteBodyAnnotation(uint64_t bodyId);
 
+//  void removeBodyAnnotation(uint64_t bodyId);
 
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
@@ -145,9 +147,8 @@ public:
 
   void deleteSkeleton(uint64_t bodyId);
 //  void deleteMesh(uint64_t bodyId);
-  void deleteBodyAnnotation(uint64_t bodyId);
 
-  void invalidateBody(uint64_t bodyId);
+//  void invalidateBody(uint64_t bodyId);
 
   void postLog(const std::string &message);
   bool lockNode(const std::string &message);

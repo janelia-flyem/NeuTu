@@ -4590,9 +4590,9 @@ ZArray* ZDvidReader::readLabels64Lowtis(
             array->getDataPointer<char>(), zoom, centerCut);
 
       setStatusCode(200);
-    } catch (libdvid::DVIDException &e) {
+    } catch (std::exception &e) {
       LERROR() << e.what();
-      setStatusCode(e.getStatus());
+      setStatusCode(0);
 
       delete array;
       array = NULL;
@@ -5924,12 +5924,26 @@ bool ZDvidReader::hasBodyAnnotation() const
   return hasData(getDvidTarget().getBodyAnnotationName());
 }
 
+bool ZDvidReader::hasBodyAnnotation(uint64_t bodyId) const
+{
+  return hasKey(getDvidTarget().getBodyAnnotationName().c_str(),
+                QString("%1").arg(bodyId));
+}
+
 ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
 {
   ZDvidUrl url(getDvidTarget());
 
   return readJsonObject(
         with_source_query(url.getBodyAnnotationUrl(bodyId)).c_str());
+}
+
+ZJsonObject ZDvidReader::readBodyAnnotationSchema() const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonObject(
+        with_source_query(url.getBodyAnnotationSchemaUrl()).c_str());
 }
 
 namespace {
@@ -6010,6 +6024,7 @@ QList<ZJsonObject> ZDvidReader::readJsonObjectsFromKeys(const QString &dataName,
         if (!buffers[i].isEmpty()) {
             obj.decodeString(buffers[i].constData());
         }
+        obj.denull();
         // note: object must be appened even if empty!  returned list elements
         //  must correspond to input key list
         objects.append(obj);

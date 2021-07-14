@@ -34,6 +34,7 @@ public:
     static ZJsonObject ReadRepoInfo(const ZDvidTarget &target);
     static int ReadMaxLabelZoom(const ZDvidTarget &target);
     static int ReadMaxGrayscaleZoom(const ZDvidTarget &target);
+    static ZJsonObject ReadDataStatus(const ZDvidTarget &target);
 
   private:
     static int ReadMaxZoomFromDataName(

@@ -25,6 +25,7 @@ public:
   const static TRole ROLE_3DMESH_DECORATOR;
   const static TRole ROLE_SUPERVOXEL;
   const static TRole ROLE_BODY_MODEL;
+  const static TRole ROLE_MERGE_LINK;
 
   ZStackObjectRole();
   ZStackObjectRole(TRole role);

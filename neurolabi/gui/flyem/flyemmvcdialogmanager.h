@@ -5,6 +5,7 @@
 
 #include <QObject>
 
+class ZJsonObject;
 class QDialog;
 class ZFlyEmProofMvc;
 class NeuprintSetupDialog;
@@ -27,6 +28,7 @@ class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
 class ZSynapsePropertyDialog;
 class NeuroglancerLinkDialog;
+class ZGenericBodyAnnotationDialog;
 //class ZStackViewRecordDialog;
 
 /*!
@@ -59,6 +61,7 @@ public:
   ZFlyEmMergeUploadDialog* getMergeUploadDlg();
   ZFlyEmProofSettingDialog* getSettingDlg();
   FlyEmBodyAnnotationDialog* getAnnotationDlg();
+  ZGenericBodyAnnotationDialog* getGenericAnnotationDlg();
   NeuPrintQueryDialog* getNeuprintQueryDlg();
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
@@ -120,6 +123,7 @@ private:
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg = nullptr;
   ZFlyEmProofSettingDialog *m_settingDlg = nullptr;
   FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  ZGenericBodyAnnotationDialog *m_genericAnnotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;

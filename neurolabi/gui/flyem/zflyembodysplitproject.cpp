@@ -67,6 +67,7 @@
 
 #include "flyemdatareader.h"
 #include "zflyemmisc.h"
+#include "flyembodyannotationmanager.h"
 
 const char* ZFlyEmBodySplitProject::THREAD_SPLIT_VIS3D = "updateSplitQuickFunc";
 
@@ -230,6 +231,15 @@ void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
 void ZFlyEmBodySplitProject::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
+}
+
+FlyEmBodyAnnotationManager* ZFlyEmBodySplitProject::getBodyAnnotationManager() const
+{
+  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+    return getDocument<ZFlyEmProofDoc>()->getBodyAnnotationManager();
+  }
+
+  return nullptr;
 }
 
 void ZFlyEmBodySplitProject::setBodyId(uint64_t bodyId)
@@ -820,11 +830,14 @@ void ZFlyEmBodySplitProject::chopBody(
           std::vector<uint64_t> updateBodyArray;
 
           if (newBodyId > 0) {
-            if (dlg != NULL) {
-              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
-                    getBodyId(), newBodyId);
+            auto bam = getBodyAnnotationManager();
+            if (dlg && bam) {
+              ZJsonObject annot = bam->getAnnotation(getBodyId());
+              dlg->processAnnotation(annot, bam->usingGenericAnnotation());
+//              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(getBodyId());
               if (!annot.isEmpty()) {
-                writer.writeBodyAnnotation(annot);
+                bam->saveAnnotation(newBodyId, annot);
+//                writer.writeBodyAnnotation(newBodyId, annot);
               }
             }
 
@@ -911,11 +924,14 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg
           std::vector<uint64_t> updateBodyArray;
 
           if (newBodyId > 0) {
-            if (dlg != NULL) {
-              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
-                    getBodyId(), newBodyId);
+            auto bam = getBodyAnnotationManager();
+            if (dlg && bam) {
+              ZJsonObject annot = bam->getAnnotation(getBodyId());
+              dlg->processAnnotation(annot, bam->usingGenericAnnotation());
+//              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(getBodyId());
               if (!annot.isEmpty()) {
-                writer.writeBodyAnnotation(annot);
+                bam->saveAnnotation(newBodyId, annot);
+//                writer.writeBodyAnnotation(newBodyId, annot);
               }
             }
 
@@ -988,13 +1004,22 @@ void ZFlyEmBodySplitProject::cropBody(ZFlyEmSplitUploadOptionDialog *dlg)
         std::vector<uint64_t> updateBodyArray;
 
         if (newBodyId > 0) {
-          if (dlg != NULL) {
-            ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
-                  getBodyId(), newBodyId);
+          auto bam = getBodyAnnotationManager();
+          if (dlg && bam) {
+            ZJsonObject annot = bam->getAnnotation(getBodyId());
+            dlg->processAnnotation(annot, bam->usingGenericAnnotation());
             if (!annot.isEmpty()) {
-              writer.writeBodyAnnotation(annot);
+              bam->saveAnnotation(newBodyId, annot);
             }
           }
+          /*
+          if (dlg != NULL) {
+            ZFlyEmBodyAnnotation annot = dlg->getAnnotation(getBodyId());
+            if (!annot.isEmpty()) {
+              writer.writeBodyAnnotation(newBodyId, annot);
+            }
+          }
+          */
 
           *wholeBody = remain;
           size_t voxelNumber = subobj.getVoxelNumber();
@@ -1096,13 +1121,22 @@ void ZFlyEmBodySplitProject::decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg)
           }
           newBodyIdList.append(newBodyId);
 
-          if (dlg != NULL) {
-            ZFlyEmBodyAnnotation annot = dlg->getAnnotation(
-                  getBodyId(), newBodyId);
+          auto bam = getBodyAnnotationManager();
+          if (dlg && bam) {
+            ZJsonObject annot = bam->getAnnotation(getBodyId());
+            dlg->processAnnotation(annot, bam->usingGenericAnnotation());
             if (!annot.isEmpty()) {
-              writer.writeBodyAnnotation(annot);
+              bam->saveAnnotation(newBodyId, annot);
             }
           }
+          /*
+          if (dlg != NULL) {
+            ZFlyEmBodyAnnotation annot = dlg->getAnnotation(getBodyId());
+            if (!annot.isEmpty()) {
+              writer.writeBodyAnnotation(newBodyId, annot);
+            }
+          }
+          */
 
           emitMessage(msg);
         } else {
@@ -1166,7 +1200,7 @@ void ZFlyEmBodySplitProject::resetStatusAfterUpload()
 }
 
 void ZFlyEmBodySplitProject::setBodyStatusProtocol(
-    const ZFlyEmBodyAnnotationProtocal &protocol)
+    const ZFlyEmBodyAnnotationProtocol &protocol)
 {
   m_bodyStatusProtocol = protocol;
 }
@@ -1850,10 +1884,10 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
           updateBodyArray.push_back(newBodyId);
         }
 
-        ZFlyEmBodyAnnotation annot;
-        annot.setBodyId(newBodyId);
+//        ZFlyEmBodyAnnotation annot;
+//        annot.setBodyId(newBodyId);
         //      annot.setStatus("Not examined");
-        writer.writeBodyAnnotation(annot);
+//        writer.writeBodyAnnotation(newBodyId, annot);
 
         emitMessage(msg);
       } else {
@@ -2238,10 +2272,10 @@ void ZFlyEmBodySplitProject::commitResultFunc(
         updateBodyArray.push_back(newBodyId);
       }
 
-      ZFlyEmBodyAnnotation annot;
-      annot.setBodyId(newBodyId);
+//      ZFlyEmBodyAnnotation annot;
+//      annot.setBodyId(newBodyId);
 //      annot.setStatus("Not examined");
-      writer.writeBodyAnnotation(annot);
+//      writer.writeBodyAnnotation(newBodyId, annot);
 
       emitMessage(msg);
     } else {

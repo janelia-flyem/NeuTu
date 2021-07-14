@@ -1,5 +1,7 @@
 HEADERS += \
     $$PWD/commontest.h \
+  $$PWD/flyembodyannotationiotest.h \
+  $$PWD/flyembodyannotationmanagertest.h \
     $$PWD/flyemutilitiestest.h \
     $$PWD/miscutilitytest.h \
     $$PWD/neutusetest.h \

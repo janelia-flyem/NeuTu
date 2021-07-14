@@ -64,11 +64,12 @@ ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::getFinalMap() const
 
 uint64_t ZFlyEmBodyMerger::mapLabel(const TLabelMap &labelMap, uint64_t label)
 {
-  if (labelMap.contains(label)) {
-    return labelMap[label];
+  uint64_t newLabel = label;
+  while (labelMap.contains(newLabel)) {
+    newLabel = labelMap[newLabel];
   }
 
-  return label;
+  return newLabel;
 }
 
 uint64_t ZFlyEmBodyMerger::mapLabel(

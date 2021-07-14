@@ -142,9 +142,9 @@ const char *json_data =
     "}";
 };
 
-TEST(ZFlyEmBodyAnnotationProtocal, Basic)
+TEST(ZFlyEmBodyAnnotationProtocol, Basic)
 {
-  ZFlyEmBodyAnnotationProtocal protocol;
+  ZFlyEmBodyAnnotationProtocol protocol;
 
   ZJsonObject obj;
   obj.decode(json_data, true);

@@ -29,6 +29,7 @@ class ZStackViewParam;
 class ZWidgetMessage;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBookmarkArray;
+class FlyEmBodyAnnotationManager;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -123,7 +124,7 @@ public:
 
 //  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
 
-  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocol &protocol);
 
   bool hasFinalSplitResult() const;
   void invalidateResult();
@@ -306,6 +307,7 @@ private:
   void updateBodyDep(
       uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer);
 
+  FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
 
 private:
   ZDvidReader m_reader;
@@ -313,7 +315,7 @@ private:
   ZDvidReader m_commitReader;
   ZDvidWriter m_commitWriter;
 
-  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocol m_bodyStatusProtocol;
 
 //  ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;

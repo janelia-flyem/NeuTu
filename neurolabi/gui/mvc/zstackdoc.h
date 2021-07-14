@@ -312,17 +312,6 @@ public: //attributes
     return m_modelManager;
   }
 
-  //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
-  //inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
-//  inline ZSwcObjsModel* swcObjsModel() {return m_swcObjsModel;}
-//  inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
-//  inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
-//  inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
-//  inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
-//  inline ZSurfaceObjsModel* surfaceObjsModel() { return m_surfaceObjsModel; }
-//  inline ZMeshObjsModel* meshObjsModel() { return m_meshObjsModel; }
-//  inline ZRoiObjsModel* roiObjsModel() { return m_roiObjsModel; }
-
   void updatePunctaObjsModel(ZPunctum *punctum);
 
 //  std::set<Swc_Tree_Node*> getSelectedSwcTreeNodeSet() const;
@@ -342,9 +331,6 @@ public: //attributes
   std::string stackSourcePath() const;
   bool hasChainList();
 
-  //void setStackMask(ZStack *stack);
-
-//  void createActions();
   QAction* getAction(ZActionFactory::EAction item) const;
   virtual void makeAction(ZActionFactory::EAction item);
 
@@ -664,9 +650,6 @@ public:
   ZStackObject *hitTest(
       const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutu::EAxis axis);
 
-//  Swc_Tree_Node *swcHitTest(double x, double y) const;
-//  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
-//  Swc_Tree_Node *swcHitTest(const ZPoint &pt) const;
   Swc_Tree_Node *selectSwcTreeNode(int x, int y, int z, bool append = false);
   Swc_Tree_Node *selectSwcTreeNode(const ZPoint &pt, bool append = false);
 
@@ -810,11 +793,6 @@ public:
   virtual ZObject3dScan* getSparseStackMask() const;
 
   virtual ZSparseStack* getSparseStack(const ZIntCuboid& box);
-
-//  virtual ZStack* getDenseFormOfSparseStack() const;
-
-//  QSet<neutu::data3d::ETarget>
-//  updateActiveViewObject(const ZStackViewParam &param);
 
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
@@ -1193,6 +1171,7 @@ public slots: //undoable commands
   virtual bool executeRemoveObjectCommand(ZStackObjectRole::TRole role);
   virtual bool executeRemoveSelectedObjectCommand();
   virtual bool executeRemoveSelectedObjectCommand(ZStackObjectRole::TRole role);
+  virtual bool executeRemoveSwcWithSelectedNode();
   //bool executeRemoveUnselectedObjectCommand();
 
   virtual bool executeMoveObjectCommand(
@@ -1417,8 +1396,6 @@ protected:
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
   virtual ZStackArray createWatershedMask(bool selectedOnly) const;
-//  void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
-//  void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
   void addTaskSlot(ZTask *task);
   void endWorkThread();

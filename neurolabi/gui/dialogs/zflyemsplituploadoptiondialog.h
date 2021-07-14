@@ -32,7 +32,8 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  ZFlyEmBodyAnnotation getAnnotation(uint64_t bodyId, uint64_t newBodyId) const;
+//  ZFlyEmBodyAnnotation getAnnotation(uint64_t bodyId) const;
+  void processAnnotation(ZJsonObject &annotation, bool usingDescription);
 
 protected:
   bool event(QEvent *);

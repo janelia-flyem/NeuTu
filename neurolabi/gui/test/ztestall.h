@@ -85,7 +85,7 @@
 #include "test/zdvidsynapseannotationdialogtest.h"
 #include "test/znetworkutilstest.h"
 #include "test/commontest.h"
-#include "test/zflyembodyannotationprotocaltest.h"
+//#include "test/zflyembodyannotationprotocaltest.h"
 #include "test/taskprotocoltasktest.h"
 #include "test/zstackdocobjectupdatetest.h"
 #include "test/zinteractivecontexttest.h"
@@ -105,6 +105,9 @@
 #include "test/zdvidinfotest.h"
 #include "test/zdviddialogtest.h"
 #include "test/zflyembookmarktest.h"
+#include "test/zflyembodyannotationprotocoltest.h"
+#include "test/flyembodyannotationiotest.h"
+#include "test/flyembodyannotationmanagertest.h"
 
 #include "bigdata/tests/zitemchunktest.h"
 #include "bigdata/tests/zdatachunktest.h"

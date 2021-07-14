@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QApplication>
 #include <QUrl>
+#include <QUrlQuery>
 
 #include "QsLog.h"
 #include "tz_utilities.h"
@@ -1466,7 +1467,10 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
         ZObject3dScan obj;
 
         int zoom = 0;
-        if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
+        QUrlQuery query(QUrl(m_input[0].c_str()));
+        if (query.hasQueryItem("label_zoom")) {
+          zoom = query.queryItemValue("label_zoom").toInt();
+        } else if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
           const int blockCount = bodyReader->readBodyBlockCount(
                 bodyId, neutu::EBodyLabelType::BODY);
           constexpr int maxBlockCount = 3000;

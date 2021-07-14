@@ -155,7 +155,7 @@ private:
   std::string m_prevStatusUser;
 
   QList<QString> m_defaultStatusList;
-  QSet<QString> m_adminSatutsList;
+  QSet<QString> m_adminStatusSet;
   QMap<QString, ValueManager> m_widgetMap;
 };
 

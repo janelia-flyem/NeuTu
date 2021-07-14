@@ -124,7 +124,7 @@ TEST(ZDvidInfo, BlockIndex)
     ASSERT_EQ(5, info.getBlockLevel());
 
     ZObject3dScan obj = info.getBlockIndex(ZIntCuboid(32, 64, 96, 64, 128, 192));
-    ASSERT_EQ(24, obj.getVoxelNumber());
+    ASSERT_EQ(24, int(obj.getVoxelNumber()));
 //    obj.print();
   }
 

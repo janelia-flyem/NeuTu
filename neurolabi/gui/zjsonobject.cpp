@@ -264,6 +264,11 @@ ZJsonObject &ZJsonObject::setEntry(const char *key, json_t *obj)
   return *this;
 }
 
+ZJsonObject& ZJsonObject::setEntry(const std::string &key, json_t *obj)
+{
+  return setEntry(key.c_str(), obj);
+}
+
 void ZJsonObject::consumeEntry(const char *key, json_t *obj)
 {
   if (!isValidKey(key)) {
@@ -320,6 +325,11 @@ ZJsonObject &ZJsonObject::setEntry(const string &key, const string &value)
   return setEntry(key.c_str(), value.c_str());
 }
 
+ZJsonObject& ZJsonObject::setEntry(const std::string &key, const char *value)
+{
+  return setEntry(key.c_str(), value);
+}
+
 ZJsonObject& ZJsonObject::setEntry(
     const char *key, const std::vector<string> &value)
 {
@@ -365,6 +375,13 @@ ZJsonObject &ZJsonObject::setEntry(const char *key, bool v)
   if (isValidKey(key)) {
     setEntryWithoutKeyCheck(key, C_Json::makeBoolean(v));
   }
+
+  return *this;
+}
+
+ZJsonObject& ZJsonObject::setEntry(const std::string &key, bool v)
+{
+  setEntry(key.c_str(), v);
 
   return *this;
 }

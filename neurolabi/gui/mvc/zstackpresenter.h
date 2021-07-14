@@ -336,6 +336,9 @@ public:
 
   void setHighContrastProtocal(const ZJsonObject &obj);
 
+  void enterSwcAddNodeMode(double x, double y, ZStackObjectRole::TRole role);
+  void enterSwcAddNodeMode(ZStackObjectRole::TRole role);
+
 public: //test functions
   void testBiocytinProjectionMask();
 
@@ -365,7 +368,6 @@ public slots:
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
   void enterSwcMoveMode();
-//  void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
   void enterEraseStrokeMode(double x, double y);
@@ -405,6 +407,7 @@ public slots:
   void selectConnectedNode();
 
   void notifyBodySplitTriggered();
+//  void notifyActivateMergeLinkTriggered();
   void notifyBodyDecomposeTriggered();
   void notifyBodyCropTriggered();
   void notifyBodyChopTriggered();
@@ -468,10 +471,12 @@ public slots:
 
   void setSliceViewTransform(int viewId, const ZSliceViewTransform &transform);
 //  ZSliceViewTransform getSliceViewTransform() const;
+//  void notifyActionTriggered();
 
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
+  void activateMergeLinkTriggered();
   void bodyAnnotationTriggered();
   void bodyExpertStatusTriggered();
   void bodyConnectionTriggered();
@@ -497,6 +502,7 @@ signals:
   void movingCrossHairTo(int x, int y);
   void updatingViewLayout(std::vector<int> viewLayoutIndices);
   void updatingViewData();
+  void actionTriggered(ZActionFactory::EAction action);
 
 protected:
   void init();

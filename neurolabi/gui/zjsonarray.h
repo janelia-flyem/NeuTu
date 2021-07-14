@@ -60,17 +60,22 @@ public:
   /*!
    * \brief Get an integer array from the json array.
    *
-   * Any json array element that is not integer will be ignored.
+   * Any json array element that is not an integer will be ignored.
    */
   std::vector<int> toIntegerArray() const;
 
   /*!
    * \brief Get a boolean array from the json array.
    *
-   * Any json array element that is not boolean will be ignored.
+   * Any json array element that is not a boolean will be ignored.
    */
   std::vector<bool> toBoolArray() const;
 
+  /*!
+   * \brief Get a string array from the json array.
+   *
+   * Any json array element that is not a string will be ignored.
+   */
   std::vector<std::string> toStringArray() const;
 
   ZJsonArray& operator << (double e);
@@ -91,6 +96,11 @@ public:
 
   std::string dumpJanssonString(size_t flags) const;
 
+  /*!
+   * \brief Go through a string array.
+   *
+   * \param f The function of processing a given string element.
+   */
   void forEachString(std::function<void(const std::string &str)>f);
   ZJsonArray filter(std::function<bool(ZJsonValue)> pred);
 };

@@ -394,6 +394,20 @@ void neutu::MakeStar(
 
 void neutu::HideLayout(QLayout *layout, bool removing)
 {
+  ClearLayout(layout, [&](QLayoutItem*item) {
+    if (removing) {
+      layout->removeItem(item);
+    }
+  });
+
+  if (layout) {
+    layout->setSizeConstraint(QLayout::SetNoConstraint);
+  }
+}
+
+void neutu::ClearLayout(
+    QLayout *layout,  std::function<void(QLayoutItem*)> processChild)
+{
   if (layout) {
     for (int i = 0; i < layout->count(); ++i) {
       QLayoutItem *item = layout->itemAt(i);
@@ -401,25 +415,28 @@ void neutu::HideLayout(QLayout *layout, bool removing)
       if (widget) {
         widget->hide();
       }
-//      if (removing) {
-//        layout->removeItem(item);
-//      }
+      if (processChild) {
+        processChild(item);
+      }
     }
-
-    if (removing) {
-      ClearLayout(layout);
-    }
-
-    layout->setSizeConstraint(QLayout::SetNoConstraint);
   }
 }
 
-void neutu::ClearLayout(QLayout *layout, bool deletingWidget)
+void neutu::ClearLayout(QLayout *layout)
 {
-  while (auto item = layout->takeAt(0)) {
-    if (deletingWidget) {
-      delete item->widget();
+  if (layout) {
+    for (int i = 0; i < layout->count(); ++i) {
+      QLayoutItem *item = layout->itemAt(i);
+      QWidget *widget = item->widget();
+      if (widget) {
+        widget->hide();
+        widget->deleteLater();
+      }
+      QLayout *layout = item->layout();
+      if (layout) {
+        ClearLayout(layout);
+        layout->deleteLater();
+      }
     }
-    delete item;
   }
 }

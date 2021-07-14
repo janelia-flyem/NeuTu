@@ -34,6 +34,7 @@ public:
       QWidget *parent);
 
   static QSpacerItem *MakeHSpacerItem();
+  static QSpacerItem *MakeVSpacerItem();
 
   static QString MakeHintString(const QString &text);
 

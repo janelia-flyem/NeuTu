@@ -45,6 +45,7 @@ class ZDvidEnv;
 class ZRoiProvider;
 class FlyEmTodoEnsemble;
 class FlyEmSynapseEnsemble;
+class FlyEmBodyAnnotationManager;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -183,6 +184,8 @@ public:
     return &m_bodyMerger;
   }
 
+  FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
+
   ZFlyEmBodyMergeProject* getMergeProject() {
     return m_mergeProject;
   }
@@ -191,8 +194,15 @@ public:
     return m_mergeProject;
   }
 
-  void mergeSelected(ZFlyEmSupervisor *supervisor);
-  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
+  ZJsonObject getBodyAnnotation(uint64_t bodyId) const;
+
+  void mergeBodies(ZFlyEmSupervisor *supervisor);
+  void mergeBodies(
+      const std::vector<std::pair<uint64_t, uint64_t>> &targets,
+      ZFlyEmSupervisor *supervisor);
+
+//  void mergeSelected(ZFlyEmSupervisor *supervisor);
+//  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
   void backupMergeOperation();
@@ -227,6 +237,7 @@ public:
   void enhanceTileContrast(bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void annotateBody(uint64_t bodyId, const ZJsonObject &annotation);
 //  void useBodyNameMap(bool on);
 
   bool selectBody(uint64_t bodyId);
@@ -250,26 +261,31 @@ public:
 
   void downloadSynapseFunc();
 
-  void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
-  void removeSelectedAnnotation(uint64_t bodyId);
+//  void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+//  void recordBodyAnnotation(uint64_t bodyId, const ZJsonObject &anno);
+//  void removeSelectedAnnotation(uint64_t bodyId);
   template <typename InputIterator>
   void removeSelectedAnnotation(
       const InputIterator &first, const InputIterator &last);
-  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
+//  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
+//  std::string getRecordedAnnotationStatus(uint64_t bodyId);
+  std::string getBodyStatus(uint64_t bodyId);
 
-  void verifyBodyAnnotationMap();
+//  void verifyBodyAnnotationMap();
 
   template<template<class...> class Container>
   ZFlyEmBodyAnnotation getFinalAnnotation(
       const Container<uint64_t> &bodyList,
       std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
+  ZJsonObject getFinalAnnotation(const std::vector<uint64_t> &bodyList,
+      std::function<void(uint64_t, const ZJsonObject&)> processAnnotation);
 
   /*!
    * \brief Remove unselected bodies from annotation map.
    *
    * This is a temporary solution to inconsistent selection update.
    */
-  void clearBodyAnnotationMap();
+//  void clearBodyAnnotationMap();
 
   void activateBodyColorMap(const QString &colorMapName, bool updating);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
@@ -302,6 +318,9 @@ public:
 
   void exportGrayscale(
       const ZIntCuboid &box, int dsIntv, const QString &fileName) const;
+
+  bool usingGenericBodyAnnotation() const;
+  ZJsonObject getBodyAnnotationSchema() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -545,8 +564,9 @@ public:
   void diagnose() const override;
 
   const ZContrastProtocol& getContrastProtocol() const;
-  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
+  const ZFlyEmBodyAnnotationProtocol& getBodyStatusProtocol() const;
   bool isMergable(const ZFlyEmBodyAnnotation &annot) const;
+  bool isMergable(const ZJsonObject &annot) const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
@@ -846,7 +866,27 @@ private:
   ZDvidReader& getBookmarkReader();
   ZDvidWriter& getBookmarkWriter();
 
+  /*
+  template<typename T>
+  void mergeSelected(
+      ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+      */
+
+  /*
+  template<typename T>
+  void mergeSelectedWithoutConflict(
+      ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+      */
+
+//  template<typename T>
+//  void verifyBodyAnnotationMapG(const QMap<uint64_t, T> &annotationMap);
+
+  template<typename T>
+  void clearBodyAnnotationMap(QMap<uint64_t, T> &annotationMap) const;
+
 //  void notifyUserBookmkarModified();
+
+  std::vector<std::pair<uint64_t, uint64_t>> getMergeCandidate() const;
 
 private slots:
   void processBodyMergeUploaded();
@@ -905,6 +945,7 @@ protected:
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
   bool m_supervoxelMode = false;
+  ZJsonObject m_bodyAnnotationSchema;
 
   bool m_isAdmin = false;
 
@@ -919,8 +960,10 @@ protected:
   QMap<ZFlyEmBodyColorOption::EColorOption,
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
 
-  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+//  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+//  QMap<uint64_t, ZJsonObject> m_genericAnnotationMap;
 
+  FlyEmBodyAnnotationManager *m_bodyAnnotationManager = nullptr;
   ZFlyEmRoiManager *m_roiManager = nullptr;
 
   ZFlyEmProofDocTracingHelper m_tracingHelper;
@@ -943,15 +986,6 @@ void ZFlyEmProofDoc::selectBody(
   }
 }
 
-template <typename InputIterator>
-void ZFlyEmProofDoc::removeSelectedAnnotation(
-    const InputIterator &first, const InputIterator &last)
-{
-  for (InputIterator iter = first; iter != last; ++iter) {
-    removeSelectedAnnotation(*iter);
-  }
-}
-
 extern template
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::vector>(
     const std::vector<uint64_t> &bodyList,
@@ -961,5 +995,6 @@ extern template
 ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::set>(
     const std::set<uint64_t> &bodyList,
     std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
+
 
 #endif // ZFLYEMPROOFDOC_H

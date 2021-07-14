@@ -90,7 +90,7 @@ bool ZJsonValue::isString() const
   return json_is_string(m_data);
 }
 
-bool ZJsonValue::isInteger()
+bool ZJsonValue::isInteger() const
 {
   if (m_data == NULL) {
     return false;
@@ -99,7 +99,7 @@ bool ZJsonValue::isInteger()
   return json_is_integer(m_data);
 }
 
-bool ZJsonValue::isReal()
+bool ZJsonValue::isReal() const
 {
   if (m_data == NULL) {
     return false;
@@ -108,7 +108,7 @@ bool ZJsonValue::isReal()
   return json_is_real(m_data);
 }
 
-bool ZJsonValue::isNumber()
+bool ZJsonValue::isNumber() const
 {
   if (m_data == NULL) {
     return false;
@@ -117,7 +117,7 @@ bool ZJsonValue::isNumber()
   return json_is_number(m_data);
 }
 
-bool ZJsonValue::isBoolean()
+bool ZJsonValue::isBoolean() const
 {
   if (m_data == NULL) {
     return false;
@@ -134,6 +134,25 @@ bool ZJsonValue::isEmpty() const
 bool ZJsonValue::isNull() const
 {
   return m_data == NULL;
+}
+
+std::string ZJsonValue::getType() const
+{
+  if (isNull()) {
+    return "null";
+  } else if (isObject()) {
+    return "object";
+  } else if (isArray()) {
+    return "array";
+  } else if (isInteger()) {
+    return "int";
+  } else if (isReal()) {
+    return "real";
+  } else if (isBoolean()) {
+    return "boolean";
+  }
+
+  return "undefined";
 }
 
 void ZJsonValue::set(const ZJsonValue &value)
@@ -275,6 +294,11 @@ double ZJsonValue::toReal() const
 std::string ZJsonValue::toString() const
 {
   return ZJsonParser::stringValue(m_data);
+}
+
+bool ZJsonValue::toBoolean() const
+{
+  return ZJsonParser::booleanValue(m_data);
 }
 /*
 std::string ZJsonValue::toString() const

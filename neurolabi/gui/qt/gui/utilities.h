@@ -12,12 +12,13 @@
 #include <QPointF>
 #include <QPushButton>
 
+class QLayoutItem;
+
 namespace neutu {
 
 QString GetKeyString(int key, const Qt::KeyboardModifiers &modifier);
 void SetHtmlIcon(QPushButton *button, const QString &text);
 void HideLayout(QLayout *layout, bool removing);
-void ClearLayout(QLayout *layout, bool deletingWidget = false);
 
 void DrawText(QPainter &painter, const QPoint &pos, const QStringList &text);
 void DrawText(QPainter &painter, const QPoint &pos, const QString &text);
@@ -85,6 +86,11 @@ void MakeStar(
     const QPointF &center, double radius, QPointF *ptArray, double shapeFactor);
 std::vector<QPointF> MakeStar(
     const QPointF &center, double radius, double shapeFactor = 0.25);
+
+void HideLayout(QLayout *layout, bool removing);
+void ClearLayout(
+    QLayout *layout, std::function<void(QLayoutItem*)> processChild);
+void ClearLayout(QLayout *layout);
 
 }
 

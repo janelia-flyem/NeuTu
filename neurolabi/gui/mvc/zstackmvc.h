@@ -12,6 +12,7 @@
 
 #include "common/neutudefs.h"
 #include "logging/zloggable.h"
+#include "zactionfactory.h"
 //#include "zwidgetmessage.h"
 
 class ZStackDoc;
@@ -151,6 +152,8 @@ public slots:
 
   virtual bool processKeyEvent(QKeyEvent *event);
   virtual void processObjectModified(const ZStackObjectInfoSet &objSet);
+
+  virtual void processAction(ZActionFactory::EAction action);
 
   virtual void testSlot();
 

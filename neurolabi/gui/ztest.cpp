@@ -113,6 +113,7 @@
 #include "zobject3dscanarray.h"
 #include "geometry/zcuboid.h"
 #include "widgets/zstringparameter.h"
+#include "widgets/zoptionparameter.h"
 #include "zswcsizefeatureanalyzer.h"
 #include "zobject3darray.h"
 #include "zswcshollfeatureanalyzer.h"
@@ -338,6 +339,9 @@
 #include "imgproc/zfilestacksource.h"
 #include "movie/zimageframeshot.h"
 #include "movie/zfileseqmovieframewriter.h"
+#include "widgets/zstringparameter.h"
+#include "widgets/zparameterarray.h"
+#include "dialogs/zparameterdialog.h"
 
 #include "flyem/zglobaldvidrepo.h"
 #include "flyem/zflyemarbmvc.h"
@@ -372,6 +376,9 @@
 #include "vis2d/zimageslicefactory.h"
 #include "zobject3dfactory.h"
 #include "flyem/zflyemrandombodycolorscheme.h"
+#include "flyem/dialogs/zgenericbodyannotationdialog.h"
+#include "flyem/flyembodyannotationmanager.h"
+#include "flyem/flyembodyannotationproofdocio.h"
 
 /*
 #include "ext/http/HTTPRequest.hpp"
@@ -32834,7 +32841,7 @@ void ZTest::test(MainWindow *host)
   std::cout << neutu::GetUtcTimeString() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZJsonObject obj;
   obj.decode("{\"Pos\":[720,887,1023],\"Kind\":\"Note\",\"Tags\":[],"
     "\"Prop\":{\"checked\":\"0\",\"user\":\"zhaot\"},\"Rels\":[]}", true);
@@ -32855,6 +32862,221 @@ void ZTest::test(MainWindow *host)
   obj.print();
 
 
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter("vnc-prod");
+
+  {
+    ZMesh mesh;
+    mesh.load((GET_TEST_DATA_DIR + "/179000.obj").c_str());
+    writer->writeSupervoxelMesh(mesh, 179000);
+  }
+
+  {
+    ZMesh mesh;
+    mesh.load((GET_TEST_DATA_DIR + "/179001.obj").c_str());
+    writer->writeSupervoxelMesh(mesh, 179001);
+  }
+#endif
+
+#if 0
+  ZParameterArray paramArray;
+  paramArray.append(new ZStringParameter("test"));
+  QDialog *dlg = ZDialogFactory::makeParameterDialog(paramArray, host);
+  dlg->exec();
+#endif
+
+#if 0
+  ZJsonObject obj;
+  bool v = true;
+  obj.setEntry(std::string("test"), v);
+  obj.print();
+#endif
+
+#if 0
+  ZParameterDialog *dlg = new ZParameterDialog(host);
+
+//  dlg->addStringParameter("test");
+//  dlg->build();
+
+//  dlg->addStringParameter("test");
+//  dlg->addStringParameter("test2");
+  dlg->addStringParameter("test4", {"t1", "t2"});
+//  dlg->addIntParameter("int1", 10, 0, 99);
+//  dlg->addIntParameter("int2", 10, 0, 99);
+//  dlg->addBoolParameter("test5");
+
+//  dlg->setValue("test", QString("my test"));
+//  dlg->setValue("int1", 50);
+  dlg->setValue("test4", "t3");
+//  dlg->setValue("test5", true);
+
+//  dlg->resetValues();
+//  dlg->show();
+//  QApplication::processEvents();
+//  dlg->adjustSize();
+
+  ZJsonObject obj;
+  if (dlg->exec()) {
+//    std::cout << dlg->getStringValue("test").toStdString() << std::endl;
+//    std::cout << dlg->getStringValue("test2").toStdString() << std::endl;
+//    std::cout << dlg->getIntValue("int1") << std::endl;
+//    std::cout << dlg->getStringValue("test4").toStdString() << std::endl;
+
+//    std::cout << dlg->getIntValue("int2") << std::endl;
+
+//    std::cout << dlg->getBoolValue("test5") << std::endl;
+
+    obj = dlg->toJsonObject();
+    obj.print();
+  }
+
+//  dlg->setValue("test4", "t1");
+//  dlg->build();
+//  dlg->exec();
+
+  dlg->resetValues();
+//  dlg->build();
+  dlg->exec();
+  obj = dlg->toJsonObject();
+  obj.print();
+
+  /*
+  dlg->loadJsonObject(obj);
+  dlg->setLabel("dialog label");
+
+//  dlg->build();
+  dlg->exec();
+
+  dlg->loadJsonObject(ZJsonObject());
+  dlg->setLabel("");
+  dlg->exec();
+  */
+#endif
+
+#if 0
+  ZParameterDialog *dlg = new ZParameterDialog(host);
+  dlg->setLabel("<em>test</em>");
+
+  ZJsonObject config;
+  config.load(GET_BENCHMARK_DIR + "/bnschema.json");
+  dlg->configure(config);
+  if (dlg->exec()) {
+    dlg->toJsonObject().print();
+  }
+  /*
+  if (dlg->exec()) {
+    dlg->toJsonObject().print();
+  }
+  */
+#endif
+
+#if 0
+  ZGenericBodyAnnotationDialog *dlg = new ZGenericBodyAnnotationDialog(host);
+  ZJsonObject config;
+  config.load(GET_TEST_DATA_DIR + "/bnschema.json");
+  dlg->configure(config);
+  dlg->setDefaultStatusList({"test1", "test2"});
+  qDebug() << dlg->getStringValue("status");
+  dlg->build();
+  qDebug() << dlg->getStringValue("status");
+  dlg->setValue("status", "test2");
+  dlg->addAdminStatus("test2");
+  dlg->setAdmin(true);
+  qDebug() << dlg->getStringValue("status");
+//  dlg->setValue("class", "Local Sensory");
+  dlg->exec();
+  dlg->toJsonObject().print();
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+
+  ZFlyEmProofDoc doc;
+  doc.setDvid(ZDvidEnv(reader->getDvidTarget()));
+
+  FlyEmBodyAnnotationProofDocIO io;
+  io.setDocument(&doc);
+  uint64_t bodyId = 5901284581;
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+  ZJsonObject obj;
+  obj.setEntry("status", "Traced");
+
+  bodyId = 1;
+
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+  io.writeBodyAnnotation(bodyId, obj);
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+  io.deleteBodyAnnotation(bodyId);
+  std::cout << bodyId << " has annotation: " << io.hasBodyAnnotation(bodyId)
+            << std::endl;
+  std::cout << "Body annotation " << bodyId << ": "
+            << io.readBodyAnnotation(bodyId).dumpString(2) << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+
+  ZFlyEmProofDoc doc;
+  doc.setDvid(ZDvidEnv(reader->getDvidTarget()));
+
+  auto io = std::shared_ptr<FlyEmBodyAnnotationProofDocIO>(
+        new FlyEmBodyAnnotationProofDocIO);
+  io->setDocument(&doc);
+
+  FlyEmBodyAnnotationManager manager;
+  manager.setIO(io);
+
+  uint64_t bodyId = 5901284581;
+  manager.getAnnotation(bodyId).print();
+  manager.getAnnotation(bodyId).print();
+
+  manager.invalidateCache(bodyId);
+  manager.getAnnotation(bodyId).print();
+
+  manager.invalidateCache();
+  manager.getAnnotation(bodyId).print();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
+  QStringList keyList = {"1", "5901278576", "3"};
+  auto result = reader->readKeyValues("segmentation_annotations", keyList);
+
+  std::cout << result.size() << std::endl;
+
+  ZJsonArray resultJson;
+  foreach (const auto &buffer, result) {
+    ZJsonObject obj;
+    if (! buffer.isEmpty()) {
+      obj.decode(buffer.constData(), false);
+    }
+    obj.denull();
+    resultJson.append(obj);
+  }
+  resultJson.print();
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("CNShalf");
+  int zoom = ZDvidGlobal::Memo::ReadMaxLabelZoom(reader->getDvidTarget());
+  std::cout << "Max zoom: " << zoom << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

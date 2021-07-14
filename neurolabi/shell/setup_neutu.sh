@@ -138,6 +138,6 @@ if curl -X HEAD -I http://config.int.janelia.org/config/workday | grep '200 OK';
   echo 'NEUTU_USER_INFO_ENTRY=http://config.int.janelia.org/config/workday' >> $run_script
 fi
 echo "source $condaDir/bin/activate $envName" >> $run_script
-echo ${neutu_bin_dir}/${appName}' $*' >> $run_script
+echo ${neutu_bin_dir}/${appName}' "$@"' >> $run_script
 chmod a+x $run_script
 echo "Congratuations! Now you can launch $formalName by running '$run_script'"

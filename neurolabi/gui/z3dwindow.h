@@ -404,6 +404,7 @@ public slots:
   void setTodoItemNoSoma();
   void addDoneMarker();
   void updateBody();
+  void syncBodyColor();
   void compareBody();
   void deselectBody();
   void copyPosition();

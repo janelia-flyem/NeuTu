@@ -398,7 +398,7 @@ std::string FlyEmBodyAnnotationDialog::getHemilineage() const
 void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
-  setBodyId(annotation.getBodyId());
+//  setBodyId(annotation.getBodyId());
   setPrevUser(annotation.getUser());
   setPrevNamingUser(annotation.getNamingUser());
   setPrevStatusUser(annotation.getStatusUser());
@@ -406,7 +406,7 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
 //  setComment(annotation.getComment());
   setStatus(annotation.getStatus());
   setInstance(annotation.getName());
-  setType(annotation.getType());
+  setType(annotation.getClass());
   setComment(annotation.getComment());
 
   setMajorInput(annotation.getMajorInput());
@@ -427,9 +427,9 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
 ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
 {
   ZFlyEmBodyAnnotation annotation;
-  annotation.setBodyId(getBodyId());
+//  annotation.setBodyId(getBodyId());
   annotation.setStatus(getStatus());
-  annotation.setType(getType());
+  annotation.setClass(getType());
   annotation.setInstance(getInstance());
   annotation.setComment(getComment());
   std::string user = neutu::GetCurrentUserName();
@@ -547,7 +547,7 @@ void FlyEmBodyAnnotationDialog::setDefaultStatusList(
 
 void FlyEmBodyAnnotationDialog::addAdminStatus(const QString &status)
 {
-  m_adminSatutsList.insert(status);
+  m_adminStatusSet.insert(status);
 }
 
 void FlyEmBodyAnnotationDialog::updateStatusBox()
@@ -577,7 +577,7 @@ void FlyEmBodyAnnotationDialog::processUnknownStatus(const std::string &status)
     ui->statusComboBox->addItem(status.c_str());
     ui->statusComboBox->setCurrentIndex(ui->statusComboBox->count() - 1);
 
-    if (m_adminSatutsList.contains(status.c_str())) {
+    if (m_adminStatusSet.contains(status.c_str())) {
       ui->statusComboBox->setEnabled(m_isAdmin);
     }
   }

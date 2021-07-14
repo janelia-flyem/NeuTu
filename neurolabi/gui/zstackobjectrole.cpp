@@ -18,6 +18,7 @@ const ZStackObjectRole::TRole ZStackObjectRole::ROLE_ROI_MASK = BIT_FLAG(13);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_3DMESH_DECORATOR = BIT_FLAG(14);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_SUPERVOXEL = BIT_FLAG(15);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_BODY_MODEL = BIT_FLAG(16);
+const ZStackObjectRole::TRole ZStackObjectRole::ROLE_MERGE_LINK = BIT_FLAG(17);
 
 ZStackObjectRole::ZStackObjectRole() : m_role(ZStackObjectRole::ROLE_NONE)
 {

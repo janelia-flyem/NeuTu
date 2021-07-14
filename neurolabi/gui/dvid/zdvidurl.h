@@ -161,6 +161,8 @@ public:
   std::string getKeyValuesUrl(
       const std::string &name, const std::string &key1, const std::string &key2) const;
 
+  std::string getBodyAnnotationSchemaUrl(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationSchemaUrl() const;
   std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
   std::string getBodyAnnotationUrl(
       uint64_t bodyId, const std::string &bodyLabelName) const;

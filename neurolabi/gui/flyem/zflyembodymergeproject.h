@@ -36,6 +36,7 @@ class ZFlyEmBodyMerger;
 class ZWidgetMessage;
 //class ZDvidInfo;
 class ZProgressSignal;
+class FlyEmBodyAnnotationManager;
 
 //class ZStackViewParam;
 
@@ -69,13 +70,13 @@ public:
   }
 
   void setDvidTarget(const ZDvidTarget &target);
-  void setAdmin(bool admin);
+//  void setAdmin(bool admin);
 
   inline ZFlyEmBodyMergeFrame* getDataFrame() {
     return m_dataFrame;
   }
 
-  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+//  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocol &protocol);
 
   //Obsolete functions
   uint64_t getSelectedBodyId() const;
@@ -133,19 +134,40 @@ public:
 
   QList<QString> getBodyStatusList() const;
   QList<QString> getAdminStatusList() const;
-  int getStatusRank(const std::string &status) const;
-  bool isFinalStatus(const std::string &status) const;
-  bool isExpertStatus(const std::string &status) const;
-  bool isMergableStatus(const std::string &status) const;
-  bool preservingId(const std::string &status) const;
+//  int getStatusRank(const std::string &status) const;
+//  bool isFinalStatus(const std::string &status) const;
+//  bool isExpertStatus(const std::string &status) const;
+//  bool isMergableStatus(const std::string &status) const;
+//  bool preservingId(const std::string &status) const;
 
+  /*
+  QString composeStatusConflictMessage(
+      const QMap<uint64_t, std::string> &statusMap) const;
   QString composeStatusConflictMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  QString composeStatusConflictMessage(
+      const QMap<uint64_t, ZJsonObject> &annotMap) const;
+
+  QString composeStatusExclusionMessage(
+      const QMap<uint64_t, std::string> &statusMap) const;
+  QString composeStatusExclusionMessage(
+      const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  QString composeStatusExclusionMessage(
+      const QMap<uint64_t, ZJsonObject> &annotMap) const;
+
   QString composeFinalStatusMessage(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
-  const ZFlyEmBodyAnnotationProtocal& getAnnotationMerger() const {
+  QString composeFinalStatusMessage(
+      const QMap<uint64_t, ZJsonObject> &annotMap) const;
+      */
+
+  /*
+  const ZFlyEmBodyAnnotationProtocol& getAnnotationMerger() const {
     return m_bodyStatusProtocol;
   }
+  */
+
+  void setBodyAnnotationSchema(const ZJsonObject &schema);
 
 signals:
   void progressAdvanced(double dp);
@@ -198,6 +220,7 @@ private slots:
 
 private:
   ZFlyEmBodyMerger* getBodyMerger() const;
+  FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
 //  void update3DBodyViewPlane(
 //      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
 //  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
@@ -227,33 +250,45 @@ private:
       uint64_t targetId, const std::vector<uint64_t> &bodyArray) const;
   void removeMerge(uint64_t bodyId);
   void removeMerge(const std::vector<uint64_t> &bodyArray);
-  bool preserved(uint64_t bodyId) const;
-  bool hasName(uint64_t bodyId) const;
+//  bool preserved(uint64_t bodyId) const;
+//  bool hasName(uint64_t bodyId) const;
 
 //  void clearUndoStack();
 
+  /*
   QList<QString> getBodyStatusList(
       std::function<bool(const ZFlyEmBodyStatus&)> pred) const;
+*/
 
   void logSynapseInfo(uint64_t bodyId);
 
   int getCachedStatusRank(uint64_t bodyId) const;
   size_t getCachedSize(uint64_t bodyId) const;
 
+//  std::string getBodyStatus(uint64_t bodyId) const;
+
+  template<typename T>
+  QString composeFinalStatusMessage(
+      const QMap<uint64_t, T> &annotMap) const;
+
+  bool usingGenericBodyAnnotation() const;
+
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
   ZDvidWriter m_writer;
-  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
+//  ZFlyEmBodyAnnotationProtocol m_bodyStatusProtocol;
 
   bool m_isBookmarkVisible;
-  bool m_isAdmin = false;
+//  bool m_isAdmin = false;
 
   bool m_showingBodyMask;
   QSet<uint64_t> m_selectedOriginal; //the set of original ids of selected bodies
-  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationCache;
+//  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationCache;
+//  QMap<uint64_t, ZJsonObject> m_genericAnnotationCache;
   QMap<uint64_t, size_t> m_bodySizeCache;
   QMap<uint64_t, std::vector<uint64_t>> m_mergeMap;
+  ZJsonObject m_bodyAnnotationSchema;
 
   ZProgressSignal *m_progressSignal;
 };

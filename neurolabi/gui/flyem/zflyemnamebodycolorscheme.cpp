@@ -147,9 +147,13 @@ void ZFlyEmNameBodyColorScheme::prepareNameMap()
                                m_reader.getDvidTarget().getBodyLabelName()).c_str());
       foreach (const QString &idStr, annotationList) {
         uint64_t bodyId = ZString(idStr.toStdString()).firstInteger();
+        /*
         ZFlyEmBodyAnnotation annotation =
             FlyEmDataReader::ReadBodyAnnotation(m_reader, bodyId);
-        updateNameMap(bodyId, annotation.getName().c_str());
+            */
+        ZJsonObject annotation = FlyEmDataReader::ReadGenericBodyAnnotation(
+              m_reader, bodyId);
+        updateNameMap(bodyId, ZFlyEmBodyAnnotation::GetName(annotation).c_str());
       }
     }
 
@@ -162,10 +166,12 @@ void ZFlyEmNameBodyColorScheme::update()
   prepareNameMap();
 }
 
+/*
 void ZFlyEmNameBodyColorScheme::updateNameMap(const ZFlyEmBodyAnnotation &annotation)
 {
   updateNameMap(annotation.getBodyId(), annotation.getName().c_str());
 }
+*/
 
 void ZFlyEmNameBodyColorScheme::updateNameMap(uint64_t bodyId, const QString &name)
 {

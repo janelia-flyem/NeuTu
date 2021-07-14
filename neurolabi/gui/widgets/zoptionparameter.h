@@ -39,6 +39,10 @@ public:
   inline T2 associatedData() const
   { return m_associatedData; }
 
+  inline const QList<T>& options() {
+    return m_options;
+  }
+
   void addOption(const T& value)
   {
     if (m_options.indexOf(value) != -1) {
@@ -209,6 +213,10 @@ protected:
 
   QString comboBoxItemString(const T& value) const;
 
+  void setAssociatedData(const T2 &data) {
+    m_associatedData = data;
+  }
+
 private:
   QList<T> m_options;
   T2 m_associatedData;
@@ -233,6 +241,11 @@ Q_OBJECT
 public:
   explicit ZStringStringOptionParameter(const QString& name, QObject* parent = nullptr, const QString& prefix = "",
                                         const QString& suffix = "");
+
+  void clearValue() {
+    m_value = "";
+    setAssociatedData("");
+  }
 };
 
 class ZIntIntOptionParameter : public ZOptionParameter<int, int>

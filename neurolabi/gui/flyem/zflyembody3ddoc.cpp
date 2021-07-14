@@ -77,6 +77,7 @@
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/flyembodyannotationdialog.h"
+#include "zdialogfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -181,6 +182,43 @@ void ZFlyEmBody3dDoc::connectSignalSlot()
 
 void ZFlyEmBody3dDoc::updateBodyFunc()
 {
+}
+
+void ZFlyEmBody3dDoc::syncBodyColor()
+{
+  QList<ZMesh*> meshList = getMeshList();
+  foreach (ZMesh *mesh, meshList) {
+    uint64_t label = mesh->getLabel();
+    if (label > 0) {
+      QColor color = getBodyColor(label);
+      QColor currentColor = mesh->getColor();
+      if (color.rgb() != currentColor.rgb()) {
+        mesh->pushObjectColor(
+              QColor(color.red(), color.green(), color.blue(), currentColor.alpha()));
+        bufferObjectModified(mesh);
+      }
+    }
+  }
+
+  QList<ZSwcTree*> treeList = getSwcList();
+  foreach (ZSwcTree *tree, treeList) {
+    if (tree) {
+      uint64_t bodyId =
+          ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
+            tree->getSource());
+      if (bodyId > 0) {
+        QColor color = getBodyColor(bodyId);
+        QColor currentColor = tree->getColor();
+        if (color.rgb() != currentColor.rgb()) {
+          tree->setColor(
+                QColor(color.red(), color.green(), color.blue(), currentColor.alpha()));
+          bufferObjectModified(tree);
+        }
+      }
+    }
+  }
+
+  processObjectModified();
 }
 
 void ZFlyEmBody3dDoc::enableNodeSeeding(bool on)
@@ -516,7 +554,7 @@ bool ZFlyEmBody3dDoc::isAdmin() const
 }
 */
 
-const ZFlyEmBodyAnnotationProtocal& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
+const ZFlyEmBodyAnnotationProtocol& ZFlyEmBody3dDoc::getBodyStatusProtocol() const
 {
   return getDataDocument()->getBodyStatusProtocol();
 }
@@ -640,6 +678,9 @@ void ZFlyEmBody3dDoc::processEventFunc(const ZFlyEmBodyEvent &event)
     }
     if (event.updating(ZFlyEmBodyEvent::UPDATE_SEGMENTATION)) {
       updateSegmentation();
+    }
+    if (event.updating(ZFlyEmBodyEvent::SYNC_BODY_COLOR)) {
+      syncBodyColor();
     }
     break;
   default:
@@ -1025,7 +1066,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
     }
   }
 
-
+//  syncBodyColor();
 //  emit messageGenerated(ZWidgetMessage("3D Body view updated."));
   std::cout << "====Processing done====" << std::endl;
 }
@@ -1610,18 +1651,19 @@ void ZFlyEmBody3dDoc::processEvent()
     updateBodyModelSelection();
   }
 
-  if (m_eventQueue.empty()) {
-    return;
-  }
-
-  QString threadId = QString("processEvent()");
+  QString threadId("processEvent()");
 
   if (!m_futureMap.isAlive(threadId)) {
-    m_futureMap.removeDeadThread();
-    QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmBody3dDoc::processEventFunc);
-    m_futureMap[threadId] = future;
+    if (!m_eventQueue.empty()) {
+      m_futureMap.removeDeadThread();
+      QFuture<void> future =
+          QtConcurrent::run(this, &ZFlyEmBody3dDoc::processEventFunc);
+      m_futureMap[threadId] = future;
+    } else {
+
+    }
   }
+  syncBodyColor();
 }
 
 /*
@@ -1811,21 +1853,23 @@ void ZFlyEmBody3dDoc::addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
 
   ZFlyEmBodyEvent event(action, bodyId);
   event.addUpdateFlag(flag);
-  ZFlyEmBodyConfig config = getBodyManager().getBodyConfig(bodyId);
-  if (config.getBodyId() > 0) {
-    event.setBodyConfig(config);
-  } else {
-    if (event.getAction() == ZFlyEmBodyEvent::EAction::ADD &&
-        getBodyType() != flyem::EBodyType::SKELETON) {
-      if (ZFlyEmBodyManager::encodesTar(bodyId)) {
-        event.setDsLevel(0);
-      } else {
-        event.setDsLevel(getMaxDsLevel());
+  if (bodyId > 0) {
+    ZFlyEmBodyConfig config = getBodyManager().getBodyConfig(bodyId);
+    if (config.getBodyId() > 0) {
+      event.setBodyConfig(config);
+    } else {
+      if (event.getAction() == ZFlyEmBodyEvent::EAction::ADD &&
+          getBodyType() != flyem::EBodyType::SKELETON) {
+        if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+          event.setDsLevel(0);
+        } else {
+          event.setDsLevel(getMaxDsLevel());
+        }
       }
     }
-  }
 
-  event.setBodyColor(getBodyColor(bodyId));
+    event.setBodyColor(getBodyColor(bodyId));
+  }
 
   addEvent(event);
 //  m_eventQueue.enqueue(event);
@@ -3634,6 +3678,10 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
     return mesh;
   }
 
+  //Temporary fix: Disable mesh fetching to avoid mesh inconsistency
+  bool usingObjMesh = false;
+  bool usingNgMesh = false;
+
   if (config.getLabelType() == neutu::EBodyLabelType::SUPERVOXEL) {
     if (!isCoarseLevel(zoom)) {
       mesh = readSupervoxelMesh(reader, config.getBodyId());
@@ -3643,7 +3691,6 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
       }
     }
   } else {
-    bool usingNgMesh = false; //Temporary fix: Disable ng mesh to avoid mesh inconsistency
     if (!isCoarseLevel(zoom) && usingNgMesh) { //Skip coarse Level
       //Checking order: merged mesh -> ngmesh -> normal mesh
       std::string mergeKey =
@@ -3667,16 +3714,16 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
           }
         }
       }
-
-      if (mesh == nullptr) {
-        mesh = reader.readMesh(config.getBodyId(), zoom);
-        /*
-        if (mesh != NULL) {
-          *acturalMeshZoom = zoom;
-        }
-        */
-      }
     }
+  }
+
+  if (usingObjMesh && (mesh == nullptr)) {
+    mesh = reader.readMesh(config.getBodyId(), zoom);
+    /*
+    if (mesh != NULL) {
+      *acturalMeshZoom = zoom;
+    }
+    */
   }
 
   if (mesh && config.getDsLevel() > 0) {
@@ -3730,7 +3777,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
             config.getLabelType() == neutu::EBodyLabelType::BODY) {
           std::shared_ptr<ZMesh> meshClone(mesh->clone());
           getDataDocument()->addUploadTask([=](ZDvidWriter &writer) {
-            {
+            if (usingObjMesh) {
               QByteArray data = meshClone->writeToMemory("obj");
               writer.writeDataToKeyValue(
                     writer.getDvidTarget().getMeshName(),
@@ -3741,7 +3788,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 #endif
             }
 
-            {
+            if (usingNgMesh) {
               ZDvidInfo info = writer.getDvidReader().readLabelInfo();
               ZResolution res = info.getVoxelResolution();
               double sx = res.getVoxelSize(neutu::EAxis::X, res.getUnit());
@@ -4116,11 +4163,11 @@ QColor ZFlyEmBody3dDoc::getBodyColor(uint64_t bodyId)
         ZFlyEmProofDocUtil::GetActiveLabelSlice(getDataDocument());
 
     if (labelSlice != NULL) {
-      if (getBodyType() == flyem::EBodyType::SPHERE) { //using the original color
-        color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::MAPPED);
-      } else {
+//      if (getBodyType() == flyem::EBodyType::SPHERE) { //using the original color
+//        color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::MAPPED);
+//      } else {
         color = labelSlice->getLabelColor(bodyId, neutu::ELabelSource::ORIGINAL);
-      }
+//      }
       color.setAlpha(255);
     }
   }
@@ -4496,7 +4543,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     meshProcessingTime += timer.elapsed();
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   uploadingMesh = true;
 #endif
 
@@ -4582,7 +4629,13 @@ void ZFlyEmBody3dDoc::waitForSplitToBeDone()
 
 void ZFlyEmBody3dDoc::startBodyAnnotation()
 {
-
+  if (getDataDocument()->usingGenericBodyAnnotation()) {
+    ZDialogFactory::Warn(
+          "Under Development",
+          "Annotating body in 3D for this dataset has not been supported yet.",
+          getParent3DWindow());
+    return;
+  }
 //  ZFlyEmBodyAnnotationDialog *dlg =
 //      new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
   startBodyAnnotation(getBodyAnnotationDlg());

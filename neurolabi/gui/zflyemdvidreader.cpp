@@ -10,7 +10,7 @@ ZFlyEmBodyAnnotation ZFlyEmDvidReader::readAnnotation(int bodyId)
   ZFlyEmBodyAnnotation annotation;
   annotation.loadJsonString(QString(data).toStdString());
 
-  annotation.setBodyId(bodyId);
+//  annotation.setBodyId(bodyId);
 
   return annotation;
 }

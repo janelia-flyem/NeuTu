@@ -533,6 +533,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
     break;
+  case ZActionFactory::ACTION_FLYEM_SYNC_BODY_COLOR:
+    action = m_actionLibrary->getAction(item, this, SLOT(syncBodyColor()));
+    break;
   case ZActionFactory::ACTION_FLYEM_COMPARE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(compareBody()));
     break;
@@ -2404,6 +2407,16 @@ void Z3DWindow::updateBody()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     doc->forceBodyUpdate();
+  }
+}
+
+void Z3DWindow::syncBodyColor()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->addEvent(
+          ZFlyEmBodyEvent::EAction::UPDATE, 0, ZFlyEmBodyEvent::SYNC_BODY_COLOR);
+//    doc->syncBodyColor();
   }
 }
 
