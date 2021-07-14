@@ -380,11 +380,24 @@ TEST(ZFlyEmBodyAnnotation, Json)
   oldObj.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "old instance");
   ASSERT_EQ("old instance", ZFlyEmBodyAnnotation::GetName(oldObj));
 
+  ASSERT_EQ("test_user", ZFlyEmBodyAnnotation::GetUser(obj));
   obj.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "old instance");
   ZFlyEmBodyAnnotation::UpdateUserFields(obj, "test_user4", oldObj);
   ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetNamingUser(obj));
-  ASSERT_EQ("test_user4", ZFlyEmBodyAnnotation::GetUser(obj));
+  ASSERT_EQ("test_user", ZFlyEmBodyAnnotation::GetUser(obj));
+  ASSERT_EQ("test_user4", ZFlyEmBodyAnnotation::GetLastModifiedBy(obj));
 
+  ZFlyEmBodyAnnotation::SetUser(oldObj, "");
+  ZFlyEmBodyAnnotation::SetUser(obj, "");
+  ZFlyEmBodyAnnotation::UpdateUserFields(obj, "test_user5", oldObj);
+  ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetNamingUser(obj));
+  ASSERT_EQ("test_user5", ZFlyEmBodyAnnotation::GetUser(obj));
+  ASSERT_EQ("test_user5", ZFlyEmBodyAnnotation::GetLastModifiedBy(obj));
+
+  ZFlyEmBodyAnnotation::UpdateUserFields(obj, "test_user6", oldObj);
+  ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetNamingUser(obj));
+  ASSERT_EQ("test_user5", ZFlyEmBodyAnnotation::GetUser(obj));
+  ASSERT_EQ("test_user6", ZFlyEmBodyAnnotation::GetLastModifiedBy(obj));
 }
 
 #endif

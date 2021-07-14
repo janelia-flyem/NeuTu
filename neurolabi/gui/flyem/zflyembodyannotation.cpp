@@ -18,6 +18,7 @@ const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
 const char *ZFlyEmBodyAnnotation::KEY_DESCRIPTION = "description";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
 const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
+const char *ZFlyEmBodyAnnotation::KEY_LAST_MODIFIED_USER = "last_modified_by";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD = "naming user";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "instance_user";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER = "status user";
@@ -754,6 +755,11 @@ std::string ZFlyEmBodyAnnotation::GetNamingUser(const ZJsonObject &obj)
         ZJsonObjectParser::GetValue(obj, KEY_NAMING_USER_OLD, ""));
 }
 
+std::string ZFlyEmBodyAnnotation::GetLastModifiedBy(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(obj, KEY_LAST_MODIFIED_USER, "");
+}
+
 void ZFlyEmBodyAnnotation::SetUser(ZJsonObject &obj, const std::string &user)
 {
   obj.setEntry(KEY_USER, user);
@@ -880,10 +886,29 @@ void ZFlyEmBodyAnnotation::SetComment(
   }
 }
 
+void ZFlyEmBodyAnnotation::SetLastModifiedBy(
+    ZJsonObject &obj, const std::string &user)
+{
+  obj.setEntry(KEY_LAST_MODIFIED_USER, user);
+}
+
 void ZFlyEmBodyAnnotation::UpdateUserFields(
     ZJsonObject &obj, const std::string &user, const ZJsonObject &oldObj)
 {
-  ZFlyEmBodyAnnotation::SetUser(obj, user);
+  std::string newUser;
+  if (ZFlyEmBodyAnnotation::GetUser(obj).empty()) {
+    newUser = ZFlyEmBodyAnnotation::GetUser(oldObj);
+    if (newUser.empty()) {
+      newUser = user;
+    }
+  }
+
+  if (!newUser.empty()) {
+    ZFlyEmBodyAnnotation::SetUser(obj, newUser);
+  }
+
+  ZFlyEmBodyAnnotation::SetLastModifiedBy(obj, user);
+
   std::string name = ZFlyEmBodyAnnotation::GetName(obj);
   std::string oldName = ZFlyEmBodyAnnotation::GetName(obj);
   std::string namingUser = ZFlyEmBodyAnnotation::GetNamingUser(oldObj);

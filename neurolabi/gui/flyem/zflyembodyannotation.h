@@ -124,6 +124,7 @@ public:
   static std::string GetClass(const ZJsonObject &obj);
   static std::string GetUser(const ZJsonObject &obj);
   static std::string GetNamingUser(const ZJsonObject &obj);
+  static std::string GetLastModifiedBy(const ZJsonObject &obj);
 
   static std::string GetName(const ZFlyEmBodyAnnotation &obj);
   static std::string GetStatus(const ZFlyEmBodyAnnotation &obj);
@@ -136,6 +137,7 @@ public:
 
   static void SetStatus(ZJsonObject &obj, const std::string &status);
   static void SetUser(ZJsonObject &obj, const std::string &user);
+  static void SetLastModifiedBy(ZJsonObject &obj, const std::string &user);
   static void SetNamingUser(ZJsonObject &obj, const std::string &user);
   static void UpdateUserFields(
       ZJsonObject &obj, const std::string &user, const ZJsonObject &oldObj);
@@ -159,6 +161,7 @@ public:
   static const char *KEY_COMMENT;
   static const char *KEY_DESCRIPTION;
   static const char *KEY_USER;
+  static const char *KEY_LAST_MODIFIED_USER;
   static const char *KEY_NAMING_USER_OLD;
   static const char *KEY_NAMING_USER;
   static const char *KEY_STATUS_USER;
