@@ -1,6 +1,7 @@
 cmake
 ninja=1.7.2*
 libneucore>=0.1.4,<2.0
+libneumath >=0.1.0, <2.0
 qt=5.9.*
 fftw=3.3.*
 jansson=2.7.*

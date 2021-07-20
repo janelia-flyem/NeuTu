@@ -1663,7 +1663,10 @@ void ZFlyEmBody3dDoc::processEvent()
 
     }
   }
+
+#ifndef _NEU3_
   syncBodyColor();
+#endif
 }
 
 /*
