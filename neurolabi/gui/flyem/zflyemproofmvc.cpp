@@ -2584,6 +2584,7 @@ void ZFlyEmProofMvc::diagnose()
     }
   }
 
+  getDocument()->diagnose();
 }
 
 void ZFlyEmProofMvc::setDvidTarget()
@@ -6617,6 +6618,7 @@ void ZFlyEmProofMvc::refreshData()
   refreshTodo();
   getCompleteDocument()->refreshSynapse();
   getCompletePresenter()->refreshSegmentation();
+  getCompleteDocument()->invalidateBodyAnnotationCache();
 }
 
 void ZFlyEmProofMvc::refreshTodo()
@@ -7392,6 +7394,17 @@ void ZFlyEmProofMvc::processAction(ZActionFactory::EAction action)
   case ZActionFactory::ACTION_MERGE_LINK_CLEAR:
     getDocument()->executeRemoveObjectCommand(ZStackObjectRole::ROLE_MERGE_LINK);
     processed = true;
+    break;
+  case ZActionFactory::ACTION_MERGE_LINK_CLEAR_ALL:
+    getDocument()->executeRemoveObjectCommand(ZStackObjectRole::ROLE_MERGE_LINK);
+    deselectAllBody(false);
+    processed = true;
+    break;
+  case ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES:
+    getCompleteDocument()->selectBodyOnMergeLink(true);
+    break;
+  case ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES_EXC:
+    getCompleteDocument()->selectBodyOnMergeLink(false);
     break;
   default:
     break;

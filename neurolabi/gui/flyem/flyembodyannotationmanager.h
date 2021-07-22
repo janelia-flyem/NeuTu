@@ -73,6 +73,8 @@ public:
   static QMap<uint64_t, ZFlyEmBodyAnnotation> GetAnnotationMap(
       const QMap<uint64_t, ZJsonObject> &amap);
 
+  QString toString() const;
+
 public slots:
   void invalidateCache(uint64_t bodyId);
   void invalidateCache();

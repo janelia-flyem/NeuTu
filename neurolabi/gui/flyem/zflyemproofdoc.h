@@ -195,6 +195,8 @@ public:
    */
   ZJsonObject getBodyAnnotation(uint64_t bodyId) const;
 
+  void invalidateBodyAnnotationCache();
+
   void mergeBodies(ZFlyEmSupervisor *supervisor);
   void mergeBodies(
       const std::vector<std::pair<uint64_t, uint64_t>> &targets,
@@ -247,6 +249,8 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
+
+  void selectBodyOnMergeLink(bool appending);
 //  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
 //  std::vector<ZPunctum*> getTbar(uint64_t bodyId);

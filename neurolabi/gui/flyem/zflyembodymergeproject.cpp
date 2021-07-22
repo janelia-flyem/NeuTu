@@ -569,6 +569,7 @@ QMap<uint64_t, std::string> body_map_to_status_map(
   return statusMap;
 }
 
+/*
 QString compose_body_status_message(
     const std::vector<uint64_t> &bodyArray,
     const QMap<uint64_t, std::string> &statusMap, int &itemCount)
@@ -607,7 +608,7 @@ QString compose_body_status_message(
   return compose_body_status_message(
         bodyArray, body_map_to_status_map(annotMap), itemCount);
 }
-
+*/
 }
 
 #if 0

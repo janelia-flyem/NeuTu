@@ -1203,7 +1203,7 @@ std::string ZFlyEmRoiProject::getRoiKey(int z) const
     key.appendNumber(z, 7);
   }
 
-  return key;
+  return std::move(key);
 }
 
 double ZFlyEmRoiProject::estimateRoiVolume(char unit) const

@@ -385,3 +385,9 @@ QMap<uint64_t, ZFlyEmBodyAnnotation> FlyEmBodyAnnotationManager::GetAnnotationMa
 
   return result;
 }
+
+QString FlyEmBodyAnnotationManager::toString() const
+{
+  return QString("Annotation Manager: Cached x %1; Admin: %2").
+      arg(m_annotationCache.size()).arg(m_isAdmin);
+}

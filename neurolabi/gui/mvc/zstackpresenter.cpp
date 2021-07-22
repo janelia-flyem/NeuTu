@@ -374,11 +374,6 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyActivateMergeLinkTriggered()));
       break;
-    case ZActionFactory::ACTION_MERGE_LINK_CLEAR:
-    case ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES:
-      connect(action, SIGNAL(triggered()),
-              this, SLOT(notifyActionTriggered()));
-      break;
     case ZActionFactory::ACTION_SPLIT_DATA:
       connect(action, SIGNAL(triggered()), this, SLOT(runSeededWatershed()));
       break;
@@ -462,7 +457,12 @@ bool ZStackPresenter::connectAction(
               this, SLOT(copyNeuroglancerLinkAtRectRoi()));
       break;
     default:
-      connected = false;
+      if (action) {
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyActionTriggered()));
+      } else {
+        connected = false;
+      }
       break;
     }
   }

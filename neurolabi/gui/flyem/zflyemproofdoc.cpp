@@ -786,18 +786,20 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
     std::vector<ZIntPoint> rootList;
     foreach (ZStackObject *obj, objList) {
       ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
-      ZSwcTree::DepthFirstIterator iter(tree);
-      while (iter.hasNext()) {
-        Swc_Tree_Node *tn = iter.next();
-        if (SwcTreeNode::isRegular(tn)) {
-          ZIntPoint pos = SwcTreeNode::center(tn).roundToIntPoint();
-          ptArray.push_back(pos);
-          Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
-          if (SwcTreeNode::isRegular(parent)) {
-            Swc_Tree_Node *root = SwcTreeNode::regularRoot(tn);
-            ZIntPoint rootPos = SwcTreeNode::center(root).roundToIntPoint();
-            edgeMap[pos] = rootPos;
-            rootList.push_back(rootPos);
+      if (tree) {
+        ZSwcTree::DepthFirstIterator iter(tree);
+        while (iter.hasNext()) {
+          Swc_Tree_Node *tn = iter.next();
+          if (SwcTreeNode::isRegular(tn)) {
+            ZIntPoint pos = SwcTreeNode::center(tn).roundToIntPoint();
+            ptArray.push_back(pos);
+            Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+            if (SwcTreeNode::isRegular(parent)) {
+              Swc_Tree_Node *root = SwcTreeNode::regularRoot(tn);
+              ZIntPoint rootPos = SwcTreeNode::center(root).roundToIntPoint();
+              edgeMap[pos] = rootPos;
+              rootList.push_back(rootPos);
+            }
           }
         }
       }
@@ -1085,6 +1087,11 @@ ZJsonObject ZFlyEmProofDoc::getBodyAnnotation(uint64_t bodyId) const
 {
   return m_bodyAnnotationManager->getAnnotation(
         bodyId, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_ONLY);
+}
+
+void ZFlyEmProofDoc::invalidateBodyAnnotationCache()
+{
+  m_bodyAnnotationManager->invalidateCache();
 }
 
 void ZFlyEmProofDoc::mergeBodies(ZFlyEmSupervisor *supervisor)
@@ -5081,17 +5088,15 @@ bool ZFlyEmProofDoc::canAddBookmarkAt(const ZIntPoint &pos, bool warning)
 
 QString ZFlyEmProofDoc::getInfo() const
 {
-  return m_dvidEnv.toJsonObject().dumpString(2).c_str();
-#if 0
-  QString info = getDvidTarget().toJsonObject().dumpString(2).c_str();
-  if (getDvidTarget().hasGrayScaleData()) {
-    info.append("\n");
-    info.append("Grayscale setup:\n");
-    info.append(m_grayscaleReader.getDvidTarget().toJsonObject().dumpString(2).c_str());
-  }
+  QString info = m_dvidEnv.toJsonObject().dumpString(2).c_str();
+
+#ifdef _DEBUG_
+  info.append("\n");
+  info.append(getBodyAnnotationManager()->toString());
+  info.append("\n");
+#endif
 
   return info;
-#endif
 }
 
 uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
@@ -6103,6 +6108,32 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
       executeRemoveObjectCommand(obj);
       */
     }
+  }
+}
+
+void ZFlyEmProofDoc::selectBodyOnMergeLink(bool appending)
+{
+  auto objList = getObjectList(ZStackObjectRole::ROLE_MERGE_LINK);
+  std::vector<ZIntPoint> ptArray;
+  foreach (ZStackObject *obj, objList) {
+    ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
+    if (tree) {
+      ZSwcTree::DepthFirstIterator iter(tree);
+      while (iter.hasNext()) {
+        Swc_Tree_Node *tn = iter.next();
+        if (SwcTreeNode::isRegular(tn)) {
+          ZIntPoint pos = SwcTreeNode::center(tn).roundToIntPoint();
+          ptArray.push_back(pos);
+        }
+      }
+    }
+  }
+
+  std::set<uint64_t> bodySet = getLabelIdSet(ptArray);
+  if (appending) {
+    addSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
+  } else {
+    setSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
   }
 }
 
