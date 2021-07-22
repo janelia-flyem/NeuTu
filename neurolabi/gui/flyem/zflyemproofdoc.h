@@ -147,6 +147,7 @@ public:
 
   uint64_t getLabelId(int x, int y, int z) override;
   uint64_t getSupervoxelId(int x, int y, int z) override;
+  std::set<uint64_t> getLabelIdSet(const std::vector<ZIntPoint> &ptArray) override;
 
   bool hasBodySelected() const;
 
@@ -187,6 +188,11 @@ public:
     return m_mergeProject;
   }
 
+  /*!
+   * \brief Get annotation for a body
+   *
+   * It will always try to refresh the cache.
+   */
   ZJsonObject getBodyAnnotation(uint64_t bodyId) const;
 
   void mergeBodies(ZFlyEmSupervisor *supervisor);

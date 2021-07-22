@@ -205,7 +205,10 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     /* Synapse actions */
     if (!doc->getDvidTarget().readOnly()) {
       config.append(ZActionFactory::ACTION_MERGE_LINK_ACTIVATE);
-      config.append(ZActionFactory::ACTION_MERGE_LINK_CLEAR);
+      if (doc->hasObject(ZStackObjectRole::ROLE_MERGE_LINK)) {
+        config.append(ZActionFactory::ACTION_MERGE_LINK_CLEAR);
+        config.append(ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES);
+      }
       config.appendSeparator();
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);

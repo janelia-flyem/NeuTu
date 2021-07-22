@@ -21,9 +21,16 @@ void FlyEmBodyAnnotationManager::setIO(
   m_io = io;
 }
 
-ZJsonObject FlyEmBodyAnnotationManager::getAnnotation(uint64_t bodyId)
+ZJsonObject FlyEmBodyAnnotationManager::getAnnotation(
+    uint64_t bodyId, ECacheOption option)
 {
-  if (!m_annotationCache.contains(bodyId) && m_io) {
+  if (option == ECacheOption::SOURCE_ONLY) {
+    invalidateCache(bodyId);
+  }
+
+  bool updatingCache = (option == ECacheOption::SOURCE_FIRST) ||
+      !m_annotationCache.contains(bodyId);
+  if (updatingCache && m_io) {
     try {
       m_annotationCache[bodyId] = m_io->readBodyAnnotation(bodyId);
     } catch (std::exception &e) {

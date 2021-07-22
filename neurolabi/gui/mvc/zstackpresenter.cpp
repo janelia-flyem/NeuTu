@@ -375,6 +375,7 @@ bool ZStackPresenter::connectAction(
               this, SLOT(notifyActivateMergeLinkTriggered()));
       break;
     case ZActionFactory::ACTION_MERGE_LINK_CLEAR:
+    case ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyActionTriggered()));
       break;

@@ -84,6 +84,30 @@ TEST(FlyEmBodyAnnotationManager, Basic)
   ASSERT_EQ("", ZFlyEmBodyAnnotation::GetStatus(manager.getAnnotation(2)));
   ASSERT_TRUE(manager.isCached(2));
 
+  obj.setEntry("status", "Traced");
+  manager.saveAnnotation(1, obj);
+  obj.setEntry("status", "Anchor");
+  manager.saveAnnotation(2, obj);
+  ASSERT_TRUE(manager.isCached(1));
+  ASSERT_TRUE(manager.isCached(2));
+  ASSERT_EQ("Traced", ZFlyEmBodyAnnotation::GetStatus(manager.getAnnotation(1)));
+  ASSERT_EQ("Anchor", ZFlyEmBodyAnnotation::GetStatus(manager.getAnnotation(2)));
+
+  io->setNonexistingException(true);
+  obj.setEntry("status", "Test");
+  io->writeBodyAnnotation(1, obj);
+  ASSERT_EQ("Traced", ZFlyEmBodyAnnotation::GetStatus(manager.getAnnotation(1)));
+  ASSERT_EQ("Test", ZFlyEmBodyAnnotation::GetStatus(
+              manager.getAnnotation(
+                1, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_FIRST)));
+  io->deleteBodyAnnotation(1);
+  ASSERT_EQ("Test", ZFlyEmBodyAnnotation::GetStatus(manager.getAnnotation(1)));
+  ASSERT_EQ("Test", ZFlyEmBodyAnnotation::GetStatus(
+              manager.getAnnotation(
+                1, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_FIRST)));
+  ASSERT_EQ("", ZFlyEmBodyAnnotation::GetStatus(
+              manager.getAnnotation(
+                1, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_ONLY)));
 }
 
 #endif

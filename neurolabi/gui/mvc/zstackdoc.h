@@ -1082,6 +1082,7 @@ public:
 
   virtual uint64_t getLabelId(int x, int y, int z);
   virtual uint64_t getSupervoxelId(int x, int y, int z);
+  virtual std::set<uint64_t> getLabelIdSet(const std::vector<ZIntPoint> &ptArray);
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);

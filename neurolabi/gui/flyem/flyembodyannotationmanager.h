@@ -21,7 +21,15 @@ public:
 
   void setIO(std::shared_ptr<FlyEmBodyAnnotationIO> io);
 
-  ZJsonObject getAnnotation(uint64_t bodyId);
+  enum class ECacheOption {
+    CACHE_FIRST, // Always use cached value first.
+    SOURCE_ONLY, // Always get annotation from source and refresh the cache.
+    SOURCE_FIRST, // Similar to SOURCE_ONLY, but keep using the cached when
+                  // source retrieval fails.
+  };
+
+  ZJsonObject getAnnotation(
+      uint64_t bodyId, ECacheOption option = ECacheOption::CACHE_FIRST);
   void saveAnnotation(uint64_t bodyId, const ZJsonObject &obj);
   void removeAnnotation(uint64_t bodyId);
 

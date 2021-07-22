@@ -10325,6 +10325,11 @@ uint64_t ZStackDoc::getSupervoxelId(int x, int y, int z)
   return getLabelId(x, y, z);
 }
 
+std::set<uint64_t> ZStackDoc::getLabelIdSet(const std::vector<ZIntPoint> &/*ptArray*/)
+{
+  return std::set<uint64_t>();
+}
+
 ZStack* ZStackDoc::getLabelField()
 {
   return const_cast<ZStack*>(

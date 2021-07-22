@@ -1083,7 +1083,8 @@ QString ZFlyEmProofDoc::getAnnotationFinalizedWarningDetail(
 
 ZJsonObject ZFlyEmProofDoc::getBodyAnnotation(uint64_t bodyId) const
 {
-  return m_bodyAnnotationManager->getAnnotation(bodyId);
+  return m_bodyAnnotationManager->getAnnotation(
+        bodyId, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_ONLY);
 }
 
 void ZFlyEmProofDoc::mergeBodies(ZFlyEmSupervisor *supervisor)
@@ -5132,6 +5133,18 @@ uint64_t ZFlyEmProofDoc::getSupervoxelId(int x, int y, int z)
   }
 
   return bodyId;
+}
+
+std::set<uint64_t> ZFlyEmProofDoc::getLabelIdSet(
+    const std::vector<ZIntPoint> &ptArray)
+{
+  std::set<uint64_t> idSet;
+
+  std::vector<uint64_t> bodyList =
+      getDvidReader().readBodyIdAt(ptArray);
+  idSet.insert(bodyList.begin(), bodyList.end());
+
+  return idSet;
 }
 
 void ZFlyEmProofDoc::autoSave()
