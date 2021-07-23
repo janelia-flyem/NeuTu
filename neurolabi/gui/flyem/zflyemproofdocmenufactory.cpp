@@ -207,6 +207,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_MERGE_LINK_ACTIVATE);
       if (doc->hasObject(ZStackObjectRole::ROLE_MERGE_LINK)) {
         config.append(ZActionFactory::ACTION_MERGE_LINK_CLEAR);
+        config.append(ZActionFactory::ACTION_MERGE_LINK_CLEAR_ALL);
         config.append(ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES);
         config.append(ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES_EXC);
       }
