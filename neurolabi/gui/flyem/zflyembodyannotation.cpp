@@ -10,7 +10,7 @@
 #include "zjsonobjectparser.h"
 #include "zstring.h"
 
-//const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "body ID"; // Obsolete
+const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "bodyid";
 const char *ZFlyEmBodyAnnotation::KEY_NAME = "name";
 const char *ZFlyEmBodyAnnotation::KEY_CLASS = "class";
 const char *ZFlyEmBodyAnnotation::KEY_TYPE = "type";
