@@ -287,6 +287,8 @@ public: //attributes
 
   void startWorkThread();
 
+  virtual bool isAdmin() const;
+
 //  inline QList<ZSwcTree*>* swcList();
 
   QList<ZSwcTree*> getSwcList() const;
@@ -899,9 +901,9 @@ public:
   void notifySegmentationUpdated(bool invalidatingSplit);
 
 public:
-  void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg);
-  void emitMessage(const QString &msg, neutu::EMessageType type);
+  void emitInfo(const QString &msg) const;
+  void emitWarning(const QString &msg) const;
+  void emitMessage(const QString &msg, neutu::EMessageType type) const;
 
 public:
   ZNeuronTracer& getNeuronTracer();
@@ -1312,7 +1314,7 @@ signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
-  void messageGenerated(const ZWidgetMessage&);
+  void messageGenerated(const ZWidgetMessage&) const;
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);

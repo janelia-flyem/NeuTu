@@ -93,15 +93,7 @@ std::string neutu::GetCurrentUserName()
 
 bool neutu::IsAdminUser()
 {
-#if defined(_FLYEM_)
-  if (neutu::GetCurrentUserName() == "takemuras" ||
-      neutu::GetCurrentUserName() == "shinomiyak" ||
-      neutu::GetCurrentUserName() == "jah") {
-    return true;
-  }
-#endif
-
-  return neutu::GetCurrentUserName() == "zhaot";
+  return false;
 }
 
 QFileDialog::Options neutu::GetFileDialogOption()

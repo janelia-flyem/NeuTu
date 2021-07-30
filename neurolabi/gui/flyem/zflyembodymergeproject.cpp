@@ -1103,7 +1103,7 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
   bool okToContinue = true;
 
   if (!bodyStatusMsg.isEmpty()) {
-    if (neutu::IsAdminUser()) {
+    if (isAdmin()) {
       okToContinue = ZDialogFactory::Ask(
             "Confirming Merge",
             "The following preserved IDs will be changed after merging\n" +
@@ -1825,6 +1825,16 @@ ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger() const
   }
 
   return nullptr;
+}
+
+bool ZFlyEmBodyMergeProject::isAdmin() const
+{
+  auto doc = getDocument<ZFlyEmProofDoc>();
+  if (doc) {
+    return doc->isAdmin();
+  }
+
+  return neutu::IsAdminUser();
 }
 
 FlyEmBodyAnnotationManager* ZFlyEmBodyMergeProject::getBodyAnnotationManager() const

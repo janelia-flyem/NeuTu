@@ -350,6 +350,11 @@ void ZStackDoc::shortcutTest()
   std::cout << "Shortcut triggered: ZStackDoc::shortcutTest()" << std::endl;
 }
 
+bool ZStackDoc::isAdmin() const
+{
+  return neutu::IsAdminUser();
+}
+
 void ZStackDoc::clearData()
 {
   deprecate(EComponent::STACK);
@@ -10665,14 +10670,22 @@ void ZStackDoc::makeKeyProcessor()
 
 void ZStackDoc::diagnose() const
 {
+  std::ostringstream stream;
+
+  stream << "Is admin: " << isAdmin() << std::endl;
+
   QList<ZStackObject::EType> allTypes = getObjectGroup().getAllType();
 
   foreach (const auto &type, allTypes) {
-    LDEBUG() << "#Objects of type" <<  ZStackObject::GetTypeName(type)
-             << ":" << getObjectList(type).size() << "; selected:"
-             << getSelected(type).size();
+    stream << "#Objects of type " <<  ZStackObject::GetTypeName(type)
+           << ": " << getObjectList(type).size() << "; selected: "
+           << getSelected(type).size() << std::endl;
   }
 
+  std::string info = stream.str();
+  if (!info.empty()) {
+    emitInfo(QString::fromStdString(info));
+  }
 //  LINFO() << "#Objects: " << getObjectGroup().getAllType()
 }
 
@@ -11014,7 +11027,7 @@ void ZStackDoc::removeRect2dRoi()
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
 
-void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
+void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type) const
 {
   emit messageGenerated(ZWidgetMessage(msg, type,
                                        ZWidgetMessage::TARGET_TEXT_APPENDING |
@@ -11022,12 +11035,12 @@ void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
                                        ZWidgetMessage::TARGET_KAFKA));
 }
 
-void ZStackDoc::emitInfo(const QString &msg)
+void ZStackDoc::emitInfo(const QString &msg) const
 {
   emitMessage(msg, neutu::EMessageType::INFORMATION);
 }
 
-void ZStackDoc::emitWarning(const QString &msg)
+void ZStackDoc::emitWarning(const QString &msg) const
 {
   emitMessage(msg, neutu::EMessageType::WARNING);
 }

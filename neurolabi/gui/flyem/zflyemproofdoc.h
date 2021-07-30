@@ -86,7 +86,7 @@ public:
 
   bool isDvidMutable() const;
 
-  bool isAdmin() const;
+  bool isAdmin() const override;
 
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);

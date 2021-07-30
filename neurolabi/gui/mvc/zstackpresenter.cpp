@@ -220,7 +220,7 @@ ZStackDocMenuFactory* ZStackPresenter::getMenuFactory()
   if (!m_menuFactory) {
     m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
           new ZStackDocMenuFactory);
-    m_menuFactory->setAdminState(neutu::IsAdminUser());
+    m_menuFactory->setAdminState(buddyDocument()->isAdmin());
   }
 
   return m_menuFactory.get();

@@ -3878,14 +3878,16 @@ void ZFlyEmProofMvc::annotateSelectedBody()
 
 //          ZJsonObject oldAnnotation = reader.readBodyAnnotationJson(bodyId);
           genericDlg->loadJsonObject(oldAnnotation);
-          std::string oldUser = ZFlyEmBodyAnnotation::GetUser(oldAnnotation);
+          std::string lastModifiedBy =
+              ZFlyEmBodyAnnotation::GetLastModifiedBy(oldAnnotation);
           std::string oldNamingUser =
               ZFlyEmBodyAnnotation::GetNamingUser(oldAnnotation);
           QString label = QString("Body ID: <b>%1</b>").arg(bodyId);
           QString separator = "<br>";
-          if (!oldUser.empty()) {
+          if (!lastModifiedBy.empty()) {
             label += separator +
-                QString("Previously annotated by <em>%1</em>").arg(oldUser.c_str());
+                QString("Previously annotated by <em>%1</em>").arg(
+                  lastModifiedBy.c_str());
             separator = " ;  ";
           }
           if (!oldNamingUser.empty()) {

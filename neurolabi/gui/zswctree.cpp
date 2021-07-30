@@ -236,6 +236,11 @@ void ZSwcTree::setDataFromNodeRoot(Swc_Tree_Node *node, ESetDataOption option)
   setDataFromNode(node, option);
 }
 
+void ZSwcTree::addJsonComment(const ZJsonObject &json)
+{
+  addComment("$" + json.dumpString(0));
+}
+
 void ZSwcTree::clearComment()
 {
   m_comment.clear();

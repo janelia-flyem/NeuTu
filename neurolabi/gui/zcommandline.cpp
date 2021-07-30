@@ -1468,6 +1468,7 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
 
         int zoom = 0;
         QUrlQuery query(QUrl(m_input[0].c_str()));
+        ZJsonObject sourceJson;
         if (query.hasQueryItem("label_zoom")) {
           zoom = query.queryItemValue("label_zoom").toInt();
         } else if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
@@ -1479,6 +1480,9 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
           zoom = std::min(zoom, bodyReader->getDvidTarget().getMaxLabelZoom());
         }
+        sourceJson.setEntry("downresLevel", zoom);
+        sourceJson.setEntry("uuid", bodyReader->getDvidTarget().getUuid());
+        sourceJson.setEntry("dataName", bodyReader->getDvidTarget().getSegmentationName());
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
@@ -1488,6 +1492,7 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
 
 
         if (tree) {
+          tree->addJsonComment(sourceJson);
           if (mid >= 0) {
             flyem::SetMutationId(tree, mid);
           }
