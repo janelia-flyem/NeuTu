@@ -910,7 +910,7 @@ void ZFlyEmBodyAnnotation::UpdateUserFields(
   ZFlyEmBodyAnnotation::SetLastModifiedBy(obj, user);
 
   std::string name = ZFlyEmBodyAnnotation::GetName(obj);
-  std::string oldName = ZFlyEmBodyAnnotation::GetName(obj);
+  std::string oldName = ZFlyEmBodyAnnotation::GetName(oldObj);
   std::string namingUser = ZFlyEmBodyAnnotation::GetNamingUser(oldObj);
   if (name != oldName) {
     namingUser = user;
