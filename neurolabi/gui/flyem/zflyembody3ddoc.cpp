@@ -50,6 +50,7 @@
 #include "zstackwatershedcontainer.h"
 #include "zstackobjectaccessor.h"
 #include "mvc/zstackdocdatabuffer.h"
+#include "mvc/annotation/zsegmentannotationstore.h"
 
 #include "zactionlibrary.h"
 #include "dvid/zdvidgrayslice.h"
@@ -71,12 +72,15 @@
 #include "zflyemproofutil.h"
 #include "zflyemtodoitem.h"
 #include "zflyembodysplitter.h"
+#include "flyembodyannotationmanager.h"
+#include "flyembodyannotationgenericdlgbuilder.h"
 
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "dialogs/flyemdialogfactory.h"
 #include "dialogs/flyembodyannotationdialog.h"
+#include "dialogs/zgenericbodyannotationdialog.h"
 #include "zdialogfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
@@ -2167,6 +2171,19 @@ void ZFlyEmBody3dDoc::loadTodoFresh(uint64_t bodyId)
     updateTodo(bodyId);
     getBodyManager().setTodoLoaded(bodyId);
   }
+}
+
+ZGenericBodyAnnotationDialog* ZFlyEmBody3dDoc::getGenericBodyAnnotationDlg()
+{
+  if (m_genericAnnotationDlg == nullptr) {
+    ZJsonObject schema = getDataDocument()->getBodyAnnotationSchema();
+    if (!schema.isEmpty()) {
+      m_genericAnnotationDlg = FlyEmDialogFactory::MakeBodyAnnotaitonDialog(
+            getDataDocument(), schema, getParent3DWindow());
+    }
+  }
+
+  return m_genericAnnotationDlg;
 }
 
 FlyEmBodyAnnotationDialog *ZFlyEmBody3dDoc::getBodyAnnotationDlg()
@@ -4630,18 +4647,82 @@ void ZFlyEmBody3dDoc::waitForSplitToBeDone()
   m_futureMap.waitForFinished(THREAD_SPLIT_KEY);
 }
 
+ZSegmentAnnotationStore* ZFlyEmBody3dDoc::getSegmentAnnotationStore() const
+{
+  return dynamic_cast<ZSegmentAnnotationStore*>(
+        getDataDocument()->getBodyAnnotationManager());
+}
+
 void ZFlyEmBody3dDoc::startBodyAnnotation()
 {
   if (getDataDocument()->usingGenericBodyAnnotation()) {
-    ZDialogFactory::Warn(
-          "Under Development",
-          "Annotating body in 3D for this dataset has not been supported yet.",
-          getParent3DWindow());
-    return;
+    startBodyAnnotation(getGenericBodyAnnotationDlg());
+  } else {
+    startBodyAnnotation(getBodyAnnotationDlg());
   }
-//  ZFlyEmBodyAnnotationDialog *dlg =
-//      new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
-  startBodyAnnotation(getBodyAnnotationDlg());
+}
+
+void ZFlyEmBody3dDoc::startBodyAnnotation(ZGenericBodyAnnotationDialog *dlg)
+{
+  if (isDvidMutable()) {
+    uint64_t bodyId = getSelectedSingleNormalBodyId();
+    if (bodyId > 0 && getDataDocument() != NULL) {
+      if (getDataDocument()->checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
+        ZJsonObject oldAnnotation =
+            getDataDocument()->getBodyAnnotation(bodyId);
+
+        ZJsonObject newAnnotation =
+            FlyEmBodyAnnotationGenericDlgBuilder()
+              .getDialogFrom([&](){ return dlg; })
+              .forBody(bodyId)
+              .fromOldAnnotation(oldAnnotation);
+
+        if (!newAnnotation.isNull()) {
+          ZFlyEmProofUtil::AnnotateBody(
+                bodyId, newAnnotation, oldAnnotation, getDataDocument(),
+                getParent3DWindow());
+        }
+
+        /*
+        dlg->loadJsonObject(oldAnnotation);
+        std::string lastModifiedBy =
+            ZFlyEmBodyAnnotation::GetLastModifiedBy(oldAnnotation);
+        std::string oldNamingUser =
+            ZFlyEmBodyAnnotation::GetNamingUser(oldAnnotation);
+        QString label = QString("Body ID: <b>%1</b>").arg(bodyId);
+        QString separator = "<br>";
+        if (!lastModifiedBy.empty()) {
+          label += separator +
+              QString("Previously annotated by <em>%1</em>").arg(
+                lastModifiedBy.c_str());
+          separator = " ;  ";
+        }
+        if (!oldNamingUser.empty()) {
+          label += separator +
+              QString("Named by <em>%1</em>").arg(oldNamingUser.c_str());
+        }
+        dlg->setLabel(label);
+        if (dlg->exec()) {
+          ZJsonObject newAnnotation = dlg->toJsonObject();
+          std::string user = neutu::GetCurrentUserName();
+          ZFlyEmBodyAnnotation::UpdateUserFields(
+                newAnnotation, user, oldAnnotation);
+          ZFlyEmProofUtil::AnnotateBody(
+                bodyId, newAnnotation, oldAnnotation, getDataDocument(),
+                getParent3DWindow());
+        }
+        */
+        getDataDocument()->checkInBodyWithMessage(
+              bodyId, neutu::EBodySplitMode::NONE);
+      } else {
+        emit messageGenerated(
+              ZWidgetMessage(
+                getDataDocument()->getBodyLockFailMessage(bodyId),
+                neutu::EMessageType::INFORMATION,
+                ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA));
+      }
+    }
+  }
 }
 
 void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)

@@ -586,3 +586,15 @@ std::string ZJsonObject::dumpJanssonString(size_t flags) const
 
   return ZJsonValue::dumpJanssonString(flags);
 }
+
+ZJsonObject ZJsonObject::MakeNull()
+{
+  return ZJsonObject();
+}
+
+ZJsonObject ZJsonObject::MakeEmpty()
+{
+  ZJsonObject obj = MakeNull();
+  obj.denull();
+  return obj;
+}

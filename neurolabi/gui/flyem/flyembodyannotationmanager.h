@@ -8,11 +8,12 @@
 
 #include "zjsonobject.h"
 #include "zflyembodyannotationprotocol.h"
+#include "mvc/annotation/zsegmentannotationstore.h"
 
 class FlyEmBodyAnnotationIO;
 class ZFlyEmBodyAnnotation;
 
-class FlyEmBodyAnnotationManager : public QObject
+class FlyEmBodyAnnotationManager : public QObject, public ZSegmentAnnotationStore
 {
   Q_OBJECT
 public:
@@ -21,17 +22,18 @@ public:
 
   void setIO(std::shared_ptr<FlyEmBodyAnnotationIO> io);
 
-  enum class ECacheOption {
-    CACHE_FIRST, // Always use cached value first.
-    SOURCE_ONLY, // Always get annotation from source and refresh the cache.
-    SOURCE_FIRST, // Similar to SOURCE_ONLY, but keep using the cached when
-                  // source retrieval fails.
-  };
+//  enum class ECacheOption {
+//    CACHE_FIRST, // Always use cached value first.
+//    SOURCE_ONLY, // Always get annotation from source and refresh the cache.
+//    SOURCE_FIRST, // Similar to SOURCE_ONLY, but keep using the cached when
+//                  // source retrieval fails.
+//  };
 
   ZJsonObject getAnnotation(
-      uint64_t bodyId, ECacheOption option = ECacheOption::CACHE_FIRST);
-  void saveAnnotation(uint64_t bodyId, const ZJsonObject &obj);
-  void removeAnnotation(uint64_t bodyId);
+      uint64_t bodyId,
+      neutu::ECacheOption option = neutu::ECacheOption::CACHE_FIRST) override;
+  void saveAnnotation(uint64_t bodyId, const ZJsonObject &obj) override;;
+  void removeAnnotation(uint64_t bodyId) override;;
 
   ZFlyEmBodyAnnotation getParsedAnnotation(uint64_t bodyId);
   std::string getBodyStatus(uint64_t bodyId);

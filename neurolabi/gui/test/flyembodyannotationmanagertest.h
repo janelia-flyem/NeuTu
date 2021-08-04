@@ -99,15 +99,15 @@ TEST(FlyEmBodyAnnotationManager, Basic)
   ASSERT_EQ("Traced", ZFlyEmBodyAnnotation::GetStatus(manager.getAnnotation(1)));
   ASSERT_EQ("Test", ZFlyEmBodyAnnotation::GetStatus(
               manager.getAnnotation(
-                1, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_FIRST)));
+                1, neutu::ECacheOption::SOURCE_FIRST)));
   io->deleteBodyAnnotation(1);
   ASSERT_EQ("Test", ZFlyEmBodyAnnotation::GetStatus(manager.getAnnotation(1)));
   ASSERT_EQ("Test", ZFlyEmBodyAnnotation::GetStatus(
               manager.getAnnotation(
-                1, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_FIRST)));
+                1, neutu::ECacheOption::SOURCE_FIRST)));
   ASSERT_EQ("", ZFlyEmBodyAnnotation::GetStatus(
               manager.getAnnotation(
-                1, FlyEmBodyAnnotationManager::ECacheOption::SOURCE_ONLY)));
+                1, neutu::ECacheOption::SOURCE_ONLY)));
 }
 
 #endif

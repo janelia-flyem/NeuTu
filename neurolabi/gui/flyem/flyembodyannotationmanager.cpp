@@ -22,13 +22,13 @@ void FlyEmBodyAnnotationManager::setIO(
 }
 
 ZJsonObject FlyEmBodyAnnotationManager::getAnnotation(
-    uint64_t bodyId, ECacheOption option)
+    uint64_t bodyId, neutu::ECacheOption option)
 {
-  if (option == ECacheOption::SOURCE_ONLY) {
+  if (option == neutu::ECacheOption::SOURCE_ONLY) {
     invalidateCache(bodyId);
   }
 
-  bool updatingCache = (option == ECacheOption::SOURCE_FIRST) ||
+  bool updatingCache = (option == neutu::ECacheOption::SOURCE_FIRST) ||
       !m_annotationCache.contains(bodyId);
   if (updatingCache && m_io) {
     try {
@@ -50,8 +50,23 @@ void FlyEmBodyAnnotationManager::saveAnnotation(
 {
   if (m_io) {
     try {
-      m_io->writeBodyAnnotation(bodyId, obj);
-      m_annotationCache[bodyId] = obj.clone();
+      ZJsonObject oldAnnotation = getAnnotation(bodyId);
+      ZJsonObject newAnnotation = obj.clone();
+      std::vector<std::string> keysToRemove;
+      newAnnotation.forEachValue([&](const std::string &key, ZJsonValue value) {
+        if (!oldAnnotation.hasKey(key)) {
+          if (value.isString()) {
+            if (value.toString().empty()) {
+              keysToRemove.push_back(key);
+            }
+          }
+        }
+      });
+      for (const auto &key : keysToRemove) {
+        newAnnotation.removeKey(key.c_str());
+      }
+      m_io->writeBodyAnnotation(bodyId, newAnnotation);
+      m_annotationCache[bodyId] = newAnnotation;
     }  catch (std::exception &e) {
       KWARN << std::string("Failed to write body annotation: ") + e.what();
     }

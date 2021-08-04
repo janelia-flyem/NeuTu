@@ -18,6 +18,9 @@ HEADERS += \
     $$PWD/auth/flyemauthtokendialog.h \
     $$PWD/auth/flyemauthtokenhandler.h \
     $$PWD/auth/flyemauthtokenstorage.h \
+    $$PWD/flyembodyannotationbuilder.h \
+    $$PWD/flyembodyannotationgenericdlgbuilder.h \
+    $$PWD/flyembodyannotationinteractivebuilder.h \
     $$PWD/flyembodyannotationio.h \
     $$PWD/flyembodyannotationlocalio.h \
     $$PWD/flyembodyannotationmanager.h \
@@ -155,6 +158,9 @@ SOURCES += \
     $$PWD/auth/flyemauthtokendialog.cpp \
     $$PWD/auth/flyemauthtokenhandler.cpp \
     $$PWD/auth/flyemauthtokenstorage.cpp \
+    $$PWD/flyembodyannotationbuilder.cpp \
+    $$PWD/flyembodyannotationgenericdlgbuilder.cpp \
+    $$PWD/flyembodyannotationinteractivebuilder.cpp \
     $$PWD/flyembodyannotationio.cpp \
     $$PWD/flyembodyannotationlocalio.cpp \
     $$PWD/flyembodyannotationmanager.cpp \

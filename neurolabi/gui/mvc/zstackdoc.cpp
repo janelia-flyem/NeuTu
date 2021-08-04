@@ -123,6 +123,7 @@
 #include "z3dgraph.h"
 #include "zcurve.h"
 #include "zneurontracer.h"
+#include "annotation/zsegmentannotationstore.h"
 
 #include "dialogs/swcskeletontransformdialog.h"
 #include "dialogs/swcsizedialog.h"
@@ -11043,6 +11044,37 @@ void ZStackDoc::emitInfo(const QString &msg) const
 void ZStackDoc::emitWarning(const QString &msg) const
 {
   emitMessage(msg, neutu::EMessageType::WARNING);
+}
+
+ZSegmentAnnotationStore* ZStackDoc::getSegmentAnnotationStore() const
+{
+  return nullptr;
+}
+
+
+void ZStackDoc::annotateSegment(uint64_t sid, const ZJsonObject &annotation)
+{
+  ZSegmentAnnotationStore *store = getSegmentAnnotationStore();
+  if (store) {
+    try {
+      store->saveAnnotation(sid, annotation);
+      emit segmentAnnotated(sid, annotation);
+    } catch (std::exception &e) {
+      emit messageGenerated(
+            ZWidgetMessage("Cannot save annotation.", neutu::EMessageType::ERROR));
+    }
+  }
+}
+
+ZJsonObject ZStackDoc::getSegmentAnnotation(
+    uint64_t sid, neutu::ECacheOption option) const
+{
+  ZSegmentAnnotationStore *store = getSegmentAnnotationStore();
+  if (store) {
+    return store->getAnnotation(sid, option);
+  }
+
+  return ZJsonObject();
 }
 
 template <class InputIterator>

@@ -32,6 +32,7 @@ class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
 class FlyEmBodyAnnotationDialog;
+class ZGenericBodyAnnotationDialog;
 class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
@@ -317,6 +318,7 @@ public:
 
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg);
+  void startBodyAnnotation(ZGenericBodyAnnotationDialog *dlg);
 
   void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
@@ -421,6 +423,7 @@ signals:
 protected:
   void autoSave() override {}
   void makeKeyProcessor() override;
+  ZSegmentAnnotationStore* getSegmentAnnotationStore() const override;
   bool _loadFile(const QString &filePath) override;
 
 private:
@@ -559,6 +562,7 @@ private:
   void loadTodoFresh(uint64_t bodyId);
 
   FlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  ZGenericBodyAnnotationDialog* getGenericBodyAnnotationDlg();
 
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
   void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
@@ -634,6 +638,7 @@ private:
   ZFlyEmBodySplitter *m_splitter;
 
   FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  ZGenericBodyAnnotationDialog *m_genericAnnotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

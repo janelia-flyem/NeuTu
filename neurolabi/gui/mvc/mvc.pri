@@ -1,3 +1,5 @@
+include($$PWD/annotation/annotation.pri)
+
 HEADERS += \
     $$PWD/logging.h \
     $$PWD/utilities.h \

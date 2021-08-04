@@ -25,6 +25,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<std::string>("std::string");
   qRegisterMetaType<ZJsonValue>("ZJsonValue");
+  qRegisterMetaType<ZJsonObject>("ZJsonObject");
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
   qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
   qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");

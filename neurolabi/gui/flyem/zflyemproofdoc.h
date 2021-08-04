@@ -784,6 +784,8 @@ protected:
 
   QString getWarning(EErrorType type);
 
+  ZSegmentAnnotationStore* getSegmentAnnotationStore() const override;
+
 private:
   void connectSignalSlot();
 
@@ -877,6 +879,7 @@ private:
 
 private slots:
   void processBodyMergeUploaded();
+  void processBodyAnnotationUpdate(uint64_t bodyId, ZJsonObject annotation);
 
 protected:
   ZDvidEnv m_dvidEnv;

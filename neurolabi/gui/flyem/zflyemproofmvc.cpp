@@ -103,6 +103,7 @@
 #include "zflyembookmarkannotationdialog.h"
 #include "zflyembookmark.h"
 #include "zflyemproofutil.h"
+#include "flyembodyannotationgenericdlgbuilder.h"
 #include "roi/zroiprovider.h"
 
 #include "neuroglancer/zneuroglancerpathparser.h"
@@ -3870,6 +3871,19 @@ void ZFlyEmProofMvc::annotateSelectedBody()
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
       if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
+        ZJsonObject oldAnnotation =
+            getCompleteDocument()->getBodyAnnotation(bodyId);
+
+        if (getCompleteDocument()->usingGenericBodyAnnotation()) {
+          ZJsonObject newAnnotation =
+              FlyEmBodyAnnotationGenericDlgBuilder()
+              .getDialogFrom([&](){ return m_dlgManager->getGenericAnnotationDlg(); })
+              .forBody(bodyId)
+              .fromOldAnnotation(oldAnnotation);
+          if (!newAnnotation.isNull()) {
+            annotateBody(bodyId, newAnnotation, oldAnnotation);
+          }
+#if 0
         ZGenericBodyAnnotationDialog *genericDlg =
             m_dlgManager->getGenericAnnotationDlg();
         ZJsonObject oldAnnotation =
@@ -3902,6 +3916,7 @@ void ZFlyEmProofMvc::annotateSelectedBody()
                   newAnnotation, user, oldAnnotation);
             annotateBody(bodyId, newAnnotation, oldAnnotation);
           }
+#endif
         } else {
           FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
           dlg->updateStatusBox();

@@ -106,6 +106,8 @@ class ZPunctum;
 class ZCurve;
 class ResolutionDialog;
 class ZNeuronTracer;
+class ZSegmentAnnotationStore;
+
 struct ZRescaleSwcSetting;
 
 /*!
@@ -516,6 +518,11 @@ public:
     return m_neuronTracer;
   }
   */
+
+  void annotateSegment(uint64_t sid, const ZJsonObject &annotation);
+  ZJsonObject getSegmentAnnotation(
+      uint64_t sid,
+      neutu::ECacheOption option = neutu::ECacheOption::CACHE_FIRST) const;
 
 public: //Image processing
   static int autoThreshold(Stack* getStack);
@@ -1393,6 +1400,7 @@ signals:
 
   void zoomingTo(int x, int y, int z);
   void updatingLatency(int);
+  void segmentAnnotated(uint64_t bodyId, ZJsonObject obj);
 
 protected:
   void autoSaveSwc();
@@ -1405,6 +1413,7 @@ protected:
   void endWorkThread();
   void clearToDestroy();
   void requestStackUpdate(ZStack *stack);
+  virtual ZSegmentAnnotationStore* getSegmentAnnotationStore() const;
 
   virtual bool _loadFile(const QString &filePath);
 

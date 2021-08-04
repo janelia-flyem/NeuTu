@@ -160,6 +160,13 @@ enum class EBodySplitMode {
   NONE, ONLINE, OFFLINE
 };
 
+enum class ECacheOption {
+  CACHE_FIRST, // Always use cached value first.
+  SOURCE_ONLY, // Always get annotation from source and refresh the cache.
+  SOURCE_FIRST, // Similar to SOURCE_ONLY, but keep using the cached when
+                // source retrieval fails.
+};
+
 namespace display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;

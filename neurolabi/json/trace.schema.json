@@ -1,0 +1,60 @@
+{  
+  "title": "Tracing Schema",
+  "type": "object",
+  "properties": {
+    "tag": {
+      "description": "File identification tag, which must be trace configuration",
+      "type": "string"
+    },
+    "default": {
+      "description": "Default parameter values",
+      "type": "object":,
+      "properties": {
+        "minimalScoreAuto": {
+          "description": "Minimal auto tracing score",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "minimalScoreSeed": {
+          "description": "Minimal score screening score",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "refit": {
+          "description": "Aggressive parameter searching while the fitting score is too low after initial fitting",
+          "type": "boolean"
+        },
+        "spTest": {
+          "description": "Use signal path to evaluate the connection strength between two branches",
+          "type": "boolean"
+        },
+        "crossoverTest": {
+          "description": "Detect crossover patterns",
+          "type": "boolean"
+        },
+        "tuneEnd": {
+          "description": "Fine tuning of the terminal of a traced branch",
+          "type": "boolean"
+        },
+        "edgePath": {
+          "description": "Run signal path test on edge detection",
+          "type": "boolean"
+        },
+        "enhanceMask": {
+          "description": "More aggressive seed detection",
+          "type": "boolean"
+        },
+        "seedMethod": {
+          "description": "Seeding method",
+          "type": "integer"
+        }
+      }
+    },
+    "level": {
+       "description": "Tracing level.",
+       "type": "object"
+    }
+  }
+}
