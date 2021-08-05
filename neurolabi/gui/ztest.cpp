@@ -368,6 +368,7 @@
 #include "flyem/dialogs/zgenericbodyannotationdialog.h"
 #include "flyem/flyembodyannotationmanager.h"
 #include "flyem/flyembodyannotationproofdocio.h"
+#include "flyem/widgets/flyembodysupplywidget.h"
 
 /*
 #include "ext/http/HTTPRequest.hpp"
@@ -32148,10 +32149,17 @@ void ZTest::test(MainWindow *host)
   resultJson.print();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("CNShalf");
   int zoom = ZDvidGlobal::Memo::ReadMaxLabelZoom(reader->getDvidTarget());
   std::cout << "Max zoom: " << zoom << std::endl;
+#endif
+
+#if 1
+  QDialog *dlg = new QDialog(host);
+  dlg->setGeometry(0, 0, 300, 50);
+  FlyEmBodySupplyWidget *widget = new FlyEmBodySupplyWidget(dlg);
+  dlg->exec();
 #endif
 
   std::cout << "Done." << std::endl;

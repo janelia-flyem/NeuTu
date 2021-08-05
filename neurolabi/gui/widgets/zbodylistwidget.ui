@@ -61,7 +61,24 @@
     </layout>
    </item>
    <item>
-    <widget class="ZFlyEmBodyListView" name="listView"/>
+    <widget class="FlyEmBodySupplyWidget" name="bodyListEdit" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="ZFlyEmBodyListView" name="listView">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -70,6 +87,12 @@
    <class>ZFlyEmBodyListView</class>
    <extends>QListView</extends>
    <header>flyem/zflyembodylistview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FlyEmBodySupplyWidget</class>
+   <extends>QWidget</extends>
+   <header>flyem/widgets/flyembodysupplywidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

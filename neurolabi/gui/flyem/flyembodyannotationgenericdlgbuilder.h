@@ -1,6 +1,8 @@
 #ifndef FLYEMBODYANNOTATIONGENERICDLGBUILDER_H
 #define FLYEMBODYANNOTATIONGENERICDLGBUILDER_H
 
+#include <functional>
+
 #include "flyembodyannotationinteractivebuilder.h"
 
 class ZGenericBodyAnnotationDialog;

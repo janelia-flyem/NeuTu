@@ -16,7 +16,8 @@ ZBodyListWidget::ZBodyListWidget(QWidget *parent) :
 
   qDebug() << ui->listView->selectionModel();
 
-  connect(ui->listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+  connect(ui->listView->selectionModel(),
+          SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
           ui->listView, SLOT(processSelectionChange()));
   connect(ui->listView, SIGNAL(bodyItemSelectionChanged(QSet<uint64_t>)),
           this, SLOT(processBodySelectionChange(QSet<uint64_t>)));
@@ -27,6 +28,10 @@ ZBodyListWidget::ZBodyListWidget(QWidget *parent) :
           this, SIGNAL(bodyAdded(uint64_t)));
   connect(model, SIGNAL(bodyRemoved(uint64_t)),
           this, SIGNAL(bodyRemoved(uint64_t)));
+
+  ui->bodyListEdit->setConfirmTitle("☟");
+  connect(ui->bodyListEdit, &FlyEmBodySupplyWidget::confirmed,
+          this, &ZBodyListWidget::addBodies);
 }
 
 ZBodyListWidget::~ZBodyListWidget()
@@ -49,7 +54,15 @@ void ZBodyListWidget::addString()
 {
   ZFlyEmBodyListModel *model = getModel();
   int row = model->rowCount();
-  model->insertRow(row);
+  if (row > 0) {
+    if (model->getBodyId(row - 1) == 0) {
+      row = row - 1;
+    }
+  }
+
+  if (row == model->rowCount()){
+    model->insertRow(row);
+  }
 
   QModelIndex index = model->index(row);
   ui->listView->setCurrentIndex(index);
@@ -79,6 +92,14 @@ void ZBodyListWidget::addBody(uint64_t bodyId)
 {
   ZFlyEmBodyListModel *model = getModel();
   model->addBody(bodyId);
+}
+
+void ZBodyListWidget::addBodies(QList<uint64_t> bodyList)
+{
+  ZFlyEmBodyListModel *model = getModel();
+  foreach (uint64_t bodyId, bodyList) {
+    model->addBody(bodyId);
+  }
 }
 
 void ZBodyListWidget::processBodySelectionChange(

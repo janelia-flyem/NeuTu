@@ -23,6 +23,7 @@ public:
 
   /*!
    * \brief Get the list view of containing bodies to explore
+   *
    * \return The pointer to the list view.
    *         It is guaranteed to be a non-NULL pointer.
    */
@@ -30,6 +31,7 @@ public:
 
   /*!
    * \brief Get the list model of containing bodies to explore
+   *
    * \return The pointer to the list model.
    *         It is guaranteed to be a non-NULL pointer.
    */
@@ -44,6 +46,7 @@ public slots:
 
   void removeBody(uint64_t bodyId);
   void addBody(uint64_t bodyId);
+  void addBodies(QList<uint64_t> bodyList);
 
   void diagnose();
 

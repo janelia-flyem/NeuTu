@@ -171,12 +171,23 @@ void ZFlyEmBodyListModel::removeRowList(const QList<int> &rowList)
 void ZFlyEmBodyListModel::addBody(uint64_t bodyId)
 {
   if (!m_bodySet.contains(bodyId)) {
-    insertRow(rowCount());
-    QModelIndex modelIndex = index(rowCount() - 1);
+    int row = rowCount();
+    if (row > 0) {
+      if (getBodyId(row - 1) == 0) {
+        row = row - 1;
+      }
+    }
+
+    if (row == rowCount()){
+      insertRow(row);
+    }
+
+    QModelIndex modelIndex = index(row);
     setData(modelIndex, QString("%1").arg(bodyId), Qt::EditRole);
   }
 }
 
+/*
 void ZFlyEmBodyListModel::addBodySliently(uint64_t bodyId)
 {
   if (m_bodySet.contains(bodyId)) {
@@ -185,6 +196,7 @@ void ZFlyEmBodyListModel::addBodySliently(uint64_t bodyId)
     setData(modelIndex, QString("%1").arg(bodyId), Qt::EditRole);
   }
 }
+*/
 
 bool ZFlyEmBodyListModel::isBodyProtected(uint64_t bodyId) const
 {
