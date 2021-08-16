@@ -3773,18 +3773,27 @@ void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
 
-    ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-    if (reader.isReady()) {
-      if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
-        ZFlyEmBodyAnnotation annotation =
-            FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
-        ZFlyEmBodyAnnotation oldAnnotation = annotation;
-        annotation.setStatus(status);
+#ifdef _DEBUG_
+    std::cout << "Set selected body status: " << status << std::endl;
+#endif
+
+    if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
+      ZJsonObject annotation = getCompleteDocument()->getBodyAnnotation(bodyId);
+      if (!annotation.isNull()) {
+        ZJsonObject oldAnnotation = annotation.clone();
+        ZFlyEmBodyAnnotation::SetStatus(annotation, status);
+//        annotation.setStatus(status);
         annotateBody(bodyId, annotation, oldAnnotation);
-        checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
       } else {
-        warnAbouBodyLockFail(bodyId);
+        emit messageGenerated(
+              ZWidgetMessage("Failed to retrieve data to proceed annotation.",
+              neutu::EMessageType::WARNING,
+              ZWidgetMessage::TARGET_TEXT_APPENDING));
       }
+
+      checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
+    } else {
+      warnAbouBodyLockFail(bodyId);
     }
   }
 }
