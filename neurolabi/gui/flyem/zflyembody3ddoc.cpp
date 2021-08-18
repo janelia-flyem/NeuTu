@@ -4767,6 +4767,11 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
   }
 }
 
+ZJsonObject ZFlyEmBody3dDoc::getBodyAnnotation(uint64_t bodyId)
+{
+  return getDataDocument()->getBodyAnnotation(bodyId);
+}
+
 /*
 void ZFlyEmBody3dDoc::updateFrame()
 {

@@ -319,6 +319,7 @@ public:
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg);
   void startBodyAnnotation(ZGenericBodyAnnotationDialog *dlg);
+  ZJsonObject getBodyAnnotation(uint64_t bodyId);
 
   void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
