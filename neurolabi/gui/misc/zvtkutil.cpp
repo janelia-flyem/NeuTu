@@ -33,7 +33,7 @@ ZMesh vtkPolyDataToMesh(vtkPolyData* polyData)
     }
   }
   vtkIdType npts;
-  vtkIdType* pts;
+  vtkIdType const * pts;
   polys->InitTraversal();
   for (int i = 0; i < polyData->GetNumberOfPolys(); ++i) {
     int h = polys->GetNextCell(npts, pts);
