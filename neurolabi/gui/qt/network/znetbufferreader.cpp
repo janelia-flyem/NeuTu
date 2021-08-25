@@ -260,7 +260,7 @@ void ZNetBufferReader::startReading()
 QMap<QByteArray, QByteArray> ZNetBufferReader::getResponseHeaderMap() const
 {
   QMap<QByteArray, QByteArray> headerMap;
-  for (const auto headerPair : m_responseHeader) {
+  for (const auto &headerPair : m_responseHeader) {
     headerMap[headerPair.first] = headerPair.second;
   }
 
@@ -270,7 +270,7 @@ QMap<QByteArray, QByteArray> ZNetBufferReader::getResponseHeaderMap() const
 QByteArray ZNetBufferReader::getResponseHeader(
     const QByteArray &headerName) const
 {
-  for (const auto headerPair : m_responseHeader) {
+  for (const auto &headerPair : m_responseHeader) {
     if (headerPair.first == headerName) {
       return headerPair.second;
     }
