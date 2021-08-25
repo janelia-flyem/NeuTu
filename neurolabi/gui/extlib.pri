@@ -149,7 +149,7 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 #  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
-VTK_VER = 8.2
+VTK_VER = 9.0
 
 #
 exists($${CONDA_ENV}) {
