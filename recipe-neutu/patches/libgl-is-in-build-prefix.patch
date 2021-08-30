@@ -1,0 +1,13 @@
+diff --git neurolabi/gui/gui.pro neurolabi/gui/gui.pro
+index 5d064f6e4..1d0ec52c8 100644
+--- neurolabi/gui/gui.pro
++++ neurolabi/gui/gui.pro
+@@ -54,6 +54,8 @@ win32 {
+     }
+ }
+ 
++QMAKE_LIBS_OPENGL = $$(BUILD_PREFIX)/$$(HOST)/sysroot/usr/lib64/libGL.so
++
+ unix {
+   DEFINES += _UNIX_
+ }
