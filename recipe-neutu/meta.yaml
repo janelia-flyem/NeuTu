@@ -24,9 +24,12 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }} # [linux]
     - cmake
     - ninja 1.7.2*
+    - {{ compiler('cxx') }} # [linux]
+    - {{ cdt('mesa-libgl-devel') }}  # [linux]
+    - {{ cdt('mesa-libegl-devel') }}  # [linux]
+    - {{ cdt('mesa-dri-drivers') }}  # [linux]
 
   host:
     - libneucore >=0.1.4, <2.0
