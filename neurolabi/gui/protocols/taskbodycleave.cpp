@@ -4,6 +4,7 @@
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QInputDialog>
@@ -18,6 +19,7 @@
 #include <QNetworkRequest>
 #include <QPixmap>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSlider>
 #include <QTimer>
 #include <QUndoCommand>
@@ -27,6 +29,7 @@
 
 #include "logging/zlog.h"
 #include "logging/utilities.h"
+#include "neutubeconfig.h"
 
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
@@ -70,6 +73,9 @@ namespace {
   static const QString CLEAVING_STATUS_SERVER_WARNINGS = "Cleaving status: server warnings";
   static const QString CLEAVING_STATUS_SERVER_INCOMPLETE = "Cleaving status: omitted meshes";
 
+  static const QString COLOR_SPEC_KEY_AGGLO_ID_COLORS = "agglo ID colors";
+  static const QString SETTINGS_KEY_AGGLO_COLOR_FILEPATH = "cleavingAggloColorFilepath";
+
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
   static const std::vector<glm::vec4> INDEX_COLORS({
     glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
@@ -93,6 +99,15 @@ namespace {
     glm::vec4(255, 215, 180, 255) / 255.0f, // coral
     glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
     glm::vec4(128, 128, 128, 255) / 255.0f, // gray
+  });
+
+  static const std::vector<glm::vec4> DEFAULT_AGGLO_INDEX_COLORS({
+    glm::vec4(255, 255, 255, 255) / 255.0f, // white (no index)
+    glm::vec4(  0, 128, 128, 255) / 255.0f, // teal
+    glm::vec4(230, 190, 255, 255) / 255.0f, // lavender
+    glm::vec4(170, 110,  40, 255) / 255.0f, // brown
+    glm::vec4(128,   0,   0, 255) / 255.0f, // maroon
+    glm::vec4(255, 215, 180, 255) / 255.0f, // coral
   });
 
   Z3DMeshFilter *getMeshFilter(ZStackDoc *doc)
@@ -177,6 +192,10 @@ namespace {
   // because it starts when the user presses a button to end task N-1.
 
   static QTime s_startupTimer;
+
+  static std::set<QString> s_warningTextToSuppress;
+
+  static std::vector<glm::vec4> s_aggloIndexColors;
 }
 
 //
@@ -397,6 +416,16 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   m_networkManager = new QNetworkAccessManager(m_widget);
   connect(m_networkManager, SIGNAL(finished(QNetworkReply*)),
           this, SLOT(onNetworkReplyFinished(QNetworkReply*)));
+
+  if (s_aggloIndexColors.empty()) {
+    const QSettings &settings = NeutubeConfig::getInstance().getSettings();
+    QVariant value = settings.value(SETTINGS_KEY_AGGLO_COLOR_FILEPATH);
+    if (!value.isNull()) {
+      loadColorsAgglo(value.toString());
+    } else {
+      setDefaultColorsAgglo();
+    }
+  }
 }
 
 TaskBodyCleave::~TaskBodyCleave()
@@ -704,6 +733,9 @@ void TaskBodyCleave::onLoaded()
     }
   }
 
+  m_meshIdToAggloIndex.clear();
+  updateMeshIdToAggloIndex();
+
   m_startupTimes.push_back(s_startupTimer.elapsed());
 }
 
@@ -745,7 +777,8 @@ void TaskBodyCleave::onShowCleavingChanged(int state)
 
   bool show = (state != Qt::Unchecked);
   enableCleavingUI(show);
-  applyColorMode(show);
+  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
+  applyColorMode(show, colorBySupervoxels);
 
   KINFO << QString("Show cleaving: %1").arg(show);
 }
@@ -942,6 +975,55 @@ void TaskBodyCleave::onToggleShowChosenCleaveBody()
 
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
+  if (reply->url().path().contains("mapping")) {
+    aggloIndexReplyFinished(reply);
+  } else {
+    cleaveServerReplyFinished(reply);
+  }
+}
+
+void TaskBodyCleave::aggloIndexReplyFinished(QNetworkReply *reply)
+{
+  QNetworkReply::NetworkError error = reply->error();
+  if (error != QNetworkReply::NoError) {
+    displayWarning("Agglo Index Server Error", "Reply error: " + reply->errorString(), "", true);
+    return;
+  }
+
+  int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+  const int STATUS_OK = 200;
+  if (statusCode != STATUS_OK) {
+    displayWarning("Agglo Index Server Error", "Status code: " + QString::number(statusCode), "", true);
+    return;
+  }
+
+  QByteArray replyBytes = reply->readAll();
+  QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
+  if (!replyJsonDoc.isArray()) {
+    displayWarning("Agglo Index Server Error", "Reply is not a JSON array", "", true);
+    return;
+  }
+
+  QJsonArray replyJsonArray = replyJsonDoc.array();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  int i = 0;
+  for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+    ZMesh *mesh = *itMesh;
+    uint64_t id = mesh->getLabel();
+    std::size_t aggloIndex = std::size_t(replyJsonArray[i].toInt());
+
+    // If the query supervoxel ID is not in the mapping to agglomeration indices, the reply will
+    // siply return the ID again.  In this case, treat it as agglomeration index 1.
+    if (aggloIndex == id)
+      aggloIndex = 1;
+
+    m_meshIdToAggloIndex[id] = aggloIndex;
+    ++i;
+  }
+}
+
+void TaskBodyCleave::cleaveServerReplyFinished(QNetworkReply *reply)
+{
   allowNextPrev(true);
 
   m_cleaveRepliesPending--;
@@ -1075,6 +1157,74 @@ void TaskBodyCleave::onChooseCleaveMethod()
     }
 
     KINFO << "Choose cleaving method: " + text;
+  }
+}
+
+void TaskBodyCleave::onColorByChanged()
+{
+  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
+  applyColorMode(false, colorBySupervoxels);
+}
+
+void TaskBodyCleave::onSpecifyAggloColor()
+{
+  QString filepath =
+      QFileDialog::getOpenFileName(m_widget, tr("Agglo color specification file"), "", tr("JSON Files (*.json)"));
+  if (!filepath.isEmpty()) {
+    if (loadColorsAgglo(filepath)) {
+      QSettings &settings = NeutubeConfig::getInstance().getSettings();
+      settings.setValue(SETTINGS_KEY_AGGLO_COLOR_FILEPATH, filepath);
+    }
+  }
+}
+
+bool TaskBodyCleave::loadColorsAgglo(QString filepath)
+{
+  QFile file(filepath);
+  if (!file.open(QIODevice::ReadOnly)) {
+    displayWarning("Error opening file", "Cannot open color JSON file '" + filepath + "'");
+    return false;
+  }
+  QByteArray data = file.readAll();
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+  if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+    displayWarning("Error parsing file", "Cannot parse color JSON file '" + filepath + "'");
+    return false;
+  }
+  QJsonObject jsonObj = jsonDoc.object();
+  if (!jsonObj.contains(COLOR_SPEC_KEY_AGGLO_ID_COLORS)) {
+    displayWarning("Error parsing file", "Expected key \"" + COLOR_SPEC_KEY_AGGLO_ID_COLORS + "\"");
+    return false;
+  }
+  QJsonValue jsonColorsValue = jsonObj[COLOR_SPEC_KEY_AGGLO_ID_COLORS];
+  if (!jsonColorsValue.isArray()) {
+    displayWarning("Error parsing file", "Expected key \"" + COLOR_SPEC_KEY_AGGLO_ID_COLORS + "\" to have an array value");
+    return false;
+  }
+  QJsonArray jsonColorsArr = jsonColorsValue.toArray();
+  for (int i = 0; i < jsonColorsArr.count(); ++i) {
+    QJsonValue jsonColorValue = jsonColorsArr[i];
+    if (!jsonColorValue.isString()) {
+      displayWarning("Error parsing file", "Skipping color " + QString::number(i) + " which is not a string");
+      continue;
+    }
+    QString colorStr = jsonColorValue.toString();
+    QColor color = QColor(colorStr);
+    if (!color.isValid()) {
+      displayWarning("Error parsing file", "Skipping color " + QString::number(i) + " which is not a valid color");
+      continue;
+    }
+    glm::vec4 colorVec = glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.0f);
+    s_aggloIndexColors.push_back(colorVec);
+  }
+  return true;
+}
+
+void TaskBodyCleave::setDefaultColorsAgglo()
+{
+  s_aggloIndexColors.clear();
+  for (glm::vec4 colorVec : DEFAULT_AGGLO_INDEX_COLORS) {
+    s_aggloIndexColors.push_back(colorVec);
   }
 }
 
@@ -1384,6 +1534,16 @@ void TaskBodyCleave::buildTaskWidget()
   m_showBodyCheckBox->setChecked(true);
   connect(m_showBodyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowBodyChanged(int)));
 
+  m_colorSupervoxelsButton = new QRadioButton("Color by supervoxels", m_widget);
+  m_colorSupervoxelsButton->setChecked(true);
+  connect(m_colorSupervoxelsButton, SIGNAL(toggled(bool)), this, SLOT(onColorByChanged()));
+
+  m_colorAggloButton = new QRadioButton("Color by agglo", m_widget);
+  connect(m_colorAggloButton, SIGNAL(toggled(bool)), this, SLOT(onColorByChanged()));
+
+  m_specifyAggloColorButton = new QPushButton("Specify...", m_widget);
+  connect(m_specifyAggloColorButton, SIGNAL(clicked(bool)), this, SLOT(onSpecifyAggloColor()));
+
   QVBoxLayout *cleaveIndexActionsLayout = new QVBoxLayout;
   cleaveIndexActionsLayout->addWidget(m_selectBodyButton);
   cleaveIndexActionsLayout->addWidget(m_showBodyCheckBox);
@@ -1392,6 +1552,13 @@ void TaskBodyCleave::buildTaskWidget()
   cleaveLayout1->addWidget(m_showCleavingCheckBox);
   cleaveLayout1->addWidget(m_cleaveIndexComboBox);
   cleaveLayout1->addLayout(cleaveIndexActionsLayout);
+
+  QHBoxLayout *cleaveLayout3 = new QHBoxLayout;
+  cleaveLayout3->addWidget(m_colorSupervoxelsButton);
+  QHBoxLayout *cleaveLayout3a = new QHBoxLayout;
+  cleaveLayout3a->addWidget(m_colorAggloButton);
+  cleaveLayout3a->addWidget(m_specifyAggloColorButton);
+  cleaveLayout3->addLayout(cleaveLayout3a);
 
   m_showSeedsOnlyCheckBox = new QCheckBox("Show seeds only", m_widget);
   m_showSeedsOnlyCheckBox->setChecked(false);
@@ -1405,6 +1572,7 @@ void TaskBodyCleave::buildTaskWidget()
 
   QVBoxLayout *layout = new QVBoxLayout;
   layout->addLayout(cleaveLayout1);
+  layout->addLayout(cleaveLayout3);
   layout->addLayout(cleaveLayout2);
 
   m_widget->setLayout(layout);
@@ -1511,6 +1679,41 @@ void TaskBodyCleave::updateColors()
   }
 }
 
+void TaskBodyCleave::updateMeshIdToAggloIndex()
+{
+  if (m_meshIdToAggloIndex.empty()) {
+    QString strArray = "[";
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+    for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+      ZMesh *mesh = *itMesh;
+      uint64_t id = mesh->getLabel();
+      if (strArray.at(strArray.size() - 1) != '[')
+        strArray += ", ";
+      strArray += QString::number(id);
+    }
+    strArray += "]";
+    QByteArray byteArray = strArray.toUtf8();
+
+    std::string server = "http://" + m_bodyDoc->getDvidTarget().getAddressWithPort();
+    std::string uuid = m_bodyDoc->getDvidTarget().getUuid();
+    std::string baseName = m_bodyDoc->getDvidTarget().getBodyLabelName();
+    std::string api = server + "/api/node/" + uuid + "/" + baseName + "_agglo_levels/mapping";
+
+    QUrl url(api.c_str());
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    m_networkManager->sendCustomRequest(request, "GET", byteArray);
+  }
+}
+
+void TaskBodyCleave::updateColorsAgglo()
+{
+  if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
+    filter->setColorIndexing(s_aggloIndexColors, m_meshIdToAggloIndex);
+  }
+}
+
 void TaskBodyCleave::bodiesForCleaveIndex(std::set<uint64_t> &result,
                                           std::size_t cleaveIndex,
                                           bool ignoreSeedsOnly)
@@ -1555,17 +1758,21 @@ void TaskBodyCleave::applyPerTaskSettings()
   CleaveCommand::clearReplyUndo();
 
   bool showingCleaving = m_showCleavingCheckBox->isChecked();
-  applyColorMode(showingCleaving);
+  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
+  applyColorMode(showingCleaving, colorBySupervoxels);
 }
 
-void TaskBodyCleave::applyColorMode(bool showingCleaving)
+void TaskBodyCleave::applyColorMode(bool showingCleaving, bool colorBySupervoxels)
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
     if (showingCleaving) {
       updateColors();
       filter->setColorMode("Indexed Color");
-    } else {
+    } else if (colorBySupervoxels) {
       filter->setColorMode("Mesh Source");
+    } else {
+      updateColorsAgglo();
+      filter->setColorMode("Indexed Color");
     }
   }
 }
@@ -1583,6 +1790,9 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
   for (auto it : m_actionToComboBoxIndex) {
     it.first->setEnabled(showingCleaving);
   }
+  m_colorSupervoxelsButton->setEnabled(!showingCleaving);
+  m_colorAggloButton->setEnabled(!showingCleaving);
+  m_specifyAggloColorButton->setEnabled(!showingCleaving);
 }
 
 QString TaskBodyCleave::getCleaveServer() const
@@ -1812,11 +2022,7 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
         for (QJsonValue warning : warningsArray) {
           text += warning.toString() + "\n";
         }
-
-        if (m_warningTextToSuppress.find(text) == m_warningTextToSuppress.end()) {
-          displayWarning(title, text, "", true);
-        }
-
+        displayWarning(title, text, "", true);
         return true;
       }
     }
@@ -1874,6 +2080,10 @@ bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t
 void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
                                     const QString& details, bool allowSuppression)
 {
+  if (allowSuppression && (s_warningTextToSuppress.find(text) != s_warningTextToSuppress.end())) {
+    return;
+  }
+
   // Display the warning at idle time, after the rendering event has been processed,
   // so the results of cleaving will be visible when the warning is presented.
 
@@ -1898,7 +2108,7 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
       msgBox.exec();
 
       if (msgBox.clickedButton() == okAndSuppress) {
-          m_warningTextToSuppress.insert(text);
+        s_warningTextToSuppress.insert(text);
       }
     }
   });
