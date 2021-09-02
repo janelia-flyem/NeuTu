@@ -15,7 +15,7 @@ package:
 source:
     git_url: ../
     patches:
-      - patches/libgl-is-in-build-prefix.patch
+      - patches/libgl-is-in-build-prefix.patch # [linux]
 
 build:
   number: 0
