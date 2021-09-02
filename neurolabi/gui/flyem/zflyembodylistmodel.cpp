@@ -92,7 +92,9 @@ uint64_t ZFlyEmBodyListModel::GetBodyId(const QString &str)
   if (bodyId == 0) {
     QRegularExpression regexp("^(supervoxel|sv|c)[:\\s]*([0-9]+)",
                               QRegularExpression::CaseInsensitiveOption);
+#ifdef _DEBUG_
     qDebug() << "Input body str:" << str;
+#endif
     QRegularExpressionMatch match = regexp.match(str);
     if (match.hasMatch()) {
       bodyId = match.captured(2).toULongLong();

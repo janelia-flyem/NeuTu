@@ -568,6 +568,13 @@ bool TaskBodyCleave::skip(QString &reason)
     reason = "tarsupervoxels HEAD failed";
   }
 
+#ifdef _DEBUG_
+  if (m_skip) {
+    m_skip = false;
+    reason += " - Ignore skip for debugging.";
+  }
+#endif
+
   LKINFO << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
             arg(timer.elapsed()).arg((m_skip ? "skip" : "not skip")).arg(m_bodyId);
 
@@ -1368,8 +1375,10 @@ bool TaskBodyCleave::cleaveVerified(
     const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
     size_t indexNotCleavedOff) const
 {
-  ZFlyEmBodyAnnotation annot = FlyEmDataReader::ReadBodyAnnotation(
-        m_bodyDoc->getMainDvidReader(), m_bodyId);
+//  ZFlyEmBodyAnnotation annot = FlyEmDataReader::ReadBodyAnnotation(
+//        m_bodyDoc->getMainDvidReader(), m_bodyId);
+
+  ZJsonObject annot = m_bodyDoc->getBodyAnnotation(m_bodyId);
 
   if (!annot.isEmpty()) {
 //    size_t mainSize = 0;
@@ -1383,12 +1392,6 @@ bool TaskBodyCleave::cleaveVerified(
           size_t svSize = getSupervoxelSize(svId);
           cleaveSize += svSize;
         }
-//        size_t svSize = getSupervoxelSize(svId);
-//        if (element.first == indexNotCleavedOff) {
-//          mainSize += svSize;
-//        } else {
-//          cleaveSize += svSize;
-//        }
       }
     }
 
@@ -1399,7 +1402,8 @@ bool TaskBodyCleave::cleaveVerified(
       const ZFlyEmBodyAnnotationProtocol &bodyStatusProtocol =
           m_bodyDoc->getBodyStatusProtocol();
       if (!bodyStatusProtocol.isEmpty()) {
-        if (bodyStatusProtocol.preservingId(annot.getStatus())) {
+        if (bodyStatusProtocol.preservingId(
+              ZFlyEmBodyAnnotation::GetStatus(annot))) {
           ZDialogFactory::Warn(
                 "Cleave Forbidden",
                 QString("You cannot cleave off a large portion "
@@ -1470,7 +1474,7 @@ void TaskBodyCleave::onCompleted()
   bool doWriteOutput = true;
   if (const char* doWriteOutputStr = std::getenv("NEU3_CLEAVE_UPDATE_SEGMENTATION")) {
 
-    // For now, at least, allow direct updating of the DVID egmentation to be disabled
+    // For now, at least, allow direct updating of the DVID segmentation to be disabled
     // by an environment variable.
 
     doWriteOutput = (std::string(doWriteOutputStr) != "no");
@@ -1483,14 +1487,15 @@ void TaskBodyCleave::onCompleted()
             responseLabels, mutationIds);
     }
   }
-  writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds, responseLabels, mutationIds);
+  writeAuxiliaryOutput(
+        reader, writer, cleaveIndexToMeshIds, responseLabels, mutationIds);
 
   if (succeeded) {
 
     // Hide the super voxels that are being cleaved off.
 
     m_hiddenCleaveIndices.clear();
-    for (auto it : cleaveIndexToMeshIds) {
+    for (const auto &it : cleaveIndexToMeshIds) {
       std::size_t cleaveIndex = it.first;
       if (cleaveIndex != indexNotCleavedOff) {
         m_hiddenCleaveIndices.insert(cleaveIndex);
@@ -2277,7 +2282,7 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
     // Include the IDs (labels) for the new bodies DVID created when cleaving (to allow undo later).
 
     QJsonArray jsonNewBodyIds;
-    for (QString id : newBodyIds) {
+    for (const QString &id : newBodyIds) {
       jsonNewBodyIds.append(id);
     }
     jsonExtra[KEY_BODY_IDS_CREATED] = jsonNewBodyIds;
