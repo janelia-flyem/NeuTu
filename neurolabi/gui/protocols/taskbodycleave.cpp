@@ -1179,6 +1179,7 @@ void TaskBodyCleave::onSpecifyAggloColor()
       QFileDialog::getOpenFileName(m_widget, tr("Agglo color specification file"), "", tr("JSON Files (*.json)"));
   if (!filepath.isEmpty()) {
     if (loadColorsAgglo(filepath)) {
+      updateColorsAgglo();
       QSettings &settings = NeutubeConfig::getInstance().getSettings();
       settings.setValue(SETTINGS_KEY_AGGLO_COLOR_FILEPATH, filepath);
     }
@@ -1209,21 +1210,34 @@ bool TaskBodyCleave::loadColorsAgglo(QString filepath)
     return false;
   }
   QJsonArray jsonColorsArr = jsonColorsValue.toArray();
+
+  std::vector<glm::vec4> newIndexColors;
   for (int i = 0; i < jsonColorsArr.count(); ++i) {
     QJsonValue jsonColorValue = jsonColorsArr[i];
     if (!jsonColorValue.isString()) {
-      displayWarning("Error parsing file", "Skipping color " + QString::number(i) + " which is not a string");
-      continue;
+      displayWarning("Error parsing file", "Invalid color " + QString::number(i) + " which is not a string");
+      return false;
     }
     QString colorStr = jsonColorValue.toString();
     QColor color = QColor(colorStr);
     if (!color.isValid()) {
-      displayWarning("Error parsing file", "Skipping color " + QString::number(i) + " which is not a valid color");
-      continue;
+      displayWarning("Error parsing file", "Invalid color " + QString::number(i));
+      return false;
     }
     glm::vec4 colorVec = glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.0f);
-    s_aggloIndexColors.push_back(colorVec);
+    newIndexColors.push_back(colorVec);
   }
+
+  if (newIndexColors.size() >= 3) {
+    s_aggloIndexColors.clear();
+    for (glm::vec4 colorVec : newIndexColors) {
+      s_aggloIndexColors.push_back(colorVec);
+    }
+  } else {
+    displayWarning("Error parsing file", "At least 3 valid colors are required");
+    return false;
+  }
+
   return true;
 }
 
