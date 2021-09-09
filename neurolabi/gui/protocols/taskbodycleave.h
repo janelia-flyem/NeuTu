@@ -109,6 +109,9 @@ private:
   void aggloIndexReplyFinished(QNetworkReply *reply);
   void cleaveServerReplyFinished(QNetworkReply *reply);
 
+  void checkOutCurrent();
+  void checkInCurrent();
+
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   uint64_t m_bodyId;

@@ -1102,6 +1102,7 @@ public:
 
   void addTask(ZTask *task);
   void addTask(std::function<void()> f);
+  void addTask(const QString &name, std::function<void()> f);
 
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
@@ -1458,7 +1459,7 @@ private slots:
 protected:
   ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
-private:
+protected:
   //Main stack
   ZStack *m_stack;
   ZSparseStack *m_sparseStack; //Serve as main data when m_stack is virtual.

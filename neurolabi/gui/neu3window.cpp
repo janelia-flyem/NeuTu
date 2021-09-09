@@ -116,22 +116,6 @@ Neu3Window::Neu3Window(QWidget *parent) :
   connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyChange()));
   connect(this, &Neu3Window::updatingSliceWidget, this, &Neu3Window::updateSliceWidget,
           Qt::QueuedConnection);
-//  initialize();
-
-  // Set up OpenTracing-style logging (via Kafka).
-
-//  std::string kafkaBrokers = "kafka.int.janelia.org:9092";
-//  if (const char* kafkaBrokersEnv = std::getenv("NEU3_KAFKA_BROKERS")) {
-
-//    // The list of brokers should be separated by commans, per this example:
-//    // https://www.npmjs.com/package/node-rdkafka
-
-//    kafkaBrokers = kafkaBrokersEnv;
-//  }
-
-//  auto config = neuopentracing::Config(kafkaBrokers);
-//  auto tracer = neuopentracing::Tracer::make("neu3", config);
-//  neuopentracing::Tracer::InitGlobal(tracer);
 }
 
 Neu3Window::~Neu3Window()

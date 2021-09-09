@@ -168,7 +168,8 @@ bool ZNetBufferReader::hasHead(const QString &url, int timeout)
 
   waitForReading();
 
-  return m_status == neutu::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK ||
+      m_status == neutu::EReadStatus::NO_CONTENT;
 }
 
 bool ZNetBufferReader::hasOptions(const QString &url, int timeout)
@@ -185,7 +186,8 @@ bool ZNetBufferReader::hasOptions(const QString &url, int timeout)
 
   waitForReading();
 
-  return m_status == neutu::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK ||
+      m_status == neutu::EReadStatus::NO_CONTENT;
 }
 
 void ZNetBufferReader::post(const QString &url, const QByteArray &data)

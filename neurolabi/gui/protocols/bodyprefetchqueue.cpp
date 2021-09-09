@@ -39,6 +39,7 @@ BodyPrefetchQueue::~BodyPrefetchQueue()
  * returns the top body ID in the queue (ie, the body
  * that should be fetched next); blocks if there are no items
  */
+/*
 uint64_t BodyPrefetchQueue::get() {
     QMutexLocker locker(&m_queueLock);
 
@@ -48,6 +49,7 @@ uint64_t BodyPrefetchQueue::get() {
     LINFO() << "BodyPrefetchQueue: returning body:" << m_queue.head();
     return m_queue.dequeue();
 }
+*/
 
 /*
  * are there any items in the queue?
@@ -65,29 +67,31 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
 
     bool wasEmpty = m_queue.isEmpty();
     foreach (uint64_t bodyID, bodyIDs) {
-      m_queue.enqueue(bodyID);
-      LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
+      if (!m_queue.contains(bodyID)) {
+        m_queue.enqueue(bodyID);
+        LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
 
-      if (!ZFlyEmBodyManager::encodesTar(bodyID)) {
-        ZMesh *mesh = m_doc->readMesh(m_reader, bodyID, 0);
+        if (!ZFlyEmBodyManager::EncodesTar(bodyID)) {
+          ZMesh *mesh = m_doc->readMesh(m_reader, bodyID, 0);
 
-        if (mesh != NULL) {
-          auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                bodyID, 0, flyem::EBodyType::MESH);
-          mesh->setSource(source);
+          if (mesh != NULL) {
+            auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
+                  bodyID, 0, flyem::EBodyType::MESH);
+            mesh->setSource(source);
 
-          m_doc->getDataBuffer()->addUpdate(
-                mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
+            m_doc->getDataBuffer()->addUpdate(
+                  mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
+          }
+        } else{
+          ZFlyEmBodyConfig config(bodyID);
+          config.setAddBuffer();
+          m_doc->addBody(config);
         }
-      } else{
-        ZFlyEmBodyConfig config(bodyID);
-        config.setAddBuffer();
-        m_doc->addBody(config);
       }
     }
 
     if (wasEmpty) {
-        m_queueHasItems.wakeAll();
+//        m_queueHasItems.wakeAll();
     }
 }
 
@@ -101,8 +105,14 @@ void BodyPrefetchQueue::add(uint64_t bodyID) {
     m_queue.enqueue(bodyID);
     LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
     if (wasEmpty) {
-        m_queueHasItems.wakeAll();
+//        m_queueHasItems.wakeAll();
     }
+}
+
+void BodyPrefetchQueue::remove(uint64_t bodyID) {
+    QMutexLocker locker(&m_queueLock);
+    LINFO() << "BodyPrefetchQueue: removed body:" << bodyID;
+    m_queue.removeAll(bodyID);
 }
 
 /*
@@ -133,7 +143,6 @@ void BodyPrefetchQueue::clear() {
  */
 void BodyPrefetchQueue::finish() {
     // do I need to grab the lock here?
-    QMutexLocker locker(&m_queueLock);
     emit finished();
 }
 

@@ -85,7 +85,7 @@ ZIntCuboid ZFlyEmBodyConfig::getRange() const
 
 bool ZFlyEmBodyConfig::isTar() const
 {
-  return ZFlyEmBodyManager::encodesTar(getBodyId());
+  return ZFlyEmBodyManager::EncodesTar(getBodyId());
 }
 
 bool ZFlyEmBodyConfig::isBodyTar() const
@@ -100,12 +100,12 @@ bool ZFlyEmBodyConfig::isSupervoxelTar() const
 
 int ZFlyEmBodyConfig::getBodyEncodeLevel() const
 {
-  return ZFlyEmBodyManager::encodedLevel(getBodyId());
+  return ZFlyEmBodyManager::EncodedLevel(getBodyId());
 }
 
 uint64_t ZFlyEmBodyConfig::getDecodedBodyId() const
 {
-  return ZFlyEmBodyManager::decode(getBodyId());
+  return ZFlyEmBodyManager::Decode(getBodyId());
 }
 
 neutu::EBodyLabelType ZFlyEmBodyConfig::getLabelType() const
@@ -116,7 +116,7 @@ neutu::EBodyLabelType ZFlyEmBodyConfig::getLabelType() const
 void ZFlyEmBodyConfig::setBodyId(uint64_t bodyId)
 {
   m_bodyId = bodyId;
-  if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+  if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
     m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
   }
 }

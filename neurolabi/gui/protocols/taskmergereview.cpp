@@ -392,7 +392,7 @@ QWidget *TaskMergeReview::getTaskWidget()
 
   m_visibleBodies.clear();
   for (uint64_t id : m_bodyIds) {
-    m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
+    m_visibleBodies.insert(ZFlyEmBodyManager::Encode(id, 0));
   }
 
   if (!m_lastSavedButton) {
@@ -424,7 +424,7 @@ bool TaskMergeReview::usePrefetching()
 
   m_visibleBodies.clear();
   for (uint64_t id : m_bodyIds) {
-    m_visibleBodies.insert(ZFlyEmBodyManager::encode(id, 0));
+    m_visibleBodies.insert(ZFlyEmBodyManager::Encode(id, 0));
   }
 
   return true;

@@ -351,6 +351,8 @@ public:
 
   void syncBodyColor();
 
+  void tryPrefetchBodyMesh(uint64_t bodyId);
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;
@@ -420,6 +422,7 @@ signals:
   void addingBody(uint64_t bodyId);
   void removingBody(uint64_t bodyId);
   void splitCommitted();
+  void bodyMeshBuffered(uint64_t bodyId);
 
 protected:
   void autoSave() override {}

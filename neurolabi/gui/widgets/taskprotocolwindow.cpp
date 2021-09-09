@@ -53,26 +53,31 @@ TaskProtocolWindow::TaskProtocolWindow(
 
     // prefetch queue, setup
     // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
-    m_prefetchQueue = new BodyPrefetchQueue();
+//    m_prefetchQueue = new BodyPrefetchQueue();
 
     //Let m_body3dDoc manage the life cycle of prefetching thread
     //because it needs to wait for the thread to quit
-    m_prefetchThread = new QThread(m_body3dDoc);
-    QThread *prefetchThread = m_prefetchThread;
-    m_prefetchQueue->setDocument(m_body3dDoc);
+//    m_prefetchThread = new QThread(m_body3dDoc);
+//    QThread *prefetchThread = m_prefetchThread;
+//    m_prefetchQueue->setDocument(m_body3dDoc);
+    /*
     m_body3dDoc->addClearance([=]() {
-      prefetchThread->quit();
+      prefetchThread->terminate();
+      prefetchThread->wait();
     });
+    */
 
-    m_prefetchQueue->moveToThread(m_prefetchThread);
-    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
-    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
+//    m_prefetchQueue->moveToThread(m_prefetchThread);
+//    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
+//    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
+//    connect(m_body3dDoc, SIGNAL(bodyMeshBuffered(uint64_t)),
+//            m_prefetchQueue, SLOT(remove(uint64_t)));
 
     // prefetch queue, item management
-    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
-    connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
-    connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
-    connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
+//    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
+//    connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
+//    connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
+//    connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
     // UI connections
     connect(QApplication::instance(), SIGNAL(aboutToQuit()),
@@ -593,7 +598,7 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
     updateBody3dDocConfig();
 
-    m_prefetchThread->start();
+//    m_prefetchThread->start();
 }
 
 /*
@@ -791,14 +796,18 @@ void TaskProtocolWindow::prefetch(QSet<uint64_t> bodyIDs) {
     msg.chop(2);
     emitInfo(msg);
 
-    emit prefetchBody(bodyIDs);
+    for (auto bodyId : bodyIDs) {
+      prefetch(bodyId);
+    }
+//    emit prefetchBody(bodyIDs);
 }
 
 /*
  * request prefetch of a body that you know is coming up next
  */
 void TaskProtocolWindow::prefetch(uint64_t bodyID) {
-    emit prefetchBody(bodyID);
+  m_body3dDoc->tryPrefetchBodyMesh(bodyID);
+//    emit prefetchBody(bodyID);
 }
 
 /*
@@ -877,9 +886,10 @@ void TaskProtocolWindow::updateNextPrevButtonsEnabled() {
             }
         }
     }
-    bool nextPrevEnabled = ((nonSkippedCount > 1) && !m_changingTask &&
-                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
-                            m_nextPrevAllowed);
+    bool nextPrevEnabled =
+        ((nonSkippedCount > 1) && !m_changingTask &&
+         ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
+         m_nextPrevAllowed);
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
@@ -967,62 +977,73 @@ void TaskProtocolWindow::updateBodyWindow(int taskIdBodiesToRemove) {
     }
 }
 
-void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRemove)
+void TaskProtocolWindow::startUpdating(const QSet<uint64_t> &toRemove)
 {
-    // If the user triggers several calls to updateBodyWindow() in rapid succession, by
-    // quickly moving between tasks and using controls from the task widget that also change
-    // the loaded bodies, then the bodies loaded by one call may not be fully cleared by the
-    // next call, due to the way bodies are added and removed asynchronously in a background
-    // thread. The buttons for moving between tasks, and the whole task widget, will be disabled
-    // until signals connected to the onBodyRecycled, onBodyMeshesAdded and onBodyMeshLoaded
-    // slots indicate that all the old meshes have been fully deleted and all the new meshes
-    // have been loaded.
+  // If the user triggers several calls to updateBodyWindow() in rapid succession, by
+  // quickly moving between tasks and using controls from the task widget that also change
+  // the loaded bodies, then the bodies loaded by one call may not be fully cleared by the
+  // next call, due to the way bodies are added and removed asynchronously in a background
+  // thread. The buttons for moving between tasks, and the whole task widget, will be disabled
+  // until signals connected to the onBodyRecycled, onBodyMeshesAdded and onBodyMeshLoaded
+  // slots indicate that all the old meshes have been fully deleted and all the new meshes
+  // have been loaded.
 
+  m_isUpdating = true;
   const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
   const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
   QSet<uint64_t> visibleOrSelected = visible + selected;
 
-    m_bodyRecycledExpected = 0;
-    for (uint64_t id : toRemove) {
-        if (!visibleOrSelected.contains(id)) {
+  m_bodyRecycledExpected = 0;
+  for (uint64_t id : toRemove) {
+      if (!visibleOrSelected.contains(id)) {
 
-            // Only if a removed body is not being re-added should the expected count change.
+          // Only if a removed body is not being re-added should the expected count change.
 
-            if (ZFlyEmBodyManager::IsEncoded(id)) {
-                QSet<uint64_t> mappedIds = m_body3dDoc->getMappedSet(id);
-                m_bodyRecycledExpected += mappedIds.size();
-            } else {
-                m_bodyRecycledExpected++;
-            }
-        }
-    }
-    m_bodyRecycledReceived = 0;
+          if (ZFlyEmBodyManager::IsEncoded(id)) {
+              QSet<uint64_t> mappedIds = m_body3dDoc->getMappedSet(id);
+              m_bodyRecycledExpected += mappedIds.size();
+          } else {
+              m_bodyRecycledExpected++;
+          }
+      }
+  }
+  m_bodyRecycledReceived = 0;
 
-    m_bodyMeshesAddedExpected = 0;
-    m_bodyMeshesAddedReceived = 0;
+  m_bodyMeshesAddedExpected = 0;
+  m_bodyMeshesAddedReceived = 0;
 
-    m_bodyMeshLoadedExpected = 0;
-    bool usingTars = false;
-    foreach (uint64_t bodyID, visibleOrSelected) {
-        if (ZFlyEmBodyManager::encodesTar(bodyID)) {
-            usingTars = true;
-            if (!toRemove.contains(bodyID)) {
-
-                // Only if an added body was not just removed should the expected count change.
-
-                m_bodyMeshesAddedExpected++;
-            }
-        } else {
+  m_bodyMeshLoadedExpected = 0;
+//    bool usingTars = false;
+  foreach (uint64_t bodyID, visibleOrSelected) {
+      if (ZFlyEmBodyManager::EncodesTar(bodyID)) {
+//            usingTars = true;
           if (!toRemove.contains(bodyID)) {
 
               // Only if an added body was not just removed should the expected count change.
 
-              m_bodyMeshLoadedExpected++;
+              m_bodyMeshesAddedExpected++;
           }
-        }
-    }
+      } else {
+        if (!toRemove.contains(bodyID)) {
 
-    m_bodyMeshLoadedReceived = 0;
+            // Only if an added body was not just removed should the expected count change.
+
+            m_bodyMeshLoadedExpected++;
+        }
+      }
+  }
+
+  m_bodyMeshLoadedReceived = 0;
+}
+
+void TaskProtocolWindow::endUpdating()
+{
+  m_isUpdating = false;
+}
+
+void TaskProtocolWindow::disableButtonsWhileUpdating(const QSet<uint64_t> &toRemove)
+{
+    startUpdating(toRemove);
 
     ui->nextButton->setEnabled(false);
     ui->prevButton->setEnabled(false);
@@ -1065,20 +1086,29 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
             // just enabled.
 
             m_taskList[m_currentTaskIndex]->onLoaded();
+
+            // for now, simplest possible prefetching: just prefetch for the next task,
+            //  as long as there is one and it's not the current one
+            // and start prefetching when control returns to the UI after reenabling it
+            int nextTaskIndex = getNext();
+            if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex &&
+                m_lastPrefetchedIndex != nextTaskIndex) {
+                prefetchForTaskIndex(nextTaskIndex);
+                m_lastPrefetchedIndex = nextTaskIndex;
+            }
+            /*
+            QTimer::singleShot(0, this, [=]() {
+                if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+                    prefetchForTaskIndex(nextTaskIndex);
+                }
+            });
+            */
         }
 
         m_changingTask = false;
         updateNextPrevButtonsEnabled();
-
-        // for now, simplest possible prefetching: just prefetch for the next task,
-        //  as long as there is one and it's not the current one
-        // and start prefetching when control returns to the UI after reenabling it
-        QTimer::singleShot(0, this, [=]() {
-            int nextTaskIndex = getNext();
-            if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
-                prefetchForTaskIndex(nextTaskIndex);
-            }
-        });
+        endUpdating();
+//        m_bodyMeshesAddedExpected = -1;
     }
 }
 
@@ -1471,30 +1501,38 @@ void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
 
     m_bodyMeshesAddedReceived++;
     m_bodyMeshLoadedExpected += numMeshes;
-    enableButtonsAfterUpdating();
+    if (m_isUpdating) {
+      enableButtonsAfterUpdating();
+    }
 }
 
 void TaskProtocolWindow::onBodyMeshLoaded(int numMeshes)
 {
   m_bodyMeshLoadedReceived += numMeshes;
 //    m_bodyMeshLoadedReceived++;
+  if (m_isUpdating) {
     enableButtonsAfterUpdating();
+  }
 }
 
 void TaskProtocolWindow::onBodyRecycled()
 {
     m_bodyRecycledReceived++;
-    enableButtonsAfterUpdating();
+    if (m_isUpdating) {
+      enableButtonsAfterUpdating();
+    }
 }
 
 void TaskProtocolWindow::applicationQuitting() {
-    m_prefetchQueue->finish();
+//    m_prefetchQueue->finish();
 }
 
+/*
 BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
 {
     return m_prefetchQueue;
 }
+*/
 
 /*
 QString TaskProtocolWindow::getCurrentTaskProtocolType() const

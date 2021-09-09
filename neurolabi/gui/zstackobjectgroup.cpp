@@ -1056,6 +1056,18 @@ bool ZStackObjectGroup::hasObject(const ZStackObject *obj) const
   return m_objectList.contains(const_cast<ZStackObject*>(obj));
 }
 
+bool ZStackObjectGroup::hasObject(
+    ZStackObject::EType type, const std::string &source) const
+{
+  QMutexLocker locker(&m_mutex);
+
+  if (findFirstSameSourceUnsync(type, source)) {
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStackObjectGroup::containsUnsync(const ZStackObject *obj) const
 {
   if (obj == NULL) {

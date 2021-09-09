@@ -6073,10 +6073,10 @@ void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
 bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
   neutu::EBodyLabelType bodyType = neutu::EBodyLabelType::BODY;
-  if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+  if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
     bodyType = neutu::EBodyLabelType::SUPERVOXEL;
   }
-  if (getDvidReader().hasBody(ZFlyEmBodyManager::decode(bodyId), bodyType)) {
+  if (getDvidReader().hasBody(ZFlyEmBodyManager::Decode(bodyId), bodyType)) {
     QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
     //  ZDvidLabelSlice *slice = getDvidLabelSlice();
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();

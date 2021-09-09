@@ -399,7 +399,7 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   auto clean = [](QSet<uint64_t>& s) {
     QList<uint64_t> r;
     foreach (uint64_t id, s) {
-      if (ZFlyEmBodyManager::encodedLevel(id) > 0) r.append(id);
+      if (ZFlyEmBodyManager::EncodedLevel(id) > 0) r.append(id);
     }
     foreach (uint64_t id, r) {
       s.erase(s.find(id));
@@ -598,11 +598,29 @@ bool TaskBodyCleave::skip(QString &reason)
   return m_skip;
 }
 
+void TaskBodyCleave::checkOutCurrent()
+{
+  if (m_supervisor->isEmpty() || !m_supervisor->getDvidTarget().isSupervised()) {
+    m_checkedOut = true;
+  } else {
+    m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
+  }
+}
+
+void TaskBodyCleave::checkInCurrent()
+{
+  if (m_supervisor->isEmpty() || !m_supervisor->getDvidTarget().isSupervised()) {
+    m_checkedOut = false;
+  } else {
+    if (m_checkedOut) {
+      m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
+    }
+  }
+}
+
 void TaskBodyCleave::beforeNext()
 {
-  if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
-  }
+  checkInCurrent();
 
   applyPerTaskSettings();
 
@@ -629,9 +647,12 @@ void TaskBodyCleave::beforeNext()
 //#Review-TZ: It duplicates code from askBodyCleave::beforeNext
 void TaskBodyCleave::beforePrev()
 {
+  /*
   if (m_checkedOut) {
     m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
+  */
+  checkInCurrent();
 
   applyPerTaskSettings();
 
@@ -660,7 +681,7 @@ void TaskBodyCleave::beforeLoading()
 
   KLog::SetOperationName("body_cleaving");
 
-  m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
+  checkOutCurrent();
   if (!m_checkedOut) {
     std::string owner = m_supervisor->getOwner(m_bodyId);
 
@@ -1058,11 +1079,11 @@ void TaskBodyCleave::cleaveServerReplyFinished(QNetworkReply *reply)
       std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
 
       QJsonObject replyJsonAssn = replyJsonAssnVal.toObject();
-      for (QString key : replyJsonAssn.keys()) {
+      foreach (const QString &key, replyJsonAssn.keys()) {
         uint64_t cleaveIndex = key.toInt();
         QJsonValue value = replyJsonAssn[key];
         if (value.isArray()) {
-          for (QJsonValue idVal : value.toArray()) {
+          foreach (const QJsonValue &idVal, value.toArray()) {
             uint64_t id = idVal.toDouble();
             meshIdToCleaveIndex[id] = cleaveIndex;
           }
@@ -1096,7 +1117,7 @@ void TaskBodyCleave::cleaveServerReplyFinished(QNetworkReply *reply)
         QJsonValue errorsVal = errorsIt.value();
         if (errorsVal.isArray()) {
           QJsonArray errorsArray = errorsVal.toArray();
-          for (QJsonValue error : errorsArray) {
+          foreach (const QJsonValue &error, errorsArray) {
             text += error.toString() + "\n";
           }
         }
@@ -1338,7 +1359,13 @@ bool TaskBodyCleave::allowCompletion()
       QString title = "Warning";
       QString text = (unassigned.size() == 1) ? "A supervoxel is unassigned. " : "Some supervoxels are unassigned. ";
       std::size_t indexNotCleavedOff = getIndexNotCleavedOff();
-      text += "Save them with the main body (seed color " + QString::number(indexNotCleavedOff) + ")?";
+
+      bool cleavingUnassigned = false;
+      if (cleavingUnassigned) {
+        text += "Saving each of then as a new body?";
+      } else {
+        text += "Save them with the main body (seed color " + QString::number(indexNotCleavedOff) + ")?";
+      }
 
       QMessageBox::StandardButton chosen =
           QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::Cancel,
@@ -1348,8 +1375,22 @@ bool TaskBodyCleave::allowCompletion()
         m_bodyDoc->pushUndoCommand(command);
 
         std::map<uint64_t, std::size_t> meshIdToCleaveResultIndex(m_meshIdToCleaveResultIndex);
-        for (uint64_t id : unassigned) {
-          meshIdToCleaveResultIndex[id] = indexNotCleavedOff;
+
+        if (!unassigned.empty()) {
+          std::size_t maxIndex = 0;
+          for (auto it : m_meshIdToCleaveIndex) {
+            if (maxIndex < it.first) {
+              maxIndex = it.first;
+            }
+          }
+
+          for (uint64_t id : unassigned) {
+            if (cleavingUnassigned) {
+              meshIdToCleaveResultIndex[id] = ++maxIndex;
+            } else {
+              meshIdToCleaveResultIndex[id] = indexNotCleavedOff;
+            }
+          }
         }
         CleaveCommand::addReply(command->requestNumber(), meshIdToCleaveResultIndex);
         CleaveCommand::displayReply(this, command->requestNumber());
@@ -2426,7 +2467,7 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
 
   m_maxLevel = json[KEY_MAXLEVEL].toDouble();
 
-  m_visibleBodies.insert(ZFlyEmBodyManager::encode(m_bodyId, 0));
+  m_visibleBodies.insert(ZFlyEmBodyManager::EncodeTar(m_bodyId));
 
   QString assignedUser = json[KEY_ASSIGNED_USER].toString();
   if (!assignedUser.isEmpty()) {

@@ -186,6 +186,7 @@ public:
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 
   bool hasObject(ZStackObject::EType type) const;
+  bool hasObject(ZStackObject::EType type, const std::string &source) const;
   bool hasObject(ZStackObject::ETarget target) const;
   bool hasSelected() const;
   bool hasSelected(ZStackObject::EType type) const;

@@ -10,6 +10,7 @@
 
 #include <archive.h>
 
+#include "neulib/core/stringbuilder.h"
 #include "common/utilities.h"
 
 #include "logging/zqslog.h"
@@ -140,6 +141,7 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZWidgetMessage::ConnectMessagePipe(m_splitter, this);
 
   m_helper = ZSharedPointer<ZStackDoc3dHelper>(new ZStackDoc3dHelper);
+  startWorkThread();
 }
 
 ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
@@ -959,8 +961,8 @@ QMap<uint64_t, ZFlyEmBodyEvent> ZFlyEmBody3dDoc::makeEventMapUnsync(
 {
 //  QSet<uint64_t> bodySet = m_bodySet;
   QMap<uint64_t, ZFlyEmBodyEvent> actionMap;
-  for (QQueue<ZFlyEmBodyEvent>::const_iterator iter = m_eventQueue.begin();
-       iter != m_eventQueue.end(); ++iter) {
+  for (QQueue<ZFlyEmBodyEvent>::const_iterator iter = m_eventQueue.constBegin();
+       iter != m_eventQueue.constEnd(); ++iter) {
     const ZFlyEmBodyEvent &event = *iter;
     uint64_t bodyId = event.getBodyId();
     if (actionMap.contains(bodyId)) {
@@ -1078,7 +1080,7 @@ void ZFlyEmBody3dDoc::processEventFunc()
 neutu::EBodyLabelType ZFlyEmBody3dDoc::getBodyLabelType(uint64_t bodyId) const
 {
   if (getDvidTarget().hasSupervoxel() &&
-      ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+      ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
     return neutu::EBodyLabelType::SUPERVOXEL;
   }
 
@@ -1251,7 +1253,7 @@ ZMesh* ZFlyEmBody3dDoc::getMeshForSplit() const
 ZMesh* ZFlyEmBody3dDoc::readSupervoxelMesh(
     const ZDvidReader &reader, uint64_t svId) const
 {
-  ZMesh *mesh = reader.readSupervoxelMesh(ZFlyEmBodyManager::decode(svId));
+  ZMesh *mesh = reader.readSupervoxelMesh(ZFlyEmBodyManager::Decode(svId));
 
   return mesh;
 }
@@ -1725,7 +1727,7 @@ void ZFlyEmBody3dDoc::updateBody(ZFlyEmBodyConfig &config)
       }
     }
   } else {
-    // A mesh from a tar archive is never needs its color updated, and checking
+    // A mesh from a tar archive never needs its color updated, and checking
     // for it is a slow loop that is quadratic in the number of meshes.
 
     if (!fromTar(bodyId)) {
@@ -1745,6 +1747,23 @@ void ZFlyEmBody3dDoc::updateBody(ZFlyEmBodyConfig &config)
 
   if (!updated) {
     addBodyFunc(config);
+  }
+}
+
+void ZFlyEmBody3dDoc::tryPrefetchBodyMesh(uint64_t bodyId)
+{
+  QMutexLocker locker(&m_BodySetMutex);
+  std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
+        bodyId, 0, flyem::EBodyType::MESH);
+  if (!getBodyManager().contains(bodyId) &&
+      !getBodyManager().buffered(bodyId) &&
+      !m_bufferObjectGroup.hasObject(ZStackObject::EType::MESH, source)) {
+    addTask(QString("Prefetch Body Mesh %1").arg(bodyId),
+      [bodyId, this]() {
+      ZFlyEmBodyConfig config(bodyId);
+      config.setAddBuffer();
+      this->addBody(config);
+    });
   }
 }
 
@@ -1867,7 +1886,7 @@ void ZFlyEmBody3dDoc::addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
     } else {
       if (event.getAction() == ZFlyEmBodyEvent::EAction::ADD &&
           getBodyType() != flyem::EBodyType::SKELETON) {
-        if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+        if (ZFlyEmBodyManager::EncodesTar(bodyId)) {
           event.setDsLevel(0);
         } else {
           event.setDsLevel(getMaxDsLevel());
@@ -1929,7 +1948,8 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
 //          ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId())).
 //        isEmpty());
 
-  if (config.getLabelType() == neutu::EBodyLabelType::BODY) {
+  if (config.getLabelType() == neutu::EBodyLabelType::BODY &&
+      !config.getAddBuffer()) {
     loadSynapseFresh(bodyId);
     loadTodoFresh(bodyId);
   }
@@ -1963,7 +1983,11 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
       getBodyManager().registerBufferedBody(config.getBodyId(), subbodySet);
     }
   } else {
-    getBodyManager().registerBody(config.getBodyId());
+    if (!config.getAddBuffer()) {
+      getBodyManager().registerBody(config.getBodyId());
+    } else {
+       getBodyManager().registerBufferedBody(config.getBodyId());
+    }
   }
 
   notifyBodyUpdated(config.getBodyId(), config.getDsLevel());
@@ -1980,6 +2004,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
   if (config.getAddBuffer()) {
     QString msg = QString("Done prefetching body %1").arg(config.getBodyId());
     emit messageGenerated(ZWidgetMessage(msg));
+    emit bodyMeshBuffered(config.getBodyId());
   }
 
 #if 0
@@ -3452,7 +3477,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
 uint64_t ZFlyEmBody3dDoc::decode(uint64_t encodedId)
 {
-  return ZFlyEmBodyManager::decode(encodedId);
+  return ZFlyEmBodyManager::Decode(encodedId);
 }
 
 bool ZFlyEmBody3dDoc::usingOldMeshesTars() const
@@ -3516,7 +3541,7 @@ bool ZFlyEmBody3dDoc::isTarMode() const
 
 bool ZFlyEmBody3dDoc::fromTar(uint64_t id) const
 {
-  if (ZFlyEmBodyManager::encodesTar(id)) {
+  if (ZFlyEmBodyManager::EncodesTar(id)) {
     return true;
   } else {
     return getBodyManager().isSupervoxel(id);
@@ -3570,7 +3595,7 @@ std::vector<ZMesh*>  ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom)
 {
   std::vector<ZMesh *> recoveredMeshes;
 
-  if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+  if (ZFlyEmBodyManager::EncodesTar(bodyId)) {
     recoveredMeshes = getTarCachedMeshes(bodyId);
 #if 0
 //    auto it = m_tarIdToMeshIds.find(bodyId);
@@ -3679,8 +3704,8 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
   ZMesh *mesh = NULL;
 
-  if (ZFlyEmBodyManager::encodesTar(config.getBodyId())) {
-    if (ZFlyEmBodyManager::encodedLevel(config.getBodyId()) == 1) {
+  if (ZFlyEmBodyManager::EncodesTar(config.getBodyId())) {
+    if (ZFlyEmBodyManager::EncodedLevel(config.getBodyId()) == 1) {
       bool showProgress = !config.getAddBuffer();
       std::vector<ZMesh*> meshArray = makeTarMeshModels(
             reader, config.getBodyId(), m_objectTime.elapsed(), showProgress);
@@ -3904,7 +3929,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
     emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
   }
 
-  bool isSupervoxelTar = ZFlyEmBodyManager::encodingSupervoxelTar(bodyId);
+  bool isSupervoxelTar = ZFlyEmBodyManager::EncodingSupervoxelTar(bodyId);
 
   bool useOldMeshesTars = usingOldMeshesTars();
   if (!useOldMeshesTars) {
@@ -3945,7 +3970,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
     }
   } else {
     QString title = "Mesh Loading Failed";
-    uint64_t idUnencoded = ZFlyEmBodyManager::decode(bodyId);
+    uint64_t idUnencoded = ZFlyEmBodyManager::Decode(bodyId);
     QString text = "DVID mesh archive does not contain ID " +
         QString::number(idUnencoded) + " (encoded as " + QString::number(bodyId) + ")";
     ZWidgetMessage msg(title, text, neutu::EMessageType::ERROR, ZWidgetMessage::TARGET_DIALOG);
@@ -5295,12 +5320,12 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
 
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
-    if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+    if (ZFlyEmBodyManager::EncodesTar(bodyId)) {
       tarSet.insert(bodyId);
       uint64_t decodedId = decode(bodyId);
       decodedTarSet.insert(decodedId);
 //      newBodySet.insert(decodedId);
-    } else if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+    } else if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
       supervoxelSet.insert(bodyId);
     } else {
       newBodySet.insert(decode(bodyId)); //The ID is always decoded while being added
@@ -5343,7 +5368,7 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
 
   //Process tar set
   foreach (uint64_t bodyId, tarSet) {
-    if (ZFlyEmBodyManager::encodedLevel(bodyId) == 0) { //supervoxel tar
+    if (ZFlyEmBodyManager::EncodedLevel(bodyId) == 0) { //supervoxel tar
       if (!getBodyManager().hasMapping(bodyId)) {
         addEvent(ZFlyEmBodyEvent::EAction::ADD, bodyId, 0, NULL);
       }

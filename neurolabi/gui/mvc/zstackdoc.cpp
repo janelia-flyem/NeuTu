@@ -531,6 +531,13 @@ void ZStackDoc::addTask(std::function<void()> f)
   addTask(new ZFunctionTask(f));
 }
 
+void ZStackDoc::addTask(const QString &name, std::function<void()> f)
+{
+  ZTask *task = new ZFunctionTask(f);
+  task->setName(name);
+  addTask(task);
+}
+
 void ZStackDoc::addTask(ZTask *task)
 {
   addTaskSlot(task);

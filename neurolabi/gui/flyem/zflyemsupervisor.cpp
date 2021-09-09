@@ -25,7 +25,7 @@ void ZFlyEmSupervisor::setDvidTarget(const ZDvidTarget &target)
 #if defined(_FLYEM_)
   if (!target.getSupervisor().empty()) {
     setSever(m_dvidTarget.getSupervisor());
-  } else {
+  } else if (target.isSupervised()) {
     setSever(GET_FLYEM_CONFIG.getDefaultLibrarian());
   }
 #endif

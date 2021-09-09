@@ -87,10 +87,10 @@ ZDvidReader *ZBodySplitCommand::parseInputPath(
     dataDir = ZString(inputPath).dirPath();
   } else {
     m_bodyId = extract_bodyid_from_input(inputPath);
-    if (ZFlyEmBodyManager::encodingSupervoxel(m_bodyId)) {
+    if (ZFlyEmBodyManager::EncodingSupervoxel(m_bodyId)) {
       m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
     }
-    m_bodyId = ZFlyEmBodyManager::decode(m_bodyId);
+    m_bodyId = ZFlyEmBodyManager::Decode(m_bodyId);
   }
 
   return reader;
@@ -109,10 +109,10 @@ ZBodySplitCommand::parseSignalPath(
   if (signalUrl.scheme() == "http") { //Sparse stack
     if (m_bodyId == 0) {
       m_bodyId = ZDvidUrl::GetBodyId(signalPath);
-      if (ZFlyEmBodyManager::encodingSupervoxel(m_bodyId)) {
+      if (ZFlyEmBodyManager::EncodingSupervoxel(m_bodyId)) {
         m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
       }
-      m_bodyId = ZFlyEmBodyManager::decode(m_bodyId);
+      m_bodyId = ZFlyEmBodyManager::Decode(m_bodyId);
     }
 
     if (m_bodyId > 0) {

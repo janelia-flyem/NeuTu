@@ -46,7 +46,7 @@ QVariant ZFlyEmBodyListModel::data(const QModelIndex &index, int role) const
 {
   switch (role) {
   case Qt::ForegroundRole:
-    if (ZFlyEmBodyManager::encodingSupervoxel(getBodyId(index))) {
+    if (ZFlyEmBodyManager::EncodingSupervoxel(getBodyId(index))) {
       return QColor(0, 128, 0);
     }
     break;
@@ -54,11 +54,11 @@ QVariant ZFlyEmBodyListModel::data(const QModelIndex &index, int role) const
   {
     uint64_t bodyId = getBodyId(index);
     if (bodyId > 0) {
-      uint64_t decodedBodyId = ZFlyEmBodyManager::decode(bodyId);
-      if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+      uint64_t decodedBodyId = ZFlyEmBodyManager::Decode(bodyId);
+      if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
         return QString("%1 (sv)").arg(decodedBodyId);
-      } else if (ZFlyEmBodyManager::encodesTar(bodyId) &&
-                 ZFlyEmBodyManager::encodedLevel(bodyId) == 0) {
+      } else if (ZFlyEmBodyManager::EncodesTar(bodyId) &&
+                 ZFlyEmBodyManager::EncodedLevel(bodyId) == 0) {
         return QString("%1 (c)").arg(decodedBodyId);
       } else {
         return QString("%1").arg(decodedBodyId);
@@ -100,7 +100,7 @@ uint64_t ZFlyEmBodyListModel::GetBodyId(const QString &str)
       bodyId = match.captured(2).toULongLong();
       if (bodyId > 0) {
         if (match.captured(1) == "c") {
-          bodyId = ZFlyEmBodyManager::encode(bodyId);
+          bodyId = ZFlyEmBodyManager::Encode(bodyId);
         } else {
           bodyId = ZFlyEmBodyManager::EncodeSupervoxel(bodyId);
         }

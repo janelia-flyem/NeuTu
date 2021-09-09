@@ -463,8 +463,8 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
   QSet<uint64_t> visible;
   if (state) {
     unsigned int level = 0;
-    visible.insert(ZFlyEmBodyManager::encode(m_bodyId1, level));
-    visible.insert(ZFlyEmBodyManager::encode(m_bodyId2, level));
+    visible.insert(ZFlyEmBodyManager::Encode(m_bodyId1, level));
+    visible.insert(ZFlyEmBodyManager::Encode(m_bodyId2, level));
 
     // Going back to low resolution is not working for some reason, so disable it for now.
 
@@ -959,7 +959,7 @@ void TaskBodyMerge::configureShowHiRes()
   std::vector<uint64_t> ids({ m_bodyId1, m_bodyId2 });
   for (uint64_t id : ids) {
     unsigned int level = 0;
-    id = ZFlyEmBodyManager::encode(id, level);
+    id = ZFlyEmBodyManager::Encode(id, level);
     // TODO: Check for id in the tarsupervoxels instance, which is the default now.
     std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
     qDebug() << "Mesh tar:" << url;
