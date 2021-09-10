@@ -43,12 +43,18 @@ QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
   menu->addAction(presenter->getAction(
                     ZActionFactory::ACTION_BODY_ANNOTATION));
 
-  menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKOUT));
-  menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKIN));
-
-  if (isAdmin()) {
-    menu->addAction(presenter->getAction(
-                      ZActionFactory::ACTION_BODY_FORCE_CHECKIN));
+  ZFlyEmProofPresenter *proofPresenter =
+      qobject_cast<ZFlyEmProofPresenter*>(presenter);
+  if (proofPresenter) {
+    ZFlyEmProofDoc *doc = proofPresenter->getCompleteDocument();
+    if (doc->getSupervisor()) {
+      menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKOUT));
+      menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKIN));
+      if (isAdmin()) {
+        menu->addAction(presenter->getAction(
+                          ZActionFactory::ACTION_BODY_FORCE_CHECKIN));
+      }
+    }
   }
 
   return menu;

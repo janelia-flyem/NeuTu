@@ -182,30 +182,30 @@ public:
 
   ZSegmentationNode* find(const std::string& id) override;
 
-  virtual ZIntCuboid getBoundBox()const;
+  ZIntCuboid getBoundBox()const override;
 
-  virtual double memUsage()const;
+  double memUsage()const override;
 
-  virtual void labelStack(ZStack& stack, int v = 0) const;
+  void labelStack(ZStack& stack, int v = 0) const override;
 
-  virtual void removeChildByLabel(int label);
+  void removeChildByLabel(int label) override;
 
-  virtual void replace(ZSegmentationNode* target, ZSegmentationNode* source);
+  void replace(ZSegmentationNode* target, ZSegmentationNode* source) override;
 
-  virtual void clear(){m_children.clear();}
+  void clear() override {m_children.clear();}
 
-  virtual bool contains(int x, int y, int z)const;
+  bool contains(int x, int y, int z)const override;
 
-  virtual void merge(ZSegmentationNode* node);
+  void merge(ZSegmentationNode* node) override;
 
   vector<ZSegmentationNode*> getLeaves() override;
 
   vector<std::string> getAllIDs() const override;
   bool hasId(const std::string &id) const override;
 
-  virtual shared_ptr<ZSegmentationEncoder> getEncoder();
+  shared_ptr<ZSegmentationEncoder> getEncoder() override;
 
-  virtual void group(const map<int,vector<int>>& groups);
+  void group(const map<int,vector<int>>& groups) override;
   //virtual map<string,map<string,int>> getAdjMatrix()const;
 
   //virtual int getVoxelNumber()const;

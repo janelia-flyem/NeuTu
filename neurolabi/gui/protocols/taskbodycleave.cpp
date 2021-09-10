@@ -1,6 +1,7 @@
 #include "taskbodycleave.h"
 
 #include <iostream>
+#include <exception>
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -50,6 +51,7 @@
 #include "flyem/logging.h"
 #include "flyem/zflyembodyannotationprotocol.h"
 #include "flyem/flyemdatareader.h"
+#include "flyem/dialogs/flyemcleaveunassigneddialog.h"
 
 namespace {
 
@@ -1355,10 +1357,53 @@ bool TaskBodyCleave::allowCompletion()
 
   std::vector<uint64_t> unassigned;
   if (getUnassignedMeshes(unassigned)) {
+    allow = false;
     if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      FlyEmCleaveUnassignedDialog *dlg =
+          new FlyEmCleaveUnassignedDialog(m_bodyDoc->getParent3DWindow());
+      std::size_t indexNotCleavedOff = getIndexNotCleavedOff();
+      dlg->setIndexNotCleavedOff(indexNotCleavedOff);
+      dlg->setUnassignedCount(unassigned.size());
+      if (dlg->exec() &&
+          dlg->getOption() != FlyEmCleaveUnassignedDialog::EOption::NONE) {
+        auto option = dlg->getOption();
+        if (option != FlyEmCleaveUnassignedDialog::EOption::NONE) {
+          CleaveCommand *command = new CleaveCommand(this, m_meshIdToCleaveIndex);
+          m_bodyDoc->pushUndoCommand(command);
+
+          std::map<uint64_t, std::size_t> meshIdToCleaveResultIndex(m_meshIdToCleaveResultIndex);
+
+          if (!unassigned.empty()) {
+            std::size_t maxIndex = 0;
+            for (auto it : m_meshIdToCleaveIndex) {
+              if (maxIndex < it.first) {
+                maxIndex = it.first;
+              }
+            }
+
+            for (uint64_t id : unassigned) {
+              switch (option) {
+              case FlyEmCleaveUnassignedDialog::EOption::MAIN_BODY:
+                meshIdToCleaveResultIndex[id] = indexNotCleavedOff;
+                break;
+              case FlyEmCleaveUnassignedDialog::EOption::NEW_BODY:
+                meshIdToCleaveResultIndex[id] = ++maxIndex;
+                break;
+              default:
+                throw std::runtime_error("Invalid option for cleaving unassigned supervoxels.");
+                break;
+              }
+            }
+          }
+          CleaveCommand::addReply(command->requestNumber(), meshIdToCleaveResultIndex);
+          CleaveCommand::displayReply(this, command->requestNumber());
+          allow = true;
+        }
+
+      /*
       QString title = "Warning";
       QString text = (unassigned.size() == 1) ? "A supervoxel is unassigned. " : "Some supervoxels are unassigned. ";
-      std::size_t indexNotCleavedOff = getIndexNotCleavedOff();
+
 
       bool cleavingUnassigned = false;
       if (cleavingUnassigned) {
@@ -1394,8 +1439,7 @@ bool TaskBodyCleave::allowCompletion()
         }
         CleaveCommand::addReply(command->requestNumber(), meshIdToCleaveResultIndex);
         CleaveCommand::displayReply(this, command->requestNumber());
-      } else {
-        allow = false;
+        */
       }
     }
   }
