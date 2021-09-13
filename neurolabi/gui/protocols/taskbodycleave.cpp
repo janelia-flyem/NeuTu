@@ -771,6 +771,7 @@ void TaskBodyCleave::onLoaded()
 
 void TaskBodyCleave::beforeDone()
 {
+  checkInCurrent();
   restoreOverallSettings(m_bodyDoc);
 
   flyem::LogBodyOperation("end cleavng", m_bodyId, neutu::EBodyLabelType::BODY);

@@ -108,6 +108,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "zstackdocaccessor.h"
+#include "zrandomgenerator.h"
 
 /*
 class Sleeper : public QThread
@@ -250,11 +251,11 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
-  }
 
-#if defined(_DEBUG_) && defined(_NEU3_)
-  m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
+#if defined(_DEBUG_)
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
 #endif
+  }
 }
 
 void Z3DWindow::configureMenuForNeu3()
@@ -3921,6 +3922,12 @@ void Z3DWindow::test()
   ZMovieMaker director;
   ZMovieScript script;
 #endif
+
+  static ZRandomGenerator rand;
+  if (rand.rndint(10) % 2 == 0) {
+    throw std::runtime_error("exception test");
+  }
+
 
   emit testing();
 

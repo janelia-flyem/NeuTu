@@ -245,6 +245,18 @@ void ZDialogFactory::Error(
   QMessageBox::critical(parent, title, msg);
 }
 
+void ZDialogFactory::Error(
+    const QString &title, const QString &msg, const QString &detail, QWidget *parent)
+{
+  Error(
+    title,
+    QString(
+      "<p><font color=\"red\">A serious error occurred.</font></p>"
+      "<p>%1</p>"
+      "<p><font color=\"#808080\">Detail: %2</font></p>").arg(msg, detail),
+    parent);
+}
+
 bool ZDialogFactory::WarningAskForContinue(
     const QString &title, const QString &msg, QWidget *parent)
 {

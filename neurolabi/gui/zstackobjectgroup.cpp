@@ -980,6 +980,15 @@ void ZStackObjectGroup::add(const ZStackObject *obj, bool uniqueSource)
 
 #define ZSTACKOBECTGROUP_MAX_ZORDER INT_MAX
 
+void ZStackObjectGroup::addUnsync(ZStackObject *obj)
+{
+  m_objectList.append(obj);
+  if (obj->isSelected()) {
+    m_selectedSet[obj->getType()].insert(obj);
+  }
+  getObjectListUnsync(obj->getType()).append(const_cast<ZStackObject*>(obj));
+}
+
 void ZStackObjectGroup::addUnsync(ZStackObject *obj, bool uniqueSource)
 {
   if (obj != NULL && !containsUnsync(obj)) {
@@ -999,11 +1008,14 @@ void ZStackObjectGroup::addUnsync(ZStackObject *obj, bool uniqueSource)
       zOrder = ++m_currentZOrder;
     }
     obj->setZOrder(zOrder);
+    addUnsync(obj);
+    /*
     m_objectList.append(obj);
     if (obj->isSelected()) {
       m_selectedSet[obj->getType()].insert(obj);
     }
     getObjectListUnsync(obj->getType()).append(const_cast<ZStackObject*>(obj));
+    */
   }
 }
 
@@ -1029,11 +1041,14 @@ void ZStackObjectGroup::addUnsync(ZStackObject *obj, int zOrder, bool uniqueSour
           removeObjectUnsync(objList.begin(), objList.end(), true);
         }
       }
+      addUnsync(obj);
+      /*
       m_objectList.append(obj);
       if (obj->isSelected()) {
         m_selectedSet[obj->getType()].insert(obj);
       }
       getObjectListUnsync(obj->getType()).append(const_cast<ZStackObject*>(obj));
+      */
     }
   }
 }

@@ -1,6 +1,8 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
+#include <atomic>
+
 #include "common/neutudefs.h"
 #include "zqtheader.h"
 #include "zstackobjectrole.h"
@@ -121,6 +123,8 @@ public:
    * This function is mainly used for debugging.
    */
   std::string getTypeName() const;
+
+  uint64_t getHandle() const;
 
   virtual ZStackObject* clone() const;
   template<typename T>
@@ -413,6 +417,8 @@ public:
 protected:
   static double m_defaultPenWidth;
 
+  static uint64_t GetNextHandle();
+
 protected:
   EHitProtocol m_hitProtocal = EHitProtocol::HIT_DATA_POS;
   EDisplayStyle m_style = EDisplayStyle::SOLID;
@@ -426,6 +432,7 @@ protected:
   std::string m_objectClass;
   std::string m_objectId;
   uint64_t m_uLabel = 0;
+  uint64_t m_handle = 0;
 //  int m_label = -1;
   int m_zOrder = 1;
   int64_t m_timeStamp = 0;
@@ -445,6 +452,9 @@ protected:
   bool m_isVisible = true;
   bool m_projectionVisible = true;
   bool m_usingCosmeticPen = false;
+
+  static std::atomic<uint64_t> m_currentHandle;
+//  static std::mutex m_handleMutex;
 };
 
 template <typename T>

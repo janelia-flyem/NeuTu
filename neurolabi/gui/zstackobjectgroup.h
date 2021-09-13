@@ -306,6 +306,7 @@ private:
   ZStackObjectGroup& operator= (const ZStackObjectGroup &group);
   void setSelected(TStackObjectList &objList, TStackObjectSet &selectedSet,
                    bool selected);
+  void addUnsync(ZStackObject *obj);
 
 private:
   QList<ZStackObject*> m_objectList;

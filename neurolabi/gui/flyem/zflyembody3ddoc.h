@@ -135,6 +135,8 @@ public:
                 ZFlyEmBodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
   void addEvent(const ZFlyEmBodyEvent &event, QMutex *mutex = NULL);
 
+  void scheduleEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId);
+
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
 

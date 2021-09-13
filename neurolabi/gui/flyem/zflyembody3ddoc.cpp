@@ -1872,6 +1872,12 @@ void ZFlyEmBody3dDoc::addEvent(const ZFlyEmBodyEvent &event, QMutex *mutex)
   }
 }
 
+void ZFlyEmBody3dDoc::scheduleEvent(
+    ZFlyEmBodyEvent::EAction action, uint64_t bodyId)
+{
+  addEvent(action, bodyId, 0, &m_eventQueueMutex);
+}
+
 void ZFlyEmBody3dDoc::addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
                                ZFlyEmBodyEvent::TUpdateFlag flag, QMutex *mutex)
 {

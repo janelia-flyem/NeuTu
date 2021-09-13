@@ -277,6 +277,7 @@ HEADERS += mainwindow.h \
     dialogs/zparameterdialog.h \
     dvid/zdvidglobal.h \
     dvid/zdvidstacksource.h \
+    neuapp.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
@@ -825,6 +826,7 @@ SOURCES += main.cpp \
     dvid/zdvidstacksource.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
+    neuapp.cpp \
     protocols/protocolassignment.cpp \
     protocols/protocolassignmentdialog.cpp \
     protocols/protocolassignmentclient.cpp \

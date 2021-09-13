@@ -403,6 +403,7 @@ void TaskProtocolWindow::onDoneButton() {
 
     if (m_currentTaskIndex >= 0) {
       m_taskList[m_currentTaskIndex]->beforeDone();
+      emit allBodiesRemoved();
     }
 
     // re-save the data, complete or not; the new key is old key + either an identifier
