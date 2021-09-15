@@ -734,7 +734,9 @@ void TaskBodyCleave::onLoaded()
   }
 
   m_meshIdToAggloIndex.clear();
-  updateMeshIdToAggloIndex();
+  if (m_colorAggloButton->isChecked()) {
+    updateMeshIdToAggloIndex();
+  }
 
   m_startupTimes.push_back(s_startupTimer.elapsed());
 }
@@ -1020,6 +1022,8 @@ void TaskBodyCleave::aggloIndexReplyFinished(QNetworkReply *reply)
     m_meshIdToAggloIndex[id] = aggloIndex;
     ++i;
   }
+
+  updateColorsAgglo();
 }
 
 void TaskBodyCleave::cleaveServerReplyFinished(QNetworkReply *reply)
@@ -1724,7 +1728,11 @@ void TaskBodyCleave::updateMeshIdToAggloIndex()
 void TaskBodyCleave::updateColorsAgglo()
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
-    filter->setColorIndexing(s_aggloIndexColors, m_meshIdToAggloIndex);
+    if (m_meshIdToAggloIndex.empty()) {
+      updateMeshIdToAggloIndex();
+    } else {
+      filter->setColorIndexing(s_aggloIndexColors, m_meshIdToAggloIndex);
+    }
   }
 }
 
