@@ -61,6 +61,9 @@ int main(int argc, char *argv[])
 
   NeutubeConfig::getInstance().init(mainConfig.userName);
 
+  if (neutu::GetEnv("NEUTU_LOG") == "nofile") {
+    NeutubeConfig::getInstance().useFileLog(false);
+  }
   // init the logging mechanism
 //  init_log();
 

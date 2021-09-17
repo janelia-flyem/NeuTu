@@ -1496,9 +1496,6 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
           if (mid >= 0) {
             flyem::SetMutationId(tree, mid);
           }
-        } else {
-          LWARN() << "Skeletonization failed for" << bodyId;
-          return 1;
         }
       }
 
@@ -1512,14 +1509,14 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
                    << std::endl;
           }
         }
+        delete tree;
+        if (!m_output.empty()) {
+          LINFO() << "Output:" << m_output;
+        }
+        LINFO() << ">>>>>>>>skeletonized>>>>>>>>>>" << i + 1 << " / " << bodyIdArray.size();
+      } else {
+        LWARN() << "Skeletonization failed for" << bodyId;
       }
-
-      delete tree;
-      if (!m_output.empty()) {
-        LINFO() << "Output:" << m_output;
-      }
-
-      LINFO() << ">>>>>>>>skeletonized>>>>>>>>>>" << i + 1 << " / " << bodyIdArray.size();
     }
   }
 

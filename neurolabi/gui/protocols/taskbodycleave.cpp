@@ -1648,7 +1648,8 @@ void TaskBodyCleave::buildTaskWidget()
   connect(m_colorSupervoxelsButton, SIGNAL(toggled(bool)), this, SLOT(onColorByChanged()));
 
   m_colorAggloButton = new QRadioButton("Color by agglo", m_widget);
-  connect(m_colorAggloButton, SIGNAL(toggled(bool)), this, SLOT(onColorByChanged()));
+  // FIXME: combine radio buttons to avoid redundant toggle calls.
+//  connect(m_colorAggloButton, SIGNAL(toggled(bool)), this, SLOT(onColorByChanged()));
 
   m_specifyAggloColorButton = new QPushButton("Specify...", m_widget);
   connect(m_specifyAggloColorButton, SIGNAL(clicked(bool)), this, SLOT(onSpecifyAggloColor()));
@@ -1870,9 +1871,9 @@ void TaskBodyCleave::applyPerTaskSettings()
 
   CleaveCommand::clearReplyUndo();
 
-  bool showingCleaving = m_showCleavingCheckBox->isChecked();
-  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
-  applyColorMode(showingCleaving, colorBySupervoxels);
+//  bool showingCleaving = m_showCleavingCheckBox->isChecked();
+//  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
+//  applyColorMode(showingCleaving, colorBySupervoxels);
 }
 
 void TaskBodyCleave::applyColorMode(bool showingCleaving, bool colorBySupervoxels)

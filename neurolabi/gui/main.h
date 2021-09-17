@@ -210,6 +210,10 @@ void LoadFlyEmConfig(
 
 void init_log()
 {
+  if (!NeutubeConfig::getInstance().usingFileLog()) {
+    return;
+  }
+
   // init the logging mechanism
   QsLogging::Logger& logger = QsLogging::Logger::instance();
   const QString sLogPath(
@@ -337,7 +341,6 @@ int run_command_line(int argc, char *argv[])
   LoadFlyEmConfig(mainConfig, false);
 #endif
 
-  init_log();
   LINFO() << "BEGIN " + get_machine_info();
 
   ZCommandLine cmd;
