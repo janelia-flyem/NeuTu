@@ -11,6 +11,7 @@
 #include "protocols/taskprotocoltask.h"
 #include "zjsonarray.h"
 #include "geometry/zpoint.h"
+#include "zglmutils.h"
 
 class ZDvidReader;
 class ZDvidWriter;
@@ -24,6 +25,7 @@ class QLabel;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
+class QRadioButton;
 class QShortcut;
 
 class TaskBodyCleave : public TaskProtocolTask
@@ -85,6 +87,8 @@ private slots:
   void onHideSelected();
   void onClearHidden();
   void onChooseCleaveMethod();
+  void onColorByChanged();
+  void onSpecifyAggloColor();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
 
@@ -101,6 +105,12 @@ private:
   QString getCleaveServer() const;
   QString getCleaveServerApi() const;
   static QString GetCleaveServerApi(const QString &server);
+
+  void aggloIndexReplyFinished(QNetworkReply *reply);
+  void cleaveServerReplyFinished(QNetworkReply *reply);
+
+  void checkOutCurrent();
+  void checkInCurrent();
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
@@ -122,6 +132,9 @@ private:
   QAction *m_toggleInBodyAction;
   QAction *m_toggleShowChosenCleaveBodyAction;
   std::map<QAction *, int> m_actionToComboBoxIndex;
+  QRadioButton *m_colorSupervoxelsButton;
+  QRadioButton *m_colorAggloButton;
+  QPushButton *m_specifyAggloColorButton;
 
   bool m_skip = false;
   int m_timeOfLastSkipCheck = -1;
@@ -150,16 +163,20 @@ private:
   // The latest cleave server reply that was applied is saved for debugging purposes.
   QJsonObject m_cleaveReply;
 
-  std::set<QString> m_warningTextToSuppress;
-
   class CleaveCommand;
 
   std::size_t chosenCleaveIndex() const;
 
   std::set<uint64_t> m_hiddenIds;
 
+  std::map<std::uint64_t, std::size_t> m_meshIdToAggloIndex;
+
   void buildTaskWidget();
   void updateColors();
+  void updateMeshIdToAggloIndex();
+  bool loadColorsAgglo(QString filepath);
+  void setDefaultColorsAgglo();
+  void updateColorsAgglo();
 
   bool uiIsEnabled() const;
 
@@ -169,7 +186,7 @@ private:
   void selectBodies(const std::set<uint64_t>& bodies, bool select = true);
 
   void applyPerTaskSettings();
-  void applyColorMode(bool showingCleaving);
+  void applyColorMode(bool showingCleaving, bool colorBySupervoxels = true);
   void enableCleavingUI(bool showingCleaving);
 
   void cleave(unsigned int requestNumber);

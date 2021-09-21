@@ -7,7 +7,7 @@
 
 
 #include "neurolabi/zdoublevector.h"
-
+#include "zstring.h"
 #include "zswctree.h"
 #include "swc/zswcmetric.h"
 #include "swc/zswcterminalsurfacemetric.h"
@@ -698,6 +698,19 @@ TEST(ZSwcTree, Merge)
   tree.merge(&tree3);
   ASSERT_EQ(3, tree.regularRootNumber());
   ASSERT_EQ(10, tree.length());
+}
+
+TEST(ZSwcTree, Comment)
+{
+  ZSwcTree tree;
+  tree.addRoot(SwcTreeNode::MakePointer(1, 2, 3, 4));
+  tree.addComment("test");
+  ZJsonObject json;
+  json.setEntry("id", "swc id");
+  tree.addJsonComment(json);
+  std::string str = tree.toString();
+  ASSERT_TRUE(ZString(str).contains("#test"));
+  ASSERT_TRUE(ZString(str).contains("#${\"id\": \"swc id\"}"));
 }
 
 #endif

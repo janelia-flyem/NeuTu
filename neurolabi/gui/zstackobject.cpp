@@ -18,11 +18,13 @@
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
+std::atomic<uint64_t> ZStackObject::m_currentHandle{0};
 
 ZStackObject::ZStackObject()
 {
   setSliceAxis(neutu::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
+  m_handle = GetNextHandle();
 }
 
 ZStackObject::~ZStackObject()
@@ -44,6 +46,12 @@ ZStackObject::~ZStackObject()
   std::cout << "Deconstructing " << this << ": " << getTypeName() << ", "
             << getSource() << std::endl;
 #endif
+}
+
+uint64_t ZStackObject::GetNextHandle()
+{
+//  std::lock_guard<std::mutex> guard(m_handleMutex);
+  return ++m_currentHandle;
 }
 
 #define RETURN_TYPE_NAME(v, t) \
@@ -99,6 +107,11 @@ std::string ZStackObject::getTypeName() const
 ZStackObject* ZStackObject::clone() const
 {
   return nullptr;
+}
+
+uint64_t ZStackObject::getHandle() const
+{
+  return m_handle;
 }
 
 #if 0

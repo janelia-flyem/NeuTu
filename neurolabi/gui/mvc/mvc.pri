@@ -1,4 +1,5 @@
 include($$PWD/tests/tests.pri)
+include($$PWD/annotation/annotation.pri)
 
 HEADERS += \
     $$PWD/logging.h \

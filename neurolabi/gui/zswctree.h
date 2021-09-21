@@ -285,6 +285,7 @@ public:
   inline void addComment(const std::string &comment) {
     m_comment.push_back(comment);
   }
+  void addJsonComment(const ZJsonObject &json);
   void clearComment();
 
 public:

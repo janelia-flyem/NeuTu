@@ -569,6 +569,7 @@ QMap<uint64_t, std::string> body_map_to_status_map(
   return statusMap;
 }
 
+/*
 QString compose_body_status_message(
     const std::vector<uint64_t> &bodyArray,
     const QMap<uint64_t, std::string> &statusMap, int &itemCount)
@@ -607,7 +608,7 @@ QString compose_body_status_message(
   return compose_body_status_message(
         bodyArray, body_map_to_status_map(annotMap), itemCount);
 }
-
+*/
 }
 
 #if 0
@@ -1102,7 +1103,7 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
   bool okToContinue = true;
 
   if (!bodyStatusMsg.isEmpty()) {
-    if (neutu::IsAdminUser()) {
+    if (isAdmin()) {
       okToContinue = ZDialogFactory::Ask(
             "Confirming Merge",
             "The following preserved IDs will be changed after merging\n" +
@@ -1824,6 +1825,16 @@ ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger() const
   }
 
   return nullptr;
+}
+
+bool ZFlyEmBodyMergeProject::isAdmin() const
+{
+  auto doc = getDocument<ZFlyEmProofDoc>();
+  if (doc) {
+    return doc->isAdmin();
+  }
+
+  return neutu::IsAdminUser();
 }
 
 FlyEmBodyAnnotationManager* ZFlyEmBodyMergeProject::getBodyAnnotationManager() const

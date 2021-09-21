@@ -5991,7 +5991,12 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 //    }
     setStatusCode(bufferReader.getStatusCode());
 //    const QByteArray &buffer = bufferReader.getBuffer();
-    obj = decode_json_object(bufferReader.getBuffer());
+    if (bufferReader.getStatus() == neutu::EReadStatus::OK) {
+      obj = decode_json_object(bufferReader.getBuffer());
+      if (obj.isNull()) {
+        obj.denull();
+      }
+    }
     /*
     if (!buffer.isEmpty()) {
       obj.decodeString(buffer.constData());

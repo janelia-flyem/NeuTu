@@ -250,12 +250,15 @@ void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
   if (bodyId > 0 && !obj.isEmpty()) {
     std::string url = ZDvidUrl(getDvidTarget(), m_admin).getBodyAnnotationUrl(
           bodyId, getDvidTarget().getBodyLabelName());
+    ZJsonObject objToUpload = obj.clone();
+    objToUpload.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, bodyId);
+
 #if defined(_ENABLE_LIBDVIDCPP_)
-    post(ZDvidUrl::AppendSourceQuery(url), obj);
+    post(ZDvidUrl::AppendSourceQuery(url), objToUpload);
 #else
     QString command = QString(
           "curl -i -X POST -H \"Content-Type: application/json\" "
-          "-d \"%1\" %2").arg(getJsonStringForCurl(obj).c_str()).
+          "-d \"%1\" %2").arg(getJsonStringForCurl(objToUpload).c_str()).
         arg(url.c_str());
 
     runCommand(command);

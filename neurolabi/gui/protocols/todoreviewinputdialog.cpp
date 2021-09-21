@@ -2,6 +2,8 @@
 #include "ui_todoreviewinputdialog.h"
 
 #include <QMessageBox>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 ToDoReviewInputDialog::ToDoReviewInputDialog(QWidget *parent) :
     QDialog(parent),

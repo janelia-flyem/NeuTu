@@ -379,6 +379,8 @@
 #include "flyem/dialogs/zgenericbodyannotationdialog.h"
 #include "flyem/flyembodyannotationmanager.h"
 #include "flyem/flyembodyannotationproofdocio.h"
+#include "flyem/widgets/flyembodysupplywidget.h"
+#include "flyem/dialogs/flyemcleaveunassigneddialog.h"
 
 /*
 #include "ext/http/HTTPRequest.hpp"
@@ -33073,10 +33075,28 @@ void ZTest::test(MainWindow *host)
   resultJson.print();
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("CNShalf");
   int zoom = ZDvidGlobal::Memo::ReadMaxLabelZoom(reader->getDvidTarget());
   std::cout << "Max zoom: " << zoom << std::endl;
+#endif
+
+#if 0
+  QDialog *dlg = new QDialog(host);
+  dlg->setGeometry(0, 0, 300, 50);
+  FlyEmBodySupplyWidget *widget = new FlyEmBodySupplyWidget(dlg);
+  dlg->exec();
+#endif
+
+#if 1
+  FlyEmCleaveUnassignedDialog *dlg = new FlyEmCleaveUnassignedDialog(host);
+  dlg->setUnassignedCount(1);
+  dlg->exec();
+  std::cout << neutu::ToString(dlg->getOption()) << std::endl;
+
+  dlg->reset();
+  dlg->exec();
+  std::cout << neutu::ToString(dlg->getOption()) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

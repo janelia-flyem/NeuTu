@@ -88,7 +88,7 @@ public:
 
   bool isDvidMutable() const;
 
-  bool isAdmin() const;
+  bool isAdmin() const override;
 
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);
@@ -154,6 +154,7 @@ public:
 
   uint64_t getLabelId(int x, int y, int z) override;
   uint64_t getSupervoxelId(int x, int y, int z) override;
+  std::set<uint64_t> getLabelIdSet(const std::vector<ZIntPoint> &ptArray) override;
 
   bool hasBodySelected() const;
 
@@ -194,7 +195,14 @@ public:
     return m_mergeProject;
   }
 
+  /*!
+   * \brief Get annotation for a body
+   *
+   * It will always try to refresh the cache.
+   */
   ZJsonObject getBodyAnnotation(uint64_t bodyId) const;
+
+  void invalidateBodyAnnotationCache();
 
   void mergeBodies(ZFlyEmSupervisor *supervisor);
   void mergeBodies(
@@ -248,6 +256,8 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
+
+  void selectBodyOnMergeLink(bool appending);
 //  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
 //  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
@@ -797,6 +807,8 @@ protected:
 
   QString getWarning(EErrorType type);
 
+  ZSegmentAnnotationStore* getSegmentAnnotationStore() const override;
+
 private:
   void connectSignalSlot();
 
@@ -890,6 +902,7 @@ private:
 
 private slots:
   void processBodyMergeUploaded();
+  void processBodyAnnotationUpdate(uint64_t bodyId, ZJsonObject annotation);
 
 protected:
   ZDvidEnv m_dvidEnv;

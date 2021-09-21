@@ -189,6 +189,8 @@ public:
 
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(neutu::data3d::ETarget target) const;
+  bool hasObject(ZStackObject::EType type, const std::string &source) const;
+
   bool hasSelected() const;
   bool hasSelected(ZStackObject::EType type) const;
   /*!
@@ -310,6 +312,7 @@ private:
   ZStackObjectGroup& operator= (const ZStackObjectGroup &group);
   void setSelected(TStackObjectList &objList, TStackObjectSet &selectedSet,
                    bool selected);
+  void addUnsync(ZStackObject *obj);
 
 private:
   QList<ZStackObject*> m_objectList;

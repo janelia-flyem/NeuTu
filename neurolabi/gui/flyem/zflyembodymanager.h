@@ -75,6 +75,8 @@ public:
    * registered. \a id is registered as a normal body if \a comp is empty.
    */
 
+  bool buffered(uint64_t id) const;
+  void registerBufferedBody(uint64_t id);
   void registerBufferedBody(uint64_t id, const QSet<uint64_t> &comp);
   void deregisterBufferedBody(uint64_t id);
   QSet<uint64_t> getBufferedMappedSet(uint64_t bodyId) const;
@@ -153,7 +155,8 @@ public:
    *
    * It returns 0 if \a rawId is an encoded ID.
    */
-  static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
+  static uint64_t Encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
+  static uint64_t EncodeTar(uint64_t rawId);
 
   /*!
    * \brief Encode supervoxel
@@ -164,11 +167,11 @@ public:
    */
   static uint64_t EncodeSupervoxel(uint64_t rawId);
 
-  static uint64_t decode(uint64_t encodedId);
-  static bool encodesTar(uint64_t bodyId);
-  static bool encodingSupervoxel(uint64_t bodyId);
-  static unsigned int encodedLevel(uint64_t bodyId);
-  static bool encodingSupervoxelTar(uint64_t bodyId);
+  static uint64_t Decode(uint64_t encodedId);
+  static bool EncodesTar(uint64_t bodyId);
+  static bool EncodingSupervoxel(uint64_t bodyId);
+  static unsigned int EncodedLevel(uint64_t bodyId);
+  static bool EncodingSupervoxelTar(uint64_t bodyId);
   static bool IsEncoded(uint64_t bodyId);
 
 private:

@@ -393,7 +393,7 @@ ZStackDocMenuFactory* ZStackPresenter::getMenuFactory()
   if (!m_menuFactory) {
     m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
           new ZStackDocMenuFactory);
-    m_menuFactory->setAdminState(neutu::IsAdminUser());
+    m_menuFactory->setAdminState(buddyDocument()->isAdmin());
   }
 
   return m_menuFactory.get();
@@ -543,6 +543,10 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyBodySplitTriggered()));
       break;
+    case ZActionFactory::ACTION_MERGE_LINK_ACTIVATE:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyActivateMergeLinkTriggered()));
+      break;
     case ZActionFactory::ACTION_SPLIT_DATA:
       connect(action, SIGNAL(triggered()), this, SLOT(runSeededWatershed()));
       break;
@@ -626,7 +630,12 @@ bool ZStackPresenter::connectAction(
               this, SLOT(copyNeuroglancerLinkAtRectRoi()));
       break;
     default:
-      connected = false;
+      if (action) {
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(notifyActionTriggered()));
+      } else {
+        connected = false;
+      }
       break;
     }
   }

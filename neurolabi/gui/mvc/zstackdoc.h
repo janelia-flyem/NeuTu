@@ -106,6 +106,8 @@ class ZPunctum;
 class ZCurve;
 class ResolutionDialog;
 class ZNeuronTracer;
+class ZSegmentAnnotationStore;
+
 struct ZRescaleSwcSetting;
 class ZRect2d;
 
@@ -287,6 +289,8 @@ public: //attributes
   }
 
   void startWorkThread();
+
+  virtual bool isAdmin() const;
 
 //  inline QList<ZSwcTree*>* swcList();
 
@@ -512,6 +516,11 @@ public:
 
   void activateLocationHint(double x, double y, double z);
   void activateLocationHint(const ZPoint &pt);
+
+  void annotateSegment(uint64_t sid, const ZJsonObject &annotation);
+  ZJsonObject getSegmentAnnotation(
+      uint64_t sid,
+      neutu::ECacheOption option = neutu::ECacheOption::CACHE_FIRST) const;
 
 public: //Image processing
   static int autoThreshold(Stack* getStack);
@@ -898,9 +907,9 @@ public:
   void notifySegmentationUpdated(bool invalidatingSplit);
 
 public:
-  void emitInfo(const QString &msg);
-  void emitWarning(const QString &msg);
-  void emitMessage(const QString &msg, neutu::EMessageType type);
+  void emitInfo(const QString &msg) const;
+  void emitWarning(const QString &msg) const;
+  void emitMessage(const QString &msg, neutu::EMessageType type) const;
 
 public:
   ZNeuronTracer& getNeuronTracer();
@@ -1089,6 +1098,7 @@ public:
 
   virtual uint64_t getLabelId(int x, int y, int z);
   virtual uint64_t getSupervoxelId(int x, int y, int z);
+  virtual std::set<uint64_t> getLabelIdSet(const std::vector<ZIntPoint> &ptArray);
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);
@@ -1099,6 +1109,7 @@ public:
 
   void addTask(ZTask *task);
   void addTask(std::function<void()> f);
+  void addTask(const QString &name, std::function<void()> f);
 
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
   /*
@@ -1318,7 +1329,7 @@ signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
-  void messageGenerated(const ZWidgetMessage&);
+  void messageGenerated(const ZWidgetMessage&) const;
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
@@ -1387,6 +1398,7 @@ signals:
 
   void zoomingTo(int x, int y, int z);
   void updatingLatency(int);
+  void segmentAnnotated(uint64_t bodyId, ZJsonObject obj);
 
   void hidingLocationObject(double x, double y, double z);
 
@@ -1401,6 +1413,7 @@ protected:
   void endWorkThread();
   void clearToDestroy();
   void requestStackUpdate(ZStack *stack);
+  virtual ZSegmentAnnotationStore* getSegmentAnnotationStore() const;
 
   virtual bool _loadFile(const QString &filePath);
   virtual void _processObjectModified(const ZStackObjectInfoSet &infoSet);
@@ -1448,7 +1461,7 @@ private slots:
 protected:
   ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
-private:
+protected:
   //Main stack
   ZStack *m_stack;
   ZSparseStack *m_sparseStack; //Serve as main data when m_stack is virtual.

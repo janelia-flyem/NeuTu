@@ -117,6 +117,14 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
 #endif
     }
 
+    /*
+    if (isMutable) {
+      if (doc->getSelectedSingleNormalBodyId() > 0) {
+        config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+      }
+    }
+    */
+
     config.appendSeparator();
     config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
     config.append(ZActionFactory::ACTION_SHOW_DONE);
@@ -221,12 +229,6 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     }
 
     config.append(ZActionFactory::ACTION_PUNCTA_ADD_SELECTION);
-
-    if (isMutable) {
-      if (doc->getSelectedSingleNormalBodyId() > 0) {
-        config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
-      }
-    }
   }
 
   config.appendSeparator();

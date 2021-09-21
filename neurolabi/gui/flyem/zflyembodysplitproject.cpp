@@ -836,7 +836,8 @@ void ZFlyEmBodySplitProject::chopBody(
               dlg->processAnnotation(annot, bam->usingGenericAnnotation());
 //              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(getBodyId());
               if (!annot.isEmpty()) {
-                bam->saveAnnotation(newBodyId, annot);
+                getDocument()->annotateSegment(newBodyId, annot);
+//                bam->saveAnnotation(newBodyId, annot);
 //                writer.writeBodyAnnotation(newBodyId, annot);
               }
             }
@@ -930,7 +931,8 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg
               dlg->processAnnotation(annot, bam->usingGenericAnnotation());
 //              ZFlyEmBodyAnnotation annot = dlg->getAnnotation(getBodyId());
               if (!annot.isEmpty()) {
-                bam->saveAnnotation(newBodyId, annot);
+                getDocument()->annotateSegment(newBodyId, annot);
+//                bam->saveAnnotation(newBodyId, annot);
 //                writer.writeBodyAnnotation(newBodyId, annot);
               }
             }
@@ -1009,7 +1011,8 @@ void ZFlyEmBodySplitProject::cropBody(ZFlyEmSplitUploadOptionDialog *dlg)
             ZJsonObject annot = bam->getAnnotation(getBodyId());
             dlg->processAnnotation(annot, bam->usingGenericAnnotation());
             if (!annot.isEmpty()) {
-              bam->saveAnnotation(newBodyId, annot);
+              getDocument()->annotateSegment(newBodyId, annot);
+//              bam->saveAnnotation(newBodyId, annot);
             }
           }
           /*
@@ -1126,7 +1129,8 @@ void ZFlyEmBodySplitProject::decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg)
             ZJsonObject annot = bam->getAnnotation(getBodyId());
             dlg->processAnnotation(annot, bam->usingGenericAnnotation());
             if (!annot.isEmpty()) {
-              bam->saveAnnotation(newBodyId, annot);
+              getDocument()->annotateSegment(newBodyId, annot);
+//              bam->saveAnnotation(newBodyId, annot);
             }
           }
           /*

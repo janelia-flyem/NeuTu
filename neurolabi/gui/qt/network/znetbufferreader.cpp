@@ -169,7 +169,8 @@ bool ZNetBufferReader::hasHead(const QString &url, int timeout)
 
   waitForReading();
 
-  return m_status == neutu::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK ||
+      m_status == neutu::EReadStatus::NO_CONTENT;
 }
 
 bool ZNetBufferReader::hasOptions(const QString &url, int timeout)
@@ -186,7 +187,8 @@ bool ZNetBufferReader::hasOptions(const QString &url, int timeout)
 
   waitForReading();
 
-  return m_status == neutu::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK ||
+      m_status == neutu::EReadStatus::NO_CONTENT;
 }
 
 void ZNetBufferReader::post(const QString &url, const QByteArray &data)
@@ -261,7 +263,7 @@ void ZNetBufferReader::startReading()
 QMap<QByteArray, QByteArray> ZNetBufferReader::getResponseHeaderMap() const
 {
   QMap<QByteArray, QByteArray> headerMap;
-  for (const auto headerPair : m_responseHeader) {
+  for (const auto &headerPair : m_responseHeader) {
     headerMap[headerPair.first] = headerPair.second;
   }
 
@@ -271,7 +273,7 @@ QMap<QByteArray, QByteArray> ZNetBufferReader::getResponseHeaderMap() const
 QByteArray ZNetBufferReader::getResponseHeader(
     const QByteArray &headerName) const
 {
-  for (const auto headerPair : m_responseHeader) {
+  for (const auto &headerPair : m_responseHeader) {
     if (headerPair.first == headerName) {
       return headerPair.second;
     }

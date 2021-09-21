@@ -26,6 +26,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<std::string>("std::string");
   qRegisterMetaType<ZJsonValue>("ZJsonValue");
+  qRegisterMetaType<ZJsonObject>("ZJsonObject");
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
   qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
   qRegisterMetaType<neutu::data3d::ETarget>("neutu::data3d::ETarget");
@@ -97,15 +98,7 @@ std::string neutu::GetCurrentUserName()
 
 bool neutu::IsAdminUser()
 {
-#if defined(_FLYEM_)
-  if (neutu::GetCurrentUserName() == "takemuras" ||
-      neutu::GetCurrentUserName() == "shinomiyak" ||
-      neutu::GetCurrentUserName() == "jah") {
-    return true;
-  }
-#endif
-
-  return neutu::GetCurrentUserName() == "zhaot";
+  return false;
 }
 
 QFileDialog::Options neutu::GetFileDialogOption()

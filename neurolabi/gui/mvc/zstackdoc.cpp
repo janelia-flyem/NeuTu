@@ -124,6 +124,7 @@
 #include "zcurve.h"
 #include "zneurontracer.h"
 #include "zrect2d.h"
+#include "annotation/zsegmentannotationstore.h"
 
 #include "dialogs/swcskeletontransformdialog.h"
 #include "dialogs/swcsizedialog.h"
@@ -351,6 +352,11 @@ void ZStackDoc::shortcutTest()
   std::cout << "Shortcut triggered: ZStackDoc::shortcutTest()" << std::endl;
 }
 
+bool ZStackDoc::isAdmin() const
+{
+  return neutu::IsAdminUser();
+}
+
 void ZStackDoc::clearData()
 {
   deprecate(EComponent::STACK);
@@ -524,6 +530,13 @@ void ZStackDoc::addMessageTask(const ZWidgetMessage &msg)
 void ZStackDoc::addTask(std::function<void()> f)
 {
   addTask(new ZFunctionTask(f));
+}
+
+void ZStackDoc::addTask(const QString &name, std::function<void()> f)
+{
+  ZTask *task = new ZFunctionTask(f);
+  task->setName(name);
+  addTask(task);
 }
 
 void ZStackDoc::addTask(ZTask *task)
@@ -10310,6 +10323,11 @@ uint64_t ZStackDoc::getSupervoxelId(int x, int y, int z)
   return getLabelId(x, y, z);
 }
 
+std::set<uint64_t> ZStackDoc::getLabelIdSet(const std::vector<ZIntPoint> &/*ptArray*/)
+{
+  return std::set<uint64_t>();
+}
+
 ZStack* ZStackDoc::getLabelField()
 {
   return const_cast<ZStack*>(
@@ -10650,14 +10668,22 @@ void ZStackDoc::makeKeyProcessor()
 
 void ZStackDoc::diagnose() const
 {
+  std::ostringstream stream;
+
+  stream << "Is admin: " << isAdmin() << std::endl;
+
   QList<ZStackObject::EType> allTypes = getObjectGroup().getAllType();
 
   foreach (const auto &type, allTypes) {
-    LDEBUG() << "#Objects of type" <<  ZStackObject::GetTypeName(type)
-             << ":" << getObjectList(type).size() << "; selected:"
-             << getSelected(type).size();
+    stream << "#Objects of type " <<  ZStackObject::GetTypeName(type)
+           << ": " << getObjectList(type).size() << "; selected: "
+           << getSelected(type).size() << std::endl;
   }
 
+  std::string info = stream.str();
+  if (!info.empty()) {
+    emitInfo(QString::fromStdString(info));
+  }
 //  LINFO() << "#Objects: " << getObjectGroup().getAllType()
 }
 
@@ -11003,7 +11029,7 @@ void ZStackDoc::removeRect2dRoi()
   removeObject(ZStackObjectSourceFactory::MakeRectRoiSource(), true);
 }
 
-void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
+void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type) const
 {
   emit messageGenerated(ZWidgetMessage(msg, type,
                                        ZWidgetMessage::TARGET_TEXT_APPENDING |
@@ -11011,14 +11037,45 @@ void ZStackDoc::emitMessage(const QString &msg, neutu::EMessageType type)
                                        ZWidgetMessage::TARGET_KAFKA));
 }
 
-void ZStackDoc::emitInfo(const QString &msg)
+void ZStackDoc::emitInfo(const QString &msg) const
 {
   emitMessage(msg, neutu::EMessageType::INFORMATION);
 }
 
-void ZStackDoc::emitWarning(const QString &msg)
+void ZStackDoc::emitWarning(const QString &msg) const
 {
   emitMessage(msg, neutu::EMessageType::WARNING);
+}
+
+ZSegmentAnnotationStore* ZStackDoc::getSegmentAnnotationStore() const
+{
+  return nullptr;
+}
+
+
+void ZStackDoc::annotateSegment(uint64_t sid, const ZJsonObject &annotation)
+{
+  ZSegmentAnnotationStore *store = getSegmentAnnotationStore();
+  if (store) {
+    try {
+      store->saveAnnotation(sid, annotation);
+      emit segmentAnnotated(sid, annotation);
+    } catch (std::exception &e) {
+      emit messageGenerated(
+            ZWidgetMessage("Cannot save annotation.", neutu::EMessageType::ERROR));
+    }
+  }
+}
+
+ZJsonObject ZStackDoc::getSegmentAnnotation(
+    uint64_t sid, neutu::ECacheOption option) const
+{
+  ZSegmentAnnotationStore *store = getSegmentAnnotationStore();
+  if (store) {
+    return store->getAnnotation(sid, option);
+  }
+
+  return ZJsonObject();
 }
 
 template <class InputIterator>

@@ -32,6 +32,7 @@ class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 class ZFlyEmToDoItem;
 class FlyEmBodyAnnotationDialog;
+class ZGenericBodyAnnotationDialog;
 class ZStackDoc3dHelper;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
@@ -133,6 +134,8 @@ public:
   void addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
                 ZFlyEmBodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
   void addEvent(const ZFlyEmBodyEvent &event, QMutex *mutex = NULL);
+
+  void scheduleEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId);
 
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
@@ -317,6 +320,8 @@ public:
 
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg);
+  void startBodyAnnotation(ZGenericBodyAnnotationDialog *dlg);
+  ZJsonObject getBodyAnnotation(uint64_t bodyId);
 
   void removeTodo(ZFlyEmTodoFilterDialog *dlg);
 
@@ -347,6 +352,8 @@ public:
   ZMesh* getRoiMesh(const QString &name) const;
 
   void syncBodyColor();
+
+  void tryPrefetchBodyMesh(uint64_t bodyId);
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -417,10 +424,12 @@ signals:
   void addingBody(uint64_t bodyId);
   void removingBody(uint64_t bodyId);
   void splitCommitted();
+  void bodyMeshBuffered(uint64_t bodyId);
 
 protected:
   void autoSave() override {}
   void makeKeyProcessor() override;
+  ZSegmentAnnotationStore* getSegmentAnnotationStore() const override;
   bool _loadFile(const QString &filePath) override;
 
 private:
@@ -559,6 +568,7 @@ private:
   void loadTodoFresh(uint64_t bodyId);
 
   FlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+  ZGenericBodyAnnotationDialog* getGenericBodyAnnotationDlg();
 
   void constructBodyMesh(ZMesh *mesh, uint64_t bodyId, bool fromTar);
   void retrieveSegmentationMesh(QMap<std::string, ZMesh*> *meshMap);
@@ -634,6 +644,7 @@ private:
   ZFlyEmBodySplitter *m_splitter;
 
   FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  ZGenericBodyAnnotationDialog *m_genericAnnotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

@@ -10,7 +10,7 @@
 #include "zjsonobjectparser.h"
 #include "zstring.h"
 
-//const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "body ID"; // Obsolete
+const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "bodyid";
 const char *ZFlyEmBodyAnnotation::KEY_NAME = "name";
 const char *ZFlyEmBodyAnnotation::KEY_CLASS = "class";
 const char *ZFlyEmBodyAnnotation::KEY_TYPE = "type";
@@ -910,7 +910,7 @@ void ZFlyEmBodyAnnotation::UpdateUserFields(
   ZFlyEmBodyAnnotation::SetLastModifiedBy(obj, user);
 
   std::string name = ZFlyEmBodyAnnotation::GetName(obj);
-  std::string oldName = ZFlyEmBodyAnnotation::GetName(obj);
+  std::string oldName = ZFlyEmBodyAnnotation::GetName(oldObj);
   std::string namingUser = ZFlyEmBodyAnnotation::GetNamingUser(oldObj);
   if (name != oldName) {
     namingUser = user;

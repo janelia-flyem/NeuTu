@@ -232,6 +232,15 @@ public:
   void updateAutoSaveDir();
   static void UpdateAutoSaveDir();
 
+  inline void useFileLog(bool on) {
+    m_usingFileLog = on;
+  }
+
+  inline bool usingFileLog() const {
+    return m_usingFileLog;
+  }
+
+
 #ifdef _QT_GUI_USED_
   inline QSettings& getSettings() {
     return m_settings;
@@ -516,6 +525,7 @@ private:
   bool m_loggingProfile;
   int m_verboseLevel;
   bool m_advancedMode = false;
+  bool m_usingFileLog = true;
 //  size_t m_meshSplitThreshold = 5000000;
 //  int m_scrollCooldown = 100;
 //  int m_3dcrossWidth = 5;

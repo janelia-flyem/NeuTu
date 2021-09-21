@@ -3,6 +3,8 @@
 
 #include "ztestheader.h"
 #include "zstackobject.h"
+#include "zswctree.h"
+#include "zstackball.h"
 
 #ifdef _USE_GTEST_
 
@@ -22,6 +24,17 @@ TEST(ZStackObject, basic)
   ASSERT_FALSE(ZStackObject::IsSameSource("", ""));
 
   ASSERT_FALSE(ZStackObject::IsSelected(nullptr));
+}
+
+TEST(ZStackObject, Handle)
+{
+  uint64_t handle = ZSwcTree().getHandle();
+
+  ZSwcTree obj1;
+  ASSERT_EQ(handle + 1, obj1.getHandle());
+
+  ZStackBall obj2;
+  ASSERT_EQ(handle + 2, obj2.getHandle());
 
 }
 

@@ -355,6 +355,15 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_MERGE_LINK_CLEAR:
     action = new QAction("Clear Merge Links", parent);
     break;
+  case ACTION_MERGE_LINK_CLEAR_ALL:
+    action = new QAction("Clear Merge Links && Body Selection", parent);
+    break;
+  case ACTION_MERGE_LINK_SELECT_BODIES:
+    action = new QAction("Select Bodies on Links", parent);
+    break;
+  case ACTION_MERGE_LINK_SELECT_BODIES_EXC:
+    action = new QAction("Select Bodies on Links Only", parent);
+    break;
   case ACTION_BODY_CHANGE_COLOR:
     action = new QAction("Change Body Color", parent);
     break;

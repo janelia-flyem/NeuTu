@@ -1047,7 +1047,7 @@ void Neu3Window::testBodyChange()
 
   QSet<uint64_t> bodySet = m_bodyListWidget->getModel()->getBodySet();
   if (rand.rndint(10) % 2 ==0) {
-    for (uint64_t bodyId : bodySet) {
+    foreach (uint64_t bodyId, bodySet) {
       if (rand.rndint(bodySet.size()) == 1) {
         m_bodyListWidget->removeBody(bodyId);
         break;

@@ -51,7 +51,7 @@ private slots:
 private:
   void connectSignalSlot();
   bool isBodyProtected(uint64_t bodyId) const;
-  void addBodySliently(uint64_t bodyId);
+//  void addBodySliently(uint64_t bodyId);
   static uint64_t GetBodyId(const QString &str);
 //  static Qt::ItemDataRole getBackupRole();
 

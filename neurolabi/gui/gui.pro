@@ -186,30 +186,18 @@ unix {
 #        QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
+        OSX_VERSION = $$system(sw_vers -productVersion)
+        message("Mac OS X $$OSX_VERSION")
+        MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
+        OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
+        OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
         CONFIG(autotarget) {
-          OSX_VERSION = $$system(sw_vers -productVersion)
-          message("Mac OS X $$OSX_VERSION")
-          MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
-          OSX_MAJOR_VERSION = $$member(MAC_VERSION_NUMBER, 0)
-          OSX_MINOR_VERSION = $$member(MAC_VERSION_NUMBER, 1)
-          !isEqual(OSX_MAJOR_VERSION, 10) {
-            error("Could not recognize OSX version")
-          }
-
-          OSX_COM_VER = $${OSX_MAJOR_VERSION}.$${OSX_MINOR_VERSION}
-          QMAKE_MACOSX_DEPLOYMENT_TARGET = $$OSX_COM_VER
-          message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
-
-          greaterThan(OSX_MINOR_VERSION, 8) {
-            CONFIG(libstdc++) {
-              message("Using libstdc++")
-            } else {
-              LIBS -= -lstdc++
-              QMAKE_CXXFLAGS += -stdlib=libc++
+          isEqual(QT_MAJOR_VERSION, 5) {
+            isEqual(QT_MINOR_VERSION, 12) {
+              message("Forcing 10.12 SDK for Qt 5.12")
+              QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.12
+              QMAKE_MAC_SDK = macosx10.14
             }
-
-            QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
-            message("SDK: $$QMAKE_MAC_SDK")
           }
         } else {
           message("No auto mac version check")
@@ -219,12 +207,6 @@ unix {
               QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
             }
           }
-        }
-
-        isEqual(OSX_MINOR_VERSION, 11) {
-          message("Forcing 10.12 SDK on xcode8: ")
-          QMAKE_MAC_SDK = macosx10.12
-          message("SDK: $$QMAKE_MAC_SDK")
         }
 
 #        doc.files = doc
@@ -296,6 +278,7 @@ HEADERS += mainwindow.h \
     dialogs/zparameterdialog.h \
     dvid/zdvidglobal.h \
     dvid/zdvidstacksource.h \
+    neuapp.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
     protocols/protocolassignmentclient.h \
@@ -652,6 +635,7 @@ SOURCES += main.cpp \
     dvid/zdvidstacksource.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
+    neuapp.cpp \
     zimage.cpp \
     zslider.cpp \
     plotsettings.cpp \

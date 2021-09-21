@@ -43,12 +43,18 @@ QMenu* ZFlyEmProofDocMenuFactory::makeBodyContextMenu(
   menu->addAction(presenter->getAction(
                     ZActionFactory::ACTION_BODY_ANNOTATION));
 
-  menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKOUT));
-  menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKIN));
-
-  if (isAdmin()) {
-    menu->addAction(presenter->getAction(
-                      ZActionFactory::ACTION_BODY_FORCE_CHECKIN));
+  ZFlyEmProofPresenter *proofPresenter =
+      qobject_cast<ZFlyEmProofPresenter*>(presenter);
+  if (proofPresenter) {
+    ZFlyEmProofDoc *doc = proofPresenter->getCompleteDocument();
+    if (doc->getSupervisor()) {
+      menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKOUT));
+      menu->addAction(presenter->getAction(ZActionFactory::ACTION_BODY_CHECKIN));
+      if (isAdmin()) {
+        menu->addAction(presenter->getAction(
+                          ZActionFactory::ACTION_BODY_FORCE_CHECKIN));
+      }
+    }
   }
 
   return menu;
@@ -206,7 +212,12 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
     /* Synapse actions */
     if (!doc->getDvidTarget().readOnly()) {
       config.append(ZActionFactory::ACTION_MERGE_LINK_ACTIVATE);
-      config.append(ZActionFactory::ACTION_MERGE_LINK_CLEAR);
+      if (doc->hasObject(ZStackObjectRole::ROLE_MERGE_LINK)) {
+        config.append(ZActionFactory::ACTION_MERGE_LINK_CLEAR);
+        config.append(ZActionFactory::ACTION_MERGE_LINK_CLEAR_ALL);
+        config.append(ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES);
+        config.append(ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES_EXC);
+      }
       config.appendSeparator();
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);

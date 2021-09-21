@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 
 #include "main.h"
 
+#include "neuapp.h"
 #include "mainwindow.h"
 #include "neu3window.h"
 
@@ -59,6 +60,9 @@ int main(int argc, char *argv[])
 
   NeutubeConfig::getInstance().init(mainConfig.userName);
 
+  if (neutu::GetEnv("NEUTU_LOG") == "nofile") {
+    NeutubeConfig::getInstance().useFileLog(false);
+  }
   // init the logging mechanism
 //  init_log();
 
@@ -78,7 +82,7 @@ int main(int argc, char *argv[])
 
   // call first otherwise it will cause runtime warning:
   //   Please instantiate the QApplication object first
-  QApplication app(argc, argv, mainConfig.isGuiEnabled());
+  NeuApp app(argc, argv/*, mainConfig.isGuiEnabled()*/);
 
   neutu::RegisterMetaType();
 

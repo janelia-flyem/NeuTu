@@ -153,7 +153,7 @@ public:
       const ZJsonObject &target, const ZJsonObject &source,
       const std::function<int(const std::string&)>& getStatusRank);
 
-//  static const char *KEY_BODY_ID;
+  static const char *KEY_BODY_ID;
   static const char *KEY_STATUS;
   static const char *KEY_NAME;
   static const char *KEY_CLASS;

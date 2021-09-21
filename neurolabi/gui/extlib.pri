@@ -7,23 +7,21 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
     $${EXTLIB_DIR}/genelib/src $${NEUROLABI_DIR}/gui/ext
 
 contains(TEMPLATE, app) {
-exists($$DVIDCPP_PATH) {
+!isEmpty(DVIDCPP_PATH) {
+  exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
     INCLUDEPATH += $$DVIDCPP_PATH/include
     LIBS += -L$$DVIDCPP_PATH/lib
     DEFINES += _LIBDVIDCPP_OLD_
-} else:exists($${BUILDEM_DIR}) {
-    INCLUDEPATH +=  $${BUILDEM_DIR}/include
-    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
-    DEFINES += _ENABLE_LIBDVIDCPP_
-} else:exists($${CONDA_ENV}) {
-    INCLUDEPATH += $${CONDA_ENV}/include
-    LIBS += -L$${CONDA_ENV}/lib
-    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
-    DEFINES += _ENABLE_LIBDVIDCPP_
+  }
+ }
 
-#    LIBS += $${CONDA_ENV}/lib/libhdf5.la $${CONDA_ENV}/lib/libhdf5_hl.la
-#    DEFINES += _ENABLE_HDF5_
+
+exists($${CONDA_ENV}) {
+  INCLUDEPATH += $${CONDA_ENV}/include
+  LIBS += -L$${CONDA_ENV}/lib
+  unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
+  DEFINES *= _ENABLE_LIBDVIDCPP_
 }
 
 exists($${CONDA_ENV}) {
@@ -149,7 +147,7 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 #  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
-VTK_VER = 8.2
+VTK_VER = 9.0
 
 #
 exists($${CONDA_ENV}) {

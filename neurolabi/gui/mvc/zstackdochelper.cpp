@@ -232,6 +232,13 @@ bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)
 
 bool ZStackDocHelper::AllowingBodyLock(const ZStackDoc *doc)
 {
-  return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
-      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
+  if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
+      doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO) {
+    const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
+    if (cdoc->getSupervisor()) {
+      return true;
+    }
+  }
+
+  return false;
 }

@@ -26,7 +26,7 @@
      <item>
       <widget class="QLabel" name="bodyIdLabel">
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -46,14 +46,14 @@
      <item>
       <widget class="QLabel" name="namingUserLabel">
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="userLabel">
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
        </property>
       </widget>
      </item>

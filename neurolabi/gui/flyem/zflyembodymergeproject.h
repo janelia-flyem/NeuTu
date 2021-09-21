@@ -273,6 +273,8 @@ private:
 
   bool usingGenericBodyAnnotation() const;
 
+  bool isAdmin() const;
+
 private:
   ZFlyEmBodyMergeFrame *m_dataFrame;
 
