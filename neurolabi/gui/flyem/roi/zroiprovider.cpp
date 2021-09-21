@@ -22,8 +22,8 @@ ZRoiProvider::ZRoiProvider(QObject *parent) : QObject(parent)
 
 ZRoiProvider::~ZRoiProvider()
 {
-  delete m_roiFactory;
   endWorkThread();
+  delete m_roiFactory;
 }
 
 /*

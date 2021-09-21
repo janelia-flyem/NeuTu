@@ -132,6 +132,7 @@ public:
   bool hightlightOn() const { return m_highlight; }
   void setHighlight(bool state) { m_highlight = state; }
   void highlight(int x, int y, int z);
+  void flashHighlight(int x, int y, int z);
 
   void setSliceAxis(neutu::EAxis axis);
 
@@ -553,6 +554,8 @@ protected:
 
   ZStackBall m_highlightDecoration;
   bool m_highlight;
+  uint64_t m_highlightTimestamp = 0;
+  int m_highlightInterval = 5000;
 
   bool m_usingHighContrast;
   ZJsonObject m_highContrastProtocal;

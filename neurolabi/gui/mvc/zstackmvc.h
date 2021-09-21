@@ -11,7 +11,6 @@
 #include "common/neutudefs.h"
 #include "logging/zloggable.h"
 #include "zactionfactory.h"
-//#include "zwidgetmessage.h"
 
 class ZStackDoc;
 class ZStackView;

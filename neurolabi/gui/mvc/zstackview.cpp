@@ -905,7 +905,6 @@ void ZStackView::updatePaintBundle(bool requestingWidgetCanvasUpdate)
 
   if (buddyPresenter()->hightlightOn()) {
     m_paintBundle.addDrawableList(buddyPresenter()->getHighlightDecorationList());
-    buddyPresenter()->setHighlight(false);
   }
 
   // active deco
@@ -3847,8 +3846,9 @@ void ZStackView::highlightPosition(int x, int y, int z)
   ball->addVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL);
 //  ball->display(m_objectCanvasPainter, sliceIndex(), ZStackObject::SOLID);
 
-  buddyPresenter()->setHighlight(true);
-  buddyPresenter()->highlight(x, y, z);
+//  buddyPresenter()->setHighlight(true);
+//  buddyPresenter()->highlight(x, y, z);
+  buddyPresenter()->flashHighlight(x, y, z);
 //  buddyPresenter()->addDecoration(ball);
 
   updateImageScreen(EUpdateOption::QUEUED);
