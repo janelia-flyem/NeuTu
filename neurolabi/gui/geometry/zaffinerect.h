@@ -12,7 +12,8 @@
  * size, including its width and height. Either width or height can be 0,
  * indicating the rectangle is empty. But for some operations, a non-zero
  * dimension with zero for the other might make the rectangle like a line
- * segment.
+ * segment. The offset of the rectangle is defined as the coordinates of its center,
+ * which is located at half of the width and half of the height.
  *
  * Note: The name affine is from the affine space, which is the normal vector space
  * plus an offset. Don't confuse it with affine transformation.
@@ -42,6 +43,8 @@ public:
    * 2----3 -> X
    */
   ZPoint getCorner(int index) const;
+  ZPoint getMinCorner() const;
+  ZPoint getMaxCorner() const;
   ZLineSegment getSide(int index) const;
 
   void setCenter(const ZPoint &offset);
@@ -58,14 +61,33 @@ public:
    */
   void setSize(double width, double height);
 
+  /*!
+   * \brief Set the size of the rectangle with one of its corners fixed.
+   *
+   * The rectangle is set to the size (\a width, \a height) with the corner indexed
+   * by \a cornerIndex fixed at its position.
+   *
+   * Exceptional argument handling:
+   *   Sets width or height to 0 if \a width or \a height is negative.
+   *   Behaves the same as setSize(\a width, \a height) if \a cornerIndex is invalid.
+   */
+  void setSizeWithCornerFixed(double width, double height, int cornerIndex);
+
+  void setSizeWithMinCornerFixed(double width, double height);
+  void setSizeWithMaxCornerFixed(double width, double height);
+
   void translate(double dx, double dy, double dz);
   void translate(const ZPoint &dv);
+
+  /*!
+   * \brief translate on plane
+   */
+  void translate(double du, double dv);
 
   /*!
    * \brief Scale a rectangle without moving its center
    */
   void scale(double su, double sv);
-
 
   inline const ZAffinePlane& getAffinePlane() const {
     return m_ap;

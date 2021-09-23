@@ -1095,6 +1095,22 @@ void ZStackPresenter::createBodyActions()
 }
 #endif
 
+void ZStackPresenter::flashHighlight(int x, int y, int z)
+{
+  setHighlight(true);
+  highlight(x, y, z);
+  m_highlightTimestamp = neutu::GetTimestamp();
+  uint64_t t = m_highlightTimestamp;
+  QTimer::singleShot(m_highlightInterval, this, [this, t]() {
+    if (t == this->m_highlightTimestamp) {
+#ifdef _DEBUG_
+      std::cout << "Turning off highlight: setHighlight(false)" << std::endl;
+#endif
+      setHighlight(false);
+    }
+  });
+}
+
 void ZStackPresenter::highlight(int x, int y, int z)
 {
   m_highlightDecoration.setCenter(x, y, z);

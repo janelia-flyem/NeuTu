@@ -109,6 +109,15 @@ TEST(ZStackObjectGroup, Basic) {
   ASSERT_EQ(dynamic_cast<ZStackObject*>(tree4), objList[1]);
 }
 
+TEST(ZStackObjectGroup, hasObject) {
+  ZStackObjectGroup group;
+  ASSERT_FALSE(group.hasObjectHandle(1));
+
+  ZSwcTree *obj = new ZSwcTree;
+  group.add(obj, true);
+  ASSERT_TRUE(group.hasObjectHandle(obj->getHandle()));
+}
+
 TEST(ZStackObjectGroup, add) {
   ZStackObjectGroup group;
 

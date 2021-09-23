@@ -187,18 +187,21 @@ public:
 
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 
-  bool hasObject(ZStackObject::EType type) const;
-  bool hasObject(neutu::data3d::ETarget target) const;
-  bool hasObject(ZStackObject::EType type, const std::string &source) const;
-
-  bool hasSelected() const;
-  bool hasSelected(ZStackObject::EType type) const;
   /*!
    * \brief Test if the group contains a specific object
    * \param obj The object to verify. The pointer does not have to be valid.
    * \return
    */
   bool hasObject(const ZStackObject *obj) const;
+
+  bool hasObject(ZStackObject::EType type) const;
+  bool hasObject(neutu::data3d::ETarget target) const;
+  bool hasObject(ZStackObject::EType type, const std::string &source) const;
+
+  bool hasSelected() const;
+  bool hasSelected(ZStackObject::EType type) const;
+
+  bool hasObjectHandle(uint64_t handle) const;
 
   QList<ZStackObject::EType> getAllType() const;
 

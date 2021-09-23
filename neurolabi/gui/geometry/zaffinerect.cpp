@@ -80,6 +80,61 @@ void ZAffineRect::setSize(double width, double height)
   m_height = std::max(0.0, height);
 }
 
+void ZAffineRect::setSizeWithCornerFixed(
+    double width, double height, int cornerIndex)
+{
+  if (cornerIndex < 0 || cornerIndex > 3) {
+    setSize(width, height);
+  } else {
+    if (width < 0.0) {
+      width = 0.0;
+    }
+
+    if (height < 0.0) {
+      height = 0.0;
+    }
+
+    if (width != m_width || height != m_height) {
+      double du = m_width - width;
+      double dv = m_height - height;
+      setSize(width, height);
+      switch (cornerIndex) {
+      case 1:
+        du = -du;
+        break;
+      case 2:
+        du = -du;
+        dv = -dv;
+        break;
+      case 3:
+        dv = -dv;
+        break;
+      }
+
+      translate(du * 0.5, dv * 0.5);
+    }
+  }
+}
+
+void ZAffineRect::setSizeWithMinCornerFixed(double width, double height)
+{
+  setSizeWithCornerFixed(width, height, 2);
+  /*
+  if (width >= 0.0 && height >= 0.0) {
+    double du = width - m_width;
+    double dv = height - m_height;
+    setSize(width, height);
+    translate(du * 0.5, dv * 0.5);
+  }
+  */
+}
+
+void ZAffineRect::setSizeWithMaxCornerFixed(double width, double height)
+{
+  setSizeWithCornerFixed(width, height, 0);
+}
+
+
 void ZAffineRect::translate(double dx, double dy, double dz)
 {
   m_ap.translate(dx, dy, dz);
@@ -88,6 +143,11 @@ void ZAffineRect::translate(double dx, double dy, double dz)
 void ZAffineRect::translate(const ZPoint &dv)
 {
   m_ap.translate(dv);
+}
+
+void ZAffineRect::translate(double du, double dv)
+{
+  m_ap.translate(getV1() * du + getV2() * dv);
 }
 
 void ZAffineRect::scale(double su, double sv)
@@ -189,6 +249,16 @@ ZPoint ZAffineRect::getCorner(int index) const
   }
 
   return pt;
+}
+
+ZPoint ZAffineRect::getMinCorner() const
+{
+  return getCorner(2);
+}
+
+ZPoint ZAffineRect::getMaxCorner() const
+{
+  return getCorner(0);
 }
 
 ZLineSegment ZAffineRect::getSide(int index) const

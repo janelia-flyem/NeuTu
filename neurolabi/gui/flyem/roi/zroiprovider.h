@@ -15,7 +15,6 @@
 class ZAbstractRoiFactory;
 class ZRoiMesh;
 class ZWorker;
-class ZWorkThread;
 class ZTask;
 class ZMesh;
 

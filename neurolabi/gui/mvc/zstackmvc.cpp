@@ -210,7 +210,7 @@ void ZStackMvc::layoutView(ZStackView *view, int index)
 
 void ZStackMvc::layoutView()
 {
-  neutu::ClearLayout(m_viewLayout);
+  neutu::ClearLayout(m_viewLayout, nullptr);
 //  int row = 0;
 //  int column = 0;
 

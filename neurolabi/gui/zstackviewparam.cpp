@@ -81,6 +81,47 @@ ZAffineRect& empty_int_rect(ZAffineRect &rect)
 
 }
 
+namespace {
+
+ZAffineRect adjust_rect(ZAffineRect rect, int zoom)
+{
+  int scale = pow(2, zoom + 1);
+  ZPoint minCorner = rect.getMinCorner();
+
+  int u0 = 0;
+  int v0 = 0;
+
+  if (rect.getV1() == ZPoint(1, 0, 0) || rect.getV1() == ZPoint(0, 1, 0) ||
+      rect.getV1() == ZPoint(0, 0, 1)) {
+    u0 = int(minCorner.dot(rect.getV1()));
+  }
+
+  if (rect.getV2() == ZPoint(1, 0, 0) || rect.getV2() == ZPoint(0, 1, 0) ||
+      rect.getV2() == ZPoint(0, 0, 1)) {
+    v0 = int(minCorner.dot(rect.getV2()));
+  }
+
+  int du = u0 % scale;
+  int dv = v0 % scale;
+  if (du > 0 || dv > 0) {
+    rect.setSize(rect.getWidth() + du + du, rect.getHeight() + dv + dv);
+  }
+
+  int width = int(rect.getWidth());
+  int height = int(rect.getHeight());
+  if (width % scale > 0) {
+    width += scale - width % scale;
+  }
+  if (height % scale > 0) {
+    height += scale - height % scale;
+  }
+  rect.setSizeWithMinCornerFixed(width, height);
+
+  return rect;
+}
+
+}
+
 ZAffineRect ZStackViewParam::getIntCutRect(const ZIntCuboid &modelRange) const
 {
   if (modelRange.isEmpty()) {
@@ -168,6 +209,8 @@ ZAffineRect ZStackViewParam::getIntCutRect(const ZIntCuboid &modelRange) const
     rect.setCenter(newCenter.toPoint());
     rect.setSize(width, height);
   }
+
+  rect = adjust_rect(rect, getZoomLevel());
 
   return rect;
 }

@@ -26,6 +26,9 @@ TEST(ZAffineRect, Basic)
     ASSERT_EQ(ZPoint(-256, -512, 0), rect.getCorner(2));
     ASSERT_EQ(ZPoint(256, -512, 0), rect.getCorner(3));
 
+    ASSERT_EQ(ZPoint(256, 512, 0), rect.getMaxCorner());
+    ASSERT_EQ(ZPoint(-256, -512, 0), rect.getMinCorner());
+
     ASSERT_TRUE(
           ZLineSegment(256, 512, 0, -256, 512, 0).approxEquals(rect.getSide(0)));
     ASSERT_TRUE(
@@ -71,6 +74,65 @@ TEST(ZAffineRect, Basic)
     ASSERT_EQ(ZPoint(0, 5, 0), rect.getCorner(1));
     ASSERT_EQ(ZPoint(0, -5, 0), rect.getCorner(2));
     ASSERT_EQ(ZPoint(0, -5, 0), rect.getCorner(3));
+  }
+}
+
+TEST(ZAffineRect, setSize)
+{
+  ZAffineRect rect = ZAffineRectBuilder()
+      .at(ZPoint(1, 2, 3))
+      .on(ZPoint(1, 0, 0), ZPoint(0, 1, 0))
+      .withSize(100, 200);
+
+  for (int index = 0; index < 4; ++index) {
+    ZAffineRect rect2 = rect;
+    rect2.setSizeWithCornerFixed(20, 30, index);
+    ASSERT_EQ(20, rect2.getWidth());
+    ASSERT_EQ(30, rect2.getHeight());
+    ASSERT_EQ(rect.getCorner(index), rect2.getCorner(index));
+  }
+
+  {
+    ZAffineRect rect2 = rect;
+    rect2.setSizeWithMinCornerFixed(20, 30);
+    ASSERT_EQ(20, rect2.getWidth());
+    ASSERT_EQ(30, rect2.getHeight());
+    ASSERT_EQ(rect.getMinCorner(), rect2.getMinCorner());
+  }
+
+  {
+    ZAffineRect rect2 = rect;
+    rect2.setSizeWithMaxCornerFixed(20, 30);
+    ASSERT_EQ(20, rect2.getWidth());
+    ASSERT_EQ(30, rect2.getHeight());
+    ASSERT_EQ(rect.getMaxCorner(), rect2.getMaxCorner());
+  }
+
+  // Test corner cases
+  {
+    ZAffineRect rect2 = rect;
+    rect2.setSizeWithCornerFixed(20, 30, -1);
+    ASSERT_EQ(20, rect2.getWidth());
+    ASSERT_EQ(30, rect2.getHeight());
+    ASSERT_EQ(rect.getCenter(), rect2.getCenter());
+  }
+
+  {
+    ZAffineRect rect2 = rect;
+    rect2.setSizeWithCornerFixed(20, 30, 4);
+    ASSERT_EQ(20, rect2.getWidth());
+    ASSERT_EQ(30, rect2.getHeight());
+    ASSERT_EQ(rect.getCenter(), rect2.getCenter());
+  }
+
+  {
+    for (int index = 0; index < 4; ++index) {
+      ZAffineRect rect2 = rect;
+      rect2.setSizeWithCornerFixed(-20, -30, index);
+      ASSERT_EQ(0, rect2.getWidth());
+      ASSERT_EQ(0, rect2.getHeight());
+      ASSERT_EQ(rect.getCorner(index), rect2.getCorner(index));
+    }
   }
 }
 

@@ -4142,7 +4142,8 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
 
   ZStack *stack = NULL;
 
-  qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
+  qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height
+           << " @" << x0 << "," << y0 << "c" << centerCut;
 
   if (m_lowtisServiceGray.get() == NULL) {
     try {
@@ -4441,6 +4442,15 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
   ZStack *stack = NULL;
 
+  if (vx1 == 1.0 && vy1 == 0.0 && vz1 == 0.0 &&
+      vx2 == 0.0 && vy2 == 1.0 && vz2 == 0.0) {
+    // Use xy plane reading for slightly faster slice fetching
+    stack = readGrayScaleLowtis(
+          x0 - width / 2, y0 - height / 2, z0, width, height, zoom, cx, cy, centerCut);
+    return stack;
+  }
+
+
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
   qDebug() << "  Prefetching:" << m_lowtisConfigGray.enableprefetch;
 
@@ -4451,6 +4461,9 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
     ZIntCuboid box = GetStackBoxAtCenter(x0, y0, z0, width, height, zoom);
 
+#ifdef _DEBUG_
+    std::cout << "Stack size: " << box.toString() << std::endl;
+#endif
     stack = new ZStack(GREY, box, 1);
 
     try {
@@ -4550,9 +4563,18 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     return NULL;
   }
 
+  ZArray *array = NULL;
+
+  if (vx1 == 1.0 && vy1 == 0.0 && vz1 == 0.0 &&
+      vx2 == 0.0 && vy2 == 1.0 && vz2 == 0.0) {
+    // Use xy plane reading for slightly faster slice fetching
+    array = readLabels64Lowtis(
+          x0 - width / 2, y0 - height / 2, z0, width, height, zoom, cx, cy, centerCut);
+    return array;
+  }
+
   ZIntCuboid box = GetStackBoxAtCenter(x0, y0, z0, width, height, zoom);
 
-  ZArray *array = NULL;
 
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
 

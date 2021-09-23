@@ -1099,6 +1099,18 @@ void ZStackObjectGroup::add(ZStackObject *obj, int zOrder, bool uniqueSource)
   addUnsync(obj, zOrder, uniqueSource);
 }
 
+bool ZStackObjectGroup::hasObjectHandle(uint64_t handle) const
+{
+  QMutexLocker locker(&m_mutex);
+  foreach (const ZStackObject *obj, m_objectList) {
+    if (obj->getHandle() == handle) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackObjectGroup::hasObject(const ZStackObject *obj) const
 {
   if (obj == NULL) {

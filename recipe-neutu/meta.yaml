@@ -27,7 +27,6 @@ build:
 requirements:
   build:
     - cmake
-    - ninja 1.7.2*
     - {{ compiler('cxx') }} # [linux]
     - {{ cdt('mesa-libgl-devel') }}  # [linux]
     - {{ cdt('mesa-libegl-devel') }}  # [linux]
