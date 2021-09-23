@@ -65,3 +65,7 @@ https://github.com/janelia-flyem/NeuTu/blob/master/neurolabi/doc/user_manual/neu
 
 https://github.com/janelia-flyem/NeuTu/blob/master/neurolabi/doc/user_manual/neutu/manual.pdf
 
+### For the most recent version
+
+https://janelia-flyem.gitbook.io/neutu
+
