@@ -1414,7 +1414,7 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 //  m_sliceViewTransform.canvasAdjust(
 //        width(), height(), m_viewAnchorX, m_viewAnchorY);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "Transform: " << m_sliceViewTransform << std::endl;
 #endif
 }
@@ -1629,7 +1629,7 @@ void ZImageWidget::notifyTransformChanged()
 
   emit transformControlSyncNeeded();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "Transform: " << m_sliceViewTransform << std::endl;
 #endif
 }

@@ -111,7 +111,7 @@ void ZAffineRect::setSizeWithCornerFixed(
         break;
       }
 
-      translate(du * 0.5, dv * 0.5);
+      translateOnPlane(du * 0.5, dv * 0.5);
     }
   }
 }
@@ -145,9 +145,14 @@ void ZAffineRect::translate(const ZPoint &dv)
   m_ap.translate(dv);
 }
 
-void ZAffineRect::translate(double du, double dv)
+void ZAffineRect::translateOnPlane(double du, double dv)
 {
-  m_ap.translate(getV1() * du + getV2() * dv);
+  m_ap.translateOnPlane(du, dv);
+}
+
+void ZAffineRect::translateDepth(double d)
+{
+  m_ap.translateDepth(d);
 }
 
 void ZAffineRect::scale(double su, double sv)

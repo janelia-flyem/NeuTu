@@ -51,16 +51,27 @@ public:
 
   static ZStack* Rgb2Gray(const ZStack *stack);
 
-  static ZStack* Intepolate(
+  static ZStack* Interpolate(
       const ZStack *stack1, const ZStack *stack2, double lambda,
       ZStack *out = NULL);
-  static ZStack* IntepolatePri(
+  static ZStack* InterpolatePri(
       const ZStack *stack1, const ZStack *stack2, int scale, int cw, int ch,
       double lambda, ZStack *out = NULL);
+
+  /*
   static ZStack* IntepolateFovia(
       const ZStack *stack1, const ZStack *stack2, int cw, int ch,
       double lambda, ZStack *out = NULL);
-  static ZStack* IntepolateFovia(
+  */
+  /*!
+   * \brief Interpolate image with fovia
+   *
+   * It interplates two downsampled images for smooth transition through slices
+   * belonging to the same downsampling block. \a z1 is the source position of
+   * \a stack1, \a z2 is the source position of \a stack2, and \a z is the postion
+   * of the interpolated stack.
+   */
+  static ZStack* InterpolateFovia(
       const ZStack *stack1, const ZStack *stack2, int cw, int ch,
       int scale, int z1, int z2, int z, ZStack *out = NULL);
 

@@ -18,6 +18,10 @@
 #include "zspgrowparser.h"
 #include "zstackfactory.h"
 
+#ifdef _DEBUG_
+#include "neutubeconfig.h"
+#endif
+
 ZStackProcessor::ZStackProcessor()
 {
 }
@@ -1054,7 +1058,7 @@ void ZStackProcessor::ShrinkSkeleton(Stack *stack, int level)
   }
 }
 
-ZStack* ZStackProcessor::Intepolate(
+ZStack* ZStackProcessor::Interpolate(
     const ZStack *stack1, const ZStack *stack2, double lambda, ZStack *out)
 {
   if (stack1->kind() == GREY && stack2->kind() == GREY &&
@@ -1088,6 +1092,7 @@ static void interpolateArray(
   }
 }
 
+#if 0
 ZStack* ZStackProcessor::IntepolateFovia(
     const ZStack *stack1, const ZStack *stack2, int cw, int ch,
     double lambda, ZStack *out)
@@ -1128,8 +1133,9 @@ ZStack* ZStackProcessor::IntepolateFovia(
 
   return out;
 }
+#endif
 
-ZStack* ZStackProcessor::IntepolateFovia(
+ZStack* ZStackProcessor::InterpolateFovia(
     const ZStack *stack1, const ZStack *stack2, int cw, int ch,
     int scale, int z1, int z2, int z, ZStack *out)
 {
@@ -1162,6 +1168,11 @@ ZStack* ZStackProcessor::IntepolateFovia(
     double lambda1 = double(z - prevZ) / (nextZ - prevZ);
     double lambda2 = double(z - prevCenterZ) / (nextCenterZ - prevCenterZ);
 
+#ifdef _DEBUG_
+    stack1->save(GET_TEST_DATA_DIR + "/_test1.tif");
+    stack2->save(GET_TEST_DATA_DIR + "/_test2.tif");
+    std::cout << "🦋 interpolate " << prevZ << " | " << z << " | " << nextZ << std::endl;
+#endif
 
     if (w <= cw || h <= ch) { //always high res
       for (int y = h - 1; y >= 0; --y) {
@@ -1189,6 +1200,12 @@ ZStack* ZStackProcessor::IntepolateFovia(
     return NULL;
   }
 
+#ifdef _DEBUG_
+  if (out) {
+    out->save(GET_TEST_DATA_DIR + "/_test3.tif");
+  }
+#endif
+
   return out;
 }
 
@@ -1205,7 +1222,7 @@ static void interpolateArray(
   }
 }
 
-ZStack* ZStackProcessor::IntepolatePri(
+ZStack* ZStackProcessor::InterpolatePri(
     const ZStack *stack1, const ZStack *stack2, int scale, int cw, int ch,
     double lambda, ZStack *out)
 {

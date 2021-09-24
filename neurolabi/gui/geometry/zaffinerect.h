@@ -82,7 +82,8 @@ public:
   /*!
    * \brief translate on plane
    */
-  void translate(double du, double dv);
+  void translateOnPlane(double du, double dv);
+  void translateDepth(double d);
 
   /*!
    * \brief Scale a rectangle without moving its center

@@ -445,10 +445,30 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     ZAffineRect rect = getHelper()->getIntCutRect(viewParam.getViewId());
 
     if (!rect.isEmpty()) {
+      int cx = getHelper()->getCenterCutWidth();
+      int cy = getHelper()->getCenterCutHeight();
       ZStack *stack = getDvidReader().readGrayScaleLowtis(
-            rect,
-            getZoom(), getHelper()->getCenterCutWidth(),
-            getHelper()->getCenterCutHeight(), true);
+            rect, getZoom(), cx, cy, true);
+      int scale = zgeom::GetZoomScale(getZoom() + 1);
+      if (scale > 1) {
+        ZPoint normal = rect.getAffinePlane().getNormal();
+        if (normal == ZPoint(0, 0, 1)) {
+          int z = int(normal.dot(rect.getCenter()));
+          int remain = z % scale;
+          if (remain > 0) {
+            int z1 = z - remain + scale;
+            ZAffineRect rect2 = rect;
+            rect2.translateDepth(scale - remain);
+            ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
+                  rect2, getZoom(), cx, cy, true);
+            ZStackProcessor::InterpolateFovia(
+                  stack, stack2, cx, cy, scale, z, z1, z, stack);
+            delete stack2;
+          }
+        }
+      }
+
+
       getHelper()->setActualQuality(
             getZoom(), getHelper()->getCenterCutWidth(),
             getHelper()->getCenterCutHeight(), true, viewParam.getViewId());
