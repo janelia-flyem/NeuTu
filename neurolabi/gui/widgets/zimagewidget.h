@@ -6,6 +6,7 @@
 #define ZIMAGEWIDGET_H_
 
 #include <memory>
+
 #include <QImage>
 #include <QWidget>
 #include <QMenu>
@@ -65,9 +66,10 @@ public:
   std::shared_ptr<ZSliceCanvas> getValidCanvas(neutu::data3d::ETarget target);
   std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
 
-  bool hasCanvas(ZSliceCanvas *canvas, neutu::data3d::ETarget target) const;
+  bool hasCanvas(
+      std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target) const;
 
-  ZSliceCanvas* makeClearCanvas();
+  std::shared_ptr<ZSliceCanvas> makeClearCanvas();
 
   void setCanvasVisible(neutu::data3d::ETarget target, bool visible);
 
@@ -252,7 +254,8 @@ public:
 //  ZImage* makeWidgetCanvas() const;
   void updateWidgetCanvas(ZPixmap *canvas);
 
-  void updateSliceCanvas(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
+  void updateSliceCanvas(
+      neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas);
 
   //To be called by parent widget
   void adjustTransformWithResize();

@@ -4149,16 +4149,18 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
   }
   */
 
-  ZArray *array = NULL;
+  ZArray *array = nullptr;
   const ZDvidReader &workReader = slice->getWorkDvidReader();
   if (workReader.good()) {
     ZAffineRect rect = viewParam.getIntCutRect(
           slice->getDataRange(), centerCutX, centerCutY, usingCenterCut);
-    array = workReader.readLabels64Lowtis(
-          rect, zoom, centerCutX, centerCutY, usingCenterCut);
+    if (rect.isNonEmpty()) {
+      array = workReader.readLabels64Lowtis(
+            rect, zoom, centerCutX, centerCutY, usingCenterCut);
+    }
   }
 
-  if (array != NULL) {
+  if (array) {
     emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY,
                             usingCenterCut);
   }
@@ -4172,13 +4174,14 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
   ZDvidGraySlice *slice = getDvidGraySlice();
   if (slice) {
     const ZDvidReader &workReader = slice->getWorkDvidReader();
-    ZStack *array = NULL;
+    ZStack *array = nullptr;
     if (workReader.good()) {
       ZAffineRect rect = viewParam.getIntCutRect(
             slice->getDataRange(), centerCutX, centerCutY, usingCenterCut);
-      array = workReader.readGrayScaleLowtis(
-            rect, zoom, centerCutX, centerCutY, usingCenterCut);
-
+      if (rect.isNonEmpty()) {
+        array = workReader.readGrayScaleLowtis(
+              rect, zoom, centerCutX, centerCutY, usingCenterCut);
+      }
     }
 
     if (array) {

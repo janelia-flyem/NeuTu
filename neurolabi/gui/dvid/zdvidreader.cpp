@@ -4202,8 +4202,8 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
                 << ", " << offset[1] << ", " << offset[2] << "; zoom=" << zoom
                 << std::endl;
 #endif
-//      m_lowtisServiceGray->retrieve_image(
-//            width, height, offset, (char*) stack->array8(), zoom, centerCut);
+      m_lowtisServiceGray->retrieve_image(
+            width, height, offset, (char*) stack->array8(), zoom, centerCut);
 
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {

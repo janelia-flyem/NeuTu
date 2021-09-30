@@ -1,6 +1,8 @@
 #ifndef ZIMAGESLICEFACTORY_H
 #define ZIMAGESLICEFACTORY_H
 
+#include <memory>
+
 class ZSliceCanvas;
 class ZStack;
 class ZModelViewTransform;
@@ -12,9 +14,9 @@ public:
   ZImageSliceFactory();
 
 
-  static ZSliceCanvas* Make(
+  static std::shared_ptr<ZSliceCanvas> Make(
       const ZStack &stack, const ZModelViewTransform &transform,
-      double width, double height, ZSliceCanvas *result);
+      double width, double height, std::shared_ptr<ZSliceCanvas> result);
 
   /*!
    * \brief Make a canvas from a slice of a stack along Z
@@ -25,9 +27,9 @@ public:
    * level of the canvas space to the model space, i.e. the transformation scale
    * is 1/2^\a zoom.
    */
-  static ZSliceCanvas* MakeXY(
+  static std::shared_ptr<ZSliceCanvas> MakeXY(
       const ZStack &stack, int depth, const ZModelViewTransform &cutPlane,
-      double a, double b, int zoom, ZSliceCanvas *result);
+      double a, double b, int zoom, std::shared_ptr<ZSliceCanvas> result);
 };
 
 #endif // ZIMAGESLICEFACTORY_H

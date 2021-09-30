@@ -7,6 +7,7 @@
 FlyEmSynapseEnsemble::FlyEmSynapseEnsemble()
 {
   m_type = GetType();
+//  setTarget(neutu::data3d::ETarget::HD_OBJECT_CANVAS);
   setTarget(neutu::data3d::ETarget::NONBLOCKING_OBJECT_CANVAS);
   m_blockGrid = std::shared_ptr<
       ZIntPointAnnotationBlockGrid<ZDvidSynapse, FlyEmSynapseChunk>>(

@@ -473,7 +473,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
               ZAffineRect rect2 = rect;
               rect2.translateDepth(scale - remain);
               ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
-                    rect2, getZoom(), cx, cy, true);
+                    rect2, getZoom(), cx, cy, getHelper()->usingCenterCut());
               ZStackProcessor::InterpolateFovia(
                     stack, stack2, cx, cy, scale * 2, z, z1, z, stack);
               delete stack2;

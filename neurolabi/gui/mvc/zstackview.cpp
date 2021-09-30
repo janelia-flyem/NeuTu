@@ -2445,7 +2445,7 @@ void ZStackView::paintObjectBuffer(
 
 void ZStackView::updateObjectBuffer(neutu::data3d::ETarget target)
 {
-  ZSliceCanvas *canvas = getClearCanvas(target);
+  std::shared_ptr<ZSliceCanvas> canvas = getClearCanvas(target);
 
   if (canvas) {
     updateObjectBuffer(canvas, target);
@@ -2453,7 +2453,7 @@ void ZStackView::updateObjectBuffer(neutu::data3d::ETarget target)
 }
 
 void ZStackView::updateObjectBuffer(
-    ZSliceCanvas *canvas, neutu::data3d::ETarget target)
+    std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target)
 {
   if (canvas  && canvas->updateNeeded()) {
     updateObjectSorter();
@@ -2467,7 +2467,7 @@ void ZStackView::updateObjectBuffer(
 
 
 void ZStackView::updateObjectBuffer(
-    ZSliceCanvas *canvas, neutu::data3d::ETarget target,
+    std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target,
     const QList<ZStackObject*> &objList)
 {
   if (neutu::data3d::IsNonblocking(target)) {
@@ -2478,7 +2478,7 @@ void ZStackView::updateObjectBuffer(
 }
 
 void ZStackView::updateObjectBuffer(
-    ZSliceCanvas *canvas, const QList<ZStackObject*> &objList)
+    std::shared_ptr<ZSliceCanvas> canvas, const QList<ZStackObject*> &objList)
 {
   if (canvas && canvas->updateNeeded()) {
     ZSliceCanvasPaintHelper p(*canvas);
@@ -2488,7 +2488,8 @@ void ZStackView::updateObjectBuffer(
 }
 
 void ZStackView::updateObjectBuffer(
-    ZSliceCanvas *canvas, QPainter *painter, const QList<ZStackObject*> &objList)
+    std::shared_ptr<ZSliceCanvas> canvas, QPainter *painter,
+    const QList<ZStackObject*> &objList)
 {
   if (canvas  && canvas->updateNeeded() && painter->isActive()) {
     neutu::data3d::DisplayConfig config;
@@ -2519,7 +2520,16 @@ void ZStackView::updateObjectBuffer(
 void ZStackView::updateObjectBuffer(
     neutu::data3d::ETarget target, const QList<ZStackObject *> &objList)
 {
-  ZSliceCanvas *canvas = getClearCanvas(target);
+  if (neutu::data3d::IsNonblocking(target)) {
+    addNonblockCanvasTask(nullptr, target, objList);
+  } else {
+    std::shared_ptr<ZSliceCanvas> canvas = getClearCanvas(target);
+    if (canvas && canvas->updateNeeded()) {
+      updateObjectBuffer(canvas, objList);
+    }
+  }
+  /*
+  std::shared_ptr<ZSliceCanvas> canvas = getClearCanvas(target);
   if (canvas && canvas->updateNeeded()) {
     if (neutu::data3d::IsNonblocking(target)) {
       addNonblockCanvasTask(canvas, target, objList);
@@ -2527,6 +2537,7 @@ void ZStackView::updateObjectBuffer(
       updateObjectBuffer(canvas, objList);
     }
   }
+  */
 }
 
 template<template<class...> class Container>
@@ -2564,7 +2575,7 @@ void ZStackView::addNonblockCanvasTask(
 */
 
 void ZStackView::addNonblockCanvasTask(
-    ZSliceCanvas *canvas, neutu::data3d::ETarget target,
+    std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target,
     const QList<ZStackObject *> &objList)
 {
   if (imageWidget()->hasCanvas(canvas, target)) {
@@ -2572,8 +2583,8 @@ void ZStackView::addNonblockCanvasTask(
     updateImageScreen(EUpdateOption::QUEUED);
   } else {
     ZTask *task = new ZFunctionTask([=]() {
-      ZSliceCanvas *bufferCanvas = canvas;
-      if (bufferCanvas == nullptr) {
+      std::shared_ptr<ZSliceCanvas> bufferCanvas = canvas;
+      if (!bufferCanvas) {
         bufferCanvas = imageWidget()->makeClearCanvas();
       }
       if (bufferCanvas->updateNeeded()) {
@@ -2947,13 +2958,13 @@ void ZStackView::processWidgetCanvasUpdate(ZPixmap *canvas)
 */
 
 void ZStackView::processCanvasUpdate(
-    neutu::data3d::ETarget target, ZSliceCanvas *canvas)
+    neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas)
 {
   m_imageWidget->updateSliceCanvas(target, canvas);
 }
 
 void ZStackView::notifyCanvasUpdate(
-    neutu::data3d::ETarget target, ZSliceCanvas *canvas)
+    neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas)
 {
   emit canvasUpdated(target, canvas);
 }
@@ -4156,7 +4167,7 @@ ZPainter* ZStackView::getPainter(neutu::data3d::ETarget target)
 }
 #endif
 
-ZSliceCanvas *ZStackView::getClearCanvas(
+std::shared_ptr<ZSliceCanvas> ZStackView::getClearCanvas(
     neutu::data3d::ETarget target)
 {
   bool visible = true;
@@ -4165,7 +4176,7 @@ ZSliceCanvas *ZStackView::getClearCanvas(
     visible = buddyPresenter()->isObjectVisible();
   }
 
-  ZSliceCanvas *canvas = nullptr;
+  auto canvas = std::shared_ptr<ZSliceCanvas>();
 
   if (neutu::data3d::IsNonblocking(target)) {
     if (visible) {
@@ -4174,7 +4185,7 @@ ZSliceCanvas *ZStackView::getClearCanvas(
   }
 
   if (canvas == nullptr) {
-    canvas = imageWidget()->getClearCanvas(target).get();
+    canvas = imageWidget()->getClearCanvas(target);
   }
 
   if (canvas) {

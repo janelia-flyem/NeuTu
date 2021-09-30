@@ -31999,7 +31999,7 @@ void ZTest::test(MainWindow *host)
   canvas.getPixmap().save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZDvidGraySlice slice;
   slice.setDvidTarget(reader->getDvidTarget());
@@ -33114,6 +33114,16 @@ void ZTest::test(MainWindow *host)
   dlg->reset();
   dlg->exec();
   std::cout << neutu::ToString(dlg->getOption()) << std::endl;
+#endif
+
+#if 1
+  {
+    ZSliceCanvas canvas(100, 100);
+    ZSliceCanvas canvas2(100, 100);
+  }
+  {
+    ZSliceCanvas canvas(100, 100);
+  }
 #endif
 
   std::cout << "Done." << std::endl;

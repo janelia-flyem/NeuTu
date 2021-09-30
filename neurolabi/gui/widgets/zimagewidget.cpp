@@ -72,21 +72,21 @@ std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(
 }
 
 bool ZImageWidget::hasCanvas(
-    ZSliceCanvas *canvas, neutu::data3d::ETarget target) const
+    std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target) const
 {
   if (canvas) {
     int index = neutu::EnumValue(target);
     if (index >= 0 && index < m_canvasList.size()) {
-      return (canvas == m_canvasList[index].get());
+      return (canvas == m_canvasList[index]);
     }
   }
 
   return false;
 }
 
-ZSliceCanvas* ZImageWidget::makeClearCanvas()
+std::shared_ptr<ZSliceCanvas> ZImageWidget::makeClearCanvas()
 {
-  ZSliceCanvas *canvas = new ZSliceCanvas;
+  auto canvas = std::shared_ptr<ZSliceCanvas>(new ZSliceCanvas);
   canvas->set(
         width(), height(), m_sliceViewTransform,
         ZSliceCanvas::ESetOption::FORCE_CLEAR);
@@ -724,13 +724,13 @@ void ZImageWidget::updateWidgetCanvas(ZPixmap */*canvas*/)
 }
 
 void ZImageWidget::updateSliceCanvas(
-    neutu::data3d::ETarget target, ZSliceCanvas *canvas)
+    neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas)
 {
   if (canvas) {
     int index = neutu::EnumValue(target);
     if (index >= 0 && index < m_canvasList.size()) {
       auto oldCanvas = m_canvasList[index];
-      m_canvasList[index] = std::shared_ptr<ZSliceCanvas>(canvas);
+      m_canvasList[index] = canvas;
       update();
     }
   }

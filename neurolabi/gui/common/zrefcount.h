@@ -8,7 +8,7 @@ class ZRefCount
 public:
   ZRefCount();
   ZRefCount(const ZRefCount &ref);
-  ~ZRefCount();
+  virtual ~ZRefCount();
 
   unsigned int getRefCount() const;
 

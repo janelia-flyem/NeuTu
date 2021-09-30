@@ -20,7 +20,7 @@ TEST(ZImageWidget, Basic)
   qDebug() << widget.size();
 
   {
-    ZSliceCanvas *canvas = widget.makeClearCanvas();
+    std::shared_ptr<ZSliceCanvas> canvas = widget.makeClearCanvas();
     ASSERT_EQ(widget.size(), canvas->getSize());
 
     ASSERT_FALSE(
@@ -40,9 +40,9 @@ TEST(ZImageWidget, Basic)
     ASSERT_EQ(widget.size(), canvas->getSize());
 
     ASSERT_TRUE(widget.hasCanvas(
-                  canvas.get(), neutu::data3d::ETarget::HD_OBJECT_CANVAS));
+                  canvas, neutu::data3d::ETarget::HD_OBJECT_CANVAS));
     ASSERT_FALSE(widget.hasCanvas(
-                  canvas.get(), neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS));
+                  canvas, neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS));
 
     ASSERT_TRUE(canvas->isVisible());
     widget.setCanvasVisible(neutu::data3d::ETarget::HD_OBJECT_CANVAS, false);

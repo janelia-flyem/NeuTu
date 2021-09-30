@@ -7,6 +7,7 @@
 #define ZSTACKVIEW_H_
 
 #include <atomic>
+#include <memory>
 
 #include <QImage>
 #include <QWidget>
@@ -602,7 +603,8 @@ public slots:
       int index, const QString &text, QObject *receiver, const char *slot);
 //  void processWidgetCanvasUpdate(ZPixmap *canvas);
 
-  void processCanvasUpdate(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
+  void processCanvasUpdate(
+      neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas);
 
   void notifyViewChanged();
   void syncTransformControl();
@@ -623,7 +625,8 @@ signals:
   void closingChildFrame();
   void autoTracing();
   void widgetCanvasUpdated(ZPixmap *canvas);
-  void canvasUpdated(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
+  void canvasUpdated(neutu::data3d::ETarget target,
+                     std::shared_ptr<ZSliceCanvas> canvas);
   void sliceAxisChanged();
 //  void widgetCanvasUpdated(ZImage *canvas);
 
@@ -635,19 +638,21 @@ private:
 //  void updateSliceViewParam();
   void prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter);
 
-  ZSliceCanvas* getClearCanvas(neutu::data3d::ETarget target);
+  std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
 //  ZSliceCanvas* getClearVisibleCanvas(neutu::data3d::ETarget target);
 
 //  void paintObjectBuffer(ZSliceCanvas &canvas, neutu::data3d::ETarget target);
 
-  void updateObjectBuffer(ZSliceCanvas *canvas, neutu::data3d::ETarget target);
+  void updateObjectBuffer(
+      std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target);
 
   void updateObjectBuffer(
-      ZSliceCanvas *canvas, const QList<ZStackObject*> &objList);
+      std::shared_ptr<ZSliceCanvas> canvas, const QList<ZStackObject*> &objList);
   void updateObjectBuffer(
-      ZSliceCanvas *canvas, QPainter *painter, const QList<ZStackObject*> &objList);
+      std::shared_ptr<ZSliceCanvas> canvas, QPainter *painter,
+      const QList<ZStackObject*> &objList);
   void updateObjectBuffer(
-      ZSliceCanvas *canvas, neutu::data3d::ETarget target,
+      std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target,
       const QList<ZStackObject*> &objList);
   void updateObjectBuffer(
       neutu::data3d::ETarget target, const QList<ZStackObject*> &objList);
@@ -680,9 +685,10 @@ private:
 //  void addNonblockCanvasTask(
 //      neutu::data3d::ETarget target, const QList<ZStackObject *> &objList);
   void addNonblockCanvasTask(
-      ZSliceCanvas *canvas, neutu::data3d::ETarget target,
+      std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target,
       const QList<ZStackObject *> &objList);
-  void notifyCanvasUpdate(neutu::data3d::ETarget target, ZSliceCanvas *canvas);
+  void notifyCanvasUpdate(
+      neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas);
 //  void notifyWidgetCanvasUpdate(ZImage *canvas);
 
   class ViewParamRecordOnce {

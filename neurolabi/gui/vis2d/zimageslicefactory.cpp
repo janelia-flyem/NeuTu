@@ -11,12 +11,12 @@ ZImageSliceFactory::ZImageSliceFactory()
 }
 
 
-ZSliceCanvas* ZImageSliceFactory::Make(
+std::shared_ptr<ZSliceCanvas> ZImageSliceFactory::Make(
       const ZStack &stack, const ZModelViewTransform &transform,
-      double width, double height, ZSliceCanvas *result)
+      double width, double height, std::shared_ptr<ZSliceCanvas> result)
 {
-  if (result == nullptr) {
-    result = new ZSliceCanvas;
+  if (!result) {
+    result = std::shared_ptr<ZSliceCanvas>(new ZSliceCanvas);
   }
 
   ZAffineRect rect;
@@ -44,12 +44,12 @@ ZSliceCanvas* ZImageSliceFactory::Make(
   return result;
 }
 
-ZSliceCanvas* ZImageSliceFactory::MakeXY(
+std::shared_ptr<ZSliceCanvas> ZImageSliceFactory::MakeXY(
     const ZStack &stack, int depth, const ZModelViewTransform &cutPlane,
-    double a, double b, int zoom, ZSliceCanvas *result)
+    double a, double b, int zoom, std::shared_ptr<ZSliceCanvas> result)
 {
-  if (result == nullptr) {
-    result = new ZSliceCanvas;
+  if (!result) {
+    result = std::shared_ptr<ZSliceCanvas>(new ZSliceCanvas);
   }
 
   QImage image = neutu::vis2d::GetSlice(stack, depth);
