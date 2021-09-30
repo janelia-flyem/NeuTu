@@ -249,7 +249,7 @@ public:
 
   void enableOffsetAdjustment(bool on);
 //  bool paintWidgetCanvas(ZImage *canvas);
-  ZImage* makeWidgetCanvas() const;
+//  ZImage* makeWidgetCanvas() const;
   void updateWidgetCanvas(ZPixmap *canvas);
 
   void updateSliceCanvas(neutu::data3d::ETarget target, ZSliceCanvas *canvas);

@@ -665,6 +665,14 @@ QAction* ZStackPresenter::makeAction(ZActionFactory::EAction item)
   return action;
 }
 
+void ZStackPresenter::notifyActionTriggered()
+{
+  QAction *action = qobject_cast<QAction*>(sender());
+  if (action) {
+    emit actionTriggered(m_actionFactory->getActionKey(action));
+  }
+}
+
 bool ZStackPresenter::paintingStroke() const
 {
   ZStackOperator op = m_mouseEventProcessor.getOperator();
@@ -1889,14 +1897,14 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event, int viewId)
             << std::endl;
 #endif
 
-  updateMouseCursorGlyphPos();
-
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
         event, ZMouseEvent::EAction::MOVE, viewId);
 
   if (mouseEvent.isNull()) {
     return;
   }
+
+  updateMouseCursorGlyphPos();
 
 #ifdef _DEBUG_2
   std::cout << "Recorder address: " << &(m_mouseEventProcessor.getRecorder())
@@ -2928,12 +2936,9 @@ ZSliceViewTransform ZStackPresenter::getSliceViewTransform() const
 void ZStackPresenter::setSliceViewTransform(
     int viewId, const ZSliceViewTransform &transform)
 {
-  /*
-  if (transform.getSliceAxis() !=
-      m_interactiveContext.getSliceViewTransform(viewId).getSliceAxis()) {
-    setSliceAxis(viewId, transform.getSliceAxis());
-  }
-  */
+#ifdef _DEBUG_
+  std::cout << "Set transform: " << viewId << ": " << transform << std::endl;
+#endif
   m_interactiveContext.setSliceViewTransform(viewId, transform);
   updateMouseCursorGlyphPos();
 }
@@ -3011,6 +3016,15 @@ void ZStackPresenter::enterSwcMoveMode()
   }
 }
 
+void ZStackPresenter::enterSwcAddNodeMode(ZStackObjectRole::TRole role)
+{
+  startSwcEdit(ZInteractiveContext::SWC_EDIT_ADD_NODE, [=](ZStackObject *obj) {
+    if (obj) {
+      obj->setRole(role);
+    }
+  });
+}
+
 #if 0
 void ZStackPresenter::enterSwcAddNodeMode(double x, double y)
 {
@@ -3043,13 +3057,14 @@ void ZStackPresenter::toggleSwcSkeleton(bool state)
 }
 
 template<typename T>
-void ZStackPresenter::startSwcEdit(T option)
+void ZStackPresenter::startSwcEdit(
+    T option, std::function<void(ZStackObject*)> prepare)
 {
   exitEdit();
 
   interactiveContext().setSwcEditMode(option);
 
-  m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_SWC);
+  m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_SWC, prepare);
   updateMouseCursorGlyphPos();
   updateCursor();
 }
@@ -3081,15 +3096,15 @@ ZStackBall ZStackPresenter::getActiveDecorationForSwc() const
 bool ZStackPresenter::addActiveDecorationAsSwc()
 {
   bool succ = false;
-  ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
+  ZStackObjectRole::TRole role =
+      m_mouseCursorGlyph->getActiveObjectRole().getRole();
   if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI ||
       paintingRoi()) {
     role = ZStackObjectRole::ROLE_ROI;
   }
   m_mouseCursorGlyph->useActiveGlyph([&](const ZPoint &center, double r) {
-    if (buddyDocument()->executeAddSwcNodeCommand(
-          center, r, role)) {
-      if (buddyDocument()->getTag() == neutu::Document::ETag::FLYEM_ROI) {
+    if (buddyDocument()->executeAddSwcNodeCommand(center, r, role)) {
+      if (role & (ZStackObjectRole::ROLE_ROI | ZStackObjectRole::ROLE_MERGE_LINK)) {
         buddyDocument()->selectSwcTreeNode(center, false);
         enterSwcExtendMode();
       }
@@ -3415,6 +3430,7 @@ void ZStackPresenter::enterSwcSelectMode()
 void ZStackPresenter::updateCutPlane(
     neutu::EAxis a1, neutu::EAxis a2, neutu::EAxis a3)
 {
+  setMainSliceAxis(a1); // Need to set first to assure correct state check
   auto viewList = getViewList();
   if (!viewList.empty()) {
     viewList[0]->setCutPlane(a1);
@@ -3425,7 +3441,6 @@ void ZStackPresenter::updateCutPlane(
       }
     }
   }
-  m_mainViewAxis = a1;
   updateViewLayout();
 }
 
@@ -3550,6 +3565,11 @@ void ZStackPresenter::slotTest()
 void ZStackPresenter::notifyBodySplitTriggered()
 {
   emit bodySplitTriggered();
+}
+
+void ZStackPresenter::notifyActivateMergeLinkTriggered()
+{
+  emit activateMergeLinkTriggered();
 }
 
 void ZStackPresenter::notifyOrthoViewTriggered()

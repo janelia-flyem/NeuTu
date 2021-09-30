@@ -182,6 +182,9 @@ void ZMouseCursorGlyph::activate(
   if (obj) {
     m_activeGlyph = obj;
     obj->setVisible(true);
+    if (m_prepare[role]) {
+      m_prepare[role](obj);
+    }
     if (prepare) {
       prepare(obj);
     }
@@ -398,6 +401,11 @@ void ZMouseCursorGlyph::appendActiveGlyphPosition(
       postProc(obj);
     }
   }
+}
+
+ZStackObjectRole ZMouseCursorGlyph::getActiveObjectRole() const
+{
+  return m_activeGlyph ? m_activeGlyph->getRole() : ZStackObjectRole();
 }
 
 ZWeightedPoint ZMouseCursorGlyph::getActiveGlyphGeometry() const

@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QString>
 
+#include "common/zrefcount.h"
 #include "data3d/zsliceviewtransform.h"
 #include "zslicepainter.h"
 
@@ -17,7 +18,7 @@
  * A slice canvas has two main parts, including the painting buffer (canvas) and
  * the transform from the model space to the canvas space.
  */
-class ZSliceCanvas
+class ZSliceCanvas : public ZRefCount
 {
 public:
   ZSliceCanvas();

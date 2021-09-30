@@ -464,15 +464,18 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     break;
   }
 
+  /* Be aware of the hit test performance overhead if ever re-enabling it
+   * for mouse press.
   if (op.isNull()) {
     ZStackDocHitTest hitManager;
     hitManager.setSliceAxis(event.getSliceAxis());
     hitManager.setViewId(event.getViewId());
-    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                       event.getDataPosition());
+    hitManager.hitTest(
+          const_cast<ZStackDoc*>(getDocument()), event.getDataPosition());
 //                       event.getPosition(neutu::ECoordinateSystem::ORGDATA));
     op.setHitObject(hitManager.getHitObject<ZStackObject>());
   }
+  */
 
   return op;
 }

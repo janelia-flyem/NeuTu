@@ -5,6 +5,7 @@
 #include <QMap>
 
 #include "common/neutudefs.h"
+#include "zstackobjectrole.h"
 
 class ZStackObject;
 class ZPoint;
@@ -57,6 +58,7 @@ public:
   double getActiveGlyphSize() const;
   ZPoint getActiveGlyphPosition() const;
   ZWeightedPoint getActiveGlyphGeometry() const;
+  ZStackObjectRole getActiveObjectRole() const;
 
   void useActiveGlyph(
       std::function<void(const ZPoint &center, double radius)> proc);

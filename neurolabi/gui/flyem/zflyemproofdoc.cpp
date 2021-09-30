@@ -396,11 +396,6 @@ void ZFlyEmProofDoc::connectSignalSlot()
           this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
           Qt::QueuedConnection);
 
-  /*
-  connect(this, SIGNAL(updatingGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
-          this, SLOT(updateGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
-          Qt::QueuedConnection);
-          */
   connect(this, &ZFlyEmProofDoc::updatingGraySlice,
           this, &ZFlyEmProofDoc::updateGraySlice);
 
@@ -543,7 +538,9 @@ void ZFlyEmProofDoc::setSelectedBody(
         slice->startSelection();
         slice->setSelection(selected, labelType);
         slice->endSelection();
+        bufferObjectModified(slice);
       }
+      processObjectModified();
 
       notifyBodySelectionChanged();
     }
@@ -2896,6 +2893,13 @@ bool ZFlyEmProofDoc::hasDvidSynapseSelected() const
 
 std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedSynapse() const
 {
+  FlyEmSynapseEnsemble *se = getSynapseEnsemble();
+  if (se) {
+    return se->getSelectedPos();
+  }
+
+  return std::set<ZIntPoint>();
+  /*
   std::set<ZIntPoint> selected;
 
   QList<ZDvidSynapseEnsemble*> seList = getDvidSynapseEnsembleList();
@@ -2907,6 +2911,7 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedSynapse() const
   }
 
   return selected;
+  */
 }
 
 bool ZFlyEmProofDoc::hasTodoItemSelected() const
@@ -3181,15 +3186,17 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(const ZIntPoint &dest)
 void ZFlyEmProofDoc::annotateSelectedSynapse(
     ZFlyEmSynapseAnnotationDialog *dlg)
 {
-  FlyEmSynapseEnsemble *te = getSynapseEnsemble();
+  FlyEmSynapseEnsemble *se = getSynapseEnsemble();
 
-  ZDvidSynapse item = te->getSingleSelectedItem();
-  if (item.isValid()) {
-    dlg->set(item);
-    if (dlg->exec()) {
-      item.updateProperty(dlg->getPropJson());
-      addSynapse(item);
-//      annotateSynapse(item.getPosition(), dlg->getPropJson(), axis);
+  if (se) {
+    ZDvidSynapse item = se->getSingleSelectedItem();
+    if (item.isValid()) {
+      dlg->set(item);
+      if (dlg->exec()) {
+        item.updateProperty(dlg->getPropJson());
+        addSynapse(item);
+        //      annotateSynapse(item.getPosition(), dlg->getPropJson(), axis);
+      }
     }
   }
 
@@ -3825,8 +3832,31 @@ void ZFlyEmProofDoc::warnSynapseReadonly()
           neutu::EMessageType::WARNING));
 }
 
+void ZFlyEmProofDoc::setSelectedSynapseVerified(bool verified)
+{
+  FlyEmSynapseEnsemble *se = getSynapseEnsemble();
+
+  if (se) {
+    auto posList = se->getSelectedPos();
+    beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+    for (const ZIntPoint &pos : posList) {
+      ZDvidSynapse item = se->getItem(pos);
+      if (item.isValid()) {
+        item.setUserName((verified ? "" : "$") + neutu::GetCurrentUserName());
+        item.setConfidence(verified ? 1.0 : 0.5);
+        addSynapse(item);
+        emit synapseVerified(pos.getX(), pos.getY(), pos.getZ(), verified);
+      }
+    }
+    endObjectModifiedMode();
+    processObjectModified();
+  }
+}
+
 void ZFlyEmProofDoc::verifySelectedSynapse()
 {
+  setSelectedSynapseVerified(true);
+  /*
   if (getDvidTarget().isSynapseEditable()) {
     const std::string &userName = neutu::GetCurrentUserName();
     QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
@@ -3849,10 +3879,13 @@ void ZFlyEmProofDoc::verifySelectedSynapse()
   } else {
     warnSynapseReadonly();
   }
+  */
 }
 
 void ZFlyEmProofDoc::unverifySelectedSynapse()
 {
+  setSelectedSynapseVerified(false);
+  /*
   if (getDvidTarget().isSynapseEditable()) {
     const std::string &userName = neutu::GetCurrentUserName();
     QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
@@ -3875,10 +3908,20 @@ void ZFlyEmProofDoc::unverifySelectedSynapse()
   } else {
     warnSynapseReadonly();
   }
+  */
 }
 
 void ZFlyEmProofDoc::deleteSelectedSynapse()
 {
+  FlyEmSynapseEnsemble *se = getSynapseEnsemble();
+  if (se) {
+    se->removeSelected([this](const std::string &error) {
+      emit errorGenerated(error.c_str());
+    });
+    processObjectModified(se);
+  }
+
+  /*
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::EDataScope::GLOBAL;
   const std::set<ZIntPoint> &selected = getSelectedSynapse();
@@ -3894,6 +3937,7 @@ void ZFlyEmProofDoc::deleteSelectedSynapse()
     processObjectModified(se);
   }
   processObjectModified();
+  */
 
   /*
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
@@ -4108,7 +4152,8 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
   ZArray *array = NULL;
   const ZDvidReader &workReader = slice->getWorkDvidReader();
   if (workReader.good()) {
-    ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
+    ZAffineRect rect = viewParam.getIntCutRect(
+          slice->getDataRange(), centerCutX, centerCutY, usingCenterCut);
     array = workReader.readLabels64Lowtis(
           rect, zoom, centerCutX, centerCutY, usingCenterCut);
   }
@@ -4129,7 +4174,8 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
     const ZDvidReader &workReader = slice->getWorkDvidReader();
     ZStack *array = NULL;
     if (workReader.good()) {
-      ZAffineRect rect = viewParam.getIntCutRect(slice->getDataRange());
+      ZAffineRect rect = viewParam.getIntCutRect(
+            slice->getDataRange(), centerCutX, centerCutY, usingCenterCut);
       array = workReader.readGrayScaleLowtis(
             rect, zoom, centerCutX, centerCutY, usingCenterCut);
 
@@ -4224,7 +4270,8 @@ void ZFlyEmProofDoc::updateLabelSlice(
   }
 }
 
-void ZFlyEmProofDoc::updateGraySlice(ZStack *array, const ZStackViewParam &viewParam, int zoom,
+void ZFlyEmProofDoc::updateGraySlice(
+    ZStack *array, const ZStackViewParam &viewParam, int zoom,
     int centerCutX, int centerCutY, bool usingCenterCut, const std::string &source)
 {
   if (array != NULL) {
@@ -4236,6 +4283,8 @@ void ZFlyEmProofDoc::updateGraySlice(ZStack *array, const ZStackViewParam &viewP
           bufferObjectModified(slice->getTarget());
           processObjectModified();
         }
+      } else {
+        delete array;
       }
     } else {
       delete array;
@@ -4295,6 +4344,7 @@ void ZFlyEmProofDoc::clearBodyMerger()
   undoStack()->clear();
 }
 
+/*
 void ZFlyEmProofDoc::updateDvidLabelSlice(neutu::EAxis axis)
 {
   beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
@@ -4312,6 +4362,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutu::EAxis axis)
   endObjectModifiedMode();
   processObjectModified();
 }
+*/
 
 void ZFlyEmProofDoc::updateDvidLabelSlice()
 {
@@ -6174,7 +6225,7 @@ void ZFlyEmProofDoc::syncBodySelection(ZStackObject *host)
   ZDvidLabelSlice *hostSlice = dynamic_cast<ZDvidLabelSlice*>(host);
   if (hostSlice) {
     auto sliceList = getFrontDvidLabelSliceList();
-    for (auto slice : sliceList) {
+    foreach (auto slice, sliceList) {
       if (slice != hostSlice) {
         slice->setSelection(
               hostSlice->getSelectedOriginal(), neutu::ELabelSource::ORIGINAL);

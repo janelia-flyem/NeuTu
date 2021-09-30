@@ -22867,7 +22867,7 @@ void ZTest::test(MainWindow *host)
   int height = 256;
   std::vector<int> offset(3);
   int x0 = offset[0] = 2960;
-  int y0 = offset[1] = 3319;
+  int y0 = offset[d1] = 3319;
   int z0 = offset[2] = 3433;
   int zoom = 1;
   int scale = 1;
@@ -25835,23 +25835,25 @@ void ZTest::test(MainWindow *host)
   lowtis::DVIDLabelblkConfig config;
 
   config.username = "sample";
-  config.dvid_server = "emdata2.int.janelia.org:8300";
-  config.dvid_uuid = "1236";
-  config.datatypename = "base20180227_8nm_watershed_fixed";
+  config.dvid_server = "http://127.0.0.1:1600";
+  config.dvid_uuid = "c315";
+  config.datatypename = "grayscale";
+  config.centercut = {128, 128};
+  config.enableprefetch = false;
 
   // create service for 2D image fetching
   lowtis::ImageService service(config);
 
 
   // fetch image from 0,0,0 into buffer
-  int width = 1024; int height = 1024;
+  int width = 512; int height = 512;
   std::vector<int> offset(3,0);
-  offset[0] = 17152;
-  offset[1] = 22592;
-  offset[2] = 19328;
+  offset[0] = 0;
+  offset[1] = 0;
+  offset[2] = 1023;
 
   char* buffer = new char[width*height*8];
-  service.retrieve_image(width, height, offset, buffer);
+  service.retrieve_image(width, height, offset, buffer, 0, true);
 #endif
 
 #if 0
@@ -31568,6 +31570,8 @@ void ZTest::test(MainWindow *host)
   slicePainter.drawPoint(&painter, 1.8, 1.8);
   slicePainter.drawCircle(&painter, 1.8, 1.8, 1);
   slicePainter.drawRect(&painter, 1.8, 1.8, 1);
+  slicePainter.drawArc(&painter, 3, 3, 1, 0, 720);
+  slicePainter.drawTriangle(&painter, 5, 5, 1, neutu::ECardinalDirection::NORTH);
 
   pen.setCosmetic(false);
   painter.setPen(pen);
@@ -31607,7 +31611,6 @@ void ZTest::test(MainWindow *host)
   s3Painter.setCutPlane(neutu::EAxis::X, 0);
   s3Painter.drawLine(
         &painter, ZLineSegment(ZPoint(-1, 2, 3), ZPoint(1, 11, 12)));
-
 
   pixmap.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
@@ -31996,7 +31999,7 @@ void ZTest::test(MainWindow *host)
   canvas.getPixmap().save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
 
-#if 0
+#if 1
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
   ZDvidGraySlice slice;
   slice.setDvidTarget(reader->getDvidTarget());
@@ -32006,8 +32009,13 @@ void ZTest::test(MainWindow *host)
   t.setModelViewTransform(neutu::EAxis::Z, ZPoint(1023, 1023, 1023));
   t.setViewCanvasTransform(127.5, 127.5, 1.0);
   viewParam.set(t, 256, 256, neutu::data3d::ESpace::MODEL);
-  slice.update(viewParam);
-  slice.saveImage(GET_TEST_DATA_DIR + "/_test.png");
+  int dz = 1;
+  while (1) {
+    slice._forceUpdate(viewParam);
+//    viewParam.moveCutDepth(dz);
+//    dz = -dz;
+  }
+//  slice.saveImage(GET_TEST_DATA_DIR + "/_test.png");
 #endif
 
 #if 0
@@ -32039,10 +32047,15 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("local_test");
-  ZStack *stack = reader->readGrayScaleLowtis(
-        ZIntPoint(99, 99, 124), ZPoint(1, 0, 0), ZPoint(0, 1, 0),
-        199, 199, 0, 0, 0, false);
-  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  while (1) {
+//    ZStack *stack = new ZStack(GREY, ZIntCuboid(0, 0, 0, 1024, 1024, 1), 1);
+    ZStack *stack = reader->readGrayScaleLowtis(
+          ZIntPoint(512, 512, 124), ZPoint(1, 0, 0), ZPoint(0, 1, 0),
+          512, 512, 0, 256, 256, true);
+    ZSleeper::msleep(10);
+//    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+    delete stack;
+  }
 #endif
 
 #if 0

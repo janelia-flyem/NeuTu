@@ -196,12 +196,12 @@ TEST(ZStackViewParam, CutRect)
   ASSERT_EQ(10, rect.getWidth());
   ASSERT_EQ(20, rect.getHeight());
 
-  rect = param.getIntCutRect(ZIntCuboid(0, 1, 2, 3, 4, 5));
+  rect = param.getIntCutRect(ZIntCuboid(0, 1, 2, 3, 4, 5), 0, 0, false);
   ASSERT_EQ(ZPoint(2, 3, 3), rect.getCenter());
   ASSERT_EQ(4, rect.getWidth());
   ASSERT_EQ(4, rect.getHeight());
 
-  rect = param.getIntCutRect(ZIntCuboid(0, 1, 2, 4, 7, 5));
+  rect = param.getIntCutRect(ZIntCuboid(0, 1, 2, 4, 7, 5), 0, 0, false);
   ASSERT_EQ(ZPoint(2, 4, 3), rect.getCenter());
   ASSERT_EQ(5, rect.getWidth());
   ASSERT_EQ(7, rect.getHeight());

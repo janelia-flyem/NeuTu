@@ -683,6 +683,8 @@ void ZFlyEmProofMvc::connectSignalSlot()
           this, SLOT(updateBookmarkTable()));
   connect(getPresenter(), SIGNAL(bodySplitTriggered()),
           this, SLOT(notifySplitTriggered()));
+  connect(getPresenter(), SIGNAL(activateMergeLinkTriggered()),
+            this, SLOT(activateBodyMergeLink()));
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
           this, SLOT(annotateSelectedBody()));
   connect(getPresenter(), &ZStackPresenter::bodyExpertStatusTriggered,
@@ -3891,7 +3893,7 @@ void ZFlyEmProofMvc::warnAbouBodyLockFail(uint64_t bodyId)
 
 void ZFlyEmProofMvc::activateBodyMergeLink()
 {
-//  getPresenter()->enterSwcAddNodeMode(ZStackObjectRole::ROLE_MERGE_LINK);
+  getPresenter()->enterSwcAddNodeMode(ZStackObjectRole::ROLE_MERGE_LINK);
 }
 
 void ZFlyEmProofMvc::annotateSelectedBody()

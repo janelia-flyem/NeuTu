@@ -72,7 +72,7 @@ TEST(ZImageWidget, Basic)
   ASSERT_EQ(ZPoint(3.5, 5, 5.5), widget.getCutCenter());
 
   widget.moveCutDepth(1.0);
-  ASSERT_EQ(ZPoint(3.5, 4, 5.5), widget.getCutCenter());
+  ASSERT_EQ(ZPoint(3.5, 6, 5.5), widget.getCutCenter());
 
   qDebug() << widget.getAnchorPoint();
 }

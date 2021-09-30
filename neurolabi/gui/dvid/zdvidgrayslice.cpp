@@ -33,7 +33,7 @@ ZDvidGraySlice::ZDvidGraySlice()
   m_type = GetType();
 
   m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAYSCALE);
-  getHelper()->useCenterCut(false);
+//  getHelper()->useCenterCut(false);
 }
 
 ZDvidGraySlice::~ZDvidGraySlice()
@@ -146,8 +146,13 @@ bool ZDvidGraySlice::hasLowresRegion(int viewId) const
     return true;
   }
 
-  ZAffineRect rect =
-      getViewParam(viewId).getIntCutRect(getHelper()->getDataRange());
+  if (!getHelper()->usingCenterCut()) {
+    return false;
+  }
+
+  ZAffineRect rect = getViewParam(viewId).getIntCutRect(
+        getHelper()->getDataRange(), getHelper()->getCenterCutWidth(),
+        getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
 
   return (rect.getWidth() > getHelper()->getCenterCutWidth() ||
       rect.getHeight() > getHelper()->getCenterCutHeight());
@@ -395,18 +400,18 @@ bool ZDvidGraySlice::consume(
             zoom, centerCutX, centerCutY, usingCenterCut, viewParam.getViewId());
 //      getHelper()->setViewParam(viewParam);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
-      ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
+      ZAffineRect rect = viewParam.getIntCutRect(
+            getHelper()->getDataRange(), centerCutX, centerCutY, usingCenterCut);
       updateImage(stack, rect.getAffinePlane(), zoom, viewParam.getViewId());
-      delete stack;
 #ifdef _DEBUG_2
       std::cout << "Saving image canvas ..." << std::endl;
       m_imageCanvas.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
 #endif
 
       succ = true;
-    } else {
-      delete stack;
     }
+
+    delete stack;
   }
   return succ;
 }
@@ -430,6 +435,11 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc, int viewId)
   return task;
 }
 
+void ZDvidGraySlice::_forceUpdate(const ZStackViewParam &viewParam)
+{
+  forceUpdate(viewParam);
+}
+
 void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 {
   /*
@@ -447,38 +457,43 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     if (!rect.isEmpty()) {
       int cx = getHelper()->getCenterCutWidth();
       int cy = getHelper()->getCenterCutHeight();
+#if 1
       ZStack *stack = getDvidReader().readGrayScaleLowtis(
-            rect, getZoom(), cx, cy, true);
-      int scale = zgeom::GetZoomScale(getZoom() + 1);
-      if (scale > 1) {
-        ZPoint normal = rect.getAffinePlane().getNormal();
-        if (normal == ZPoint(0, 0, 1)) {
-          int z = int(normal.dot(rect.getCenter()));
-          int remain = z % scale;
-          if (remain > 0) {
-            int z1 = z - remain + scale;
-            ZAffineRect rect2 = rect;
-            rect2.translateDepth(scale - remain);
-            ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
-                  rect2, getZoom(), cx, cy, true);
-            ZStackProcessor::InterpolateFovia(
-                  stack, stack2, cx, cy, scale, z, z1, z, stack);
-            delete stack2;
+            rect, getZoom(), cx, cy, getHelper()->usingCenterCut());
+      if (stack) {
+#if 1
+        int scale = zgeom::GetZoomScale(getZoom());
+        if (scale > 1) {
+          ZPoint normal = rect.getAffinePlane().getNormal();
+          if (normal == ZPoint(0, 0, 1)) {
+            int z = int(normal.dot(rect.getCenter()));
+            int remain = z % scale;
+            if (remain > 0) {
+              int z1 = z - remain + scale;
+              ZAffineRect rect2 = rect;
+              rect2.translateDepth(scale - remain);
+              ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
+                    rect2, getZoom(), cx, cy, true);
+              ZStackProcessor::InterpolateFovia(
+                    stack, stack2, cx, cy, scale * 2, z, z1, z, stack);
+              delete stack2;
+            }
           }
         }
-      }
 
-
-      getHelper()->setActualQuality(
-            getZoom(), getHelper()->getCenterCutWidth(),
-            getHelper()->getCenterCutHeight(), true, viewParam.getViewId());
-      updateImage(
-            stack, rect.getAffinePlane(), getHelper()->getZoom(), viewParam.getViewId());
-#ifdef _DEBUG_2
-      std::cout << "Saving stack" << std::endl;
-      stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+        getHelper()->setActualQuality(
+              getZoom(), getHelper()->getCenterCutWidth(),
+              getHelper()->getCenterCutHeight(), true, viewParam.getViewId());
+        updateImage(
+              stack, rect.getAffinePlane(), getHelper()->getZoom(), viewParam.getViewId());
 #endif
-      delete stack;
+#ifdef _DEBUG_2
+        std::cout << "Saving stack" << std::endl;
+        stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+        delete stack;
+      }
+#endif
     }
   }
 }

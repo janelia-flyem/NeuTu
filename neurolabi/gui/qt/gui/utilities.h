@@ -4,6 +4,9 @@
 #include <vector>
 #include <functional>
 
+
+#include "common/neutudefs.h"
+
 #include <QKeySequence>
 #include <QString>
 #include <QStringList>
@@ -37,6 +40,11 @@ void RevisePen(
     QPainter *painter, std::function<void(QPen &pen)> revise);
 void ReviseBrush(QPainter *painter, std::function<void(QBrush &brush)> revise);
 
+/*!
+ * \brief Change pen color without changing opacity
+ */
+void SetPenColorF(QPainter *painter, double r, double g, double b);
+
 void SetPenColor(QPainter *painter, QColor color);
 void ScalePenAlpha(QPainter *painter, double s);
 
@@ -51,6 +59,9 @@ void DrawPoints(
 void DrawCircle(
     QPainter &painter, double cx, double cy, double r,
     const PixelCentered &p = true);
+void DrawArc(
+    QPainter &painter, double cx, double cy, double r,
+    double startAngle, double spanAngle, const PixelCentered &p = true);
 void DrawRect(
     QPainter &painter, double x0, double y0, double x1, double y1,
     const PixelCentered &p = true);
@@ -78,6 +89,9 @@ void DrawPolyline(
 void DrawStar(
     QPainter &painter, double cx, double cy, double r,
     const PixelCentered &p = true);
+void DrawTriangle(
+    QPainter &painter, double cx, double cy, double r,
+    neutu::ECardinalDirection direction, const PixelCentered &p = true);
 void DrawCross(
     QPainter &painter, double cx, double cy, double r,
     const PixelCentered &p = true);
@@ -86,6 +100,12 @@ void MakeStar(
     const QPointF &center, double radius, QPointF *ptArray, double shapeFactor);
 std::vector<QPointF> MakeStar(
     const QPointF &center, double radius, double shapeFactor = 0.25);
+
+void MakeTriangle(
+    const QPointF &center, double radius, neutu::ECardinalDirection direction,
+    QPointF *ptArray);
+std::vector<QPointF> MakeTriangle(
+    const QPointF &center, double radius, neutu::ECardinalDirection direction);
 
 void HideLayout(QLayout *layout, bool removing);
 void ClearLayout(

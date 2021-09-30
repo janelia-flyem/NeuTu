@@ -75,6 +75,7 @@ void ZIntCuboidObj::setGridInterval(int intv)
   m_gridIntv = intv;
 }
 
+#if 0
 namespace {
 void NextMark(int &x, int intv, int &remain)
 {
@@ -86,7 +87,6 @@ void NextMark(int &x, int intv, int &remain)
 }
 }
 
-#if 0
 void ZIntCuboidObj::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const

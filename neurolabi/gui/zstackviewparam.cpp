@@ -85,7 +85,7 @@ namespace {
 
 ZAffineRect adjust_rect(ZAffineRect rect, int zoom)
 {
-  int scale = pow(2, zoom + 1);
+  int scale = pow(2, zoom);
   ZPoint minCorner = rect.getMinCorner();
 
   int u0 = 0;
@@ -122,95 +122,107 @@ ZAffineRect adjust_rect(ZAffineRect rect, int zoom)
 
 }
 
-ZAffineRect ZStackViewParam::getIntCutRect(const ZIntCuboid &modelRange) const
+ZAffineRect ZStackViewParam::getIntCutRect(
+    const ZIntCuboid &modelRange, int centerCutWidth, int centerCutHeight,
+    bool centerCut) const
 {
-  if (modelRange.isEmpty()) {
-    return getIntCutRect();
-  }
+  ZAffineRect rect;
 
-  ZAffineRect rect = getCutRect();
+  if (modelRange.isEmpty()) {
+    rect =  getIntCutRect();
+  } else {
+    rect = getCutRect();
+  }
 
   if (!m_isViewportOpen) {
     return empty_int_rect(rect);
   }
 
-  ZCuboid viewBox = m_transform.getViewBox(modelRange);
-//  ZIntPoint newCenter = rect.getCenter().roundToIntPoint();
+  if (!modelRange.isEmpty()) {
+    ZCuboid viewBox = m_transform.getViewBox(modelRange);
+    //  ZIntPoint newCenter = rect.getCenter().roundToIntPoint();
 
-  double halfWidth = rect.getWidth() * 0.5;
-  double halfHeight = rect.getHeight() * 0.5;
+    double halfWidth = rect.getWidth() * 0.5;
+    double halfHeight = rect.getHeight() * 0.5;
 
-  double u0 = std::max(-halfWidth, viewBox.getMinCorner().getX());
-  double u1 = std::min(halfWidth, viewBox.getMaxCorner().getX());
-  double v0 = std::max(-halfHeight, viewBox.getMinCorner().getY());
-  double v1 = std::min(halfHeight, viewBox.getMaxCorner().getY());
+    double u0 = std::max(-halfWidth, viewBox.getMinCorner().getX());
+    double u1 = std::min(halfWidth, viewBox.getMaxCorner().getX());
+    double v0 = std::max(-halfHeight, viewBox.getMinCorner().getY());
+    double v1 = std::min(halfHeight, viewBox.getMaxCorner().getY());
 
-  if (u0 >= u1 || v0 >= v1) {
-    return empty_int_rect(rect);
+    if (u0 >= u1 || v0 >= v1) {
+      return empty_int_rect(rect);
+    }
+
+    if (getSliceAxis() == neutu::EAxis::ARB) {
+      std::pair<int, int> ur = zgeom::ToIntRange(u0, u1);
+      std::pair<int, int> vr = zgeom::ToIntRange(v0, v1);
+
+      //Use the left int center to be consistent with lowtis
+      int width = ur.second - ur.first + 1;
+      int height = vr.second - vr.first + 1;
+      int du = ur.first + width / 2;
+      int dv = vr.first + height / 2;
+      ZPoint adjustedCenter =
+          rect.getCenter() + m_transform.getCutPlane().getV1() * du +
+          m_transform.getCutPlane().getV2() * dv;
+      if (!adjustedCenter.hasIntCoord()) {
+        width += 2;
+        height += 2;
+      }
+      rect.setCenter(adjustedCenter.roundToIntPoint().toPoint());
+      rect.setSize(width, height);
+    } else {
+      //    ZIntPoint newCenter = rect.getCenter().roundToIntPoint();
+      ZPoint viewCenter = rect.getCenter();
+      ZIntPoint viewCenterInt =viewCenter.roundToIntPoint();
+      ZIntCuboid viewBoxInt = modelRange - viewCenterInt;
+      viewBoxInt.shiftSliceAxis(getSliceAxis());
+      viewCenterInt.shiftSliceAxis(getSliceAxis());
+
+      viewCenter.shiftSliceAxis(getSliceAxis());
+      if (std::floor(viewCenter.getX()) != viewCenter.getX()) {
+        u0 -= 0.5;
+        u1 += 0.5;
+      }
+      if (std::floor(viewCenter.getY()) != viewCenter.getY()) {
+        v0 -= 0.5;
+        v1 += 0.5;
+      }
+      std::pair<int, int> ur = zgeom::ToIntRange(u0, u1);
+      std::pair<int, int> vr = zgeom::ToIntRange(v0, v1);
+      //    ZIntCuboid viewBoxInt = viewBox.toIntCuboid();
+      if (ur.first < viewBoxInt.getMinX()) {
+        ur.first = viewBoxInt.getMinX();
+      }
+      if (ur.second > viewBoxInt.getMaxX()) {
+        ur.second = viewBoxInt.getMaxX();
+      }
+      if (vr.first < viewBoxInt.getMinY()) {
+        vr.first = viewBoxInt.getMinY();
+      }
+      if (vr.second > viewBoxInt.getMaxY()) {
+        vr.second = viewBoxInt.getMaxY();
+      }
+      ZIntPoint newCenter = viewCenterInt;
+      int width = ur.second - ur.first + 1;
+      int height = vr.second - vr.first + 1;
+      int du = ur.first + width / 2;
+      int dv = vr.first + height / 2;
+      newCenter += ZIntPoint(du, dv, 0);
+      newCenter.shiftSliceAxisInverse(getSliceAxis());
+      rect.setCenter(newCenter.toPoint());
+      rect.setSize(width, height);
+    }
   }
 
-  if (getSliceAxis() == neutu::EAxis::ARB) {
-    std::pair<int, int> ur = zgeom::ToIntRange(u0, u1);
-    std::pair<int, int> vr = zgeom::ToIntRange(v0, v1);
-
-    //Use the left int center to be consistent with lowtis
-    int width = ur.second - ur.first + 1;
-    int height = vr.second - vr.first + 1;
-    int du = ur.first + width / 2;
-    int dv = vr.first + height / 2;
-    ZPoint adjustedCenter =
-        rect.getCenter() + m_transform.getCutPlane().getV1() * du +
-        m_transform.getCutPlane().getV2() * dv;
-    if (!adjustedCenter.hasIntCoord()) {
-      width += 2;
-      height += 2;
+  int zoom = getZoomLevel();
+  if (centerCut) {
+    if (centerCutWidth < rect.getWidth() || centerCutHeight < rect.getHeight()) {
+      ++zoom;
     }
-    rect.setCenter(adjustedCenter.roundToIntPoint().toPoint());
-    rect.setSize(width, height);
-  } else {
-//    ZIntPoint newCenter = rect.getCenter().roundToIntPoint();
-    ZPoint viewCenter = rect.getCenter();
-    ZIntPoint viewCenterInt =viewCenter.roundToIntPoint();
-    ZIntCuboid viewBoxInt = modelRange - viewCenterInt;
-    viewBoxInt.shiftSliceAxis(getSliceAxis());
-    viewCenterInt.shiftSliceAxis(getSliceAxis());
-
-    viewCenter.shiftSliceAxis(getSliceAxis());
-    if (std::floor(viewCenter.getX()) != viewCenter.getX()) {
-      u0 -= 0.5;
-      u1 += 0.5;
-    }
-    if (std::floor(viewCenter.getY()) != viewCenter.getY()) {
-      v0 -= 0.5;
-      v1 += 0.5;
-    }
-    std::pair<int, int> ur = zgeom::ToIntRange(u0, u1);
-    std::pair<int, int> vr = zgeom::ToIntRange(v0, v1);
-//    ZIntCuboid viewBoxInt = viewBox.toIntCuboid();
-    if (ur.first < viewBoxInt.getMinX()) {
-      ur.first = viewBoxInt.getMinX();
-    }
-    if (ur.second > viewBoxInt.getMaxX()) {
-      ur.second = viewBoxInt.getMaxX();
-    }
-    if (vr.first < viewBoxInt.getMinY()) {
-      vr.first = viewBoxInt.getMinY();
-    }
-    if (vr.second > viewBoxInt.getMaxY()) {
-      vr.second = viewBoxInt.getMaxY();
-    }
-    ZIntPoint newCenter = viewCenterInt;
-    int width = ur.second - ur.first + 1;
-    int height = vr.second - vr.first + 1;
-    int du = ur.first + width / 2;
-    int dv = vr.first + height / 2;
-    newCenter += ZIntPoint(du, dv, 0);
-    newCenter.shiftSliceAxisInverse(getSliceAxis());
-    rect.setCenter(newCenter.toPoint());
-    rect.setSize(width, height);
   }
-
-  rect = adjust_rect(rect, getZoomLevel());
+  rect = adjust_rect(rect, zoom);
 
   return rect;
 }
@@ -601,10 +613,10 @@ int ZStackViewParam::getZoomLevel() const
 
 //  int scale = pow(2, zoom);
   int zoom = 0;
-  int scale = 1;
-  while (getArea(neutu::data3d::ESpace::MODEL) / scale / scale > 512 * 512) {
+  double area = getArea(neutu::data3d::ESpace::MODEL);
+  while (area > 1024 * 1024) {
     zoom += 1;
-    scale = pow(2, zoom);
+    area /= 4;
   }
   return zoom;
 }

@@ -80,11 +80,22 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
           painter->device()->width(), painter->device()->height(),
           neutu::data3d::ESpace::CANVAS), [&](int i, int j, int k) {
     m_blockGrid->forEachItemInChunk(i, j, k, [&](const T &item) {
-      if (item.display(painter, config)) {
-        painted = true;
+      if (!item.isSelected()) { // Selected items are painted separately
+        if (item.display(painter, config)) {
+          painted = true;
+        }
       }
     });
   }, 1.5);
+  std::set<ZIntPoint> selected = getSelectedPos();
+  for (const ZIntPoint &pos : selected) {
+    auto item = getItem(pos);
+    if (item.isValid()) {
+      if (item.display(painter, config)) {
+        painted = true;
+      }
+    }
+  }
 
 #ifdef _DEBUG_0
   std::cout << "FlyEmPointAnnotationEnsemble<T, TChunk>::display: " << painted << std::endl;

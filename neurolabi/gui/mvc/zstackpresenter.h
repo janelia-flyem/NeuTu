@@ -408,7 +408,7 @@ public slots:
   void selectConnectedNode();
 
   void notifyBodySplitTriggered();
-//  void notifyActivateMergeLinkTriggered();
+  void notifyActivateMergeLinkTriggered();
   void notifyBodyDecomposeTriggered();
   void notifyBodyCropTriggered();
   void notifyBodyChopTriggered();
@@ -472,7 +472,7 @@ public slots:
 
   void setSliceViewTransform(int viewId, const ZSliceViewTransform &transform);
 //  ZSliceViewTransform getSliceViewTransform() const;
-//  void notifyActionTriggered();
+  void notifyActionTriggered();
 
 signals:
   void mousePositionCaptured(double x, double y, double z);
@@ -556,7 +556,7 @@ protected:
   void moveSwcNode(ZStackView *view, double du, double dv);
 
   template<typename T>
-  void startSwcEdit(T option);
+  void startSwcEdit(T option, std::function<void(ZStackObject*)> prepare = nullptr);
 
   ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
 

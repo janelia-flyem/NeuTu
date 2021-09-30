@@ -66,10 +66,12 @@ public:
   /*!
    * \brief Interpolate image with fovia
    *
-   * It interplates two downsampled images for smooth transition through slices
-   * belonging to the same downsampling block. \a z1 is the source position of
-   * \a stack1, \a z2 is the source position of \a stack2, and \a z is the postion
-   * of the interpolated stack.
+   * It interplates two images downsampled by \a scale or/and \a scale +1 for
+   * smooth transition through slices belonging to the same downsampling block.
+   * \a z1 is the source position of \a stack1, \a z2 is the source position of
+   * \a stack2, and \a z is the postion of the interpolated stack.
+   * The source stacks are expected to have a centercut area with the size
+   * \a cw x \a ch.
    */
   static ZStack* InterpolateFovia(
       const ZStack *stack1, const ZStack *stack2, int cw, int ch,

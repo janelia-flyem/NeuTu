@@ -440,6 +440,7 @@ void ZDvidLabelSlice::clearLabelData(int viewId)
 {
   auto displayBuffer = getDisplayBuffer(viewId);
   displayBuffer->m_labelArray.reset();
+  m_cachedLabel.clear();
 //  displayBuffer->m_mappedLabelArray.reset();
   /*
   delete m_labelArray;
@@ -808,7 +809,8 @@ bool ZDvidLabelSlice::consume(
 //      m_labelArray = array;
 //      updatePaintBuffer();
 //      m_imageCanvas.fromImage(*m_paintBuffer);
-      ZAffineRect rect = viewParam.getIntCutRect(getHelper()->getDataRange());
+      ZAffineRect rect = viewParam.getIntCutRect(
+            getHelper()->getDataRange(), centerCutX, centerCutY, usingCenterCut);
       ZSliceViewTransform t = getHelper()->getCanvasTransform(
             rect.getAffinePlane(),
             displayBuffer->m_labelArray->getDim(0),
@@ -1365,9 +1367,14 @@ bool ZDvidLabelSlice::hit(double x, double y, double z, int viewId)
           int ny = neutu::iround(y);
           int nz = neutu::iround(z);
           //        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
-          m_hitLabel = getMappedLabel(
-                getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
-                neutu::ELabelSource::ORIGINAL);
+          if (m_cachedLabel.count({nx, ny, nz}) > 0) {
+            m_hitLabel = m_cachedLabel[{nx, ny, nz}];
+          } else {
+            m_hitLabel = getMappedLabel(
+                  getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
+                  neutu::ELabelSource::ORIGINAL);
+            m_cachedLabel[{nx, ny, nz}] = m_hitLabel;
+          }
         }
 
         return m_hitLabel > 0;

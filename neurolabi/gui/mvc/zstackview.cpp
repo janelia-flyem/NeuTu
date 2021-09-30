@@ -686,7 +686,15 @@ void ZStackView::processTransformChange()
     buddyPresenter()->setSliceViewTransform(getViewId(), getSliceViewTransform());
     //  m_paintSorter.clear();
     //  m_paintBundle.setSliceViewTransform(getSliceViewTransform());
+    QElapsedTimer timer;
+    timer.start();
     updateViewData();
+    qint64 paintTime = timer.elapsed();
+
+    ZOUT(KLog(), 5) << ZLog::Profile()
+                    << ZLog::Description("view data update time")
+                    << ZLog::Duration(paintTime);
+
     notifyViewChanged();
     redraw();
   }
@@ -1269,7 +1277,6 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
       event->modifiers() == Qt::ShiftModifier) {
     if (isDepthScrollable()) {
       setAttribute(Qt::WA_TransparentForMouseEvents);
-      //for strange mighty mouse response in Qt 4.6.2
       if (numSteps != 0) {
         int ratio = 1;
         if (event->modifiers() == Qt::ShiftModifier) {
@@ -1278,7 +1285,9 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 
         int step = numSteps * ratio;
 
-        imageWidget()->moveCutDepth(step);
+        int zoomLevel = getViewParameter().getZoomLevel();
+
+        imageWidget()->moveCutDepth(pow(2, zoomLevel) * step);
         updateDataInfo(event->pos());
       }
       setAttribute(Qt::WA_TransparentForMouseEvents, false);
@@ -2082,20 +2091,22 @@ ZPixmap *ZStackView::updateViewPortCanvas(ZPixmap *canvas)
 }
 */
 
+/*
 ZSliceCanvas* ZStackView::updateCanvas(ZSliceCanvas *canvas)
 {
   int width = imageWidget()->width();
   int height = imageWidget()->height();
 
   if (canvas) {
-    canvas->resetCanvas(width, height, imageWidget()->getSliceViewTransform());
+    canvas->resetCanvas(width, height, getSliceViewTransform());
   } else {
     canvas = new ZSliceCanvas(width, height);
-    canvas->setTransform(imageWidget()->getSliceViewTransform());
+    canvas->setTransform(getSliceViewTransform());
   }
 
   return canvas;
 }
+*/
 
 void ZStackView::invalidateObjectSorter()
 {
@@ -2947,10 +2958,12 @@ void ZStackView::notifyCanvasUpdate(
   emit canvasUpdated(target, canvas);
 }
 
+/*
 void ZStackView::notifyWidgetCanvasUpdate(ZPixmap *canvas)
 {
   emit widgetCanvasUpdated(canvas);
 }
+*/
 
 /*
 void ZStackView::notifyWidgetCanvasUpdate(ZImage *canvas)
@@ -3603,18 +3616,25 @@ std::set<neutu::data3d::ETarget> ZStackView::updateViewData(
 {
   ZStackDoc::ActiveViewObjectUpdater updater(buddyDocument());
   if (buddyPresenter()->isObjectVisible()) {
-//  QSet<neutu::data3d::ETarget> targetSet =
-    if (buddyPresenter()->interactiveContext().exploreMode() ==
-        ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE ||
-        buddyPresenter()->interactiveContext().exploreMode() ==
-        ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
+    switch (buddyPresenter()->interactiveContext().exploreMode()) {
+    case ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE:
+    case ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE:
       updater.exclude(ZStackObject::EType::DVID_LABEL_SLICE);
+      updater.exclude(ZStackObject::EType::DVID_GRAY_SLICE_ENSEMBLE);
+      break;
+    case ZInteractiveContext::EXPLORE_MOVE_IMAGE:
+      updater.exclude(ZStackObject::EType::DVID_LABEL_SLICE);
+      break;
+    default:
+      break;
     }
   } else {
     updater.exclude(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
     updater.exclude(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
   }
 
+  //#Review-TZ: Consider adding sync level to param as well as passing doc into
+  //            the update function.
   updater.update(param);
 
   return updater.getUpdatedTargetSet();

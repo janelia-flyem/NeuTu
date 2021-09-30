@@ -5546,18 +5546,29 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z, int viewId)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
-  ZOUT(LTRACE(), 5) << "Hit test";
+#ifdef _DEBUG_0
+  LINFO() << "Starting hit test";
+#endif
   QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
   std::sort(sortedObjList.begin(), sortedObjList.end(),
        ZStackObject::ZOrderBiggerThan());
+#ifdef _DEBUG_0
+  LINFO() << "Object sorted" << sortedObjList.size();
+#endif
 
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
     if (obj->isHittable()) {
+#ifdef _DEBUG_0
+      tic();
+#endif
       if (obj->hit(x, y, z, viewId)) {
         return obj;
       }
+#ifdef _DEBUG_0
+      ptoc();
+#endif
     }
   }
 
@@ -5569,7 +5580,6 @@ ZStackObject* ZStackDoc::hitTest(
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
-  ZOUT(LTRACE(), 5) << "Hit test";
   QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
 
   std::sort(sortedObjList.begin(), sortedObjList.end(),
@@ -10474,6 +10484,8 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
 
         if (player->updateData(param)) {
           m_updatedTarget.insert(obj->getTarget());
+          // Review-TZ: need to move this to player to avoid special handling,
+          //   or even better, to the object display functions
           if (obj->getType() == ZStackObject::EType::DVID_LABEL_SLICE) {
             ZDvidLabelSlice *labelSlice = dynamic_cast<ZDvidLabelSlice*>(obj);
             if (labelSlice != NULL) {

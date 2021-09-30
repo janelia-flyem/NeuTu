@@ -98,24 +98,18 @@ void ZSlice2dPainter::drawCircle(
   };
 
   drawCircleBase(painter, cx, cy, r, drawFunc);
-  /*
-  auto pred = [&](QPainter *painter) {
-    return (r > 0.0 && intersects(painter, cx, cy, r));
+}
+
+void ZSlice2dPainter::drawArc(
+    QPainter *painter, double cx, double cy, double r,
+    double startAngle, double spanAngle) const
+{
+  auto drawFunc = [&](QPainter *painter) {
+    neutu::DrawArc(*painter, cx, cy, r, startAngle, spanAngle,
+                   neutu::PixelCentered(true));
   };
 
-  draw(painter, drawFunc, pred);
-  */
-
-  /*
-  if (painter && r > 0.0) {
-    if (intersects(painter, cx, cy, r)) {
-      neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
-      preparePainter(painter);
-      neutu::DrawCircle(*painter, cx, cy, r, neutu::PixelCentered(true));
-      setPaintedHint(true);
-    }
-  }
-  */
+  drawCircleBase(painter, cx, cy, r, drawFunc);
 }
 
 void ZSlice2dPainter::drawStar(
@@ -126,13 +120,18 @@ void ZSlice2dPainter::drawStar(
   };
 
   drawCircleBase(painter, cx, cy, r, drawFunc);
-  /*
-  auto pred = [&](QPainter *painter) {
-    return (r > 0.0 && intersects(painter, cx, cy, r));
+}
+
+void ZSlice2dPainter::drawTriangle(
+    QPainter *painter, double cx, double cy, double r,
+    neutu::ECardinalDirection direction) const
+{
+  auto drawFunc = [&](QPainter *painter) {
+    neutu::DrawTriangle(
+          *painter, cx, cy, r, direction, neutu::PixelCentered(true));
   };
 
-  draw(painter, drawFunc, pred);
-  */
+  drawCircleBase(painter, cx, cy, r, drawFunc);
 }
 
 void ZSlice2dPainter::drawCross(
@@ -427,16 +426,26 @@ void ZSlice3dPainter::drawBoundBox(
     neutu::RevisePen(painter, [](QPen &pen) {
       pen.setStyle(Qt::DashLine);
     });
-    m_painterHelper.drawRect(painter, newCenter.getX(), newCenter.getY(), r);
+    neutu::ECardinalDirection direction = neutu::ECardinalDirection::NORTH;
+    if (newCenter.getZ() > 0) {
+      direction = neutu::ECardinalDirection::SOUTH;
+    }
+
+    m_painterHelper.drawTriangle(
+          painter, newCenter.getX(), newCenter.getY(), r, direction);
+//    m_painterHelper.drawRect(painter, newCenter.getX(), newCenter.getY(), r);
   }
 }
 
 void ZSlice3dPainter::drawBall(
     QPainter *painter, const ZPoint &center, double r,
-    double depthScale, double fadingFactor) const
+    double depthScale, double fadingFactor,
+    std::function<void(
+      QPainter *painter, const ZSlice2dPainter &painterHelper,
+      double cx, double cy, double dz, double r)> paintDecor) const
 {
   drawBall(painter, center.x(), center.y(), center.z(), r,
-           depthScale, fadingFactor);
+           depthScale, fadingFactor, paintDecor);
 }
 
 bool ZSlice3dPainter::BallHitTest(
@@ -486,7 +495,10 @@ void ZSlice3dPainter::prepareBallDrawing(
 
 void ZSlice3dPainter::drawBall(
     QPainter *painter, double cx, double cy, double cz, double r,
-    double depthScale, double fadingFactor) const
+    double depthScale, double fadingFactor,
+    std::function<void(
+      QPainter *painter, const ZSlice2dPainter &painterHelper,
+      double cx, double cy, double dz, double r)> paintDecor) const
 {
   if (painter) {
     ZPoint newCenter = m_worldViewTransform.transform(ZPoint(cx, cy, cz));
@@ -504,6 +516,10 @@ void ZSlice3dPainter::drawBall(
             painter, newCenter.getX(), newCenter.getY(), adjustedRadius);
       if (dz == 0.0) {
         m_painterHelper.drawPoint(painter, newCenter.getX(), newCenter.getY());
+      }
+      if (paintDecor) {
+        paintDecor(painter, m_painterHelper, newCenter.getX(), newCenter.getY(),
+                   dz, adjustedRadius);
       }
     }
   }

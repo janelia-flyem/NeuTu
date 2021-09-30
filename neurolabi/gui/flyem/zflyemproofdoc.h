@@ -467,7 +467,7 @@ public:
   /*!
    * \brief Fetch DVID label slice data and set body selections
    */
-  void updateDvidLabelSlice(neutu::EAxis axis);
+//  void updateDvidLabelSlice(neutu::EAxis axis);
   void updateDvidLabelSlice();
 
   void allowDvidLabelSliceBlinking(bool on);
@@ -808,6 +808,8 @@ protected:
   QString getWarning(EErrorType type);
 
   ZSegmentAnnotationStore* getSegmentAnnotationStore() const override;
+
+  void setSelectedSynapseVerified(bool verified);
 
 private:
   void connectSignalSlot();

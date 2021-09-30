@@ -115,6 +115,14 @@ private:
     return m_emptyChunk;
   }
 
+  bool isChunkCached(int i, int j, int k) const {
+    return isChunkCached({i, j, k});
+  }
+
+  bool isChunkCached(const ZIntPoint &index) const {
+    return m_chunkMap.count(index) > 0;
+  }
+
   TChunk& getChunkRef(int i, int j, int k) const
   {
     return getChunkRef({i, j, k});
@@ -223,7 +231,7 @@ void ZIntPointAnnotationBlockGrid<TItem, TChunk>::processItemInCache(
 {
   std::lock_guard<std::mutex> guard(m_chunkMutex);
   ZIntPoint index = getBlockIndex(pos);
-  if (containsBlock(index)) {
+  if (isChunkCached(index)) {
     TItem& item =  getChunkRef(index).getItemRef(pos);
     if (item.isValid()) {
       f(&item);
@@ -238,7 +246,7 @@ TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::pickClosestCachedItem(
   ZIntPoint pos = ZPoint(x, y, z).toIntPoint();
   ZIntPoint blockIndex = getBlockIndex(pos);
   std::vector<TItem> itemList;
-  if (containsBlock(blockIndex)) {
+  if (containsBlock(blockIndex) && isChunkCached(blockIndex)) {
     std::lock_guard<std::mutex> guard(m_chunkMutex);
     TItem item = getChunkRef(blockIndex).pickClosestItem(x, y, z, r);
     if (item.isValid()) {
@@ -249,7 +257,7 @@ TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::pickClosestCachedItem(
   zgeom::raster::ForEachNeighbor<3>(
         blockIndex.getX(), blockIndex.getY(), blockIndex.getZ(),
         [&](int i, int j, int k) {
-    if (containsBlock(i, j, k)) {
+    if (containsBlock(i, j, k) && isChunkCached(i, j, k)) {
       std::lock_guard<std::mutex> guard(m_chunkMutex);
       TItem item = getChunkRef(i, j, k).pickClosestItem(x, y, z, r);
       if (item.isValid()) {
@@ -278,7 +286,7 @@ TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::hitClosestCachedItem(
   ZIntPoint pos = ZPoint(x, y, z).toIntPoint();
   ZIntPoint blockIndex = getBlockIndex(pos);
   std::vector<TItem> itemList;
-  if (containsBlock(blockIndex)) {
+  if (containsBlock(blockIndex) && isChunkCached(blockIndex)) {
     std::lock_guard<std::mutex> guard(m_chunkMutex);
     TItem item = getChunkRef(blockIndex).hitClosestItem(x, y, z, r, viewId);
     if (item.isValid()) {
@@ -289,7 +297,7 @@ TItem ZIntPointAnnotationBlockGrid<TItem, TChunk>::hitClosestCachedItem(
   zgeom::raster::ForEachNeighbor<3>(
         blockIndex.getX(), blockIndex.getY(), blockIndex.getZ(),
         [&](int i, int j, int k) {
-    if (containsBlock(i, j, k)) {
+    if (containsBlock(i, j, k) && isChunkCached(i, j, k)) {
       std::lock_guard<std::mutex> guard(m_chunkMutex);
       TItem item = getChunkRef(i, j, k).hitClosestItem(x, y, z, r, viewId);
       if (item.isValid()) {

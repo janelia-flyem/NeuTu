@@ -79,7 +79,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 #ifdef _DEBUG_
   if (action == ZMouseEvent::EAction::RELEASE) {
     std::cout << "Stack pos r: " << stackPosition << std::endl;
-    std::cout << "Data pos r: " << dataPosition << std::endl;
+    LINFO() << "Data pos r: " << dataPosition.toString();
 //    std::cout << "Arb plane r: " << m_arbSlice.getOffset().toString() << std::endl;
   }
 #endif

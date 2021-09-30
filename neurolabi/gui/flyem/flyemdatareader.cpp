@@ -284,7 +284,7 @@ ZObject3dScan* FlyEmDataReader::ReadRoi(
     result = new ZObject3dScan;
   }
 
-  for (const std::string roi : roiList) {
+  for (const std::string &roi : roiList) {
     reader.readRoi(roi, result, true);
   }
 

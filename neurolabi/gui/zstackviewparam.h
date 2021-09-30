@@ -44,7 +44,9 @@ public:
    * The result will be cropped by \a modelRange. But if \a modeRange is not
    * valid, it is the same is \a getIntCutRect().
    */
-  ZAffineRect getIntCutRect(const ZIntCuboid &modelRange) const;
+  ZAffineRect getIntCutRect(
+      const ZIntCuboid &modelRange,
+      int centerCutWidth, int centerCutHeight, bool centerCut) const;
 
   double getWidth(neutu::data3d::ESpace space) const;
   double getHeight(neutu::data3d::ESpace space) const;

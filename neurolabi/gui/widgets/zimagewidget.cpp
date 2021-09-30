@@ -699,11 +699,13 @@ bool ZImageWidget::paintWidgetCanvas(ZImage *canvas)
 #endif
 
 
+/*
 ZImage *ZImageWidget::makeWidgetCanvas() const
 {
   return new ZImage(size());
 //  canvas->fill(Qt::transparent);
 }
+*/
 
 void ZImageWidget::updateWidgetCanvas(ZPixmap */*canvas*/)
 {
@@ -1389,13 +1391,14 @@ void ZImageWidget::setInitialScale(double s)
 
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
-  LDEBUG() << "ZImageWidget::resizeEvent" << size() << isVisible();
-
-#ifdef _DEBUG_2
-  std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+#ifdef _DEBUG_
+  std::cout << "ZImageWidget::resizeEvent: " << width() << "x" << height()
+            << " visible=" << isVisible()
+            << " Transform: " << m_sliceViewTransform << std::endl;
 #endif
 
-  if (isVisible()) {
+//  if (isVisible()) {
+  // When the widget is back to visible and resized, resizeEvent might be called first
     if (m_isReady) {
       adjustTransformWithResize();
       emit transformChanged();
@@ -1409,7 +1412,7 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
       std::cout << "Reset view: ";
 #endif
     }
-  }
+//  }
 
 //  m_sliceViewTransform.canvasAdjust(
 //        width(), height(), m_viewAnchorX, m_viewAnchorY);
@@ -1484,33 +1487,6 @@ bool ZImageWidget::event(QEvent *event)
 
   return QWidget::event(event);
 }
-
-/*
-int ZImageWidget::getMaxZoomRatio() const
-{
-  int ratio = static_cast<int>(
-        std::ceil(std::max(canvasSize().width()*32.0/screenSize().width(),
-                           canvasSize().height()*32.0/screenSize().height())));
-  return std::min(std::min(canvasSize().width(), canvasSize().height()),
-                  std::max(ratio, 32));
-}
-*/
-
-/*
-double ZImageWidget::getAcutalZoomRatioX() const
-{
-  return m_viewProj.getZoom();
-//  return static_cast<double>(m_projRegion.width()) / m_viewPort.width();
-}
-*/
-
-/*
-double ZImageWidget::getAcutalZoomRatioY() const
-{
-  return m_viewProj.getZoom();
-//  return static_cast<double>(m_projRegion.height()) / m_viewPort.height();
-}
-*/
 
 void ZImageWidget::updateView()
 {
@@ -1629,7 +1605,7 @@ void ZImageWidget::notifyTransformChanged()
 
   emit transformControlSyncNeeded();
 
-#ifdef _DEBUG_0
+#ifdef _DEBUG_
   std::cout << "Transform: " << m_sliceViewTransform << std::endl;
 #endif
 }

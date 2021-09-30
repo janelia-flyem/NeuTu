@@ -573,7 +573,38 @@ bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
     const double depthScale = 2.0;
     const double fadingFactor = 1.0;
     ZPoint pos = getPosition().toPoint();
-    s3Painter.drawBall(painter, pos, getRadius(), depthScale, fadingFactor);
+
+    auto decor = [&](QPainter *p, const ZSlice2dPainter &painterHelper,
+        double cx, double cy, double /*dz*/, double r)
+    {
+      if (isVerified()) {
+        neutu::ApplyOnce ao([&]() {p->save();}, [&]() {p->restore();});
+        neutu::RevisePen(p, [&](QPen &pen) {
+          pen.setColor(QColor(0, 0, 0, pen.color().alpha()));
+          pen.setWidth(1.0);
+        });
+        painterHelper.drawLine(p, cx - r, cy, cx, cy + r);
+        painterHelper.drawLine(p, cx + r, cy, cx, cy + r);
+      }
+
+      double conf = getConfidence();
+      if (conf < 1.0) {
+        neutu::ApplyOnce ao([&]() {p->save();}, [&]() {p->restore();});
+//        QColor color = p->pen().color();
+//        double red = (1.0 - conf) + conf * color.redF();
+        double red = 1.0;
+//        double green = conf * color.greenF();
+//        double blue = conf * color.blueF();
+        neutu::SetPenColorF(p, red, 0.0, 0.0);
+
+        int startAngle = 0;
+        int spanAngle = neutu::iround((1.0 - conf) * 180) * 16;
+        painterHelper.drawArc(p, cx, cy, r, startAngle, spanAngle);
+      }
+    };
+
+    s3Painter.drawBall(
+          painter, pos, getRadius(), depthScale, fadingFactor, decor);
 
     if (isSelected()) {
       neutu::SetPenColor(painter, Qt::yellow);

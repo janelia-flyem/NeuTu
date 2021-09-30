@@ -1,11 +1,11 @@
 #include "neutube.h"
 
 #include <string>
-
+#include <iostream>
+#include <memory>
 #include <QtGlobal>
 #include <QByteArray>
 #include <QMetaType>
-#include <iostream>
 #include <QProcess>
 #include <QSet>
 
@@ -20,6 +20,7 @@
 #include "zstackviewparam.h"
 #include "zarbsliceviewparam.h"
 #include "data3d/zsliceviewtransform.h"
+#include "vis2d/zslicecanvas.h"
 
 void neutu::RegisterMetaType()
 {
@@ -43,6 +44,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<ZArbSliceViewParam>("ZArbSliceViewParam");
   qRegisterMetaType<ZIntPoint>("ZIntPoint");
   qRegisterMetaType<ZSliceViewTransform>("ZSliceViewTransform");
+  qRegisterMetaType<std::shared_ptr<ZSliceCanvas>>("std::shared_ptr<ZSliceCanvas>");
 }
 
 ZMessageReporter* neutu::getMessageReporter()

@@ -36,7 +36,11 @@ public:
       std::function<bool(QPainter *painter)> pred) const;
 
   void drawCircle(QPainter *painter, double cx, double cy, double r) const;
+  void drawArc(QPainter *painter, double cx, double cy, double r,
+               double startAngle, double spanAngle) const;
   void drawStar(QPainter *painter, double cx, double cy, double r) const;
+  void drawTriangle(QPainter *painter, double cx, double cy, double r,
+                    neutu::ECardinalDirection direction) const;
   void drawCross(QPainter *painter, double cx, double cy, double r) const;
   void drawLine(
       QPainter *painter, double x0, double y0, double x1, double y1) const;
@@ -88,10 +92,16 @@ public:
    */
   void drawBall(
       QPainter *painter, double cx, double cy, double cz, double r,
-      double depthScale, double fadingFactor) const;
+      double depthScale, double fadingFactor,
+      std::function<void(
+        QPainter *painter, const ZSlice2dPainter &painterHelper,
+        double cx, double cy, double dz, double r)> paintDecor = nullptr) const;
   void drawBall(
       QPainter *painter, const ZPoint &center, double r,
-      double depthScale, double fadingFactor) const;
+      double depthScale, double fadingFactor,
+      std::function<void(
+        QPainter *painter, const ZSlice2dPainter &painterHelper,
+        double cx, double cy, double dz, double r)> paintDecor = nullptr) const;
 
   void drawCross(
       QPainter *painter, double cx, double cy, double cz, double r,

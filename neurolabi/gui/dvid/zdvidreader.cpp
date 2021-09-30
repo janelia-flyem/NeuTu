@@ -4143,7 +4143,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
   ZStack *stack = NULL;
 
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height
-           << " @" << x0 << "," << y0 << "c" << centerCut;
+           << " @" << x0 << "," << y0 << "," << z0 << "c" << centerCut;
 
   if (m_lowtisServiceGray.get() == NULL) {
     try {
@@ -4202,8 +4202,8 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
                 << ", " << offset[1] << ", " << offset[2] << "; zoom=" << zoom
                 << std::endl;
 #endif
-      m_lowtisServiceGray->retrieve_image(
-            width, height, offset, (char*) stack->array8(), zoom, centerCut);
+//      m_lowtisServiceGray->retrieve_image(
+//            width, height, offset, (char*) stack->array8(), zoom, centerCut);
 
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
@@ -4436,7 +4436,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
     double vx2, double vy2, double vz2,
     int width, int height, int zoom, int cx, int cy, bool centerCut) const
 {
-  if (getLowtisServiceGray(cx, cy) == NULL) {
+  if (getLowtisServiceGray(cx, cy) == NULL || width == 0 || height == 0) {
     return NULL;
   }
 

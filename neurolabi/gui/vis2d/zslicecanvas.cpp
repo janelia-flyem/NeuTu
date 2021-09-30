@@ -7,6 +7,10 @@
 ZSliceCanvas::ZSliceCanvas()
 {
 
+#ifdef _DEBUG_
+  std::cout << "ZSliceCanvas ref count: " << getRefCount() << std::endl;
+#endif
+
 }
 
 ZSliceCanvas::ZSliceCanvas(int width, int height)
@@ -14,6 +18,10 @@ ZSliceCanvas::ZSliceCanvas(int width, int height)
   m_pixmap = QPixmap(width, height);
   m_pixmap.fill(Qt::transparent);
   setCanvasStatus(ECanvasStatus::CLEAN);
+
+#ifdef _DEBUG_
+  std::cout << "ZSliceCanvas ref count: " << getRefCount() << std::endl;
+#endif
 }
 
 void ZSliceCanvas::clear(const QColor &color)
@@ -189,9 +197,17 @@ bool ZSliceCanvas::paintTo(
             m_transform.getCutPlaneNormal())) {
         paintable = false;
       }
-    } else if (std::fabs(painterTransform.getCutDepth(
-                           m_transform.getCutCenter())) > 0.5) {
-      paintable = false;
+    }
+
+    if (paintable) {
+      double d = std::fabs(painterTransform.getCutDepth(
+                           m_transform.getCutCenter()));
+#ifdef _DEBUG_0
+      std::cout << "Plane distance: " << d << " " << std::fabs(d) << std::endl;
+#endif
+      if (std::fabs(d) > 0.9) {
+        paintable = false;
+      }
     }
   }
 

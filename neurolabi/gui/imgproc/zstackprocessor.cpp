@@ -1085,10 +1085,18 @@ static void interpolateArray(
     const uint8_t *array1, const uint8_t *array2,
     int x0, int x1, int yOffset, double lambda, uint8_t *outArray)
 {
-  for (int x = x0; x < x1; ++x) {
-    int offset = yOffset + x;
-    outArray[offset] =
-        neutu::iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
+  if (lambda <= 0.0) {
+    size_t offset = yOffset + x0;
+    memcpy(outArray + offset , array1 + offset, x1 - x0);
+  } else if (lambda >= 1.0) {
+    size_t offset = yOffset + x0;
+    memcpy(outArray + offset , array2 + offset, x1 - x0);
+  } else {
+    for (int x = x0; x < x1; ++x) {
+      int offset = yOffset + x;
+      outArray[offset] =
+          neutu::iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
+    }
   }
 }
 
@@ -1168,7 +1176,7 @@ ZStack* ZStackProcessor::InterpolateFovia(
     double lambda1 = double(z - prevZ) / (nextZ - prevZ);
     double lambda2 = double(z - prevCenterZ) / (nextCenterZ - prevCenterZ);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     stack1->save(GET_TEST_DATA_DIR + "/_test1.tif");
     stack2->save(GET_TEST_DATA_DIR + "/_test2.tif");
     std::cout << "🦋 interpolate " << prevZ << " | " << z << " | " << nextZ << std::endl;
@@ -1200,7 +1208,7 @@ ZStack* ZStackProcessor::InterpolateFovia(
     return NULL;
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   if (out) {
     out->save(GET_TEST_DATA_DIR + "/_test3.tif");
   }

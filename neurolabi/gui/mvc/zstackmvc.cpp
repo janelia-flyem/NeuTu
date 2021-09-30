@@ -201,7 +201,11 @@ void ZStackMvc::layoutView(ZStackView *view, int index)
 //        view->setSliceViewTransform(getMainView()->getSliceViewTransform());
         view->setWidgetReady(true);
       }
-      view->setVisible(true);
+      if (!view->isVisible()) {
+        view->setVisible(true);
+//        getPresenter()->setSliceViewTransform(
+//              view->getViewId(), view->getSliceViewTransform());
+      }
     } else {
       view->setVisible(false);
     }
@@ -219,7 +223,7 @@ void ZStackMvc::layoutView()
       layoutView(m_viewList[i], i);
     }
   } else {
-    for (size_t i = 0; i< m_viewLayoutIndices.size(); ++i) {
+    for (size_t i = 0; i < m_viewLayoutIndices.size(); ++i) {
       if (i < m_viewList.size()) {
         layoutView(m_viewList[i], m_viewLayoutIndices[i]);
       }

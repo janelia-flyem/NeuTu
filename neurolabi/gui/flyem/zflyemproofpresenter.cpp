@@ -1203,6 +1203,7 @@ void ZFlyEmProofPresenter::setCutPlaneAlongZ()
 
 void ZFlyEmProofPresenter::setCutPlaneArb()
 {
+  setMainSliceAxis(neutu::EAxis::ARB);
   getMainView()->setCutPlane(neutu::EAxis::ARB);
   getMainView()->setRightHanded(true);
 
@@ -1222,7 +1223,6 @@ void ZFlyEmProofPresenter::setCutPlaneArb()
     }
   }
 
-  m_mainViewAxis = neutu::EAxis::ARB;
   updateViewLayout();
 
 //  emit updatingViewLayout(std::vector<int>());

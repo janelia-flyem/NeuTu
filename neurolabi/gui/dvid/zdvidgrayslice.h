@@ -100,6 +100,7 @@ public:
 public: //for testing
   void saveImage(const std::string &path, int viewId);
   void savePixmap(const std::string &path, int viewId);
+  void _forceUpdate(const ZStackViewParam &viewParam);
 //  void test();
 
 private:

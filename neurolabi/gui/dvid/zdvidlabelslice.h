@@ -336,15 +336,6 @@ private:
   mutable std::unordered_map<int, std::shared_ptr<DisplayBuffer>> m_displayBufferMap;
   mutable std::mutex m_displayBufferMutex;
 
-//  int m_maxWidth = 512;
-//  int m_maxHeight = 512;
-
-//  ZSliceCanvas m_imageCanvas;
-//  ZImage *m_paintBuffer = nullptr;
-//  bool m_isPaintBufferValid = false;
-
-//  ZArray *m_labelArray;
-//  ZArray *m_mappedLabelArray;
   QMutex m_updateMutex; //Review-TZ: does not seem used properly
 
   ZObject3dScanArray m_objArray;
@@ -357,6 +348,7 @@ private:
 
   std::vector<int> m_rgbTable;
 
+  std::unordered_map<ZIntPoint, uint64_t> m_cachedLabel;
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
   ZFlyEmBodyMerger *m_bodyMerger;

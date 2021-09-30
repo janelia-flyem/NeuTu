@@ -231,6 +231,19 @@ void neutu::SetPenColor(QPainter *painter, QColor color)
   }
 }
 
+void neutu::SetPenColorF(QPainter *painter, double r, double g, double b)
+{
+  if (painter) {
+    QPen pen = painter->pen();
+    QColor color = pen.color();
+    color.setRedF(r);
+    color.setGreenF(g);
+    color.setBlueF(b);
+    pen.setColor(color);
+    painter->setPen(pen);
+  }
+}
+
 void neutu::ScalePenAlpha(QPainter *painter, double s)
 {
   RevisePen(painter, [&](QPen &pen) {
@@ -296,6 +309,14 @@ void neutu::DrawCircle(
   painter.drawEllipse(QRectF(cx - r, cy - r, r + r, r + r));
 }
 
+void neutu::DrawArc(
+    QPainter &painter, double cx, double cy, double r,
+    double startAngle, double spanAngle, const PixelCentered &p)
+{
+  AdjustPixelCenter adjustOnce(&painter, p);
+  painter.drawArc(QRectF(cx - r, cy - r, r + r, r + r), startAngle, spanAngle);
+}
+
 void neutu::DrawLine(
     QPainter &painter, const QPoint &v0, const QPoint &v1,
     const PixelCentered &p)
@@ -352,6 +373,13 @@ void neutu::DrawStar(
   DrawPolyline(painter, pts, p);
 }
 
+void neutu::DrawTriangle(
+    QPainter &painter, double cx, double cy, double r,
+    neutu::ECardinalDirection direction, const PixelCentered &p)
+{
+  DrawPolyline(painter, MakeTriangle({cx, cy}, r, direction), p);
+}
+
 void neutu::DrawCross(
     QPainter &painter, double cx, double cy, double r, const PixelCentered &p)
 {
@@ -390,6 +418,46 @@ void neutu::MakeStar(
   ptArray[6] = QPointF(left, center.y());
   ptArray[7] = QPointF(center.x() - sw, center.y() - sw);
   ptArray[8] = ptArray[0];
+}
+
+void neutu::MakeTriangle(
+    const QPointF &center, double radius, neutu::ECardinalDirection direction,
+    QPointF *ptArray)
+{
+  double lr = 0.866 * radius;
+  double sr = 0.5 * radius;
+  switch (direction) {
+  case neutu::ECardinalDirection::NORTH:
+    ptArray[0] = {center.x(), center.y() + radius};
+    ptArray[1] = {center.x() - lr, center.y() - sr};
+    ptArray[2] = {center.x() + lr, center.y() - sr};
+    break;
+  case neutu::ECardinalDirection::SOUTH:
+    ptArray[0] = {center.x(), center.y() - radius};
+    ptArray[1] = {center.x() - lr, center.y() + sr};
+    ptArray[2] = {center.x() + lr, center.y() + sr};
+    break;
+  case neutu::ECardinalDirection::EAST:
+    ptArray[0] = {center.x() + radius, center.y()};
+    ptArray[1] = {center.x() - sr, center.y() - lr};
+    ptArray[2] = {center.x() - sr, center.y() + lr};
+    break;
+  case neutu::ECardinalDirection::WEST:
+    ptArray[0] = {center.x() - radius, center.y()};
+    ptArray[1] = {center.x() + sr, center.y() - lr};
+    ptArray[2] = {center.x() + sr, center.y() + lr};
+    break;
+  }
+  ptArray[3] = ptArray[0];
+}
+
+std::vector<QPointF> neutu::MakeTriangle(
+    const QPointF &center, double radius, neutu::ECardinalDirection direction)
+{
+  std::vector<QPointF> ptArray(4);
+  MakeTriangle(center, radius, direction, ptArray.data());
+
+  return ptArray;
 }
 
 void neutu::HideLayout(QLayout *layout, bool removing)

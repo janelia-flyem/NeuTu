@@ -349,8 +349,10 @@ bool ZDvidDataSliceHelper::hasNewView(
     const auto &currentViewParam =
         m_currentViewParamMap.at(viewId);
     ZAffineRect currentCutRect =
-        currentViewParam.m_viewParam.getIntCutRect(modelRange);
-    ZAffineRect newCutRect = viewParam.getIntCutRect(modelRange);
+        currentViewParam.m_viewParam.getIntCutRect(
+          modelRange, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
+    ZAffineRect newCutRect = viewParam.getIntCutRect(
+          modelRange, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
     if (currentCutRect.contains(newCutRect)) {
       int maxZoomLevel = getMaxZoom();
       return viewParam.getZoomLevel(maxZoomLevel) <
@@ -467,9 +469,18 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 
   const ViewParamBuffer &currentViewParamBuffer = m_currentViewParamMap.at(
         viewParam.getViewId());
+
+  // Current fov
   ZAffineRect rect1 = currentViewParamBuffer.m_viewParam.
-      getIntCutRect(getDataRange());
-  ZAffineRect rect2 = viewParam.getIntCutRect(getDataRange());
+      getIntCutRect(getDataRange(),
+                    currentViewParamBuffer.m_actualCenterCutWidth,
+                    currentViewParamBuffer.m_actualCenterCutHeight,
+                    currentViewParamBuffer.m_actualUsingCenterCut);
+
+  // New fov. Use center cut adjustment if the current fov uses it.
+  ZAffineRect rect2 = viewParam.getIntCutRect(
+        getDataRange(), centerCutX, centerCutY,
+        centerCut || currentViewParamBuffer.m_actualUsingCenterCut);
 
   if (rect2 == rect1) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
@@ -521,7 +532,8 @@ ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
 
 ZAffineRect ZDvidDataSliceHelper::getIntCutRect(int viewId) const
 {
-  ZAffineRect rect = getViewParam(viewId).getIntCutRect(getDataRange());
+  ZAffineRect rect = getViewParam(viewId).getIntCutRect(
+        getDataRange(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
   if (m_maxZoom < 3) {
     int width = rect.getWidth();
     int height = rect.getHeight();

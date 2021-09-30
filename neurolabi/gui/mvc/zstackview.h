@@ -479,7 +479,7 @@ protected:
 //  bool reloadObjectCanvas(bool repaint = false);
   void reloadCanvas();
 
-  ZSliceCanvas* updateCanvas(ZSliceCanvas *canvas);
+//  ZSliceCanvas* updateCanvas(ZSliceCanvas *canvas);
 
   void connectSignalSlot();
 
@@ -675,7 +675,7 @@ private:
 
 //  void requestWidgetCanvasUpdate();
 //  void addWidgetCanvasTask();
-  void notifyWidgetCanvasUpdate(ZPixmap *canvas);
+//  void notifyWidgetCanvasUpdate(ZPixmap *canvas);
 
 //  void addNonblockCanvasTask(
 //      neutu::data3d::ETarget target, const QList<ZStackObject *> &objList);
