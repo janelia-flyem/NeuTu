@@ -116,6 +116,17 @@ TEST(ZPoint, Relation)
   ASSERT_FALSE(pt1.isParallelTo(pt2));
 }
 
+TEST(ZPoint, onAxis)
+{
+  ASSERT_FALSE(ZPoint(0, 0, 0).onAxis());
+  ASSERT_FALSE(ZPoint(1, 1, 0).onAxis());
+  ASSERT_FALSE(ZPoint(0, 1, 1).onAxis());
+  ASSERT_FALSE(ZPoint(1, 0, 1).onAxis());
+  ASSERT_TRUE(ZPoint(1, 0, 0).onAxis());
+  ASSERT_TRUE(ZPoint(0, 1, 0).onAxis());
+  ASSERT_TRUE(ZPoint(0, 0, 1).onAxis());
+}
+
 TEST(ZPoint, toIntPoint)
 {
   ZPoint pt(1.0, 2.6, 4.1);

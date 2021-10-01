@@ -222,7 +222,10 @@ ZAffineRect ZStackViewParam::getIntCutRect(
       ++zoom;
     }
   }
-  rect = adjust_rect(rect, zoom);
+
+  if (rect.getAffinePlane().getPlane().isAxisAligned()) {
+    rect = adjust_rect(rect, zoom);
+  }
 
   return rect;
 }

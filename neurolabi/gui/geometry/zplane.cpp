@@ -117,6 +117,11 @@ double ZPlane::computeSignedDistance(const ZPoint &pt) const
   return pt.dot(normal);
 }
 
+bool ZPlane::isAxisAligned() const
+{
+  return m_v1.onAxis() && m_v2.onAxis();
+}
+
 bool ZPlane::approxEquals(const ZPlane &plane) const
 {
   return m_v1.approxEquals(plane.m_v1) && m_v2.approxEquals(plane.m_v2);

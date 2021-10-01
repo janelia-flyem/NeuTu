@@ -168,6 +168,14 @@ public:
     }
   };
 
+
+  /*!
+   * \brief Check if the point is on an axis
+   *
+   * An origin is not considered as on any axis.
+   */
+  bool onAxis() const;
+
   void shiftSliceAxis(neutu::EAxis axis);
   void shiftSliceAxisInverse(neutu::EAxis axis);
 

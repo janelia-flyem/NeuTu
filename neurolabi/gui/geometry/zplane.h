@@ -63,6 +63,11 @@ public:
   bool operator== (const ZPlane &p) const;
   bool operator!= (const ZPlane &p) const;
 
+  /*!
+   * \brief Check if the plane orientation is aligned with all coordinate axes
+   */
+  bool isAxisAligned() const;
+
 private:
   static bool IsValid(const ZPoint &v1, const ZPoint &v2);
 

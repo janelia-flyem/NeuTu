@@ -622,7 +622,7 @@ void Neu3Window::processCameraRotation()
 {
   trackSliceViewPort();
 //  updateBrowseSize();
-//  updateSliceBrowser();
+  updateSliceBrowser();
 //  updateBrowser();
 //  updateEmbeddedGrayscale();
 //  updateGrayscaleWidget();

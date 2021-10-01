@@ -513,6 +513,13 @@ bool ZPoint::isValid() const
   return std::isnan(m_x) == false;
 }
 
+bool ZPoint::onAxis() const
+{
+  return (m_x == 0.0 && m_y == 0.0 && m_z != 0.0) ||
+      (m_x == 0.0 && m_y == 1.0 && m_z == 0.0) ||
+      (m_x == 1.0 && m_y == 0.0 && m_z == 0.0);
+}
+
 void ZPoint::invalidate()
 {
   m_x = std::numeric_limits<double>::quiet_NaN();

@@ -42,12 +42,15 @@ TEST(ZGeometry, ZPlane)
   {
     ZPlane plane(ZPoint(1, 0, 0), ZPoint(0, 1, 1));
     ASSERT_TRUE(plane.isValid());
+    ASSERT_FALSE(plane.isAxisAligned());
 
     plane.set(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
     ASSERT_TRUE(plane.isValid());
+    ASSERT_TRUE(plane.isAxisAligned());
 
     plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0.1));
     ASSERT_TRUE(plane.isValid());
+    ASSERT_FALSE(plane.isAxisAligned());
 
     plane.set(ZPoint(1, 0, 0), ZPoint(0, 0, 0));
     ASSERT_TRUE(plane.isValid());
@@ -68,6 +71,7 @@ TEST(ZGeometry, ZPlane)
 
     plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
     ASSERT_TRUE(plane.getNormal().approxEquals(ZPoint(0, 0, 1)));
+    ASSERT_TRUE(plane.isAxisAligned());
 
     ASSERT_EQ(plane, plane);
     ASSERT_NE(ZPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0)), plane);
@@ -92,6 +96,7 @@ TEST(ZGeometry, ZPlane)
     ASSERT_TRUE(plane.contains(ZPoint(0, 0, 0)));
     ASSERT_TRUE(plane.contains(ZPoint(0, 1, 0)));
     ASSERT_TRUE(plane.contains(ZPoint(0, 1, 1)));
+    ASSERT_TRUE(plane.isAxisAligned());
 
     ZPlane p2;
     p2.set(ZPoint(0, 1, 1), ZPoint(0, 1, 10));

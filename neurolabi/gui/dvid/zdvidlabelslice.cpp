@@ -843,9 +843,9 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
     }
     getHelper()->setViewParam(viewParam);
   } else {
-    ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
-    if (getHelper()->hasNewView(newViewParam)) {
-      forceUpdate(newViewParam, true);
+//    ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
+    if (getHelper()->hasNewView(viewParam)) {
+      forceUpdate(viewParam, true);
       updated = true;
     }
   }
