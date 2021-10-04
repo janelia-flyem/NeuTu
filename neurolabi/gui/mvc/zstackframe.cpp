@@ -1500,6 +1500,13 @@ void ZStackFrame::load(const std::string &filePath)
   m_doc->loadFile(filePath.c_str());
 }
 
+void ZStackFrame::load(std::function<void(ZStackDoc*)> loadFunc)
+{
+  if (loadFunc) {
+    loadFunc(m_doc.get());
+  }
+}
+
 QAction* ZStackFrame::getBodySplitAction()
 {
   QAction *action = NULL;

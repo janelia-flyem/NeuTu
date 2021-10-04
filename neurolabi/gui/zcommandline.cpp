@@ -1466,11 +1466,16 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
       if (tree == NULL) {
         ZObject3dScan obj;
 
-        int zoom = 0;
+        int zoom = 0; // use coarse if zoom < 0
         QUrlQuery query(QUrl(m_input[0].c_str()));
         ZJsonObject sourceJson;
         if (query.hasQueryItem("label_zoom")) {
-          zoom = query.queryItemValue("label_zoom").toInt();
+          QString value = query.queryItemValue("label_zoom");
+          if (value == "coarse") {
+            zoom = -1;
+          } else {
+            zoom = query.queryItemValue("label_zoom").toInt();
+          }
         } else if (bodyReader->getDvidTarget().hasMultiscaleSegmentation()) {
           const int blockCount = bodyReader->readBodyBlockCount(
                 bodyId, neutu::EBodyLabelType::BODY);
@@ -1480,16 +1485,29 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
           zoom = std::min(2, zgeom::GetZoomLevel(int(std::ceil(scale))));
           zoom = std::min(zoom, bodyReader->getDvidTarget().getMaxLabelZoom());
         }
-        sourceJson.setEntry("downresLevel", zoom);
+        if (zoom < 0) {
+          sourceJson.setEntry("downresLevel", "coarse");
+        } else {
+          sourceJson.setEntry("downresLevel", zoom);
+        }
         sourceJson.setEntry("uuid", bodyReader->getDvidTarget().getUuid());
         sourceJson.setEntry("dataName", bodyReader->getDvidTarget().getSegmentationName());
 
         std::cout << "Reading body..." << std::endl;
 //        reader.readBody(bodyId, true, &obj);
-        bodyReader->readMultiscaleBody(bodyId, zoom, true, &obj);
+        if (zoom < 0) {
+          bodyReader->readCoarseBody(bodyId, &obj);
+          ZDvidInfo info = bodyReader->readDataInfo(
+                bodyReader->getDvidTarget().getSegmentationName());
+          obj.setDsIntv(info.getBlockSize() - 1);
+        } else {
+          bodyReader->readMultiscaleBody(bodyId, zoom, true, &obj);
+        }
+#ifdef _DEBUG_0
+        obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
         std::cout << "Skeletonzing..." << std::endl;
         tree = skeletonizer.makeSkeleton(obj);
-
 
         if (tree) {
           tree->addJsonComment(sourceJson);

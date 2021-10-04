@@ -22,6 +22,7 @@ HEADERS += \
     $$PWD/znetworkutilstest.h \
     $$PWD/zneurontracertest.h \
     $$PWD/zstackdocobjectupdatetest.h \
+  $$PWD/zstacksourcetest.h \
     $$PWD/zswctreetest.h \
     $$PWD/zsttransformtest.h \
     $$PWD/zobject3dscantest.h \

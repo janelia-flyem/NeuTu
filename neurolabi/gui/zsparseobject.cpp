@@ -2,9 +2,13 @@
 
 #include <QPen>
 
+#include "neulib/math/utilities.h"
 #include "zpainter.h"
 #include "zstack.hxx"
 #include "neutubeconfig.h"
+#include "data3d/displayconfig.h"
+#include "vis2d/zslicepainter.h"
+#include "imgproc/zstacksource.h"
 
 const ZLabelColorTable ZSparseObject::m_colorTable;
 
@@ -12,8 +16,66 @@ const ZLabelColorTable ZSparseObject::m_colorTable;
 
 ZSparseObject::ZSparseObject()
 {
-  setLabel(-1);
   m_type = GetType();
+  m_uLabel = -1;
+  m_color = m_colorTable.getColor(m_uLabel);
+}
+
+void ZSparseObject::setStackSource(std::shared_ptr<ZStackSource> source)
+{
+  m_stackSource = source;
+}
+
+bool ZSparseObject::display(QPainter *painter, const DisplayConfig &config) const
+{
+  if (!m_stackSource) {
+    return ZObject3dScan::display(painter, config);
+  } else if (getSliceAxis() == config.getSliceAxis()) {
+    ZSlice2dPainter s2Painter;
+    ZModelViewTransform t = config.getWorldViewTransform();
+    s2Painter.setViewPlaneTransform(config.getViewCanvasTransform());
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+    int z = neulib::iround(config.getCutDepth(ZPoint::ORIGIN));
+    ZObject3dScan slice = getSlice(z);
+    size_t stripeNumber = slice.getStripeNumber();
+    QPen pen(getColor());
+    pen.setCosmetic(false);
+    painter->setPen(pen);
+    painter->setRenderHint(QPainter::Antialiasing, false);
+
+    ZPoint center = t.getCutCenter();
+    center.shiftSliceAxis(getSliceAxis());
+    std::vector<QLineF> lineArray;
+    std::vector<QPointF> pointArray;
+    size_t stride = 1;
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      int nseg = stripe.getSegmentNumber();
+      for (int j = 0; j < nseg; ++j) {
+        int x0 = stripe.getSegmentStart(j);
+        int x1 = stripe.getSegmentEnd(j);
+        double y = stripe.getY() - center.getY();
+
+        for (int x = x0; x <= x1; ++x) {
+//          int value = m_stackGrid.getValue(x, y, stripe.getZ());
+          int value = m_stackSource->getIntValue(
+                x, stripe.getY(), stripe.getZ()) % 255;
+          neutu::SetPenColor(painter, QColor(value, value, value));
+//          neutu::SetPenColor(painter, QColor(255, 0, 0));
+#ifdef _DEBUG_0
+          std::cout << "Paint point: " << x << " " << stripe.getY()
+                    << " " << stripe.getZ() << " " << value << std::endl;
+#endif
+          s2Painter.drawPoint(painter, double(x) - center.getX(), y);
+        }
+      }
+    }
+
+    return s2Painter.getPaintedHint();
+  }
+
+  return false;
 }
 
 #if 0
@@ -118,7 +180,8 @@ int ZSparseObject::getVoxelValue(int x, int y, int z) const
   }
   return m_voxelValueObject.getValue(x, y, z);
 #else
-  return m_stackGrid.getValue(x, y, z);
+  return m_stackSource->getIntValue(x, y, z);
+//  return m_stackGrid.getValue(x, y, z);
 #endif
 }
 

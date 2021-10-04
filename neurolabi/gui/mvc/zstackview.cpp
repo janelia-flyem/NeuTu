@@ -2582,20 +2582,22 @@ void ZStackView::addNonblockCanvasTask(
     //Ignore the managed canvas, but stil try to update the screen
     updateImageScreen(EUpdateOption::QUEUED);
   } else {
-    ZTask *task = new ZFunctionTask([=]() {
-      std::shared_ptr<ZSliceCanvas> bufferCanvas = canvas;
-      if (!bufferCanvas) {
-        bufferCanvas = imageWidget()->makeClearCanvas();
-      }
-      if (bufferCanvas->updateNeeded()) {
-        updateObjectBuffer(bufferCanvas, objList);
-      }
-      notifyCanvasUpdate(target, bufferCanvas);
-    });
+    if (!objList.isEmpty()) {
+      ZTask *task = new ZFunctionTask([=]() {
+        std::shared_ptr<ZSliceCanvas> bufferCanvas = canvas;
+        if (!bufferCanvas) {
+          bufferCanvas = imageWidget()->makeClearCanvas();
+        }
+        if (bufferCanvas->updateNeeded()) {
+          updateObjectBuffer(bufferCanvas, objList);
+        }
+        notifyCanvasUpdate(target, bufferCanvas);
+      });
 
-    task->setName("ZStackView::addNonblockCanvasTask");
+      task->setName("ZStackView::addNonblockCanvasTask");
 
-    addTask(task);
+      addTask(task);
+    }
   }
 }
 

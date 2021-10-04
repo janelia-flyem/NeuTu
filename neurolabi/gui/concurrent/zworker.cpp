@@ -126,7 +126,8 @@ void ZWorker::addNamedTask(ZTask *task)
     QString name = task->getName();
     if (!name.isEmpty()) {
 #ifdef _DEBUG_
-      std::cout << "Add named task: " << task << std::endl;
+      std::cout << "Add named task: " << name.toStdString() << " " << task
+                << std::endl;
 #endif
       QMutexLocker locker(&m_nameTaskMapLock);
       if (m_namedTaskMap.contains(task->getName())) {

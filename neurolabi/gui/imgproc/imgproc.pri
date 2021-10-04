@@ -1,6 +1,8 @@
 #Project module for image processing
 HEADERS += $${PWD}/zstackprocessor.h \
   $$PWD/zfilestacksource.h \
+  $$PWD/zfunctionstacksource.h \
+  $$PWD/zindexstacksource.h \
   $$PWD/zstacksource.h \
    $${PWD}/zstackwatershed.h \
     $$PWD/zstackgradient.h \
@@ -10,6 +12,8 @@ HEADERS += $${PWD}/zstackprocessor.h \
 
 SOURCES += $${PWD}/zstackprocessor.cpp \
   $$PWD/zfilestacksource.cpp \
+  $$PWD/zfunctionstacksource.cpp \
+  $$PWD/zindexstacksource.cpp \
   $$PWD/zstacksource.cpp \
    $${PWD}/zstackwatershed.cpp \
     $$PWD/zstackgradient.cpp \

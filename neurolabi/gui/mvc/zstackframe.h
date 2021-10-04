@@ -6,6 +6,8 @@
  * @author Ting Zhao
  */
 
+#include <functional>
+
 #include <QMdiSubWindow>
 #include <QString>
 #include <QStringList>
@@ -170,6 +172,7 @@ public:
   void load(const QStringList &fileList);
   void load(const QString &filePath);
   void load(const std::string &filePath);
+  void load(std::function<void(ZStackDoc*)> loadFunc);
 
   void disconnectAll();
 

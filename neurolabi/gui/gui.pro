@@ -458,21 +458,21 @@ HEADERS += mainwindow.h \
     zmessagefactory.h \
     zmessagemanagermodel.h \
     zflyemcontrolform.h \
+    zpixmap.h \
+    dvid/zdvidgrayslice.h \
+    dvid/zdvidsparsestack.h \
+    dvid/zdvidsparsevolslice.h \
     dvid/zdvidtileensemble.h \
     dvid/zdvidlabelslice.h \
     dvid/zdvidversiondag.h \
     dvid/zdvidversion.h \
     dvid/zdvidversionnode.h \
-    zpixmap.h \
-    dvid/zdvidgrayslice.h \
-    dvid/zdvidsparsestack.h \
     zwidgetmessage.h \
     zprogresssignal.h \
     zkeyeventstrokemapper.h \
     zkeyoperation.h \
     zkeyoperationmap.h \
     zkeyoperationconfig.h \
-    dvid/zdvidsparsevolslice.h \
     ztextmessage.h \
     ztextmessagefactory.h \
     z3dgraphfactory.h \

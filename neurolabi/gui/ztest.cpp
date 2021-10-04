@@ -342,6 +342,8 @@
 #include "widgets/zstringparameter.h"
 #include "widgets/zparameterarray.h"
 #include "dialogs/zparameterdialog.h"
+#include "imgproc/zindexstacksource.h"
+#include "imgproc/zfunctionstacksource.h"
 
 #include "flyem/zglobaldvidrepo.h"
 #include "flyem/zflyemarbmvc.h"
@@ -33116,7 +33118,7 @@ void ZTest::test(MainWindow *host)
   std::cout << neutu::ToString(dlg->getOption()) << std::endl;
 #endif
 
-#if 1
+#if 0
   {
     ZSliceCanvas canvas(100, 100);
     ZSliceCanvas canvas2(100, 100);
@@ -33124,6 +33126,36 @@ void ZTest::test(MainWindow *host)
   {
     ZSliceCanvas canvas(100, 100);
   }
+#endif
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+//  frame->load(GET_BENCHMARK_DIR + "/tower5.sobj");
+  frame->load([](ZStackDoc *doc) {
+    ZSparseObject *sobj = new ZSparseObject;
+    sobj->load(GET_BENCHMARK_DIR + "/tower5.sobj");
+//    sobj->importDvidObject(filePathStr);
+    doc->addObject(sobj);
+    sobj->setColor(255, 255, 255, 255);
+//    std::shared_ptr<ZStackSource> source =
+//        std::shared_ptr<ZStackSource>(new ZIndexStackSource(10, 10, 10));
+    std::shared_ptr<ZStackSource> source =
+        std::shared_ptr<ZStackSource>(new ZFunctionStackSource([](int x, int y, int z) {
+      return x * 30 + y * 20 + z * 10;
+    }));
+    sobj->setStackSource(source);
+
+    ZIntCuboid cuboid = sobj->getIntBoundBox();
+    ZStack *stack = ZStackFactory::MakeVirtualStack(
+          cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
+    if (stack) {
+      stack->setSource(GET_BENCHMARK_DIR + "/tower5.sobj");
+      stack->setOffset(cuboid.getMinCorner());
+      doc->loadStack(stack);
+    }
+  });
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
 #endif
 
   std::cout << "Done." << std::endl;

@@ -1,12 +1,16 @@
 #ifndef ZSPARSEOBJECT_H
 #define ZSPARSEOBJECT_H
 
-#include "zdocumentable.h"
+//#include "zdocumentable.h"
 //#include "zstackdrawable.h"
+#include <memory>
+
 #include "zobject3dscan.h"
 #include "zlabelcolortable.h"
 #include "zopenvdbobject.h"
 #include "bigdata/zstackblockgrid.h"
+
+class ZStackSource;
 
 class ZSparseObject : public ZObject3dScan
 {
@@ -23,17 +27,23 @@ public:
   //void load(const char *filePath);
 //  virtual const std::string& className() const;
 
+  void setStackSource(std::shared_ptr<ZStackSource> source);
+
+
   /*!
    * \brief Label a stack with the internal label value.
    */
   void labelStack(ZStack *stack) const;
 
-  void setLabel(uint64_t label);
+  void setLabel(uint64_t label) override;
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+#if 0
   bool display(
       QPainter */*painter*/, const DisplayConfig &/*config*/) const {
     return false;
   }
+#endif
   /*
   void display(ZPainter &painter, int z, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
@@ -41,14 +51,13 @@ public:
 
   void append(const ZObject3dScan &obj);
 
-
 public: //Intensity functions
   //void setVoxelValue(ZStack *stack);
   int getVoxelValue(int x, int y, int z) const;
 
-  inline ZStackBlockGrid* getStackGrid() {
-    return &m_stackGrid;
-  }
+//  inline ZStackBlockGrid* getStackGrid() {
+//    return &m_stackGrid;
+//  }
 
   /*
   const ZObject3dScan& getData() const {
@@ -56,9 +65,9 @@ public: //Intensity functions
   }
 */
 private:
-  static QVector<QColor> constructColorTable();
-  const QColor& getLabelColor() const;
-  void labelImage(QImage *image) const;
+//  static QVector<QColor> constructColorTable();
+//  const QColor& getLabelColor() const;
+//  void labelImage(QImage *image) const;
 
 private:
   //ZObject3dScan m_obj;
@@ -68,7 +77,8 @@ private:
   //ZOpenVdbObject m_voxelValueObject;
 #endif
 
-  ZStackBlockGrid m_stackGrid; //Intensity values
+//  ZStackBlockGrid m_stackGrid; //Intensity values
+  std::shared_ptr<ZStackSource> m_stackSource;
 
   const static ZLabelColorTable m_colorTable;
 };

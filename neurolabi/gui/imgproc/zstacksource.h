@@ -12,9 +12,10 @@ public:
   ZStackSource();
   virtual ~ZStackSource() {}
 
-  virtual int getMaxZoom() const = 0;
+  virtual int getMaxZoom() const;
   virtual std::shared_ptr<ZStack> getStack(
-      const ZIntCuboid &box, int zoom) const = 0;
+      const ZIntCuboid &box, int zoom) const;
+  virtual int getIntValue(int x, int y, int z) const = 0;
 
 };
 
