@@ -236,6 +236,7 @@
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "flyem/flyemdatareader.h"
+#include "flyem/zpaintlabelwidget.h"
 
 //#include "zcircle.h"
 
@@ -33128,7 +33129,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
 //  frame->load(GET_BENCHMARK_DIR + "/tower5.sobj");
   frame->load([](ZStackDoc *doc) {
@@ -33156,6 +33157,11 @@ void ZTest::test(MainWindow *host)
   });
   host->addStackFrame(frame);
   host->presentStackFrame(frame);
+#endif
+
+#if 0
+  ZPaintLabelWidget *widget  = new ZPaintLabelWidget(host);
+  widget->show();
 #endif
 
   std::cout << "Done." << std::endl;

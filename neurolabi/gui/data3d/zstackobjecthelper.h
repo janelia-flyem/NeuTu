@@ -4,6 +4,7 @@
 class ZStackObject;
 class ZAffinePlane;
 class ZIntCuboid;
+class ZPoint;
 
 class ZStackObjectHelper
 {
@@ -13,6 +14,8 @@ public:
   static bool IsOverSize(const ZStackObject &obj);
   static void SetOverSize(ZStackObject *obj);
   static bool IsEmptyTree(const ZStackObject *obj);
+  static ZPoint GetPosition(const ZStackObject &obj);
+
   static bool IsOverSize(ZIntCuboid box, int zoom);
   static int GetDsIntv(const ZIntCuboid &box);
 

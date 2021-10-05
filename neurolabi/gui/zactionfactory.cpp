@@ -451,6 +451,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BOOKMARK_UNCHECK:
     action = new QAction("Set Unchecked", parent);
     break;
+  case ACTION_BOOKMARK_SELECT_BODY:
+    action = new QAction("Select Bodies", parent);
+    break;
   case ACTION_TRACE:
     action = new QAction("trace", parent);
     action->setStatusTip("Trace an individual branch");

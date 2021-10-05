@@ -54,6 +54,20 @@ bool ZStackObjectHelper::IsEmptyTree(const ZStackObject *obj)
   return passed;
 }
 
+ZPoint ZStackObjectHelper::GetPosition(const ZStackObject &obj)
+{
+  ZPoint pt = ZPoint::INVALID_POINT;
+  switch (obj.getType()) {
+  case ZStackObject::EType::FLYEM_BOOKMARK:
+    pt = dynamic_cast<const ZFlyEmBookmark&>(obj).getCenter();
+    break;
+  default:
+    break;
+  }
+
+  return pt;
+}
+
 ZStackObject* ZStackObjectHelper::Clone(ZStackObject *obj)
 {
   if (obj) {

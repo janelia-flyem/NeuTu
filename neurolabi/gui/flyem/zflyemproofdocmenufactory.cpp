@@ -309,6 +309,10 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
       if (!bookmarkSet.isEmpty()) {
         QString groupName("Bookmarks");
+        if (doc->hasSegmentation()) {
+          config.append(groupName, ZActionFactory::ACTION_BOOKMARK_SELECT_BODY);
+          config.appendSeparator(groupName);
+        }
         config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
         config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
       }

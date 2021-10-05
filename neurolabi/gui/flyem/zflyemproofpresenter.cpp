@@ -1298,6 +1298,11 @@ bool ZFlyEmProofPresenter::allowingBodySplit() const
       ZStackDocHelper::AllowingBodySplit(buddyDocument());
 }
 
+bool ZFlyEmProofPresenter::allowingBodySelection() const
+{
+  return !isSplitOn() && getCompleteDocument()->hasSegmentation();
+}
+
 void ZFlyEmProofPresenter::toggleSupervoxelView(bool on)
 {
   getCompleteDocument()->setSupervoxelMode(on, getMainView()->getViewParameter());

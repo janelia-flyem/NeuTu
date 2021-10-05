@@ -517,6 +517,7 @@ public:
   void activateLocationHint(double x, double y, double z);
   void activateLocationHint(const ZPoint &pt);
 
+  virtual bool hasSegmentation() const;
   void annotateSegment(uint64_t sid, const ZJsonObject &annotation);
   ZJsonObject getSegmentAnnotation(
       uint64_t sid,
@@ -1099,6 +1100,10 @@ public:
   virtual uint64_t getLabelId(int x, int y, int z);
   virtual uint64_t getSupervoxelId(int x, int y, int z);
   virtual std::set<uint64_t> getLabelIdSet(const std::vector<ZIntPoint> &ptArray);
+
+  template<typename InputIterator>
+  std::set<uint64_t> getLabelIdSetFromIter(
+      InputIterator first, InputIterator last);
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);
@@ -1754,5 +1759,14 @@ QList<T*> ZStackDoc::getSelectedObjectList() const
   return getSelectedObjectList<T>(phony.getType());
 }
 
+template<typename InputIterator>
+std::set<uint64_t> ZStackDoc::getLabelIdSetFromIter(
+    InputIterator first, InputIterator last)
+{
+  std::vector<ZIntPoint> ptArray;
+  ptArray.insert(ptArray.end(), first, last);
+
+  return getLabelIdSet(ptArray);
+}
 
 #endif

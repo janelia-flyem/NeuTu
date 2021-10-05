@@ -542,9 +542,10 @@ void ZFlyEmProofMvc::initBodyWindow()
 void ZFlyEmProofMvc::prepareTopLayout()
 {
   initViewButton();
+  m_topLayout->addStretch();
+//  m_topLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
   m_infoLabel = new QLabel(this);
   m_topLayout->addWidget(m_infoLabel);
-  m_topLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -560,7 +561,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
   mvc->applySettings();
 
 //  mvc->initViewButton();
-  mvc->prepareTopLayout();
+//  mvc->prepareTopLayout();
 
   mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
 
@@ -819,6 +820,8 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
   connect(view, SIGNAL(copyingBookmarkUrl(int,int,int)),
           this, SLOT(copyBookmarkUrl(int,int,int)));
+  connect(view, &ZFlyEmBookmarkView::selectingBodyAt,
+          getCompleteDocument(), &ZFlyEmProofDoc::selectBodyAt);
 }
 
 void ZFlyEmProofMvc::copyBookmarkUrl(int x, int y, int z)
@@ -2866,7 +2869,7 @@ void ZFlyEmProofMvc::customInit()
   prepareTopLayout();
 
   m_paintLabelWidget = new ZPaintLabelWidget();
-  m_topLayout->addWidget(m_paintLabelWidget);
+  m_secondLayout->addWidget(m_paintLabelWidget);
 //  view->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->setSizePolicy(
         QSizePolicy::Preferred, QSizePolicy::Minimum);
@@ -6055,35 +6058,6 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
       bodyId = getCompleteDocument()->getBodyMerger()->getFinalLabel(bodyId);
       getCompleteDocument()->toggleBodySelection(
             bodyId, neutu::ELabelSource::MAPPED);
-#if 0
-//      ZDvidLabelSlice *slice = getDvidLabelSlice();
-      QList<ZDvidLabelSlice*> sliceList =
-          getCompleteDocument()->getDvidLabelSliceList();
-      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-           iter != sliceList.end(); ++iter) {
-        ZDvidLabelSlice *slice = *iter;
-        if (slice != NULL) {
-          //        uint64_t finalBodyId = getMappedBodyId(bodyId);
-          slice->recordSelection();
-          slice->xorSelection(
-                slice->getMappedLabel(bodyId, neutube::BODY_LABEL_ORIGINAL),
-                neutube::BODY_LABEL_MAPPED);
-          slice->processSelection();
-#if 0
-          QList<uint64_t> labelList =
-              getCompleteDocument()->getBodyMerger()->getOriginalLabelList(
-                finalBodyId);
-          slice->xorSelectionGroup(labelList.begin(), labelList.end());
-          /*
-        foreach (uint64_t label, labelList) {
-          slice->xorSelection(label);
-        }
-        */
-#endif
-        }
-      }
-      updateBodySelection();
-#endif
     }
   }
 }
@@ -7489,6 +7463,10 @@ void ZFlyEmProofMvc::processAction(ZActionFactory::EAction action)
     break;
   case ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES_EXC:
     getCompleteDocument()->selectBodyOnMergeLink(false);
+    break;
+  case ZActionFactory::ACTION_BOOKMARK_SELECT_BODY:
+    getCompleteDocument()->selectBodyUnderSelectedObject(
+          ZStackObject::EType::FLYEM_BOOKMARK, true);
     break;
   default:
     break;

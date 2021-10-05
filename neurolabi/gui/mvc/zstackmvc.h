@@ -220,6 +220,7 @@ protected:
   std::vector<int> m_viewLayoutIndices;
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;
+  QHBoxLayout *m_secondLayout;
   QGridLayout *m_viewLayout;
   QLabel *m_infoLabel = nullptr;
   ZProgressSignal *m_progressSignal;

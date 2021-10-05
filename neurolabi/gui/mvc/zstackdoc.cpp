@@ -10333,6 +10333,12 @@ uint64_t ZStackDoc::getSupervoxelId(int x, int y, int z)
   return getLabelId(x, y, z);
 }
 
+template<typename InputIterator>
+std::set<uint64_t> getLabelIdSet(InputIterator /*first*/, InputIterator /*last*/)
+{
+  return std::set<uint64_t>();
+}
+
 std::set<uint64_t> ZStackDoc::getLabelIdSet(const std::vector<ZIntPoint> &/*ptArray*/)
 {
   return std::set<uint64_t>();
@@ -11064,6 +11070,10 @@ ZSegmentAnnotationStore* ZStackDoc::getSegmentAnnotationStore() const
   return nullptr;
 }
 
+bool ZStackDoc::hasSegmentation() const
+{
+  return false;
+}
 
 void ZStackDoc::annotateSegment(uint64_t sid, const ZJsonObject &annotation)
 {

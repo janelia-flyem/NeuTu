@@ -82,6 +82,7 @@ public:
 
   bool allowingBlinkingSegmentation() const;
   bool allowingBodySplit() const;
+  bool allowingBodySelection() const;
 
   void setBodyHittable(bool on);
 //  void setLabelAlpha(int alpha) {

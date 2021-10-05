@@ -86,6 +86,8 @@ public:
     return m_labelInfo;
   }
 
+  bool hasSegmentation() const override;
+
   bool isDvidMutable() const;
 
   bool isAdmin() const override;
@@ -727,6 +729,9 @@ public slots:
   bool checkInBodyWithMessage(
       uint64_t bodyId, neutu::EBodySplitMode mode);
 
+  void selectBodyAt(const QList<ZIntPoint> &posList, bool appending);
+  void selectBodyUnderSelectedObject(ZStackObject::EType type, bool appending);
+
   QString getBodyLockFailMessage(uint64_t bodyId);
 
   bool checkBodyWithMessage(
@@ -786,7 +791,6 @@ protected:
       bool updatingMainReader);
 
   void makeKeyProcessor() override;
-
   bool _loadFile(const QString &filePath) override;
 
   template<template<class...> class Container>

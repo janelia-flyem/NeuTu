@@ -33,6 +33,8 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
   m_layout = new QVBoxLayout(this);
   m_topLayout = new QHBoxLayout();
   m_layout->addLayout(m_topLayout);
+  m_secondLayout = new QHBoxLayout();
+  m_layout->addLayout(m_secondLayout);
   m_viewLayout = new QGridLayout();
   m_layout->addLayout(m_viewLayout);
   m_progressSignal = new ZProgressSignal(this);

@@ -29,6 +29,8 @@
 #include "zrect2d.h"
 #include "zjsonfactory.h"
 
+#include "data3d/zstackobjecthelper.h"
+
 #include "dvid/zdviddataslicehelper.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidsynapsecommand.h"
@@ -5503,21 +5505,30 @@ void ZFlyEmProofDoc::saveCustomBookmark()
 }
 #endif
 
-/*
-void ZFlyEmProofDoc::customNotifyObjectModified(ZStackObject::EType type)
+void ZFlyEmProofDoc::selectBodyAt(const QList<ZIntPoint> &posList, bool appending)
 {
-  switch (type) {
-  case ZStackObject::EType::FLYEM_BOOKMARK:
-//    m_isCustomBookmarkSaved = false;
-    if (!m_loadingAssignedBookmark) {
-      emit userBookmarkModified();
-    }
-    break;
-  default:
-    break;
+  auto bodySet = getLabelIdSetFromIter(posList.begin(), posList.end());
+  if (appending) {
+    addSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
+  } else {
+    setSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
   }
 }
-*/
+
+void ZFlyEmProofDoc::selectBodyUnderSelectedObject(
+    ZStackObject::EType type, bool appending)
+{
+  auto objSet = getSelected(type);
+
+  QList<ZIntPoint> ptArray;
+  foreach (ZStackObject *obj, objSet) {
+    ZPoint pos = ZStackObjectHelper::GetPosition(*obj);
+    if (pos.isValid()) {
+      ptArray.append(pos.roundToIntPoint());
+    }
+  }
+  selectBodyAt(ptArray, appending);
+}
 
 void ZFlyEmProofDoc::_processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
@@ -6502,6 +6513,11 @@ void ZFlyEmProofDoc::rewriteSegmentation()
             ZWidgetMessage("Failed to rewite segmentations.", neutu::EMessageType::ERROR));
     }
   }
+}
+
+bool ZFlyEmProofDoc::hasSegmentation() const
+{
+  return getDvidReader().getDvidTarget().hasSegmentation();
 }
 
 ZSharedPointer<ZFlyEmBodyColorScheme>
