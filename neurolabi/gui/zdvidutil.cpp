@@ -168,7 +168,9 @@ void dvid::MakeHeadRequest(const std::string &url, int &statusCode)
 bool dvid::HasHead(const std::string &url)
 {
   int statusCode = 0;
-  MakeHeadRequest(url, statusCode);
+  if (!url.empty()) {
+    MakeHeadRequest(url, statusCode);
+  }
 
   return (statusCode == 200);
 }

@@ -239,6 +239,15 @@ public:
                int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
                    int centerCutX, int centerCutY, bool usingCenterCut) const;
+//  bool needsUpdate(const ZStackViewParam &viewParam, int zoom,
+//                   int centerCutX, int centerCutY, bool usingCenterCut) const;
+  bool highResUpdateNeeded(int viewId) const;
+  void processHighResParam(
+      int viewId,
+      std::function<void(
+        const ZStackViewParam &/*viewParam*/, int /*zoom*/,
+        int /*centerCutX*/, int /*centerCutY*/,
+        bool /*usingCenterCut*/, bool /*sv*/)> f) const;
   ZTask* makeFutureTask(ZStackDoc *doc, int viewId);
   void setTaskFactory(std::unique_ptr<ZDvidDataSliceTaskFactory> &&factory);
 

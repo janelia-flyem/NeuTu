@@ -41,6 +41,8 @@ public:
   std::string getInstanceUrl() const;
   std::string getOldMasterUrl() const;
   std::string getMasterUrl() const;
+  std::string getAliasBranchUrl(
+      const std::string &alias, const std::string &user) const;
   std::string getMirrorInfoUrl() const;
   std::string getDefaultDataInstancesUrl() const;
   std::string getDataMapUrl() const;

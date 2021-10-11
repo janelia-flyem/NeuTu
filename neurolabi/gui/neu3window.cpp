@@ -347,8 +347,8 @@ bool Neu3Window::loadDvidTarget(const QString &name)
     m_sliceWidget->hide();
     succ = true;
     QString windowTitle = QString("%1 [%2]").
-        arg(target.getSourceString(false).c_str()).
-        arg(target.getSegmentationName().c_str());
+        arg(target.getSourceString(false).c_str(),
+            target.getSegmentationName().c_str());
     setWindowTitle(windowTitle);
   }
 

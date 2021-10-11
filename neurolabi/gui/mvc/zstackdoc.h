@@ -1431,6 +1431,7 @@ private:
 
   void updateSwc();
   bool estimateSwcNodeRadius(Swc_Tree_Node *tn, int maxIter);
+  void addPlayerTask(ZDocPlayer *player, int viewId);
 
 private:
   void init();

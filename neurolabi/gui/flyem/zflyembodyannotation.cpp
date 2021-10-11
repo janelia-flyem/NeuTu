@@ -21,7 +21,8 @@ const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
 const char *ZFlyEmBodyAnnotation::KEY_LAST_MODIFIED_USER = "last_modified_by";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD = "naming user";
 const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "instance_user";
-const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER = "status user";
+const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD = "status user";
+const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER = "status_user";
 const char *ZFlyEmBodyAnnotation::KEY_INSTANCE = "instance";
 const char *ZFlyEmBodyAnnotation::KEY_PROPERTY = "property";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_INPUT = "major input";
@@ -215,6 +216,8 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 
     if (obj.hasKey(KEY_STATUS_USER)) {
       setStatusUser(ZJsonParser::stringValue(obj[KEY_STATUS_USER]));
+    } else if (obj.hasKey(KEY_STATUS_USER_OLD)) {
+      setStatusUser(ZJsonParser::stringValue(obj[KEY_STATUS_USER_OLD]));
     }
 
     if (obj.hasKey(KEY_INSTANCE)) {
@@ -748,6 +751,13 @@ std::string ZFlyEmBodyAnnotation::GetUser(const ZJsonObject &obj)
   return ZJsonObjectParser::GetValue(obj, KEY_USER, "");
 }
 
+std::string ZFlyEmBodyAnnotation::GetStatusUser(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(
+        obj, KEY_STATUS_USER,
+        ZJsonObjectParser::GetValue(obj, KEY_STATUS_USER_OLD, ""));
+}
+
 std::string ZFlyEmBodyAnnotation::GetNamingUser(const ZJsonObject &obj)
 {
   return ZJsonObjectParser::GetValue(
@@ -769,9 +779,25 @@ void ZFlyEmBodyAnnotation::SetNamingUser(
     ZJsonObject &obj, const std::string &user)
 {
   obj.setEntry(KEY_NAMING_USER, user);
-  if (obj.hasKey(KEY_NAMING_USER_OLD)) {
-    obj.removeKey(KEY_NAMING_USER_OLD);
+  obj.removeKey(KEY_NAMING_USER_OLD);
+}
+
+void ZFlyEmBodyAnnotation::SetStatusUser(
+    ZJsonObject &obj, const std::string &user)
+{
+  if (user.empty()) {
+    obj.removeKey(KEY_STATUS_USER);
+  } else {
+    obj.setEntry(KEY_STATUS_USER, user);
   }
+
+  obj.removeKey(KEY_STATUS_USER_OLD);
+}
+
+void ZFlyEmBodyAnnotation::RemoveStatusUser(ZJsonObject &obj)
+{
+  obj.removeKey(KEY_STATUS_USER);
+  obj.removeKey(KEY_STATUS_USER_OLD);
 }
 
 /*
@@ -808,14 +834,20 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
   if (getStatusRank(targetStatus) == getStatusRank(sourceStatus)) {
     result = target.clone();
     bool passingNamingUser = false;
+    bool passingStatusUser = false;
     //Move soure to empty fields of target
     source.forEachValue([&](const std::string &key, ZJsonValue value) {
+      if (key == ZFlyEmBodyAnnotation::KEY_NAMING_USER ||
+          key == ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD ||
+          key == ZFlyEmBodyAnnotation::KEY_STATUS_USER ||
+          key == ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD) {
+        return;
+      }
       if (value.isBoolean()) {
         result.setEntry(
               key, ZJsonObjectParser::GetValue(target, key, false) ||
               value.toBoolean());
-      } else if (key != ZFlyEmBodyAnnotation::KEY_NAMING_USER ||
-                 key != ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD) {
+      } else {
         std::string stringValue = value.toString();
         if (ZJsonObjectParser::GetValue(target, key, "").empty() &&
             !stringValue.empty()) {
@@ -823,12 +855,17 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
           if (key == ZFlyEmBodyAnnotation::KEY_NAME ||
               key == ZFlyEmBodyAnnotation::KEY_INSTANCE) {
             passingNamingUser = true;
+          } else if (key == ZFlyEmBodyAnnotation::KEY_STATUS) {
+            passingStatusUser = true;
           }
         }
       }
     });
     if (passingNamingUser) {
       SetNamingUser(result, GetNamingUser(source));
+    }
+    if (passingStatusUser) {
+      SetStatusUser(result, GetStatusUser(source));
     }
     /*
     if (ZJsonObjectParser::GetValue(
@@ -908,6 +945,11 @@ void ZFlyEmBodyAnnotation::UpdateUserFields(
   }
 
   ZFlyEmBodyAnnotation::SetLastModifiedBy(obj, user);
+
+  std::string status = ZFlyEmBodyAnnotation::GetStatus(obj);
+  if (status != ZFlyEmBodyAnnotation::GetStatus(oldObj)) {
+    ZFlyEmBodyAnnotation::SetStatusUser(obj, user);
+  }
 
   std::string name = ZFlyEmBodyAnnotation::GetName(obj);
   std::string oldName = ZFlyEmBodyAnnotation::GetName(oldObj);

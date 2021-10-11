@@ -354,7 +354,7 @@ bool ZDvidTileEnsemble::update(
 
       if (m_dataFetcher != NULL && getDvidTarget().isTileLowQuality()) {
 //        QRect highresViewPort = getHelper()->getViewPort();
-        ZAffineRect rect = getHelper()->getViewParam(0).getIntCutRect();
+        ZAffineRect rect = getHelper()->getViewParamLastUpdate(0).getIntCutRect();
         if (rect.getWidth() < 1024 || rect.getHeight() < 1024) {
           int z = getHelper()->getZ();
 //          QPoint center = highresViewPort.center();
@@ -426,7 +426,7 @@ bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
         }
       }
       updated = update(tileIndices, resLevel, rect.getCenter().getZ());
-      getHelper()->setViewParam(viewParam);
+      getHelper()->setViewParamLastUpdate(viewParam);
     }
   }
 
@@ -435,7 +435,7 @@ bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
 
 void ZDvidTileEnsemble::forceUpdate()
 {
-  ZStackViewParam param = getHelper()->getViewParam(0);
+  ZStackViewParam param = getHelper()->getViewParamLastUpdate(0);
   getHelper()->invalidateViewParam(0);
   update(param);
 }

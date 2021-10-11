@@ -621,7 +621,7 @@ public:
 
   bool good() const;
 
-  std::string readMasterNode() const;
+//  std::string readMasterNode() const;
   std::vector<std::string> readMasterList() const;
 
   std::string readMirror() const;
@@ -635,9 +635,14 @@ public:
 
   ZJsonObject readDataMap() const;
 
+  static std::string InferUuid(const ZDvidTarget &target);
 
   static std::string ReadMasterNode(const ZDvidTarget &target);
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
+
+  std::string ReadUserNode(const ZDvidTarget &target);
+  static bool ReadUserNodeBuffer(
+      ZDvidBufferReader &reader, const ZDvidTarget &target);
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::shared_ptr<libdvid::DVIDNodeService> getService() const {
@@ -720,6 +725,8 @@ private:
 
   void clearBuffer() const;
 
+  static std::string GetUserNodeFromBuffer(
+      const ZDvidBufferReader &bufferReader);
   static std::string GetMasterNodeFromBuffer(
       const ZDvidBufferReader &bufferReader);
   static std::vector<std::string> GetMasterListFromBuffer(

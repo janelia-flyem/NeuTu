@@ -276,6 +276,7 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
     dialogs/zparameterdialog.h \
+    dvid/zdviddataslicehighrestask.h \
     dvid/zdvidglobal.h \
     dvid/zdvidstacksource.h \
     neuapp.h \
@@ -631,6 +632,7 @@ FORMS += mainwindow.ui \
 SOURCES += main.cpp \
     concurrent/zworkerwrapper.cpp \
     dialogs/zparameterdialog.cpp \
+    dvid/zdviddataslicehighrestask.cpp \
     dvid/zdvidglobal.cpp \
     dvid/zdvidstacksource.cpp \
     dvid/zdvidtargetfactory.cpp \

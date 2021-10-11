@@ -45,8 +45,9 @@ public:
    * \brief Get cut rectangle with all integer paramters
    */
   ZAffineRect getIntCutRect(
-      int width, int height, neutu::data3d::ESpace sizeSpace);
+      int width, int height, neutu::data3d::ESpace sizeSpace) const;
 
+  ZAffinePlane getIntCutPlane() const;
   ZAffinePlane getCutPlane() const;
   ZPlane getCutOrientation() const;
 

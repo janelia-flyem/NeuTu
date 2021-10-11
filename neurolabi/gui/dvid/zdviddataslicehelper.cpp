@@ -1,7 +1,10 @@
 #include "zdviddataslicehelper.h"
 
+#include <QPainter>
+
 #include "neulib/math/utilities.h"
 #include "common/math.h"
+#include "common/debug.h"
 #include "zrect2d.h"
 #include "geometry/zintcuboid.h"
 #include "misc/miscutility.h"
@@ -38,21 +41,31 @@ void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
   updateCenterCut();
 }
 
-const ZStackViewParam& ZDvidDataSliceHelper::getViewParam(int viewId) const
+const ZStackViewParam& ZDvidDataSliceHelper::getViewParamLastUpdate(int viewId) const
 {
   return getViewParamBuffer(viewId).m_viewParam;
 }
 
+ZStackViewParam ZDvidDataSliceHelper::getViewParamActive(int viewId) const
+{
+  std::lock_guard<std::mutex> guard(m_activeViewParamMutex);
+  if (m_activeViewParam.count(viewId) > 0) {
+    return m_activeViewParam.at(viewId);
+  }
+
+  return ZStackViewParam();
+}
+
 bool ZDvidDataSliceHelper::isViewParamBuffered(int viewId) const
 {
-  return m_currentViewParamMap.count(viewId) > 0;
+  return m_lastUpdateParam.count(viewId) > 0;
 }
 
 const ZDvidDataSliceHelper::ViewParamBuffer&
 ZDvidDataSliceHelper::getViewParamBuffer(int viewId) const
 {
-  if (m_currentViewParamMap.count(viewId) > 0) {
-    return m_currentViewParamMap.at(viewId);
+  if (m_lastUpdateParam.count(viewId) > 0) {
+    return m_lastUpdateParam.at(viewId);
   }
 
   return m_emptyViewParamBuffer;
@@ -183,14 +196,14 @@ int ZDvidDataSliceHelper::updateParam(ZStackViewParam *param) const
 
 int ZDvidDataSliceHelper::getZ(int viewId) const
 {
-  return neulib::iround(getViewParam(viewId).getCutDepth(ZPoint(0, 0, 0)));
+  return neulib::iround(getViewParamLastUpdate(viewId).getCutDepth(ZPoint(0, 0, 0)));
 }
 
 int ZDvidDataSliceHelper::getZ() const
 {
-  if (!m_currentViewParamMap.empty()) {
+  if (!m_lastUpdateParam.empty()) {
     ZPoint center =
-        (*m_currentViewParamMap.begin()).second.m_viewParam.getCutCenter();
+        (*m_lastUpdateParam.begin()).second.m_viewParam.getCutCenter();
     return neulib::iround(center.getZ());
   }
 
@@ -210,17 +223,17 @@ size_t ZDvidDataSliceHelper::getViewDataSize(int viewId) const
 
 double ZDvidDataSliceHelper::getPixelScale(int viewId) const
 {
-  return getViewParam(viewId).getSliceViewTransform().getScale();
+  return getViewParamLastUpdate(viewId).getSliceViewTransform().getScale();
 }
 
 int ZDvidDataSliceHelper::getWidth(int viewId) const
 {
-  return getViewParam(viewId).getIntWidth(neutu::data3d::ESpace::MODEL);
+  return getViewParamLastUpdate(viewId).getIntWidth(neutu::data3d::ESpace::MODEL);
 }
 
 int ZDvidDataSliceHelper::getHeight(int viewId) const
 {
-  return getViewParam(viewId).getIntHeight(neutu::data3d::ESpace::MODEL);
+  return getViewParamLastUpdate(viewId).getIntHeight(neutu::data3d::ESpace::MODEL);
 }
 
 size_t ZDvidDataSliceHelper::GetViewDataSize(
@@ -233,28 +246,28 @@ size_t ZDvidDataSliceHelper::GetViewDataSize(
 
 neutu::EAxis ZDvidDataSliceHelper::getSliceAxis(int viewId) const
 {
-  return getViewParam(viewId).getSliceAxis();
+  return getViewParamLastUpdate(viewId).getSliceAxis();
 }
 
 void ZDvidDataSliceHelper::forEachViewParam(
     std::function<void (const ZStackViewParam &)> f)
 {
-  for (const auto &param : m_currentViewParamMap) {
+  for (const auto &param : m_lastUpdateParam) {
     f(param.second.m_viewParam);
   }
 }
 
 void ZDvidDataSliceHelper::closeViewPort(int viewId)
 {
-  if (m_currentViewParamMap.count(viewId) > 0) {
-    getViewParam(viewId).closeViewPort();
+  if (m_lastUpdateParam.count(viewId) > 0) {
+    getViewParamLastUpdate(viewId).closeViewPort();
   }
 }
 
 void ZDvidDataSliceHelper::openViewPort(int viewId)
 {
-  if (m_currentViewParamMap.count(viewId) > 0) {
-    getViewParam(viewId).openViewPort();
+  if (m_lastUpdateParam.count(viewId) > 0) {
+    getViewParamLastUpdate(viewId).openViewPort();
   }
 //  m_currentViewParam.openViewPort();
 }
@@ -314,9 +327,37 @@ bool ZDvidDataSliceHelper::getMaxArea() const
   return getMaxWidth() * getMaxHeight();
 }
 
-void ZDvidDataSliceHelper::setViewParam(const ZStackViewParam &viewParam)
+void ZDvidDataSliceHelper::setViewParamLastUpdate(const ZStackViewParam &viewParam)
 {
-  m_currentViewParamMap[viewParam.getViewId()].m_viewParam = viewParam;
+  m_lastUpdateParam[viewParam.getViewId()].m_viewParam = viewParam;
+}
+
+void ZDvidDataSliceHelper::setViewParamActive(const ZStackViewParam &viewParam)
+{
+  std::lock_guard<std::mutex> guard(m_activeViewParamMutex);
+  m_activeViewParam[viewParam.getViewId()] = viewParam;
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << " " << __FUNCTION__ << ": "
+            << viewParam.getViewId() << " " << viewParam.getCutRect()
+            << std::endl;
+#endif
+}
+
+void ZDvidDataSliceHelper::setViewParamActive(
+    QPainter *painter, const neutu::data3d::DisplayConfig &config)
+{
+  std::lock_guard<std::mutex> guard(m_activeViewParamMutex);
+  ZStackViewParam viewParam(
+        {config.getWorldViewTransform(), config.getViewCanvasTransform()},
+        painter->device()->width(), painter->device()->height(),
+        neutu::data3d::ESpace::CANVAS);
+  viewParam.setViewId(config.getViewId());
+  m_activeViewParam[viewParam.getViewId()] = viewParam;
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << " " << __FUNCTION__ << ": "
+            << viewParam.getViewId() << " " << viewParam.getCutRect()
+            << std::endl;
+#endif
 }
 
 ZStackViewParam ZDvidDataSliceHelper::getValidViewParam(
@@ -345,9 +386,9 @@ bool ZDvidDataSliceHelper::hasNewView(
     const ZStackViewParam &viewParam, const ZIntCuboid &modelRange) const
 {
   int viewId = viewParam.getViewId();
-  if (m_currentViewParamMap.count(viewId) > 0) {
+  if (m_lastUpdateParam.count(viewId) > 0) {
     const auto &currentViewParam =
-        m_currentViewParamMap.at(viewId);
+        m_lastUpdateParam.at(viewId);
     ZAffineRect currentCutRect =
         currentViewParam.m_viewParam.getIntCutRect(
           modelRange, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
@@ -400,8 +441,8 @@ void ZDvidDataSliceHelper::CanonizeQuality(
 
 bool ZDvidDataSliceHelper::hit(double x, double y, double z, int viewId) const
 {
-  if (m_currentViewParamMap.count(viewId) > 0) {
-    return getViewParam(viewId).contains(x, y, z);
+  if (m_lastUpdateParam.count(viewId) > 0) {
+    return getViewParamLastUpdate(viewId).contains(x, y, z);
   }
 
   return false;
@@ -461,13 +502,13 @@ bool ZDvidDataSliceHelper::actualContainedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool centerCut) const
 {
-  if (m_currentViewParamMap.count(viewParam.getViewId()) == 0) {
+  if (m_lastUpdateParam.count(viewParam.getViewId()) == 0) {
     return true;
   }
 
   bool contained = false;
 
-  const ViewParamBuffer &currentViewParamBuffer = m_currentViewParamMap.at(
+  const ViewParamBuffer &currentViewParamBuffer = m_lastUpdateParam.at(
         viewParam.getViewId());
 
   // Current fov
@@ -482,6 +523,12 @@ bool ZDvidDataSliceHelper::actualContainedIn(
         getDataRange(), centerCutX, centerCutY,
         centerCut || currentViewParamBuffer.m_actualUsingCenterCut);
 
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__ << std::endl;
+  std::cout << OUTPUT_HIGHTLIGHT_1 << rect1 << std::endl;
+  std::cout << OUTPUT_HIGHTLIGHT_1 << rect2 << std::endl;
+#endif
+
   if (rect2 == rect1) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
           currentViewParamBuffer.m_actualZoom,
@@ -491,7 +538,8 @@ bool ZDvidDataSliceHelper::actualContainedIn(
           zoom, centerCutX, centerCutY, centerCut,
           getWidth(viewParam.getViewId()), getHeight(viewParam.getViewId()),
           getMaxZoom());
-  } else if (rect2.contains(rect1)) {
+  } else if (rect2.contains(rect1) &&
+             rect1.getAffinePlane().hasSamePlane(rect2.getAffinePlane())) {
     contained = !ZDvidDataSliceHelper::IsResIncreasing(
           zoom, centerCutX, centerCutY, centerCut,
           getWidth(viewParam.getViewId()), getHeight(viewParam.getViewId()),
@@ -500,6 +548,29 @@ bool ZDvidDataSliceHelper::actualContainedIn(
           currentViewParamBuffer.m_actualCenterCutHeight,
           currentViewParamBuffer.m_actualUsingCenterCut, getMaxZoom());
   }
+
+  if (!contained) { // check active view
+    ZStackViewParam activeViewParam = getViewParamActive(viewParam.getViewId());
+    if (activeViewParam.isValid()) {
+#ifdef _DEBUG_0
+      std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__ << " Active view check" << std::endl;
+      std::cout << OUTPUT_HIGHTLIGHT_1 << viewParam.getCutRect() << std::endl;
+      std::cout << OUTPUT_HIGHTLIGHT_1 << activeViewParam.getCutRect() << std::endl;
+#endif
+      ZAffineRect rect = viewParam.getCutRect();
+      if (rect1 == rect2) {
+        contained = true;
+      } else if (viewParam.getSliceViewTransform().getIntCutPlane().hasSamePlane(
+                   activeViewParam.getSliceViewTransform().getIntCutPlane())) {
+        rect.addSize(1, 1);
+        contained = rect.contains(activeViewParam.getCutRect());
+      }
+    }
+  }
+
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 <<  "Contained " << contained << std::endl;
+#endif
 
   return contained;
 }
@@ -530,9 +601,28 @@ ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
   return t;
 }
 
+ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
+    neutu::EAxis axis, const ZAffinePlane &ap,
+    int width, int height, int zoom, int viewId) const
+{
+  ZSliceViewTransform t;
+
+  if (axis == neutu::EAxis::ARB) {
+    t.setCutPlane(ap);
+  } else {
+    t.setCutPlane(getSliceAxis(viewId), ap.getOffset());
+  }
+
+  t.setScale(1.0 / zgeom::GetZoomScale(zoom));
+  //Assuming lowtis uses left integer center
+  t.setAnchor(width / 2, height / 2);
+
+  return t;
+}
+
 ZAffineRect ZDvidDataSliceHelper::getIntCutRect(int viewId) const
 {
-  ZAffineRect rect = getViewParam(viewId).getIntCutRect(
+  ZAffineRect rect = getViewParamLastUpdate(viewId).getIntCutRect(
         getDataRange(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
   if (m_maxZoom < 3) {
     int width = rect.getWidth();
@@ -570,13 +660,24 @@ int ZDvidDataSliceHelper::getHighresZoom(int viewId) const
   return targetZoom;
 }
 
-bool ZDvidDataSliceHelper::needHighResUpdate(int viewId) const
+bool ZDvidDataSliceHelper::highResUpdateNeeded(int viewId) const
 {
   if (getViewDataSize(viewId) == 0) {
     return true;
   }
 
   auto vpb = getViewParamBuffer(viewId);
+  ZAffineRect currentViewport =  getViewParamActive(viewId).getCutRect();
+  ZAffineRect bufferedViewport = vpb.m_viewParam.getCutRect();
+  bufferedViewport.addSize(1, 1);
+  if (!bufferedViewport.contains(currentViewport)) {
+#ifdef _DEBUG_0
+    std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__
+              << " Fetch highres because of viewport update" << std::endl;
+#endif
+    return true;
+  }
+
   return IsResIncreasing(
         vpb.m_actualZoom, vpb.m_actualCenterCutWidth, vpb.m_actualCenterCutHeight,
         vpb.m_actualUsingCenterCut,
@@ -584,17 +685,45 @@ bool ZDvidDataSliceHelper::needHighResUpdate(int viewId) const
         getWidth(viewId), getHeight(viewId), getMaxZoom());
 }
 
+bool ZDvidDataSliceHelper::updateNeeded(
+    const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY, bool usingCenterCut) const
+{
+  int viewId = viewParam.getViewId();
+  if (getViewDataSize(viewId) == 0) {
+    return true;
+  }
+
+  auto vpb = getViewParamBuffer(viewId);
+  ZAffineRect currentViewport =  getViewParamActive(viewId).getCutRect();
+  ZAffineRect bufferedViewport = vpb.m_viewParam.getCutRect();
+  bufferedViewport.addSize(1, 1);
+  if (!bufferedViewport.contains(currentViewport)) {
+#ifdef _DEBUG_0
+    std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__
+              << " Fetch highres because of viewport update" << std::endl;
+#endif
+    return true;
+  }
+
+  return IsResIncreasing(
+        vpb.m_actualZoom, vpb.m_actualCenterCutWidth, vpb.m_actualCenterCutHeight,
+        vpb.m_actualUsingCenterCut,
+        zoom, centerCutX, centerCutY, usingCenterCut,
+        getWidth(viewId), getHeight(viewId), getMaxZoom());
+}
+
 void ZDvidDataSliceHelper::invalidateViewParam(int viewId)
 {
-  if (m_currentViewParamMap.count(viewId) > 0) {
-    m_currentViewParamMap[viewId].m_viewParam.invalidate();
+  if (m_lastUpdateParam.count(viewId) > 0) {
+    m_lastUpdateParam[viewId].m_viewParam.invalidate();
   }
 //  m_currentViewParam.invalidate();
 }
 
 void ZDvidDataSliceHelper::invalidateAllViewParam()
 {
-  for (auto &p : m_currentViewParamMap) {
+  for (auto &p : m_lastUpdateParam) {
     p.second.m_viewParam.invalidate();
   }
 }
@@ -610,9 +739,9 @@ ZIntCuboid ZDvidDataSliceHelper::GetBoundBox(const QRect &viewPort, int z)
 
 ZIntCuboid ZDvidDataSliceHelper::getBoundBox(int viewId) const
 {
-  if (m_currentViewParamMap.count(viewId) > 0) {
+  if (m_lastUpdateParam.count(viewId) > 0) {
     return zgeom::GetIntBoundBox(
-          m_currentViewParamMap.at(viewId).m_viewParam.getCutRect());
+          m_lastUpdateParam.at(viewId).m_viewParam.getCutRect());
   }
 
   return ZIntCuboid();
@@ -648,10 +777,10 @@ void ZDvidDataSliceHelper::setBoundBox(const ZRect2d &rect)
 void ZDvidDataSliceHelper::setActualQuality(
     int zoom, int ccw, int cch, bool centerCut, int viewId)
 {
-  m_currentViewParamMap[viewId].m_actualZoom = zoom;
-  m_currentViewParamMap[viewId].m_actualCenterCutWidth = ccw;
-  m_currentViewParamMap[viewId].m_actualCenterCutHeight = cch;
-  m_currentViewParamMap[viewId].m_actualUsingCenterCut = centerCut;
+  m_lastUpdateParam[viewId].m_actualZoom = zoom;
+  m_lastUpdateParam[viewId].m_actualCenterCutWidth = ccw;
+  m_lastUpdateParam[viewId].m_actualCenterCutHeight = cch;
+  m_lastUpdateParam[viewId].m_actualUsingCenterCut = centerCut;
 }
 
 void ZDvidDataSliceHelper::syncActualQuality(int viewId)

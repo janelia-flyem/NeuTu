@@ -193,10 +193,21 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     m_dvidTarget = target;
 
     if (dvid::IsServerReachable(target)) {
+      std::string mappedUuid = InferUuid(target);
+      if (!mappedUuid.empty()) {
+        m_dvidTarget.setMappedUuid(target.getUuid(), mappedUuid);
+      }
+      /*
       std::string masterNode = ReadMasterNode(target);
       if (!masterNode.empty()) {
         m_dvidTarget.setMappedUuid(target.getUuid(), masterNode);
+      } else {
+        std::string userNode = ReadUserNode(target);
+        if (!userNode.empty()) {
+          m_dvidTarget.setMappedUuid(target.getUuid(), userNode);
+        }
       }
+      */
 
       succ = startService();
 
@@ -5315,6 +5326,25 @@ void ZDvidReader::clearBuffer() const
   m_bufferReader.clearBuffer();
 }
 
+std::string ZDvidReader::GetUserNodeFromBuffer(
+    const ZDvidBufferReader &bufferReader)
+{
+  std::string uuid;
+
+  const char *data = bufferReader.getBuffer().data();
+  if (data) {
+    ZJsonObject obj;
+    obj.decode(data, false);
+    if (obj.isEmpty()) {
+      uuid = ZString(data, bufferReader.getBuffer().length()).trimmed();
+    } else {
+      uuid = ZJsonObjectParser::GetValue(obj, "uuid", "");
+    }
+  }
+
+  return uuid;
+}
+
 std::string ZDvidReader::GetMasterNodeFromBuffer(
     const ZDvidBufferReader &bufferReader)
 {
@@ -6336,6 +6366,7 @@ std::string ZDvidReader::GetMasterUrl(const ZDvidUrl &dvidUrl)
   return url;
 }
 
+/*
 std::string ZDvidReader::readMasterNode() const
 {
   std::string master;
@@ -6346,6 +6377,7 @@ std::string ZDvidReader::readMasterNode() const
 
   return master;
 }
+*/
 
 std::vector<std::string> ZDvidReader::readMasterList() const
 {
@@ -6443,11 +6475,33 @@ std::vector<std::string> ZDvidReader::readMasterList() const
 }
 */
 
+bool ZDvidReader::ReadUserNodeBuffer(
+    ZDvidBufferReader &reader, const ZDvidTarget &target)
+{
+  std::string uuid = target.getOriginalUuid();
+  std::string alias;
+  if (ZString(uuid).startsWith("@")) {
+    alias = uuid.substr(1);
+  }
+  std::string rootNode = GET_FLYEM_CONFIG.getDvidRootNode(uuid);
+  if (ZString(rootNode).startsWith("$")) {
+    rootNode = rootNode.substr(1);
+    ZDvidUrl dvidUrl(target, rootNode, true);
+    std::string url = with_source_query(
+          dvidUrl.getAliasBranchUrl(alias, neutu::GetCurrentUserName()));
+    reader.read(url.c_str());
+    if (reader.getStatus() == neutu::EReadStatus::OK) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 bool ZDvidReader::ReadMasterListBuffer(
     ZDvidBufferReader &reader, const ZDvidTarget &target)
 {
-  const ZString uuid = target.getOriginalUuid();
+  ZString uuid = target.getOriginalUuid();
 
   std::string rootNode = GET_FLYEM_CONFIG.getDvidRootNode(uuid);
   if (!rootNode.empty()) {
@@ -6499,6 +6553,32 @@ std::string ZDvidReader::ReadMasterNode(const ZDvidTarget &target)
   }
 
   return master;
+}
+
+std::string ZDvidReader::InferUuid(const ZDvidTarget &target)
+{
+  ZDvidBufferReader reader;
+  std::string uuid;
+  if (ReadUserNodeBuffer(reader, target)) {
+    uuid = GetUserNodeFromBuffer(reader);
+  } else if (ReadMasterListBuffer(reader, target)) {
+    uuid = GetMasterNodeFromBuffer(reader);
+  }
+
+  return uuid;
+}
+
+std::string ZDvidReader::ReadUserNode(const ZDvidTarget &target)
+{
+  std::string uuid;
+
+  ZDvidBufferReader reader;
+
+  if (ReadUserNodeBuffer(reader, target)) {
+    uuid = GetUserNodeFromBuffer(reader);
+  }
+
+  return uuid;
 }
 
 std::vector<std::string> ZDvidReader::ReadMasterList(const ZDvidTarget &target)

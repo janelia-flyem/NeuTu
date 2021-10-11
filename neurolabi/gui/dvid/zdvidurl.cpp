@@ -1016,6 +1016,16 @@ std::string ZDvidUrl::getMasterUrl() const
   return GetFullUrl(getRepoUrl(), "branch-versions", "master");
 }
 
+std::string ZDvidUrl::getAliasBranchUrl(
+    const std::string &alias, const std::string &user) const
+{
+  if (alias.empty()) {
+    return "";
+  }
+
+  return getKeyUrl("branches", alias + (user.empty() ? "" : ("_" + user)));
+}
+
 std::string ZDvidUrl::getMirrorInfoUrl() const
 {
   return getKeyUrl("branches", "mirror");

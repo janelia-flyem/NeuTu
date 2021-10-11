@@ -206,6 +206,12 @@ public:
 
   std::vector<std::string> getAllKey() const;
 
+  /*!
+   * \brief Remove a key from the object.
+   *
+   * It removes \a key from the object. It does nothing if \a key does not exist
+   * in the object.
+   */
   void removeKey(const char *key);
 
 //  std::string dumpString(int indent = 2) const;

@@ -558,8 +558,10 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
-  void prepareDvidLabelSlice(const ZStackViewParam &viewParam,
-      int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv);
+  void prepareDvidLabelSlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv,
+      const std::string &source);
   void prepareDvidGraySlice(
       const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut,
@@ -643,7 +645,7 @@ signals:
 
   void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
                           int zoom, int centerCutX, int centerCutY,
-                          bool usingCenterCut);
+                          bool usingCenterCut, const std::string &source);
   void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                          int zoom, int centerCutX, int centerCutY,
                          bool usingCenterCut, const std::string &source);
@@ -748,7 +750,7 @@ public slots:
 
   void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
                         int zoom, int centerCutX, int centerCutY,
-                        bool usingCenterCut);
+                        bool usingCenterCut, const std::string &source);
   void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                        int zoom, int centerCutX, int centerCutY,
                        bool usingCenterCut, const std::string &source);
@@ -814,6 +816,11 @@ protected:
   ZSegmentAnnotationStore* getSegmentAnnotationStore() const override;
 
   void setSelectedSynapseVerified(bool verified);
+
+  template<typename T, typename T2>
+  void updateDataSlice(T *slice, T2 *array, const ZStackViewParam &viewParam,
+                       int zoom, int centerCutX, int centerCutY,
+                       bool usingCenterCut, const std::string &source);
 
 private:
   void connectSignalSlot();

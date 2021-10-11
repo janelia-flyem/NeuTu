@@ -59,6 +59,8 @@ public:
     return m_dvidRepo;
   }
 
+  ZDvidTarget getDvidTarget(const std::string &name) const;
+
   std::string mapAddress(const std::string &address) const;
 
   std::string getDvidRootNode(const std::string &name) const;
@@ -190,6 +192,8 @@ public:
   std::string getWindowStyleSheet() const {
     return m_uiStyleSheet;
   }
+
+  void setMappedNode(const std::string &key, const std::string &value);
 
 public:
   const static char *DVID_REPO_KEY;

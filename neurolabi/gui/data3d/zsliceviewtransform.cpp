@@ -98,15 +98,23 @@ ZAffineRect ZSliceViewTransform::getCutRect(
 }
 
 ZAffineRect ZSliceViewTransform::getIntCutRect(
-    int width, int height, neutu::data3d::ESpace sizeSpace)
+    int width, int height, neutu::data3d::ESpace sizeSpace) const
 {
   ZAffineRect rect = getCutRect(width, height, sizeSpace);
   if (!getCutCenter().hasIntCoord()) {
-    setCutCenter(getCutCenter().roundToIntPoint().toPoint());
+//    rect.setCutCenter(getCutCenter().roundToIntPoint().toPoint());
+    rect.setCenter(getCutCenter().roundToIntPoint().toPoint());
     rect.setSize(rect.getWidth() + 1, rect.getHeight() + 1);
   }
 
   return rect;
+}
+
+ZAffinePlane ZSliceViewTransform::getIntCutPlane() const
+{
+  ZAffinePlane plane = getCutPlane();
+  plane.setOffset(getCutCenter().roundToIntPoint().toPoint());
+  return plane;
 }
 
 void ZSliceViewTransform::setScale(double s)

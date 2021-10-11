@@ -17,10 +17,13 @@ public:
   void setViewParam(const ZStackViewParam &param);
   void setZoom(int zoom);
   void setCenterCut(int width, int height);
+  void setViewId(int viewId);
   void setDoc(ZStackDoc *doc);
   void useCenterCut(bool on);
   void setSupervoxel(bool on);
   void setHandle(const std::string &handle);
+
+  int getViewId() const;
 
 signals:
 

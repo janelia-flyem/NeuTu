@@ -80,6 +80,11 @@ void ZAffineRect::setSize(double width, double height)
   m_height = std::max(0.0, height);
 }
 
+void ZAffineRect::addSize(double dw, double dh)
+{
+  setSize(getWidth() + dw, getHeight() + dh);
+}
+
 void ZAffineRect::setSizeWithCornerFixed(
     double width, double height, int cornerIndex)
 {

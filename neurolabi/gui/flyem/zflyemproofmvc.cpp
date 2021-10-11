@@ -2174,14 +2174,6 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
       getCompleteDocument()->downloadTodoList();
-
-      /*
-      ZFlyEmToDoList *todoList =
-          getCompleteDocument()->getTodoList(neutu::EAxis::Z);
-      if (todoList) {
-        todoList->attachView(getView());
-      }
-      */
     }
   }
 
@@ -2216,16 +2208,6 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
   KINFO << "DVID Ready";
   m_sessionTimer.start();
   emit dvidReady();
-
-  if (getRole() == ERole::ROLE_WIDGET) {
-    if (getDvidTarget().hasSegmentation()) {
-      getViewButton(EViewButton::GOTO_BODY)->show();
-    }
-    getViewButton(EViewButton::GOTO_POSITION)->show();
-
-    m_dlgManager->getNeuroglancerLinkDlg()->init(getDvidEnv());
-  }
-
 //  updateRoiWidget();
 }
 
@@ -2852,8 +2834,10 @@ void ZFlyEmProofMvc::customInit()
     */
 
     // connections to protocols
-    connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-            m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
+//    connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+//            m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
+    connect(this, &ZFlyEmProofMvc::dvidTargetChanged,
+            this, &ZFlyEmProofMvc::handleDvidTargetChange);
     connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
             this, SLOT(zoomToL1(int,int,int)));
     connect(m_protocolSwitcher, SIGNAL(requestDisplayBody(uint64_t)),
@@ -2876,14 +2860,6 @@ void ZFlyEmProofMvc::customInit()
   m_paintLabelWidget->hide();
   m_paintLabelWidget->setTitle(
         "Seed Labels (hotkeys: R to activate; 1~9 to select label)");
-
-//  getView()->addHorizontalWidget(
-//        new QSpacerItem(
-//          1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
-
-//  m_speedLabelWidget->hide();
-
-//  m_todoDlg->setDocument(getDocument());
 }
 
 FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyInfoDlg()
@@ -2913,6 +2889,27 @@ void ZFlyEmProofMvc::updateSequencerBodyMap(
     const ZFlyEmSequencerColorScheme &colorScheme)
 {
   getCompleteDocument()->updateSequencerBodyMap(colorScheme);
+}
+
+void ZFlyEmProofMvc::handleDvidTargetChange(const ZDvidTarget &target)
+{
+  if (getRole() == ERole::ROLE_WIDGET) {
+    for (ZStackView *view : m_viewList) {
+      if (getDvidTarget().hasSegmentation()) {
+        view->enableCustomCheckBox(0, "blinking", view, SLOT(setBlinking(bool)));
+      }
+    }
+    if (getDvidTarget().hasSegmentation()) {
+      getViewButton(EViewButton::GOTO_BODY)->show();
+    }
+    getViewButton(EViewButton::GOTO_POSITION)->show();
+
+    m_dlgManager->getNeuroglancerLinkDlg()->init(getDvidEnv());
+  }
+
+  if (m_protocolSwitcher) {
+    m_protocolSwitcher->dvidTargetChanged(target);
+  }
 }
 
 void ZFlyEmProofMvc::goToBodyBottom()
@@ -3815,6 +3812,12 @@ void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
       if (!annotation.isNull()) {
         ZJsonObject oldAnnotation = annotation.clone();
         ZFlyEmBodyAnnotation::SetStatus(annotation, status);
+        if (status.empty()) {
+          ZFlyEmBodyAnnotation::RemoveStatusUser(annotation);
+        } else  if (ZFlyEmBodyAnnotation::GetStatus(oldAnnotation) != status) {
+          ZFlyEmBodyAnnotation::SetStatusUser(
+                annotation, neutu::GetCurrentUserName());
+        }
 //        annotation.setStatus(status);
         annotateBody(bodyId, annotation, oldAnnotation);
       } else {

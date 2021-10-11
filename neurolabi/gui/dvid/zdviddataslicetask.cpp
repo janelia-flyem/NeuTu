@@ -40,3 +40,13 @@ void ZDvidDataSliceTask::setHandle(const std::string &handle)
 {
   m_handle = handle;
 }
+
+void ZDvidDataSliceTask::setViewId(int viewId)
+{
+  m_viewParam.setViewId(viewId);
+}
+
+int ZDvidDataSliceTask::getViewId() const
+{
+  return m_viewParam.getViewId();
+}

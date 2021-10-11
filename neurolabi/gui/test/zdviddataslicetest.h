@@ -18,14 +18,14 @@ TEST(ZDvidDataSliceHelper, Basic)
 //  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
 //  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
 
-  helper.setViewParam(viewParam);
+  helper.setViewParamLastUpdate(viewParam);
 //  qDebug() << helper.getViewPort();
   ASSERT_EQ(512, helper.getWidth(0));
   ASSERT_EQ(512, helper.getHeight(0));
 
   ZStackViewParam vp2 = viewParam;
   vp2.closeViewPort();
-  helper.setViewParam(vp2);
+  helper.setViewParamLastUpdate(vp2);
   ASSERT_TRUE(helper.actualContainedIn(
                 viewParam, helper.getZoom(), helper.getCenterCutWidth(),
                 helper.getCenterCutHeight(), helper.usingCenterCut()));
@@ -65,18 +65,18 @@ TEST(ZDvidDataSliceHelper, Resolution)
 //  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
 //  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
 
-  helper.setViewParam(viewParam);
+  helper.setViewParamLastUpdate(viewParam);
   helper.setZoom(1);
   helper.syncActualQuality(0);
   ASSERT_TRUE(helper.isResolutionReached(0));
-  ASSERT_TRUE(helper.needHighResUpdate(0));
+  ASSERT_TRUE(helper.highResUpdateNeeded(0));
 
   helper.setCenterCut(128, 128);
   helper.setZoom(1);
   helper.useCenterCut(true);
   helper.syncActualQuality(0);
   ASSERT_TRUE(helper.isResolutionReached(0));
-  ASSERT_TRUE(helper.needHighResUpdate(0));
+  ASSERT_TRUE(helper.highResUpdateNeeded(0));
 
   helper.setZoom(0);
   ASSERT_FALSE(helper.isResolutionReached(0));
@@ -133,9 +133,9 @@ TEST(ZDvidDataSliceHelper, Resolution)
   helper.setZoom(6);
   ASSERT_FALSE(!helper.isResolutionReached(0));
 
-  ZStackViewParam vp = helper.getViewParam(0);
+  ZStackViewParam vp = helper.getViewParamLastUpdate(0);
   vp.closeViewPort();
-  helper.setViewParam(vp);
+  helper.setViewParamLastUpdate(vp);
   ASSERT_TRUE(!helper.isResolutionReached(0));
 }
 
@@ -144,7 +144,7 @@ TEST(ZDvidDataSliceHelper, ViewParam)
   ZDvidDataSliceHelper helper(ZDvidData::ERole::GRAYSCALE);
   helper.setZoom(1);
 
-  ASSERT_FALSE(helper.getViewParam(0).isValid());
+  ASSERT_FALSE(helper.getViewParamLastUpdate(0).isValid());
 
   {
     ZStackViewParam viewParam;
@@ -152,24 +152,24 @@ TEST(ZDvidDataSliceHelper, ViewParam)
     viewParam.setCutCenter(ZIntPoint(7500, 6000, 3619));
     viewParam.setSize(512, 512, neutu::data3d::ESpace::MODEL);
     viewParam.setViewId(1);
-    helper.setViewParam(viewParam);
+    helper.setViewParamLastUpdate(viewParam);
   }
 
-  ASSERT_FALSE(helper.getViewParam(0).isValid());
-  ASSERT_TRUE(helper.getViewParam(1).isValid());
+  ASSERT_FALSE(helper.getViewParamLastUpdate(0).isValid());
+  ASSERT_TRUE(helper.getViewParamLastUpdate(1).isValid());
 
   helper.closeViewPort(0);
 
-  ASSERT_FALSE(helper.getViewParam(2).isValid());
+  ASSERT_FALSE(helper.getViewParamLastUpdate(2).isValid());
   {
     ZStackViewParam viewParam;
     viewParam.setSliceAxis(neutu::EAxis::X);
     viewParam.setCutCenter(ZIntPoint(7500, 6000, 3619));
     viewParam.setSize(512, 512, neutu::data3d::ESpace::MODEL);
     viewParam.setViewId(2);
-    helper.setViewParam(viewParam);
+    helper.setViewParamLastUpdate(viewParam);
   }
-  ASSERT_TRUE(helper.getViewParam(2).isValid());
+  ASSERT_TRUE(helper.getViewParamLastUpdate(2).isValid());
 
   ASSERT_EQ(neutu::EAxis::Y, helper.getSliceAxis(1));
   ASSERT_EQ(neutu::EAxis::X, helper.getSliceAxis(2));
@@ -196,13 +196,13 @@ TEST(ZDvidDataSliceHelper, ViewParam)
   ASSERT_EQ(2, helper.getActualZoom(2));
   ASSERT_EQ(4, helper.getActualScale(2));
 
-  ASSERT_TRUE(helper.getViewParam(1).isValid());
+  ASSERT_TRUE(helper.getViewParamLastUpdate(1).isValid());
   helper.invalidateViewParam(1);
-  ASSERT_FALSE(helper.getViewParam(1).isValid());
+  ASSERT_FALSE(helper.getViewParamLastUpdate(1).isValid());
 
-  ASSERT_TRUE(helper.getViewParam(2).isValid());
+  ASSERT_TRUE(helper.getViewParamLastUpdate(2).isValid());
   helper.invalidateAllViewParam();
-  ASSERT_FALSE(helper.getViewParam(2).isValid());
+  ASSERT_FALSE(helper.getViewParamLastUpdate(2).isValid());
 }
 
 TEST(ZDvidDataSliceHelper, hit)
@@ -216,7 +216,7 @@ TEST(ZDvidDataSliceHelper, hit)
   param.setCutCenter({100, 200, 300});
   param.setSize(256, 512, neutu::data3d::ESpace::MODEL);
   param.setViewId(1);
-  helper.setViewParam(param);
+  helper.setViewParamLastUpdate(param);
 
   ASSERT_FALSE(helper.hit(100, 200, 300, 0));
   ASSERT_TRUE(helper.hit(100, 200, 300, 1));
@@ -226,7 +226,7 @@ TEST(ZDvidDataSliceHelper, hit)
   param.setCutCenter({100, 200, 300});
   param.setSize(256, 512, neutu::data3d::ESpace::MODEL);
   param.setViewId(2);
-  helper.setViewParam(param);
+  helper.setViewParamLastUpdate(param);
   ASSERT_TRUE(helper.hit(150, 200, 350, 2));
 }
 

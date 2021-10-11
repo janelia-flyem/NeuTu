@@ -508,6 +508,8 @@ protected slots:
   void exportUserBookmark();
 //  void notifyBookmarkDeleted();
 
+  void handleDvidTargetChange(const ZDvidTarget &target);
+
 protected:
   enum class EViewButton {
     GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED

@@ -105,12 +105,14 @@ ZImage& ZDvidGraySlice::getImage(int viewId) const
   return getDisplayBuffer(viewId)->m_image;
 }
 
-bool ZDvidGraySlice::display(
+bool ZDvidGraySlice::display_inner(
     QPainter *painter, const DisplayConfig &config) const
 {
 #ifdef _DEBUG_2
     m_imageCanvas.save(GET_TEST_DATA_DIR + "/_test.png");
 #endif
+  const_cast<ZDvidDataSliceHelper*>(getHelper())->setViewParamActive(
+        painter, config);
   return getImageCanvas(config.getViewId()).paintTo(painter, config.getTransform());
 }
 
@@ -159,7 +161,8 @@ bool ZDvidGraySlice::hasLowresRegion(int viewId) const
 }
 
 void ZDvidGraySlice::updateImage(
-    const ZStack *stack, const ZAffinePlane &ap, int zoom, int viewId)
+    const ZStack *stack, neutu::EAxis axis,
+    const ZAffinePlane &ap, int zoom, int viewId)
 {
   if (stack != NULL) {
     auto buffer = getDisplayBuffer(viewId);
@@ -167,7 +170,7 @@ void ZDvidGraySlice::updateImage(
         neutu::vis2d::GetSlice(*stack, stack->getOffset().getZ());
 
     ZSliceViewTransform t = getHelper()->getCanvasTransform(
-          ap, stack->width(), stack->height(), zoom, viewId);
+          axis, ap, stack->width(), stack->height(), zoom, viewId);
 
 /*
     if (getHelper()->getSliceAxis() == neutu::EAxis::ARB) {
@@ -264,7 +267,7 @@ void ZDvidGraySlice::forEachViewParam(
 
 ZStackViewParam ZDvidGraySlice::getViewParam(int viewId) const
 {
-  return getHelper()->getViewParam(viewId);
+  return getHelper()->getViewParamLastUpdate(viewId);
 }
 
 ZIntCuboid ZDvidGraySlice::getDataRange() const
@@ -297,6 +300,22 @@ bool ZDvidGraySlice::isRegionConsistent() const
       (getWidth() == m_image.width()) && (getHeight() == m_image.height());
 }
 #endif
+
+bool ZDvidGraySlice::highResUpdateNeeded(int viewId) const
+{
+  return getHelper()->highResUpdateNeeded(viewId);
+}
+
+void ZDvidGraySlice::processHighResParam(
+    int viewId,
+    std::function<void(
+      const ZStackViewParam &/*viewParam*/, int /*zoom*/,
+      int /*centerCutX*/, int /*centerCutY*/,
+      bool /*usingCenterCut*/)> f) const
+{
+  f(getHelper()->getViewParamActive(viewId),
+    getHelper()->getHighresZoom(viewId), 0, 0, false);
+}
 
 template<typename T>
 int ZDvidGraySlice::updateParam(T *param)
@@ -402,7 +421,8 @@ bool ZDvidGraySlice::consume(
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       ZAffineRect rect = viewParam.getIntCutRect(
             getHelper()->getDataRange(), centerCutX, centerCutY, usingCenterCut);
-      updateImage(stack, rect.getAffinePlane(), zoom, viewParam.getViewId());
+      updateImage(stack, viewParam.getSliceAxis(), rect.getAffinePlane(),
+                  zoom, viewParam.getViewId());
 #ifdef _DEBUG_2
       std::cout << "Saving image canvas ..." << std::endl;
       m_imageCanvas.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
@@ -420,16 +440,17 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc, int viewId)
 {
   ZDvidGraySliceHighresTask *task = nullptr;
   const int maxSize = 1024*1024;
-  if (getHelper()->needHighResUpdate(viewId)
+  if (getHelper()->highResUpdateNeeded(viewId)
       && getHelper()->getViewDataSize(viewId) < maxSize) {
     task = new ZDvidGraySliceHighresTask;
-    task->setViewParam(getHelper()->getViewParam(viewId));
-    task->setZoom(getHelper()->getHighresZoom(viewId));
-    task->useCenterCut(false);
+    task->setViewId(viewId);
+//    task->setViewParam(getHelper()->getViewParamActive(viewId));
+//    task->setZoom(getHelper()->getHighresZoom(viewId));
+//    task->useCenterCut(false);
     task->setDelay(50);
     task->setDoc(doc);
     task->setHandle(getSource());
-    task->setName(this->getSource().c_str());
+    task->setName(QString("%1-%2").arg(this->getSource().c_str()).arg(viewId));
   }
 
   return task;
@@ -448,7 +469,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
   }
   */
 
-  getHelper()->setViewParam(viewParam);
+  getHelper()->setViewParamLastUpdate(viewParam);
   setZoom(viewParam.getZoomLevel());
 
   if (isVisible()) {
@@ -485,7 +506,8 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
               getZoom(), getHelper()->getCenterCutWidth(),
               getHelper()->getCenterCutHeight(), true, viewParam.getViewId());
         updateImage(
-              stack, rect.getAffinePlane(), getHelper()->getZoom(), viewParam.getViewId());
+              stack, viewParam.getSliceAxis(), rect.getAffinePlane(),
+              getHelper()->getZoom(), viewParam.getViewId());
 #endif
 #ifdef _DEBUG_2
         std::cout << "Saving stack" << std::endl;

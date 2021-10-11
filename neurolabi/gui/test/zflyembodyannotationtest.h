@@ -297,36 +297,39 @@ TEST(ZFlyEmBodyAnnotation, mergeJson)
   ASSERT_EQ(20, ZJsonObjectParser::GetValue(
               merged, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0));
 
+  annotation1.clear();
+  annotation2.clear();
+  ZFlyEmBodyAnnotation::SetStatus(annotation1, "Prelim Roughly traced");
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Prelim Roughly traced");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 1");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER, "");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER, "user 3");
+  merged = ZFlyEmBodyAnnotation::MergeAnnotation(
+          annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("name 1", ZFlyEmBodyAnnotation::GetName(merged));
+  ASSERT_EQ("", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_NAMING_USER, ""));
+  ASSERT_EQ("", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_STATUS_USER, ""));
 
-
-  /*
-  annotation2.setStatus("Prelim Roughly traced");
-  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
-  ASSERT_EQ("Prelim Roughly traced", annotation1.getStatus());
-
-  annotation2.setStatus("Roughly traced");
-  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
-  ASSERT_EQ("Roughly traced", annotation1.getStatus());
-  ASSERT_EQ(uint64_t(1), annotation1.getBodyId());
-
-  annotation2.setStatus("Anchor");
-  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
-  ASSERT_EQ("Roughly traced", annotation1.getStatus());
-
-  annotation2.setStatus("Traced in ROI");
-  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
-  ASSERT_EQ("Traced in ROI", annotation1.getStatus());
-  ASSERT_EQ(uint64_t(1), annotation1.getBodyId());
-
-  annotation2.setStatus("traced");
-  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
-  ASSERT_EQ("traced", annotation1.getStatus());
-
-  annotation2.setStatus("Finalized");
-  annotation1.mergeAnnotation(annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
-  ASSERT_EQ("Finalized", annotation1.getStatus());
-  ASSERT_EQ(uint64_t(1), annotation1.getBodyId());
-  */
+  annotation1.clear();
+  annotation2.clear();
+  ZFlyEmBodyAnnotation::SetStatus(annotation1, "Prelim Roughly traced");
+  ZFlyEmBodyAnnotation::SetStatus(annotation2, "Prelim Roughly traced");
+  annotation1.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 1");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "name 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_NAMING_USER, "user 2");
+  annotation2.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER, "user 3");
+  merged = ZFlyEmBodyAnnotation::MergeAnnotation(
+          annotation1, annotation2, &ZFlyEmBodyAnnotation::GetStatusRank);
+  ASSERT_EQ("name 1", ZFlyEmBodyAnnotation::GetName(merged));
+  ASSERT_EQ("", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_NAMING_USER, ""));
+  ASSERT_EQ("", ZJsonObjectParser::GetValue(
+              merged, ZFlyEmBodyAnnotation::KEY_STATUS_USER, ""));
 }
 
 TEST(ZFlyEmBodyAnnotation, Merger)
@@ -375,6 +378,15 @@ TEST(ZFlyEmBodyAnnotation, Json)
   ZFlyEmBodyAnnotation::SetNamingUser(obj, "test_user3");
   ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetNamingUser(obj));
   ASSERT_FALSE(obj.hasKey(ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD));
+
+  obj.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER, "test_user2");
+  obj.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD, "test_user");
+  ASSERT_EQ("test_user2", ZFlyEmBodyAnnotation::GetStatusUser(obj));
+  obj.removeKey(ZFlyEmBodyAnnotation::KEY_STATUS_USER);
+  ASSERT_EQ("test_user", ZFlyEmBodyAnnotation::GetStatusUser(obj));
+  ZFlyEmBodyAnnotation::SetStatusUser(obj, "test_user3");
+  ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetStatusUser(obj));
+  ASSERT_FALSE(obj.hasKey(ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD));
 
   ZJsonObject oldObj;
   oldObj.setEntry(ZFlyEmBodyAnnotation::KEY_INSTANCE, "old instance");

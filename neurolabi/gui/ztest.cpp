@@ -33164,6 +33164,20 @@ void ZTest::test(MainWindow *host)
   widget->show();
 #endif
 
+#if 0
+  ZProofreadWindow *proofreadWindow = host->startProofread();
+//  ZDvidTarget target = GET_FLYEM_CONFIG.getDvidTarget("local_test");
+  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("local_test");
+  proofreadWindow->getMainMvc()->setDvid(ZDvidEnv(target));
+  proofreadWindow->getMainMvc()->zoomTo(1024, 1024, 1000, 100);
+#endif
+
+#if 0
+  ZDvidTarget target = ZGlobalDvidRepo::GetInstance().getDvidTarget("local_test");
+  GET_FLYEM_CONFIG.setMappedNode("@test", "$c315");
+  target.setUuid("@test");
+  std::cout << "uuid: " << ZDvidReader::InferUuid(target) << std::endl;
+#endif
   std::cout << "Done." << std::endl;
 }
 

@@ -7,6 +7,7 @@
 #include <QJsonObject>
 
 #include "neulib/math/utilities.h"
+#include "common/debug.h"
 //#include "common/math.h"
 #include "logging/zlog.h"
 #include "logging/zbenchtimer.h"
@@ -166,7 +167,11 @@ void ZStackView::init()
 
   m_channelControlLayout = new QHBoxLayout;
   m_toolLayout = new QHBoxLayout;
-
+#ifdef _DEBUG_0
+  m_toolLayout->addWidget(new QPushButton("test"));
+  enableCustomCheckBox(0, "test", nullptr, nullptr);
+  enableCustomCheckBox(1, "test2", nullptr, nullptr);
+#endif
   m_secondTopLayout->addLayout(m_channelControlLayout);
   m_secondTopLayout->addLayout(m_toolLayout);
   m_secondTopLayout->addStretch();
@@ -3641,6 +3646,9 @@ std::set<neutu::data3d::ETarget> ZStackView::updateViewData(
     default:
       break;
     }
+    if (m_blinking) {
+      updater.exclude(ZStackObject::EType::DVID_LABEL_SLICE);
+    }
   } else {
     updater.exclude(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
     updater.exclude(neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS);
@@ -3914,16 +3922,23 @@ void ZStackView::customizeWidget()
 void ZStackView::enableCustomCheckBox(
     int index, const QString &text, QObject *receiver, const char *slot)
 {
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_2 << __FUNCTION__ << std::endl;
+  m_toolLayout->addWidget(new QPushButton("test"));
+  m_secondTopLayout->addWidget(new QPushButton("test"));
+#endif
   if (m_customCheckBoxList.size() <= index) {
     m_customCheckBoxList.resize(index + 1);
   }
   if (m_customCheckBoxList[index] != NULL) {
-    delete m_customCheckBoxList[index];
+    m_customCheckBoxList[index]->deleteLater();
   }
   QCheckBox *widget = new QCheckBox;
   m_customCheckBoxList[index] = widget;
   widget->setText(text);
-  connect(widget, SIGNAL(toggled(bool)), receiver, slot);
+  if (receiver && slot) {
+    connect(widget, SIGNAL(toggled(bool)), receiver, slot);
+  }
   m_secondTopLayout->addWidget(widget);
 }
 
@@ -3960,6 +3975,11 @@ void ZStackView::request3DVis()
 
     m_messageManager->processMessage(&message, true);
   }
+}
+
+void ZStackView::setBlinking(bool on)
+{
+  m_blinking = on;
 }
 
 void ZStackView::requestSetting()

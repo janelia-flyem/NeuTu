@@ -189,15 +189,20 @@ bool ZSliceCanvas::paintTo(
   }
 
   bool paintable = true;
-  if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
+//  if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
+//  if (!painterTransform.hasSamePlane(m_transform)) {
+  if (!painterTransform.getIntCutPlane().hasSamePlane(
+        m_transform.getIntCutPlane())) {
     paintable = false;
   } else {
+    /*
     if (painterTransform.getSliceAxis() == neutu::EAxis::ARB) {
       if (!painterTransform.getCutPlaneNormal().approxEquals(
             m_transform.getCutPlaneNormal())) {
         paintable = false;
       }
     }
+    */
 
     if (paintable) {
       double d = std::fabs(painterTransform.getCutDepth(

@@ -1,4 +1,5 @@
 HEADERS += \
+    $$PWD/debug.h \
     $$PWD/math.h \
     $$PWD/mathdefs.h \
     $$PWD/memorystream.h \
@@ -11,6 +12,7 @@ HEADERS += \
 #    $$PWD/zstringbuilder.h
 
 SOURCES += \
+    $$PWD/debug.cpp \
     $$PWD/math.cpp \
     $$PWD/memorystream.cpp \
     $$PWD/neutudefs.cpp \

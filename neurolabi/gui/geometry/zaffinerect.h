@@ -62,6 +62,13 @@ public:
   void setSize(double width, double height);
 
   /*!
+   * \brief Add the width and height of the rectangle
+   *
+   * It is basically the same as setSize(currentWidth + dw, currentHeight + dh).
+   */
+  void addSize(double dw, double dh);
+
+  /*!
    * \brief Set the size of the rectangle with one of its corners fixed.
    *
    * The rectangle is set to the size (\a width, \a height) with the corner indexed
@@ -99,7 +106,7 @@ public:
   bool contains(const ZAffineRect &rect) const;
 
   /*!
-   * \brief Check a rectangle is with the band of another.
+   * \brief Check a rectangle is within the band of another.
    *
    * It returns true if the affine plane of \a rect is within the plane band of
    * the object and all corners of \a rect is projected inside the current

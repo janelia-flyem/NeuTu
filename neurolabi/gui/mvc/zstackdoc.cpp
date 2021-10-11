@@ -15,6 +15,7 @@
 
 #include "logging/zlog.h"
 #include "mvc/logging.h"
+#include "common/debug.h"
 
 #include "tz_image_io.h"
 #include "zstackdoc.h"
@@ -10474,6 +10475,9 @@ void ZStackDoc::ActiveViewObjectUpdater::SetUpdateEnabled(
 
 void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
 {
+#ifdef _DEBUG_0
+      std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__ << std::endl;
+#endif
 //  m_updatedTarget.clear();
   if (m_doc.get() != NULL) {
     QList<ZDocPlayer *> playerList =
@@ -10500,13 +10504,33 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
           }
         }
 //        if (player->getData()->getSliceAxis() == param.getSliceAxis()) {
-          ZTask *task = player->getFutureTask(m_doc.get(), param.getViewId());
-          if (task != NULL) {
-            m_doc->addTask(task);
-          }
+
 //        }
       }
+      m_doc->addPlayerTask(player, param.getViewId());
+#if 0
+      ZTask *task = player->getFutureTask(m_doc.get(), param.getViewId());
+      if (task) {
+#ifdef _DEBUG_
+        std::cout << OUTPUT_HIGHTLIGHT << "Adding future task: "
+                << player->getData()->getSource() << std::endl;
+#endif
+        m_doc->addTask(task);
+      }
+#endif
     }
+  }
+}
+
+void ZStackDoc::addPlayerTask(ZDocPlayer *player, int viewId)
+{
+  ZTask *task = player->getFutureTask(this, viewId);
+  if (task) {
+#ifdef _DEBUG_0
+    std::cout << OUTPUT_HIGHTLIGHT_1 << "Adding future task: "
+            << player->getData()->getSource() << std::endl;
+#endif
+    addTask(task);
   }
 }
 

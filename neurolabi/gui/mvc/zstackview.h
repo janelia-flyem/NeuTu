@@ -613,6 +613,8 @@ public slots:
   void notifySliceSliderPressed();
   void notifySliceSliderReleased();
 
+  void setBlinking(bool on);
+
 signals:
 //  void currentSliceChanged(int);
   void viewChanged(const ZStackViewParam &param);
@@ -762,6 +764,7 @@ protected:
   bool m_viewChangeEventBlocked;
   bool m_signalingViewChange = true;
   bool m_ignoringScroll = false;
+  bool m_blinking = false;
   int64_t m_scrollPausedTime = 0;
 
   ZScrollSliceStrategy *m_sliceStrategy;

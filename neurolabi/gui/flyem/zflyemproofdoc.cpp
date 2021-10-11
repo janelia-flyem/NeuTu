@@ -394,8 +394,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
 
   connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(scheduleRoutineCheck()));
 
-  connect(this, SIGNAL(updatingLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
-          this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
+  connect(this, &ZFlyEmProofDoc::updatingLabelSlice,
+          this, &ZFlyEmProofDoc::updateLabelSlice,
           Qt::QueuedConnection);
 
   connect(this, &ZFlyEmProofDoc::updatingGraySlice,
@@ -4128,12 +4128,16 @@ void ZFlyEmProofDoc::backupMergeOperation()
 
 void ZFlyEmProofDoc::prepareDvidLabelSlice(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
-    bool usingCenterCut, bool sv)
+    bool usingCenterCut, bool sv, const std::string &source)
 {
 //  QMutexLocker locker(&m_workWriterMutex);
 
   ZDvidLabelSlice *slice = getDvidLabelSlice(sv);
   if (!slice) {
+    return;
+  }
+
+  if (slice->getSource() != source) {
     return;
   }
 
@@ -4163,8 +4167,9 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
   }
 
   if (array) {
-    emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY,
-                            usingCenterCut);
+    emit updatingLabelSlice(
+          array, viewParam, zoom, centerCutX, centerCutY, usingCenterCut,
+          slice->getSource());
   }
 }
 
@@ -4257,21 +4262,38 @@ ZWidgetMessage ZFlyEmProofDoc::getAnnotationFailureMessage(uint64_t bodyId) cons
   return msg;
 }
 
+template<typename T, typename T2>
+void ZFlyEmProofDoc::updateDataSlice(
+    T *slice, T2 *array, const ZStackViewParam &viewParam,
+    int zoom, int centerCutX, int centerCutY,
+    bool usingCenterCut, const std::string &source)
+{
+  if (slice) {
+    if (slice->getSource() == source) {
+      if (slice->consume(
+            array, viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
+        bufferObjectModified(slice);
+        processObjectModified();
+      }
+      array = nullptr;
+    }
+  }
+
+  if (array) {
+    delete array;
+  }
+}
+
+
 void ZFlyEmProofDoc::updateLabelSlice(
     ZArray *array, const ZStackViewParam &viewParam, int zoom,
-    int centerCutX, int centerCutY, bool usingCenterCut)
+    int centerCutX, int centerCutY, bool usingCenterCut,
+    const std::string &source)
 {
   if (array != NULL) {
     ZDvidLabelSlice *slice = getDvidLabelSlice(m_supervoxelMode);
-    if (slice != NULL) {
-      if (slice->consume(
-            array, viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
-        bufferObjectModified(slice->getTarget());
-        processObjectModified();
-      }
-    } else {
-      delete array;
-    }
+    updateDataSlice(slice, array, viewParam, zoom, centerCutX, centerCutY,
+                    usingCenterCut, source);
   }
 }
 
@@ -4281,19 +4303,8 @@ void ZFlyEmProofDoc::updateGraySlice(
 {
   if (array != NULL) {
     ZDvidGraySlice *slice = getDvidGraySlice();
-    if (slice != NULL) {
-      if (slice->getSource() == source) {
-        if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY,
-                           usingCenterCut)) {
-          bufferObjectModified(slice->getTarget());
-          processObjectModified();
-        }
-      } else {
-        delete array;
-      }
-    } else {
-      delete array;
-    }
+    updateDataSlice(slice, array, viewParam, zoom, centerCutX, centerCutY,
+                    usingCenterCut, source);
   }
 }
 

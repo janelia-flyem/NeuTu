@@ -2,11 +2,14 @@
 #define ZDVIDDATASLICEHELPER_H
 
 #include <unordered_map>
+#include <mutex>
 
 #include "zdvidreader.h"
 #include "zstackviewparam.h"
 #include "zdviddata.h"
+#include "data3d/displayconfig.h"
 
+class QPainter;
 class QRect;
 class ZIntCuboid;
 class ZRect2d;
@@ -34,7 +37,6 @@ public:
   }
 
   bool validateSize(int *width, int *height) const;
-  int updateParam(ZStackViewParam *param) const;
 
   int getZoom() const {
     return m_zoom;
@@ -44,12 +46,15 @@ public:
 
   int getLowresZoom() const;
 
-  const ZStackViewParam& getViewParam(int viewId) const;
+  const ZStackViewParam& getViewParamLastUpdate(int viewId) const;
 
-  ZStackViewParam& getViewParam(int viewId) {
+  ZStackViewParam& getViewParamLastUpdate(int viewId) {
     return const_cast<ZStackViewParam&>(
-          static_cast<const ZDvidDataSliceHelper&>(*this).getViewParam(viewId));
+          static_cast<const ZDvidDataSliceHelper&>(*this)
+            .getViewParamLastUpdate(viewId));
   }
+
+  ZStackViewParam getViewParamActive(int viewId) const;
 
   void forEachViewParam(std::function<void(const ZStackViewParam&)> f);
 
@@ -103,18 +108,20 @@ public:
   int getScale() const;
   void setZoom(int zoom);
 
-  void setViewParam(const ZStackViewParam &viewParam);
-  ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
+  void setViewParamLastUpdate(const ZStackViewParam &viewParam);
+  void setViewParamActive(const ZStackViewParam &viewParam);
+  void setViewParamActive(
+      QPainter *painter, const neutu::data3d::DisplayConfig &config);
+
   bool hasNewView(const ZStackViewParam &viewParam) const;
   bool hasNewView(
       const ZStackViewParam &viewParam, const ZIntCuboid &modelRange) const;
   bool hasNewView(
       const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const;
-  /*
-  bool containedIn(
-      const ZStackViewParam &viewParam, int zoom,
-      int centerCutX, int centerCutY, bool centerCut) const;
-      */
+
+  //Obsolete
+  ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
+
   /*!
    * \brief Check if the current viewing slice is within a given slice
    *
@@ -135,6 +142,9 @@ public:
       */
   ZSliceViewTransform getCanvasTransform(
       const ZAffinePlane &ap, int width, int height, int zoom, int viewId) const;
+  ZSliceViewTransform getCanvasTransform(
+      neutu::EAxis axis, const ZAffinePlane &ap,
+      int width, int height, int zoom, int viewId) const;
 
   ZAffineRect getIntCutRect(int viewId) const;
 
@@ -146,7 +156,11 @@ public:
   /*!
    * \brief Check if a high resolution update is needed
    */
-  bool needHighResUpdate(int viewId) const;
+  bool highResUpdateNeeded(int viewId) const;
+
+  bool updateNeeded(
+      const ZStackViewParam &viewParam, int zoom,
+      int centerCutX, int centerCutY, bool usingCenterCut) const;
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);
@@ -201,10 +215,14 @@ private:
   bool isViewParamBuffered(int viewId) const;
   const ViewParamBuffer& getViewParamBuffer(int viewId) const;
   ViewParamBuffer& getViewParamBuffer(int viewId);
+  int updateParam(ZStackViewParam *param) const;
 
 public:
-  std::unordered_map<int, ViewParamBuffer> m_currentViewParamMap;
+  std::unordered_map<int, ViewParamBuffer> m_lastUpdateParam;
   ViewParamBuffer m_emptyViewParamBuffer;
+
+  mutable std::mutex m_activeViewParamMutex;
+  std::unordered_map<int, ZStackViewParam> m_activeViewParam;
 
   int m_zoom = 0;
   int m_maxZoom = 0;

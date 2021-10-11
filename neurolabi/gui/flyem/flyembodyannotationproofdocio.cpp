@@ -33,7 +33,9 @@ ZJsonObject FlyEmBodyAnnotationProofDocIO::readBodyAnnotation(uint64_t bodyId)
   try {
     ZDvidWriter &writer = getValidWriter();
 
-    return writer.getDvidReader().readBodyAnnotationJson(bodyId);
+    ZJsonObject obj = writer.getDvidReader().readBodyAnnotationJson(bodyId);
+    obj.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, bodyId);
+    return obj;
   } catch (...) {
     return ZJsonObject();
   }

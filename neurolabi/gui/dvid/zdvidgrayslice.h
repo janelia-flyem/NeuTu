@@ -35,7 +35,7 @@ public:
     return ZStackObject::EType::DVID_GRAY_SLICE;
   }
 
-  bool display(
+  bool display_inner(
       QPainter *painter, const DisplayConfig &config) const override;
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -91,6 +91,14 @@ public:
 
 //  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
 
+  bool highResUpdateNeeded(int viewId) const;
+  void processHighResParam(
+      int viewId,
+      std::function<void(
+        const ZStackViewParam &/*viewParam*/, int /*zoom*/,
+        int /*centerCutX*/, int /*centerCutY*/,
+        bool /*usingCenterCut*/)> f) const;
+
   bool consume(ZStack *stack, const ZStackViewParam &viewParam,
                int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
@@ -106,7 +114,9 @@ public: //for testing
 private:
   void clear();
 
-  void updateImage(const ZStack *stack, const ZAffinePlane &ap, int zoom, int viewId);
+  void updateImage(
+      const ZStack *stack, neutu::EAxis axis,
+      const ZAffinePlane &ap, int zoom, int viewId);
   void forceUpdate(const ZStackViewParam &viewParam);
   void updateContrast();
 

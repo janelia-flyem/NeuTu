@@ -265,6 +265,16 @@ void ZFlyEmConfig::setCenterCut(const std::string &name, int cx, int cy)
   m_centerCut[name] = std::pair<int,int>(cx, cy);
 }
 
+ZDvidTarget ZFlyEmConfig::getDvidTarget(const std::string &name) const
+{
+  auto result = std::find_if(
+        m_dvidRepo.begin(), m_dvidRepo.end(), [&](const ZDvidTarget &target) {
+    return target.getName() == name;
+  });
+
+  return (result == m_dvidRepo.end()) ? m_emptyDvidTarget : *result;
+}
+
 std::string ZFlyEmConfig::mapAddress(const std::string &address) const
 {
   if (m_addressMap.count(address) > 0) {
@@ -479,6 +489,11 @@ bool ZFlyEmConfig::neutuseAvailable(bool forLocalTarget) const
   }
 
   return isNeutuseOnline();
+}
+
+void ZFlyEmConfig::setMappedNode(const std::string &key, const std::string &value)
+{
+  m_rootMap[key] = value;
 }
 
 bool ZFlyEmConfig::neutuseAvailable(const ZDvidTarget &target) const

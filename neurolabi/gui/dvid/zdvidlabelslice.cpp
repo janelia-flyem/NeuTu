@@ -9,6 +9,7 @@
 
 #include "common/utilities.h"
 #include "common/math.h"
+#include "common/debug.h"
 
 #include "geometry/zintcuboid.h"
 #include "geometry/zaffinerect.h"
@@ -175,6 +176,14 @@ bool ZDvidLabelSlice::isVisible_inner(const DisplayConfig &/*config*/) const
 bool ZDvidLabelSlice::display_inner(
     QPainter *painter, const DisplayConfig &config) const
 {
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << "ZDvidLabelSlice::display_inner start: "
+            << config.getWorldViewTransform() << config.getViewCanvasTransform()
+            << std::endl;
+#endif
+
+  const_cast<ZDvidDataSliceHelper*>(getHelper())->setViewParamActive(
+        painter, config);
   bool painted = false;
 //  if (isVisible(config)) {
     painter->save();
@@ -191,6 +200,10 @@ bool ZDvidLabelSlice::display_inner(
     }
     painter->restore();
 //  }
+
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << "ZDvidLabelSlice::display_inner end" << std::endl;
+#endif
 
   return painted;
 }
@@ -225,6 +238,31 @@ void ZDvidLabelSlice::setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy)
   getHelper()->setUpdatePolicy(policy);
 }
 
+/*
+bool ZDvidLabelSlice::needsUpdate(
+    const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY, bool usingCenterCut) const
+{
+
+}
+*/
+
+bool ZDvidLabelSlice::highResUpdateNeeded(int viewId) const
+{
+  return getHelper()->highResUpdateNeeded(viewId);
+}
+
+void ZDvidLabelSlice::processHighResParam(
+    int viewId,
+    std::function<void(
+      const ZStackViewParam &/*viewParam*/, int /*zoom*/,
+      int /*centerCutX*/, int /*centerCutY*/,
+      bool /*usingCenterCut*/, bool /*sv*/)> f) const
+{
+  f(getHelper()->getViewParamActive(viewId),
+    getHelper()->getHighresZoom(viewId), 0, 0, false, isSupervoxel());
+}
+
 bool ZDvidLabelSlice::containedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool usingCenterCut) const
@@ -235,28 +273,43 @@ bool ZDvidLabelSlice::containedIn(
 
 ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc, int viewId)
 {
+  if (!isVisible()) {
+    return nullptr;
+  }
+
   ZDvidDataSliceTask *task = nullptr;
 //  ZDvidLabelSliceHighresTask *task = NULL;
   if (m_taskFactory) {
     const int maxSize = 1024*1024;
-    if (getHelper()->needHighResUpdate(viewId)
+#ifdef _DEBUG_0
+    std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__
+              << ": checking task: "
+              << getHelper()->highResUpdateNeeded(viewId) << " "
+              << getHelper()->getViewDataSize(viewId) << std::endl;
+#endif
+    if (getHelper()->highResUpdateNeeded(viewId)
         && getHelper()->getViewDataSize(viewId) < maxSize) {
       //    task = new ZDvidLabelSliceHighresTask;
       task = m_taskFactory->makeTask();
+      ZStackViewParam viewParam = getHelper()->getViewParamActive(viewId);
 
       if (task) {
-        ZStackViewParam viewParam = getHelper()->getViewParam(viewId);
         viewParam.openViewPort();
         if (viewParam.isValid()) {
-          task->setViewParam(viewParam);
-          task->setZoom(getHelper()->getHighresZoom(viewId));
-          task->setCenterCut(
-                getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
-          task->useCenterCut(false);
+#ifdef _DEBUG_0
+          std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__
+                    << ": " << viewParam.getCutRect() << std::endl;
+#endif
+          task->setViewId(viewId);
+//          task->setViewParam(viewParam);
+//          task->setZoom(getHelper()->getHighresZoom(viewId));
+//          task->setCenterCut(
+//                getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
+//          task->useCenterCut(false);
           task->setDelay(50);
           task->setDoc(doc);
           task->setSupervoxel(getDvidTarget().isSupervoxelView());
-          task->setName(this->getSource().c_str());
+          task->setName(QString("%1-%2").arg(this->getSource().c_str()).arg(viewId));
         }
       }
     }
@@ -384,6 +437,10 @@ void ZDvidLabelSlice::updateRgbTable()
 
 void ZDvidLabelSlice::paintBufferUnsync(int viewId)
 {
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << ": " << __FUNCTION__ << std::endl;
+#endif
+
   auto displayBuffer = getDisplayBuffer(viewId);
   auto& paintBuffer = displayBuffer->m_paintBuffer;
   if (displayBuffer->m_labelArray && paintBuffer) {
@@ -395,35 +452,6 @@ void ZDvidLabelSlice::paintBufferUnsync(int viewId)
       } else {
         paintBuffer->drawColorField(getColorField(viewId).data());
       }
-
-#if 0
-      updateRgbTable();
-
-      // TODO: Consider a way to use m_customColorScheme without remapId(), because remapId()
-      // takes around 3 ms on a Macbook Pro.  That may not sound like much but it is about
-      // 20% of the budget per frame for 60 frames/sec.
-
-      remapId();
-
-      uint64_t *labelArray = NULL;
-
-      if (m_paintBuffer->isVisible()) {
-        if (m_selectedOriginal.empty() && getLabelMap().empty() &&
-            !m_customColorScheme) {
-          labelArray = m_labelArray->getDataPointer<uint64_t>();
-        } else {
-          labelArray = m_mappedLabelArray->getDataPointer<uint64_t>();
-        }
-      }
-
-      if (labelArray != NULL) {
-        m_paintBuffer->drawLabelField(labelArray, m_rgbTable, 0, 0xFFFFFFFF);
-#ifdef _DEBUG_0
-        std::cout << "Save label paint buffer:" << std::endl;
-        m_paintBuffer->save((GET_TEST_DATA_DIR + "/_test.png").c_str());
-#endif
-      }
-#endif
     }
   }
 
@@ -535,7 +563,7 @@ void ZDvidLabelSlice::forceUpdate(
 
   int viewId = viewParam.getViewId();
 
-  getHelper()->setViewParam(viewParam);
+  getHelper()->setViewParamLastUpdate(viewParam);
   getHelper()->setZoom(viewParam.getZoomLevel());
   ZAffineRect rect = getHelper()->getIntCutRect(viewId);
 
@@ -560,7 +588,7 @@ void ZDvidLabelSlice::forceUpdate(
     }
   }
 
-  getHelper()->setViewParam(viewParam);
+//  getHelper()->setViewParam(viewParam);
   if (getHelper()->getUpdatePolicy() == neutu::EDataSliceUpdatePolicy::HIDDEN) {
     getHelper()->closeViewPort(viewParam.getViewId());
   }
@@ -569,6 +597,7 @@ void ZDvidLabelSlice::forceUpdate(
   int width = rect.getWidth() / getHelper()->getScale();
   int height = rect.getHeight() / getHelper()->getScale();
   ZSliceViewTransform t = getHelper()->getCanvasTransform(
+        viewParam.getSliceAxis(),
         rect.getAffinePlane(), width, height, getHelper()->getZoom(),
         viewParam.getViewId()  /*m_labelArray->getDim(0), m_labelArray->getDim(1)*/);
   getImageCanvas(viewParam.getViewId()).setTransform(t);
@@ -795,6 +824,9 @@ bool ZDvidLabelSlice::consume(
     ZArray *array, const ZStackViewParam &viewParam, int zoom,
     int centerCutX, int centerCutY, bool usingCenterCut)
 {
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__ << std::endl;
+#endif
   bool succ = false;
   if (array != NULL) {
     if (containedIn(viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
@@ -812,6 +844,7 @@ bool ZDvidLabelSlice::consume(
       ZAffineRect rect = viewParam.getIntCutRect(
             getHelper()->getDataRange(), centerCutX, centerCutY, usingCenterCut);
       ZSliceViewTransform t = getHelper()->getCanvasTransform(
+            viewParam.getSliceAxis(),
             rect.getAffinePlane(),
             displayBuffer->m_labelArray->getDim(0),
             displayBuffer->m_labelArray->getDim(1), zoom, viewParam.getViewId());
@@ -841,7 +874,7 @@ bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
       clearLabelData(viewParam.getViewId());
       updated = true;
     }
-    getHelper()->setViewParam(viewParam);
+    getHelper()->setViewParamLastUpdate(viewParam);
   } else {
 //    ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
     if (getHelper()->hasNewView(viewParam)) {
@@ -1387,6 +1420,10 @@ bool ZDvidLabelSlice::hit(double x, double y, double z, int viewId)
 
 void ZDvidLabelSlice::updateColorField(int viewId)
 {
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_1 << " " << __FUNCTION__ << " for view "
+            << viewId << std::endl;
+#endif
   auto labelArray = getLabelArray(viewId);
   auto &colorField = getColorField(viewId);
 
