@@ -183,7 +183,7 @@ QString ZNeuroglancerPathFactory::MakePath(
           std::dynamic_pointer_cast<ZNeuroglancerLayerSpec>(synapseLayer), false);
   }
 
-  for (auto layer : additionalLayers) {
+  for (auto &layer : additionalLayers) {
     gpath.addLayer(layer);
   }
 

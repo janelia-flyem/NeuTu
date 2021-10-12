@@ -93,7 +93,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(EMode mode, QWidget *parent) :
 
     ui->setupUi(this);
 
-    setAttribute(Qt::WA_DeleteOnClose, true);
+    // Necessary for keeping sequencer content after closing the dialog
+    setAttribute(Qt::WA_DeleteOnClose, false);
 
     // office phone number = random seed
     qsrand(2094656);
