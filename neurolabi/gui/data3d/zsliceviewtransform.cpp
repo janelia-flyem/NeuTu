@@ -494,6 +494,11 @@ bool ZSliceViewTransform::hasSamePlane(const ZSliceViewTransform &t) const
   return m_modelViewTransform.hasSamePlane(t.m_modelViewTransform);
 }
 
+bool ZSliceViewTransform::hasSamePlane(const ZAffinePlane &ap) const
+{
+  return m_modelViewTransform.getCutPlane().hasSamePlane(ap);
+}
+
 ZCuboid ZSliceViewTransform::getViewBox(const ZIntCuboid modelBox) const
 {
   ZCuboid viewBox;

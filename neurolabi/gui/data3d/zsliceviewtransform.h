@@ -204,6 +204,7 @@ public:
 
   bool onSamePlane(const ZSliceViewTransform &t) const;
   bool hasSamePlane(const ZSliceViewTransform &t) const;
+  bool hasSamePlane(const ZAffinePlane &ap) const;
 
   void rotate(double au, double av, double rad);
 

@@ -208,6 +208,11 @@ bool ZDvidLabelSlice::display_inner(
   return painted;
 }
 
+void ZDvidLabelSlice::trackViewParam(const ZStackViewParam &viewParam)
+{
+  getHelper()->setViewParamActive(viewParam);
+}
+
 void ZDvidLabelSlice::setOpacity(double opacity)
 {
   m_opacity = opacity;
@@ -260,7 +265,9 @@ void ZDvidLabelSlice::processHighResParam(
       bool /*usingCenterCut*/, bool /*sv*/)> f) const
 {
   f(getHelper()->getViewParamActive(viewId),
-    getHelper()->getHighresZoom(viewId), 0, 0, false, isSupervoxel());
+    getHelper()->getHighresZoom(
+      viewId, ZDvidDataSliceHelper::EViewParamOption::ACTIVE),
+    0, 0, false, isSupervoxel());
 }
 
 bool ZDvidLabelSlice::containedIn(
@@ -288,7 +295,8 @@ ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc, int viewId)
               << getHelper()->getViewDataSize(viewId) << std::endl;
 #endif
     if (getHelper()->highResUpdateNeeded(viewId)
-        && getHelper()->getViewDataSize(viewId) < maxSize) {
+        && getHelper()->getViewDataSize(
+          viewId, ZDvidDataSliceHelper::EViewParamOption::ACTIVE) < maxSize) {
       //    task = new ZDvidLabelSliceHighresTask;
       task = m_taskFactory->makeTask();
       ZStackViewParam viewParam = getHelper()->getViewParamActive(viewId);
@@ -564,12 +572,15 @@ void ZDvidLabelSlice::forceUpdate(
   int viewId = viewParam.getViewId();
 
   getHelper()->setViewParamLastUpdate(viewParam);
-  getHelper()->setZoom(viewParam.getZoomLevel());
-  ZAffineRect rect = getHelper()->getIntCutRect(viewId);
+//  getHelper()->setZoom(viewParam.getZoomLevel());
+  ZAffineRect rect = getHelper()->getIntCutRect(
+        viewId, ZDvidDataSliceHelper::EViewParamOption::LAST_UPDATE);
 
   if (rect.isEmpty()) {
     return;
   }
+  int zoom = getHelper()->getZoom(
+        viewId, ZDvidDataSliceHelper::EViewParamOption::LAST_UPDATE);
 
   if ((!ignoringHidden) || isVisible()) {
 
@@ -579,10 +590,10 @@ void ZDvidLabelSlice::forceUpdate(
       getDisplayBuffer(viewId)->m_labelArray =
           std::shared_ptr<ZArray>(
             getHelper()->getDvidReader().readLabels64Lowtis(
-              rect, getHelper()->getZoom(), getHelper()->getCenterCutWidth(),
+              rect, zoom, getHelper()->getCenterCutWidth(),
               getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut()));
       getHelper()->setActualQuality(
-            getHelper()->getZoom(), getHelper()->getCenterCutWidth(),
+            zoom, getHelper()->getCenterCutWidth(),
             getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut(),
             viewId);
     }
@@ -590,17 +601,20 @@ void ZDvidLabelSlice::forceUpdate(
 
 //  getHelper()->setViewParam(viewParam);
   if (getHelper()->getUpdatePolicy() == neutu::EDataSliceUpdatePolicy::HIDDEN) {
-    getHelper()->closeViewPort(viewParam.getViewId());
+    getHelper()->closeViewPort(
+          viewParam.getViewId(),
+          ZDvidDataSliceHelper::EViewParamOption::LAST_UPDATE);
   }
 //  updatePaintBuffer();
 //  m_imageCanvas.fromImage(*m_paintBuffer);
-  int width = rect.getWidth() / getHelper()->getScale();
-  int height = rect.getHeight() / getHelper()->getScale();
+  int scale = zgeom::GetZoomScale(zoom);
+  int width = rect.getWidth() / scale;
+  int height = rect.getHeight() / scale;
   ZSliceViewTransform t = getHelper()->getCanvasTransform(
         viewParam.getSliceAxis(),
-        rect.getAffinePlane(), width, height, getHelper()->getZoom(),
-        viewParam.getViewId()  /*m_labelArray->getDim(0), m_labelArray->getDim(1)*/);
+        rect.getAffinePlane(), width, height, zoom);
   getImageCanvas(viewParam.getViewId()).setTransform(t);
+  getImageCanvas(viewParam.getViewId()).setOriginalCut(viewParam.getCutRect());
 
   invalidatePaintBuffer(viewParam.getViewId());
 #ifdef _DEBUG_2
@@ -824,7 +838,7 @@ bool ZDvidLabelSlice::consume(
     ZArray *array, const ZStackViewParam &viewParam, int zoom,
     int centerCutX, int centerCutY, bool usingCenterCut)
 {
-#ifdef _DEBUG_0
+#ifdef _DEBUG_
   std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__ << std::endl;
 #endif
   bool succ = false;
@@ -847,8 +861,9 @@ bool ZDvidLabelSlice::consume(
             viewParam.getSliceAxis(),
             rect.getAffinePlane(),
             displayBuffer->m_labelArray->getDim(0),
-            displayBuffer->m_labelArray->getDim(1), zoom, viewParam.getViewId());
+            displayBuffer->m_labelArray->getDim(1), zoom);
       displayBuffer->m_imageCanvas.setTransform(t);
+      displayBuffer->m_imageCanvas.setOriginalCut(viewParam.getCutRect());
       invalidatePaintBuffer(viewParam.getViewId());
       succ = true;
     } else {

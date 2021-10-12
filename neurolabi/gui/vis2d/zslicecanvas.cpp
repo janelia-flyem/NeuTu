@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include "common/math.h"
+#include "common/debug.h"
 
 ZSliceCanvas::ZSliceCanvas()
 {
@@ -54,12 +55,14 @@ void ZSliceCanvas::resetCanvas(int width, int height)
   resetCanvas();
 }
 
+/*
 void ZSliceCanvas::resetCanvas(
     int width, int height, const ZSliceViewTransform &transform)
 {
   m_transform = transform;
   resetCanvas(width, height);
 }
+*/
 
 void ZSliceCanvas::set(
     int width, int height, ESetOption option)
@@ -130,6 +133,11 @@ ZSliceViewTransform ZSliceCanvas::getTransform() const
   return m_transform;
 }
 
+void ZSliceCanvas::setOriginalCut(const ZAffineRect &rect)
+{
+  m_originalCut = rect;
+}
+
 void ZSliceCanvas::beginPainter(QPainter *painter)
 {
   painter->begin(&m_pixmap);
@@ -151,6 +159,9 @@ bool ZSliceCanvas::paintTo(
   }
 
   bool paintable = painterTransform.hasSamePlane(m_transform);
+  if (!paintable && !m_originalCut.isEmpty()) {
+    paintable = painterTransform.hasSamePlane(m_originalCut.getAffinePlane());
+  }
 
   if (paintable) {
     QTransform transform;
@@ -188,31 +199,34 @@ bool ZSliceCanvas::paintTo(
     return false;
   }
 
+#ifdef _DEBUG_
+  std::cout << OUTPUT_HIGHTLIGHT_1 << "canvas transform: " << m_transform << std::endl;
+  std::cout << OUTPUT_HIGHTLIGHT_1 << "painter transform: " << painterTransform << std::endl;
+#endif
+
   bool paintable = true;
 //  if (painterTransform.getSliceAxis() != m_transform.getSliceAxis()) {
 //  if (!painterTransform.hasSamePlane(m_transform)) {
-  if (!painterTransform.getIntCutPlane().hasSamePlane(
+  if (!painterTransform.getCutPlane().hasSamePlane(m_transform.getCutPlane()) &&
+      !painterTransform.getIntCutPlane().hasSamePlane(
         m_transform.getIntCutPlane())) {
     paintable = false;
-  } else {
-    /*
-    if (painterTransform.getSliceAxis() == neutu::EAxis::ARB) {
-      if (!painterTransform.getCutPlaneNormal().approxEquals(
-            m_transform.getCutPlaneNormal())) {
-        paintable = false;
-      }
-    }
-    */
+  }
 
-    if (paintable) {
-      double d = std::fabs(painterTransform.getCutDepth(
+  if (!paintable && !m_originalCut.isEmpty()) {
+    if (painterTransform.hasSamePlane(m_originalCut.getAffinePlane())) {
+      paintable = true;
+    }
+  }
+
+  if (paintable) {
+    double d = std::fabs(painterTransform.getCutDepth(
                            m_transform.getCutCenter()));
 #ifdef _DEBUG_0
-      std::cout << "Plane distance: " << d << " " << std::fabs(d) << std::endl;
+    std::cout << "Plane distance: " << d << " " << std::fabs(d) << std::endl;
 #endif
-      if (std::fabs(d) > 0.9) {
-        paintable = false;
-      }
+    if (std::fabs(d) > 0.9) {
+      paintable = false;
     }
   }
 
@@ -235,9 +249,6 @@ bool ZSliceCanvas::paintTo(
 
     painter->save();
     painter->setTransform(transform, true);
-#ifdef _DEBUG_2
-    qDebug() << "painter transform:" << painter->transform();
-#endif
     painter->drawPixmap(0, 0, m_pixmap);
     painter->restore();
     return true;

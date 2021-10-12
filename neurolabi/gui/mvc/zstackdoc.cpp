@@ -10485,6 +10485,7 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
     for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
          iter != playerList.end(); ++iter) {
       ZDocPlayer *player = *iter;
+      player->trackView(param);
       ZStackObject *obj = player->getData();
       if ((m_excludeSet.count(obj->getType()) == 0) &&
           (m_excludeTarget.count(obj->getTarget()) == 0) &&

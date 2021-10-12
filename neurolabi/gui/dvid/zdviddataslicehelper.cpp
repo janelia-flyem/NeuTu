@@ -210,30 +210,44 @@ int ZDvidDataSliceHelper::getZ() const
   return 0;
 }
 
-size_t ZDvidDataSliceHelper::getViewPortArea(int viewId) const
+size_t ZDvidDataSliceHelper::getViewPortArea(int viewId, EViewParamOption option) const
 {
-  return size_t(getWidth(viewId)) * size_t(getHeight(viewId));
+  return size_t(getWidth(viewId, option)) * size_t(getHeight(viewId, option));
 }
 
-size_t ZDvidDataSliceHelper::getViewDataSize(int viewId) const
+size_t ZDvidDataSliceHelper::getViewDataSize(
+    int viewId, EViewParamOption option) const
 {
-  int scale = getScale();
-  return getViewPortArea(viewId) / scale / scale;
+  int scale = getScale(viewId, option);
+  return getViewPortArea(viewId, option) / scale / scale;
 }
 
-double ZDvidDataSliceHelper::getPixelScale(int viewId) const
+double ZDvidDataSliceHelper::getPixelScale(int viewId, EViewParamOption option) const
 {
-  return getViewParamLastUpdate(viewId).getSliceViewTransform().getScale();
+  return getViewParam(viewId, option).getSliceViewTransform().getScale();
 }
 
-int ZDvidDataSliceHelper::getWidth(int viewId) const
+int ZDvidDataSliceHelper::getWidth(int viewId, EViewParamOption option) const
 {
-  return getViewParamLastUpdate(viewId).getIntWidth(neutu::data3d::ESpace::MODEL);
+  return getViewParam(viewId, option).getIntWidth(neutu::data3d::ESpace::MODEL);
 }
 
-int ZDvidDataSliceHelper::getHeight(int viewId) const
+int ZDvidDataSliceHelper::getHeight(int viewId, EViewParamOption option) const
 {
-  return getViewParamLastUpdate(viewId).getIntHeight(neutu::data3d::ESpace::MODEL);
+  return getViewParam(viewId, option).getIntHeight(neutu::data3d::ESpace::MODEL);
+}
+
+ZStackViewParam ZDvidDataSliceHelper::getViewParam(
+    int viewId, EViewParamOption option) const
+{
+  switch (option) {
+  case EViewParamOption::LAST_UPDATE:
+    return getViewParamLastUpdate(viewId);
+  case EViewParamOption::ACTIVE:
+    return getViewParamActive(viewId);
+  }
+
+  return m_emptyViewParamBuffer.m_viewParam;
 }
 
 size_t ZDvidDataSliceHelper::GetViewDataSize(
@@ -244,9 +258,10 @@ size_t ZDvidDataSliceHelper::GetViewDataSize(
   return viewParam.getArea(neutu::data3d::ESpace::MODEL) / scale / scale;
 }
 
-neutu::EAxis ZDvidDataSliceHelper::getSliceAxis(int viewId) const
+neutu::EAxis ZDvidDataSliceHelper::getSliceAxis(
+    int viewId, EViewParamOption option) const
 {
-  return getViewParamLastUpdate(viewId).getSliceAxis();
+  return getViewParam(viewId, option).getSliceAxis();
 }
 
 void ZDvidDataSliceHelper::forEachViewParam(
@@ -257,18 +272,41 @@ void ZDvidDataSliceHelper::forEachViewParam(
   }
 }
 
-void ZDvidDataSliceHelper::closeViewPort(int viewId)
+void ZDvidDataSliceHelper::closeViewPort(int viewId, EViewParamOption option)
 {
-  if (m_lastUpdateParam.count(viewId) > 0) {
-    getViewParamLastUpdate(viewId).closeViewPort();
+  switch (option) {
+  case EViewParamOption::LAST_UPDATE:
+    if (m_lastUpdateParam.count(viewId) > 0) {
+      m_lastUpdateParam[viewId].m_viewParam.closeViewPort();
+    }
+    break;
+  case EViewParamOption::ACTIVE:
+    if (m_activeViewParam.count(viewId) > 0) {
+      m_activeViewParam[viewId].closeViewPort();
+    }
+    break;
   }
 }
 
-void ZDvidDataSliceHelper::openViewPort(int viewId)
+void ZDvidDataSliceHelper::openViewPort(int viewId, EViewParamOption option)
 {
+  switch (option) {
+  case EViewParamOption::LAST_UPDATE:
+    if (m_lastUpdateParam.count(viewId) > 0) {
+      m_lastUpdateParam[viewId].m_viewParam.openViewPort();
+    }
+    break;
+  case EViewParamOption::ACTIVE:
+    if (m_activeViewParam.count(viewId) > 0) {
+      m_activeViewParam[viewId].openViewPort();
+    }
+    break;
+  }
+  /*
   if (m_lastUpdateParam.count(viewId) > 0) {
     getViewParamLastUpdate(viewId).openViewPort();
   }
+  */
 //  m_currentViewParam.openViewPort();
 }
 
@@ -282,9 +320,9 @@ int ZDvidDataSliceHelper::getCenterCutHeight() const
   return m_centerCutHeight;
 }
 
-int ZDvidDataSliceHelper::getScale() const
+int ZDvidDataSliceHelper::getScale(int viewId, EViewParamOption option) const
 {
-  return zgeom::GetZoomScale(getZoom());
+  return zgeom::GetZoomScale(getZoom(viewId, option));
 }
 
 int ZDvidDataSliceHelper::getActualScale(int viewId) const
@@ -298,14 +336,25 @@ int ZDvidDataSliceHelper::getActualZoom(int viewId) const
 //  return m_actualZoom;
 }
 
+int ZDvidDataSliceHelper::getZoom(int viewId, EViewParamOption option) const
+{
+  int zoom = getViewParam(viewId, option).getZoomLevel(getMaxZoom());
+  if (zoom < 0) {
+    zoom = 0;
+  }
+  return zoom;
+}
+
+/*
 void ZDvidDataSliceHelper::setZoom(int zoom)
 {
   m_zoom = std::max(0, std::min(zoom, getMaxZoom()));
 }
+*/
 
-int ZDvidDataSliceHelper::getLowresZoom() const
+int ZDvidDataSliceHelper::getLowresZoom(int viewId, EViewParamOption option) const
 {
-  int zoom = getZoom() + 1;
+  int zoom = getZoom(viewId, option) + 1;
   if (zoom > getMaxZoom()) {
     zoom -= 1;
   }
@@ -536,13 +585,15 @@ bool ZDvidDataSliceHelper::actualContainedIn(
           currentViewParamBuffer.m_actualCenterCutHeight,
           currentViewParamBuffer.m_actualUsingCenterCut,
           zoom, centerCutX, centerCutY, centerCut,
-          getWidth(viewParam.getViewId()), getHeight(viewParam.getViewId()),
+          getWidth(viewParam.getViewId(), EViewParamOption::LAST_UPDATE),
+          getHeight(viewParam.getViewId(), EViewParamOption::LAST_UPDATE),
           getMaxZoom());
   } else if (rect2.contains(rect1) &&
              rect1.getAffinePlane().hasSamePlane(rect2.getAffinePlane())) {
     contained = !ZDvidDataSliceHelper::IsResIncreasing(
           zoom, centerCutX, centerCutY, centerCut,
-          getWidth(viewParam.getViewId()), getHeight(viewParam.getViewId()),
+          getWidth(viewParam.getViewId(), EViewParamOption::LAST_UPDATE),
+          getHeight(viewParam.getViewId(), EViewParamOption::LAST_UPDATE),
           currentViewParamBuffer.m_actualZoom,
           currentViewParamBuffer.m_actualCenterCutWidth,
           currentViewParamBuffer.m_actualCenterCutHeight,
@@ -584,14 +635,15 @@ ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
 */
 
 ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
-    const ZAffinePlane &ap, int width, int height, int zoom, int viewId) const
+    const ZAffinePlane &ap, int width, int height, int zoom, int viewId,
+    EViewParamOption option) const
 {
   ZSliceViewTransform t;
 
-  if (getSliceAxis(viewId) == neutu::EAxis::ARB) {
+  if (getSliceAxis(viewId, option) == neutu::EAxis::ARB) {
     t.setCutPlane(ap);
   } else {
-    t.setCutPlane(getSliceAxis(viewId), ap.getOffset());
+    t.setCutPlane(getSliceAxis(viewId, option), ap.getOffset());
   }
 
   t.setScale(1.0 / zgeom::GetZoomScale(zoom));
@@ -603,14 +655,14 @@ ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
 
 ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
     neutu::EAxis axis, const ZAffinePlane &ap,
-    int width, int height, int zoom, int viewId) const
+    int width, int height, int zoom) const
 {
   ZSliceViewTransform t;
 
   if (axis == neutu::EAxis::ARB) {
     t.setCutPlane(ap);
   } else {
-    t.setCutPlane(getSliceAxis(viewId), ap.getOffset());
+    t.setCutPlane(axis, ap.getOffset());
   }
 
   t.setScale(1.0 / zgeom::GetZoomScale(zoom));
@@ -620,9 +672,10 @@ ZSliceViewTransform ZDvidDataSliceHelper::getCanvasTransform(
   return t;
 }
 
-ZAffineRect ZDvidDataSliceHelper::getIntCutRect(int viewId) const
+ZAffineRect ZDvidDataSliceHelper::getIntCutRect(
+    int viewId, EViewParamOption option) const
 {
-  ZAffineRect rect = getViewParamLastUpdate(viewId).getIntCutRect(
+  ZAffineRect rect = getViewParam(viewId, option).getIntCutRect(
         getDataRange(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
   if (m_maxZoom < 3) {
     int width = rect.getWidth();
@@ -635,6 +688,7 @@ ZAffineRect ZDvidDataSliceHelper::getIntCutRect(int viewId) const
   return rect;
 }
 
+/*
 bool ZDvidDataSliceHelper::isResolutionReached(int viewId) const
 {
   if (getViewDataSize(viewId) == 0) {
@@ -649,11 +703,12 @@ bool ZDvidDataSliceHelper::isResolutionReached(int viewId) const
         m_zoom, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut,
         getWidth(viewId), getHeight(viewId), getMaxZoom());
 }
+*/
 
-int ZDvidDataSliceHelper::getHighresZoom(int viewId) const
+int ZDvidDataSliceHelper::getHighresZoom(int viewId, EViewParamOption option) const
 {
-  int targetZoom = getZoom();
-  if (targetZoom > 0 && getPixelScale(viewId) < 0.9) {
+  int targetZoom = getZoom(viewId, option);
+  if (targetZoom > 0 && getPixelScale(viewId, option) < 0.9) {
     targetZoom -= 1;
   }
 
@@ -662,7 +717,7 @@ int ZDvidDataSliceHelper::getHighresZoom(int viewId) const
 
 bool ZDvidDataSliceHelper::highResUpdateNeeded(int viewId) const
 {
-  if (getViewDataSize(viewId) == 0) {
+  if (getViewDataSize(viewId, EViewParamOption::ACTIVE) == 0) {
     return true;
   }
 
@@ -681,10 +736,13 @@ bool ZDvidDataSliceHelper::highResUpdateNeeded(int viewId) const
   return IsResIncreasing(
         vpb.m_actualZoom, vpb.m_actualCenterCutWidth, vpb.m_actualCenterCutHeight,
         vpb.m_actualUsingCenterCut,
-        getHighresZoom(viewId), m_centerCutWidth, m_centerCutHeight, false,
-        getWidth(viewId), getHeight(viewId), getMaxZoom());
+        getHighresZoom(viewId, EViewParamOption::LAST_UPDATE),
+        m_centerCutWidth, m_centerCutHeight, false,
+        getWidth(viewId, EViewParamOption::LAST_UPDATE),
+        getHeight(viewId, EViewParamOption::LAST_UPDATE), getMaxZoom());
 }
 
+#if 0
 bool ZDvidDataSliceHelper::updateNeeded(
     const ZStackViewParam &viewParam, int zoom,
     int centerCutX, int centerCutY, bool usingCenterCut) const
@@ -712,6 +770,7 @@ bool ZDvidDataSliceHelper::updateNeeded(
         zoom, centerCutX, centerCutY, usingCenterCut,
         getWidth(viewId), getHeight(viewId), getMaxZoom());
 }
+#endif
 
 void ZDvidDataSliceHelper::invalidateViewParam(int viewId)
 {
@@ -783,11 +842,13 @@ void ZDvidDataSliceHelper::setActualQuality(
   m_lastUpdateParam[viewId].m_actualUsingCenterCut = centerCut;
 }
 
+/*
 void ZDvidDataSliceHelper::syncActualQuality(int viewId)
 {
   setActualQuality(
         getZoom(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut, viewId);
 }
+*/
 
 void ZDvidDataSliceHelper::setPreferredUpdatePolicy(
     neutu::EDataSliceUpdatePolicy policy)

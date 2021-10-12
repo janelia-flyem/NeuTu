@@ -736,6 +736,14 @@ ZTask* ZDvidGraySlicePlayer::getFutureTask(ZStackDoc *doc, int viewId) const
   return NULL;
 }
 
+void ZDvidGraySlicePlayer::trackView(const ZStackViewParam &param)
+{
+  ZDvidGraySlice *obj = getCompleteData();
+  if (obj) {
+    obj->trackViewParam(param);
+  }
+}
+
 /////////////////////////////
 
 
@@ -814,6 +822,14 @@ ZTask* ZDvidLabelSlicePlayer::getFutureTask(ZStackDoc *doc, int viewId) const
   }
 
   return NULL;
+}
+
+void ZDvidLabelSlicePlayer::trackView(const ZStackViewParam &param)
+{
+  ZDvidLabelSlice *obj = getCompleteData();
+  if (obj) {
+    obj->trackViewParam(param);
+  }
 }
 
 

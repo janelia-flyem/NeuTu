@@ -53,20 +53,20 @@ public:
 
   void printInfo() const;
 
-  int getWidth(int viewId) const;
-  int getHeight(int viewId) const;
-  int getZoom() const;
+//  int getWidth(int viewId) const;
+//  int getHeight(int viewId) const;
+//  int getZoom() const;
 
-  int getScale() const;
+  int getActiveScale(int viewId) const;
 
   ZCuboid getBoundBox(int viewId) const override;
 
-  ZStackViewParam getViewParam(int viewId) const;
+//  ZStackViewParam getViewParam(int viewId) const;
   ZIntCuboid getDataRange() const;
 
   void forEachViewParam(std::function<void(const ZStackViewParam &param)> f);
 
-  void setZoom(int zoom);
+//  void setZoom(int zoom);
   void setContrastProtocol(const ZContrastProtocol &cp);
   void updateContrast(bool highContrast);
   void updateContrast(const ZJsonObject &obj);
@@ -104,6 +104,7 @@ public:
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
                    int centerCutX, int centerCutY, bool centerCut) const;
   ZTask* makeFutureTask(ZStackDoc *doc, int viewId);
+  void trackViewParam(const ZStackViewParam &viewParam);
 
 public: //for testing
   void saveImage(const std::string &path, int viewId);
@@ -114,9 +115,12 @@ public: //for testing
 private:
   void clear();
 
+//  void updateImage(
+//      const ZStack *stack, neutu::EAxis axis,
+//      const ZAffinePlane &ap, int zoom, int viewId);
   void updateImage(
-      const ZStack *stack, neutu::EAxis axis,
-      const ZAffinePlane &ap, int zoom, int viewId);
+      const ZStack *stack, const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   void forceUpdate(const ZStackViewParam &viewParam);
   void updateContrast();
 

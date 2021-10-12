@@ -60,12 +60,8 @@ public:
   bool display_inner(
       QPainter *painter, const DisplayConfig &config) const override;
   bool isVisible_inner(const DisplayConfig &) const override;
-  /*
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
-               */
 
-//  const std::string& className() const;
+  void trackViewParam(const ZStackViewParam &viewParam);
 
   void setDvidTarget(const ZDvidTarget &target);
 

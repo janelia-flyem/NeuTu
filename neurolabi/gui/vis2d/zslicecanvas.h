@@ -9,6 +9,7 @@
 #include <QString>
 
 #include "common/zrefcount.h"
+#include "geometry/zaffinerect.h"
 #include "data3d/zsliceviewtransform.h"
 #include "zslicepainter.h"
 
@@ -30,7 +31,7 @@ public:
   void resetCanvas();
 
   void resetCanvas(int width, int height);
-  void resetCanvas(int width, int height, const ZSliceViewTransform &transform);
+//  void resetCanvas(int width, int height, const ZSliceViewTransform &transform);
   enum class ESetOption {
     NO_CLEAR, //No canvas clearup
     DIFF_CLEAR, //Clear only when parameters changed
@@ -56,6 +57,7 @@ public:
 
   void setTransform(const ZSliceViewTransform &transform);
   ZSliceViewTransform getTransform() const;
+  void setOriginalCut(const ZAffineRect &rect);
 
   bool paintTo(
       QPaintDevice *device, const ZSliceViewTransform &painterTransform) const;
@@ -102,6 +104,7 @@ private:
 
 private:
   ZSliceViewTransform m_transform;
+  ZAffineRect m_originalCut;
   QPixmap m_pixmap;
   ECanvasStatus m_status = ECanvasStatus::RAW;
   bool m_isVisible = true;

@@ -20,6 +20,10 @@ class ZDvidDataSliceHelper
 public:
   ZDvidDataSliceHelper(ZDvidData::ERole role);
 
+  enum class EViewParamOption {
+    LAST_UPDATE, ACTIVE
+  };
+
   void setDvidTarget(const ZDvidTarget &target);
   inline const ZDvidTarget& getDvidTarget() const {
     return m_reader.getDvidTarget();
@@ -38,13 +42,12 @@ public:
 
   bool validateSize(int *width, int *height) const;
 
-  int getZoom() const {
-    return m_zoom;
-  }
+  int getZoom(int viewId, EViewParamOption option) const;
+  int getHighresZoom(int viewId, EViewParamOption option) const;
 
-  int getHighresZoom(int viewId) const;
+  int getLowresZoom(int viewId, EViewParamOption option) const;
 
-  int getLowresZoom() const;
+  ZStackViewParam getViewParam(int viewId, EViewParamOption option) const;
 
   const ZStackViewParam& getViewParamLastUpdate(int viewId) const;
 
@@ -58,7 +61,7 @@ public:
 
   void forEachViewParam(std::function<void(const ZStackViewParam&)> f);
 
-  neutu::EAxis getSliceAxis(int viewId) const;
+  neutu::EAxis getSliceAxis(int viewId, EViewParamOption option) const;
 
   int getMaxWidth() const {
     return m_maxWidth;
@@ -87,15 +90,15 @@ public:
   int getZ(int viewId) const;
   int getZ() const;
 //  void setZ(int z);
-  int getWidth(int viewId) const;
-  int getHeight(int viewId) const;
-  size_t getViewPortArea(int viewId) const;
-  size_t getViewDataSize(int viewId) const;
-  double getPixelScale(int viewId) const;
+  int getWidth(int viewId, EViewParamOption option) const;
+  int getHeight(int viewId, EViewParamOption option) const;
+  size_t getViewPortArea(int viewId, EViewParamOption option) const;
+  size_t getViewDataSize(int viewId, EViewParamOption option) const;
+  double getPixelScale(int viewId, EViewParamOption option) const;
   static size_t GetViewDataSize(const ZStackViewParam &viewParam, int zoom);
 
-  void closeViewPort(int viewId);
-  void openViewPort(int viewId);
+  void closeViewPort(int viewId, EViewParamOption option);
+  void openViewPort(int viewId, EViewParamOption option);
 
   int getCenterCutWidth() const;
   int getCenterCutHeight() const;
@@ -105,8 +108,8 @@ public:
   ZIntCuboid getDataRange() const;
 //  void setBoundBox(const ZRect2d &rect);
 
-  int getScale() const;
-  void setZoom(int zoom);
+  int getScale(int viewId, EViewParamOption option) const;
+//  void setZoom(int zoom);
 
   void setViewParamLastUpdate(const ZStackViewParam &viewParam);
   void setViewParamActive(const ZStackViewParam &viewParam);
@@ -141,26 +144,28 @@ public:
       const ZAffinePlane &ap, int width, int height) const;
       */
   ZSliceViewTransform getCanvasTransform(
-      const ZAffinePlane &ap, int width, int height, int zoom, int viewId) const;
-  ZSliceViewTransform getCanvasTransform(
-      neutu::EAxis axis, const ZAffinePlane &ap,
-      int width, int height, int zoom, int viewId) const;
+      const ZAffinePlane &ap, int width, int height, int zoom, int viewId,
+      EViewParamOption option) const;
+  ZSliceViewTransform getCanvasTransform(neutu::EAxis axis, const ZAffinePlane &ap,
+      int width, int height, int zoom) const;
 
-  ZAffineRect getIntCutRect(int viewId) const;
+  ZAffineRect getIntCutRect(int viewId, EViewParamOption option) const;
 
   /*!
    * \brief Check if the actual resolution is not lower than the specified one
    */
-  bool isResolutionReached(int viewId) const;
+//  bool isResolutionReached(int viewId) const;
 
   /*!
    * \brief Check if a high resolution update is needed
    */
   bool highResUpdateNeeded(int viewId) const;
 
+  /*
   bool updateNeeded(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool usingCenterCut) const;
+*/
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);
@@ -176,7 +181,7 @@ public:
   void updateCenterCut();
 
   void setActualQuality(int zoom, int ccw, int cch, bool centerCut, int viewId);
-  void syncActualQuality(int viewId);
+//  void syncActualQuality(int viewId);
 
   int getActualScale(int viewId) const;
   int getActualZoom(int viewId) const;
