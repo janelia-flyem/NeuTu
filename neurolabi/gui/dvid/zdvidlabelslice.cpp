@@ -36,6 +36,7 @@
 #include "flyem/zflyemgeneralbodycolorscheme.h"
 #include "flyem/zflyemcompositebodycolorscheme.h"
 #include "flyem/zflyembodyidcolorscheme.h"
+#include "flyem/zflyembodymanager.h"
 
 //#include "flyem/zdvidlabelslicehighrestask.h"
 
@@ -349,6 +350,12 @@ void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
 bool ZDvidLabelSlice::isSupervoxel() const
 {
   return getDvidTarget().isSupervoxelView();
+}
+
+bool ZDvidLabelSlice::hasType(neutu::EBodyLabelType type) const
+{
+  return (type == neutu::EBodyLabelType::SUPERVOXEL)  ?
+        isSupervoxel() : !isSupervoxel();
 }
 
 int64_t ZDvidLabelSlice::getReadingTime() const
@@ -1072,20 +1079,8 @@ void ZDvidLabelSlice::assignColorMap()
   }
 }
 
-/*
-void ZDvidLabelSlice::remapId()
-{
-//  QMutexLocker locker(&m_updateMutex);
-  if (m_labelArray != NULL && m_mappedLabelArray == NULL) {
-    m_mappedLabelArray = new ZArray(m_labelArray->valueType(),
-                                    m_labelArray->getDimVector());
-  }
-  remapId(m_mappedLabelArray);
-}
-*/
-
+#if 0
 namespace {
-
 void remap_id(uint64_t *dstArray, const uint64_t *srcArray,
     size_t nvoxel, std::function<void(uint64_t*, const uint64_t*)> m)
 {
@@ -1390,7 +1385,7 @@ void ZDvidLabelSlice::remapId(ZArray *label)
   }
 }
 */
-
+#endif
 bool ZDvidLabelSlice::hit(double x, double y, double z, int viewId)
 {
   m_hitLabel = 0;
@@ -1460,18 +1455,19 @@ void ZDvidLabelSlice::updateColorField(int viewId)
 
   std::shared_ptr<ZFlyEmBodyColorScheme> baseScheme = getBaseColorScheme();
   static const uint32_t selectionColor = 0xFFFFFFFFu;
+  std::set<uint64_t> selected = getSelected(neutu::ELabelSource::ORIGINAL, true);
 
   ZFlyEmBodyMerger::TLabelMap bodyMap = getLabelMap();
   bool highlight = hasVisualEffect(
         neutu::display::LabelField::VE_HIGHLIGHT_SELECTED);
   if (highlight) {
-    if (m_selectedOriginal.empty()) {
+    if (selected.empty()) {
       scheme._getBodyColorCode = [&](uint64_t /*bodyId*/) {
         return 0u;
       };
     } else if (bodyMap.isEmpty()) {
       scheme._hasExplicitColor = [&](uint64_t bodyId) {
-        return m_selectedOriginal.count(bodyId) > 0;
+        return selected.count(bodyId) > 0;
       };
 
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
@@ -1483,7 +1479,7 @@ void ZDvidLabelSlice::updateColorField(int viewId)
       };
 
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
-        if (m_selectedOriginal.count(bodyId) > 0) {
+        if (selected.count(bodyId) > 0) {
           bodyId = bodyMap.value(bodyId, bodyId);
           return baseScheme->getBodyColorCode(bodyId);
         }
@@ -1502,19 +1498,19 @@ void ZDvidLabelSlice::updateColorField(int viewId)
       };
     } else if (bodyMap.isEmpty()) {
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
-        if (m_selectedOriginal.count(bodyId) > 0) {
+        if (selected.count(bodyId) > 0) {
           return selectionColor;
         }
         return baseScheme->getBodyColorCode(bodyId);
       };
-    } else if (m_selectedOriginal.empty()) {
+    } else if (selected.empty()) {
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
         bodyId = bodyMap.value(bodyId, bodyId);
         return baseScheme->getBodyColorCode(bodyId);
       };
     } else {
       scheme._getBodyColorCode = [&](uint64_t bodyId) {
-        if (m_selectedOriginal.count(bodyId) > 0) {
+        if (selected.count(bodyId) > 0) {
           return selectionColor;
         } else {
           bodyId = bodyMap.value(bodyId, bodyId);
@@ -1788,7 +1784,7 @@ bool ZDvidLabelSlice::resetSelectedLabelColor()
 {
   bool changed = false;
 
-  auto bodySet = getSelected(neutu::ELabelSource::MAPPED);
+  auto bodySet = getSelected(neutu::ELabelSource::MAPPED, true);
   for (auto body : bodySet) {
     if (removeLabelColor(body, 0)) {
       changed = true;
@@ -1802,7 +1798,7 @@ bool ZDvidLabelSlice::setSelectedLabelColor(const QColor &color)
 {
   bool changed = false;
 
-  auto bodySet = getSelected(neutu::ELabelSource::MAPPED);
+  auto bodySet = getSelected(neutu::ELabelSource::MAPPED, true);
   for (auto body : bodySet) {
     if (setLabelColor(body, color, 0)) {
       changed = true;
@@ -1849,21 +1845,31 @@ const ZStackViewParam& ZDvidLabelSlice::getViewParam() const
 }
 */
 std::set<uint64_t> ZDvidLabelSlice::getSelected(
-    neutu::ELabelSource labelType) const
+    neutu::ELabelSource labelType, bool decoded) const
 {
+  std::set<uint64_t> selected;
   switch (labelType) {
   case neutu::ELabelSource::ORIGINAL:
-    return getSelectedOriginal();
+    selected = getSelectedOriginal();
   case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
-      return m_bodyMerger->getFinalLabel(getSelectedOriginal());
+      selected = m_bodyMerger->getFinalLabel(getSelectedOriginal());
     } else {
-      return getSelectedOriginal();
+      selected = getSelectedOriginal();
     }
     break;
   }
 
-  return std::set<uint64_t>();
+  if (decoded) {
+    std::set<uint64_t> decodedSelected;
+    for (uint64_t bodyId : selected) {
+      decodedSelected.insert(ZFlyEmBodyManager::Decode(bodyId));
+    }
+    selected = decodedSelected;
+  }
+
+  return selected;
+//  return std::set<uint64_t>();
 }
 
 void ZDvidLabelSlice::mapSelection()

@@ -211,7 +211,7 @@ void Neu3Window::initGrayscaleWidget()
 //          getSliceViewParam(m_browsePos).getViewPort());
     m_sliceWidget->setInitialScale(1.0);
 
-    updateSliceBrowserSelection();
+//    updateSliceBrowserSelection();
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
@@ -335,6 +335,7 @@ bool Neu3Window::loadDvidTarget(const QString &name)
 
   if (target.isValid()) {
     m_sliceWidget = ZFlyEmProofMvc::Make(neutu::EAxis::ARB);
+    m_sliceWidget->getDocument()->setTag(neutu::Document::ETag::FLYEM_ARBSLICE);
 //    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ERole::ROLE_DOCUMENT);
     m_sliceWidget->getProgressSignal()->connectSlot(this);
     connect(m_sliceWidget, &ZFlyEmProofMvc::dvidReady,
@@ -678,12 +679,17 @@ void Neu3Window::updateSliceBrowser()
   }
 }
 
+/*
 void Neu3Window::updateSliceBrowserSelection()
 {
+  ZFlyEmBody3dDoc *doc = getBodyDocument();
+  m_sliceWidget->disconnectBodySelectionChange(doc);
   ZFlyEmProofMvcController::SelectBody(
-        m_sliceWidget, getBodyDocument()->getInvolvedNormalBodySet());
+        m_sliceWidget, doc->getInvolvedNormalBodySet());
+  m_sliceWidget->connectBodySelectionChange(doc);
 //        getBodyDocument()->getNormalBodySet());
 }
+*/
 
 void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
 {
@@ -702,7 +708,7 @@ void Neu3Window::applyBrowserColorScheme()
         ZFlyEmProofDocUtil::GetActiveLabelSlice(doc);
     if (slice) {
       slice->setCustomColorMap(m_browserColorScheme);
-      updateSliceBrowserSelection();
+//      updateSliceBrowserSelection();
     }
   }
 }
@@ -1022,7 +1028,7 @@ void Neu3Window::removeAllBodies()
 
   ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-  for (ZMesh *mesh : meshList) {
+  foreach (ZMesh *mesh, meshList) {
     dataDoc->deselectBody(mesh->getLabel());
   }
 

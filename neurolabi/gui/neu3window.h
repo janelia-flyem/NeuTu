@@ -164,7 +164,7 @@ private slots:
   void processSliceViewChange();
   void updateGrayscaleWidget();
   void updateSliceBrowser();
-  void updateSliceBrowserSelection();
+//  void updateSliceBrowserSelection();
   void updateBrowserColor(const QHash<uint64_t, QColor> &idToColor);
   void applyBrowserColorScheme();
 

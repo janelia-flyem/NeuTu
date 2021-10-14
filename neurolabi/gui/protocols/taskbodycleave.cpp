@@ -1948,7 +1948,7 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
 
   QJsonObject requestJsonSeeds;
 
-  for (auto it : cleaveIndexToMeshIds) {
+  for (const auto &it : cleaveIndexToMeshIds) {
     QJsonArray requestJsonSeedsForCleaveIndex;
     for (uint64_t id : it.second) {
       requestJsonSeedsForCleaveIndex.append(QJsonValue(qint64(id)));

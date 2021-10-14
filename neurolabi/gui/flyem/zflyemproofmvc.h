@@ -217,6 +217,9 @@ public: //Export functions
       const std::vector<uint64_t> &bodyIdArray, int width, int height,
       const QString &outDir);
 
+  void disconnectBodySelectionChange(ZFlyEmBody3dDoc *doc);
+  void connectBodySelectionChange(ZFlyEmBody3dDoc *doc);
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -291,7 +294,7 @@ public slots:
   void selectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
   void deselectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
   void selectBodyInRoi(int viewId, bool appending = true);
-  void selectBody(QList<uint64_t> bodyIdList);
+//  void selectBody(QList<uint64_t> bodyIdList);
   void notifyBodyMergeEdited();
   void updateProtocolRangeGlyph(
       const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);

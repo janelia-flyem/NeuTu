@@ -80,6 +80,7 @@ public:
   void freezeSelection(bool on) { m_selectionFrozen = on; }
 
   bool isSupervoxel() const;
+  bool hasType(neutu::EBodyLabelType type) const;
 
   void setSelection(
       const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
@@ -139,7 +140,8 @@ public:
     return m_selectedOriginal;
   }
 
-  std::set<uint64_t> getSelected(neutu::ELabelSource labelType) const;
+  std::set<uint64_t> getSelected(
+      neutu::ELabelSource labelType, bool decoded = false) const;
 
   bool isBodySelected(uint64_t bodyId, neutu::ELabelSource labelType) const;
 
@@ -277,14 +279,14 @@ private:
 //  void remapId(ZArray *label);
 //  void remapId();
 
-  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v);
-  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
-               std::set<uint64_t> &selected);
-  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
-               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
-  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
-               std::set<uint64_t> &selected,
-               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
+//  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v);
+//  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+//               std::set<uint64_t> &selected);
+//  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+//               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
+//  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+//               std::set<uint64_t> &selected,
+//               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
 
   void updateRgbTable();
 

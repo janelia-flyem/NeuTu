@@ -1038,8 +1038,7 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
 //  connect(getCompleteDocument(), SIGNAL(bodyMergeUploaded()),
 //          this, SLOT(updateBookmarkTable()));
 
-  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
-          doc, SLOT(processBodySelectionChange()));
+  connectBodySelectionChange(doc);
 
   if (getCompleteDocument()->getRoiProvider()) {
     connect(getCompleteDocument()->getRoiProvider().get(),
@@ -1050,6 +1049,18 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
 //  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   return doc;
+}
+
+void ZFlyEmProofMvc::disconnectBodySelectionChange(ZFlyEmBody3dDoc *doc)
+{
+  disconnect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          doc, SLOT(processBodySelectionChange()));
+}
+
+void ZFlyEmProofMvc::connectBodySelectionChange(ZFlyEmBody3dDoc *doc)
+{
+  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          doc, SLOT(processBodySelectionChange()));
 }
 
 void ZFlyEmProofMvc::syncBodySelectionToOrthoWindow()
@@ -6296,6 +6307,7 @@ void ZFlyEmProofMvc::notifyBodyMergeEdited()
   emit bodyMergeEdited();
 }
 
+/*
 void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
@@ -6316,6 +6328,7 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
     getCompleteDocument()->notifyBodySelectionChanged();
   }
 }
+*/
 
 bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {
@@ -6432,8 +6445,8 @@ void ZFlyEmProofMvc::checkSelectedBookmark(bool checking)
         ZStackObject::EType::FLYEM_BOOKMARK);
   bool userBookmarkUpdated = false;
   bool assignedBookmarkUpdated = false;
-  for (TStackObjectSet::const_iterator iter = selected.begin();
-       iter != selected.end(); ++iter) {
+  for (TStackObjectSet::const_iterator iter = selected.constBegin();
+       iter != selected.constEnd(); ++iter) {
     ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
     bookmark->setChecked(checking);
     recordBookmark(bookmark);
@@ -7395,6 +7408,8 @@ void ZFlyEmProofMvc::updateViewButton()
 
     getViewButton(EViewButton::GOTO_BODY)->setVisible(
           !getCompletePresenter()->isSplitOn());
+  } else {
+    getViewButton(EViewButton::GOTO_BODY)->hide();
   }
 }
 

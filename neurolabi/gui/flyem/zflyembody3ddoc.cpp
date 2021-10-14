@@ -5291,7 +5291,7 @@ void ZFlyEmBody3dDoc::configure(const ProtocolTaskConfig &config)
  *
  * Currently there are three types of body IDs: normal body ID, tar body ID
  * and supervoxel ID. Any added ID will be stored in the document as its decoded
- * format, and the only way to tell its type is through how its mapped id the
+ * format, and the only way to tell its type is through its mapped id in the
  * body manager. One limitation in the body manager is that it cannot store both
  * the normal form and the tar form of a body ID. Storing a supervoxel and a body
  * with the same decoded ID can also cause some confusion. So do NOT add different

@@ -6433,14 +6433,19 @@ bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
   if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
     bodyType = neutu::EBodyLabelType::SUPERVOXEL;
   }
-  if (getDvidReader().hasBody(ZFlyEmBodyManager::Decode(bodyId), bodyType)) {
-    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+  uint64_t decodedBody = ZFlyEmBodyManager::Decode(bodyId);
+  if (getDvidReader().hasBody(decodedBody, bodyType)) {
+    QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
     //  ZDvidLabelSlice *slice = getDvidLabelSlice();
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
          iter != sliceList.end(); ++iter) {
       ZDvidLabelSlice *slice = *iter;
-      slice->addSelection(bodyId, neutu::ELabelSource::MAPPED);
+      if (slice->hasType(bodyType)) {
+        slice->addSelection(bodyId, neutu::ELabelSource::MAPPED);
+        bufferObjectModified(slice);
+      }
     }
+    processObjectModified();
 
     return true;
   }
@@ -6450,12 +6455,21 @@ bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 
 void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
 {
+  neutu::EBodyLabelType bodyType = neutu::EBodyLabelType::BODY;
+  if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
+    bodyType = neutu::EBodyLabelType::SUPERVOXEL;
+  }
+//  uint64_t decodedBody = ZFlyEmBodyManager::Decode(bodyId);
   QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
-    slice->removeSelection(bodyId, neutu::ELabelSource::MAPPED);
+    if (slice->hasType(bodyType)) {
+      slice->removeSelection(bodyId, neutu::ELabelSource::MAPPED);
+      bufferObjectModified(slice);
+    }
   }
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::selectBodyInRoi(int /*z*/, bool appending, bool removingRoi)
