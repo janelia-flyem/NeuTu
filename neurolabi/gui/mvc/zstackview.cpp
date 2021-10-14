@@ -3534,6 +3534,7 @@ void ZStackView::reloadCanvas()
 //  reloadTileCanvas();
 }
 
+/*
 void ZStackView::setViewPort(const QRect &rect)
 {
   imageWidget()->setViewPort(rect);
@@ -3541,6 +3542,12 @@ void ZStackView::setViewPort(const QRect &rect)
   reloadCanvas();
   processViewChange(false, false);
   redraw();
+}
+*/
+
+void ZStackView::setViewPort(const ZAffineRect &rect)
+{
+  imageWidget()->setViewPort(rect);
 }
 
 void ZStackView::maximizeViewPort()
@@ -3551,55 +3558,6 @@ void ZStackView::maximizeViewPort()
   processViewChange(false, false);
   redraw();
 }
-
-#if 0
-void ZStackView::setView(const ZStackViewParam &param)
-{
-  if (isViewChanged(param)) {
-    ZIntCuboid box = getViewBoundBox();
-
-    bool depthChanged = false;
-    int slice = param.getZ();
-//    QRect viewPort = param.getViewPort();
-
-    ZViewProj viewProj = param.getViewProj();
-
-    switch (param.getCoordinateSystem()) {
-    case neutu::ECoordinateSystem::RAW_STACK:
-    {
-      viewProj.move(box.getMinCorner().getX(),
-                    box.getMinCorner().getY());
-    }
-      break;
-    case neutu::ECoordinateSystem::STACK:
-    {
-//      QRect viewPort = param.getViewPort();
-      slice -= box.getMinCorner().getZ();
-//      setSliceIndexQuietly(param.getZ() - box.getFirstCorner().getZ());
-    }
-      break;
-    default:
-      break;
-    }
-
-//    m_imageWidget->setViewProj(viewProj);
-//    m_imageWidget->setViewPort(viewPort);
-
-    if (param.fixingZ() == false) {
-      if (slice != m_depthControl->value()) {
-        depthChanged = true;
-        setSliceIndexQuietly(slice);
-      }
-    }
-
-    reloadCanvas();
-
-    processViewChange(false, depthChanged);
-
-    redraw();
-  }
-}
-#endif
 
 void ZStackView::processDepthSliderValueChange()
 {

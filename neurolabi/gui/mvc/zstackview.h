@@ -584,7 +584,8 @@ public slots:
 
 
 //  void setView(const ZStackViewParam &param);
-  void setViewPort(const QRect &rect);
+//  void setViewPort(const QRect &rect);
+  void setViewPort(const ZAffineRect &rect);
   void maximizeViewPort();
 
   void updateZSpinBoxValue();

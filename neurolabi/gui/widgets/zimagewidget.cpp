@@ -164,6 +164,14 @@ ZAffineRect ZImageWidget::getViewPort() const
 //  return m_sliceViewTransform.inverseTransformRect(0, 0, width(), height());
 }
 
+void ZImageWidget::setViewPort(const ZAffineRect &rect)
+{
+  m_sliceViewTransform.setScale(
+        std::min(width() / rect.getWidth(), height() / rect.getHeight()));
+  m_sliceViewTransform.setCutPlane(rect.getAffinePlane());
+  notifyTransformChanged();
+}
+
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
 #ifdef _DEBUG_0

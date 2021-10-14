@@ -92,6 +92,9 @@ public:
   static ZFlyEmProofMvc* Make(neutu::EAxis axis);
   static ZFlyEmProofMvc* Make(const std::vector<neutu::EAxis> &axes);
 
+  void clear();
+  void exitCurrentDoc();
+
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
 
@@ -115,12 +118,12 @@ public:
 
   void setDvidFromName(const std::string &name);
 
-  void clear();
+  ZDvidEnv getDvidEnv() const;
+  ZDvidTarget getDvidTarget() const;
+  std::string getDvidTargetUuid() const;
 
-  void exitCurrentDoc();
-
-  void enableSplit(neutu::EBodySplitMode mode);
-  void disableSplit();
+  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
+  ZDvidTargetProviderDialog* getDvidDialog() const;
 
   void processViewChangeCustom(const ZStackViewParam &viewParam) override;
 
@@ -131,15 +134,9 @@ public:
 //  bool checkInBody(uint64_t bodyId);
   bool checkOutBody(uint64_t bodyId, neutu::EBodySplitMode mode);
 
-  ZDvidEnv getDvidEnv() const;
-  ZDvidTarget getDvidTarget() const;
-  std::string getDvidTargetUuid() const;
 
-  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
-  ZDvidTargetProviderDialog* getDvidDialog() const;
-
-  uint64_t getBodyIdForSplit() const;
-  void setBodyIdForSplit(uint64_t id);
+//  uint64_t getBodyIdForSplit() const;
+//  void setBodyIdForSplit(uint64_t id);
 
   void updateContrast();
 
@@ -173,6 +170,13 @@ public:
   bool hasProfileTask() const;
 
   void configure();
+
+public: //view control
+  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
+  void setCutPlane(const ZPlane &plane);
+  void setCutPlane(const ZAffinePlane &plane);
+  void setCutPlane(const ZPoint &center, const ZPoint &v1, const ZPoint &v2);
+  void setCutPlane(const ZAffineRect &rect);
 
 public: //body-related functions
   static void showAnnotations(bool show);
@@ -533,6 +537,9 @@ protected:
   void warn(const char *msg);
   void warn(const QString &msg);
 
+  void enableSplit(neutu::EBodySplitMode mode);
+  void disableSplit();
+
 private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);
@@ -678,6 +685,7 @@ private:
 
   void makeViewButton(EViewButton option, const QString &name, const char *slot);
   void updateViewButton();
+  void updateViewButton(EViewButton option);
 
   void updateRoiWidget(Z3DWindow *win) const;
 

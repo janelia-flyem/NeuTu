@@ -125,6 +125,7 @@ public:
    * \brief Get viewport in the model space
    */
   ZAffineRect getViewPort() const;
+  void setViewPort(const ZAffineRect &rect);
 
 //  void setViewPort(const QRect &rect);
 //  void setProjRegion(const QRectF &rect);

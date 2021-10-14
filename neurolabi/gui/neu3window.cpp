@@ -450,8 +450,8 @@ void Neu3Window::initNativeSliceBrowser()
     m_nativeSliceDock->setAllowedAreas(Qt::NoDockWidgetArea);
   }
 
-  m_browseWidth = DEFAULT_BROWSE_WIDTH;
-  m_browseHeight = DEFAULT_BROWSE_HEIGHT;
+//  m_browseWidth = DEFAULT_BROWSE_WIDTH;
+//  m_browseHeight = DEFAULT_BROWSE_HEIGHT;
 }
 
 void Neu3Window::initWebView()
@@ -608,6 +608,7 @@ void Neu3Window::removeSliceViewGraph()
         ZStackObjectSourceFactory::MakeSlicViewObjectSource(), true);
 }
 
+/*
 void Neu3Window::updateBrowseSize()
 {
   if (m_browseMode == EBrowseMode::NATIVE) {
@@ -618,12 +619,16 @@ void Neu3Window::updateBrowseSize()
     }
   }
 }
+*/
 
 void Neu3Window::processCameraRotation()
 {
   trackSliceViewPort();
+  if (m_sliceWidget) {
+    m_sliceWidget->setCutPlane(getViewOrientation());
+  }
 //  updateBrowseSize();
-  updateSliceBrowser();
+//  updateSliceBrowser();
 //  updateBrowser();
 //  updateEmbeddedGrayscale();
 //  updateGrayscaleWidget();
@@ -636,47 +641,64 @@ void Neu3Window::trackSliceViewPort() const
   }
 }
 
-void Neu3Window::updateSliceWidgetPlane()
+void Neu3Window::updateSliceWidgetPlane(const ZPoint &pos)
 {
   if (m_sliceWidget) {
-    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
-    m_sliceWidget->setCutPlane(
-          m_browsePos, viewParam.getPlaneV1(), viewParam.getPlaneV2());
+//    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+    ZPlane plane = getViewOrientation();
+    m_sliceWidget->setCutPlane(pos, plane.getV1(), plane.getV2());
   }
 }
 
+void Neu3Window::updateSliceWidgetPlane(double x, double y, double z)
+{
+  if (m_sliceWidget) {
+//    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+    ZPlane plane = getViewOrientation();
+    m_sliceWidget->setCutPlane({x, y, z}, plane.getV1(), plane.getV2());
+  }
+}
+
+/*
 void Neu3Window::updateSliceWidget()
 {
   LDEBUG() << "Updating slice widget";
   if (m_sliceWidget != NULL) {
-    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
-    m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
+    m_sliceWidget->setCutPlane(getDefaultCutPlane(m_browsePos));
+//    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+//    m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
 //    m_sliceWidget->resetViewParam(viewParam);
 
     trackSliceViewPort();
   }
 }
+*/
 
-void Neu3Window::updateSliceBrowser()
+void Neu3Window::updateSliceBrowser(const ZPoint &pos)
 {
   switch (m_browseMode) {
   case EBrowseMode::NATIVE:
     if (m_nativeSliceDock != NULL) {
       m_nativeSliceDock->show();
       LDEBUG() << "m_nativeSliceDock->show called";
-      updateSliceWidgetPlane();
+      updateSliceWidgetPlane(pos);
 //      QTimer::singleShot(3000, this, &Neu3Window::updateSliceWidget);
     }
     break;
   case EBrowseMode::NEUROGLANCER:
     if (m_webSliceDock != NULL) {
       m_webSliceDock->show();
-      updateWebView();
+      updateWebView(pos);
     }
     break;
   default:
     break;
   }
+}
+
+void Neu3Window::updateSliceBrowser(double x, double y, double z)
+{
+  updateSliceBrowser({x, y, z});
 }
 
 /*
@@ -713,7 +735,7 @@ void Neu3Window::applyBrowserColorScheme()
   }
 }
 
-void Neu3Window::updateWebView()
+void Neu3Window::updateWebView(const ZPoint &pos)
 {
 #if defined(_USE_WEBENGINE_)
   if (m_webView != NULL) {
@@ -723,7 +745,7 @@ void Neu3Window::updateWebView()
     rotation.setWeight(r.w);
 
     QUrl url(flyem::GetNeuroglancerPath(
-               m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
+               m_dataContainer->getDvidTarget(), pos.toIntPoint(),
                rotation, getBodyDocument()->getNormalBodySet()));
 
 
@@ -764,15 +786,39 @@ void Neu3Window::updateEmbeddedGrayscale()
 }
 */
 
+/*
+ZAffineRect Neu3Window::getDefaultCutPlane(const ZPoint &center) const
+{
+  return getDefaultCutPlane(center.getX(), center.getY(), center.getZ());
+}
+
+ZAffineRect Neu3Window::getDefaultCutPlane(double x, double y, double z) const
+{
+  ZAffineRect rect;
+  rect.setCenter(x, y, z);
+  rect.setSize(DEFAULT_BROWSE_WIDTH, DEFAULT_BROWSE_HEIGHT);
+  std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
+  rect.setPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
+                ZPoint(ort.second.x, ort.second.y, ort.second.z));
+  return rect;
+}
+*/
+
+ZPlane Neu3Window::getViewOrientation() const
+{
+  std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
+  return ZPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
+                ZPoint(ort.second.x, ort.second.y, ort.second.z));
+}
+
+/*
 ZArbSliceViewParam Neu3Window::getSliceViewParam(double x, double y, double z) const
 {
   ZArbSliceViewParam viewParam;
   viewParam.setSize(m_browseWidth, m_browseHeight);
   viewParam.setCenter(neutu::iround(x), neutu::iround(y), neutu::iround(z));
 
-  std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
-  viewParam.setPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
-                     ZPoint(ort.second.x, ort.second.y, ort.second.z));
+  viewParam.setPlane(getViewOrientation());
 
   return viewParam;
 }
@@ -781,6 +827,7 @@ ZArbSliceViewParam Neu3Window::getSliceViewParam(const ZPoint &center) const
 {
   return getSliceViewParam(center.x(), center.y(), center.z());
 }
+*/
 
 /*
 void Neu3Window::browseInPlace(double x, double y, double z)
@@ -803,7 +850,7 @@ void Neu3Window::browse(double x, double y, double z)
       startBrowser(m_browseOptionDlg->getBrowseMode());
     }
   } else {
-    updateSliceBrowser();
+    updateSliceBrowser(x, y, z);
   }
 }
 
@@ -823,7 +870,7 @@ void Neu3Window::browse(
   }
 
   updateBrowserColor(idToColor);
-  updateSliceBrowser();
+  updateSliceBrowser(x, y, z);
 }
 
 void Neu3Window::startBrowser(EBrowseMode mode)
@@ -834,7 +881,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
   case EBrowseMode::NATIVE:
   {
     initNativeSliceBrowser();
-    updateSliceBrowser();
+    updateSliceBrowser(m_browsePos);
   }
     break;
   case EBrowseMode::NEUROGLANCER:

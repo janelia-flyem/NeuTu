@@ -97,10 +97,6 @@ public:
   void setDefaultViewPort(const QRect &rect);
   neutu::EAxis getSliceAxis() const;
 
-  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
-  void setCutPlane(const ZPlane &plane);
-  void setCutPlane(const ZAffinePlane &plane);
-  void setCutPlane(const ZPoint &center, const ZPoint &v1, const ZPoint &v2);
   void setZoomScale(double s);
   void setInitialScale(double s);
 

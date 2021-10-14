@@ -1063,27 +1063,6 @@ void ZStackMvc::setInitialScale(double s)
   getMainView()->setInitialScale(s);
 }
 
-void ZStackMvc::setCutPlane(const ZPoint &v1, const ZPoint &v2)
-{
-  getMainView()->setCutPlane(v1, v2);
-}
-
-void ZStackMvc::setCutPlane(const ZPlane &plane)
-{
-  getMainView()->setCutPlane(plane.getV1(), plane.getV2());
-}
-
-void ZStackMvc::setCutPlane(const ZAffinePlane &plane)
-{
-  getMainView()->setCutPlane(plane);
-}
-
-void ZStackMvc::setCutPlane(
-    const ZPoint &center, const ZPoint &v1, const ZPoint &v2)
-{
-  setCutPlane(ZAffinePlane(center, v1, v2));
-}
-
 /*
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {

@@ -32,6 +32,8 @@ class ZFlyEmMessageWidget;
 class ZWidgetMessage;
 class ZFlyEmBodyColorScheme;
 class InformationDialog;
+class ZAffineRect;
+class ZPlane;
 
 #if defined(_USE_WEBENGINE_)
 class QWebEngineView;
@@ -163,7 +165,8 @@ private slots:
 
   void processSliceViewChange();
   void updateGrayscaleWidget();
-  void updateSliceBrowser();
+  void updateSliceBrowser(double x, double y, double z);
+  void updateSliceBrowser(const ZPoint &pos);
 //  void updateSliceBrowserSelection();
   void updateBrowserColor(const QHash<uint64_t, QColor> &idToColor);
   void applyBrowserColorScheme();
@@ -176,8 +179,9 @@ private slots:
   void updateSliceViewGraph(const ZArbSliceViewParam &param);
   void removeSliceViewGraph();
 
-  void updateSliceWidget();
-  void updateSliceWidgetPlane();
+//  void updateSliceWidget();
+  void updateSliceWidgetPlane(double x, double y, double z);
+  void updateSliceWidgetPlane(const ZPoint &pos);
 
   void processSliceDockVisibility(bool on);
 
@@ -211,13 +215,16 @@ private:
   QAction* getAction(ZActionFactory::EAction key);
   void initWebView();
   void initGrayscaleWidget();
-  ZArbSliceViewParam getSliceViewParam(double x, double y, double z) const;
-  ZArbSliceViewParam getSliceViewParam(const ZPoint &center) const;
+  ZPlane getViewOrientation() const;
+//  ZArbSliceViewParam getSliceViewParam(double x, double y, double z) const;
+//  ZArbSliceViewParam getSliceViewParam(const ZPoint &center) const;
+//  ZAffineRect getDefaultCutPlane(double x, double y, double z) const;
+//  ZAffineRect getDefaultCutPlane(const ZPoint &center) const;
 
   void startBrowser(EBrowseMode mode);
   void endBrowse();
-  void updateWebView();
-  void updateBrowseSize();
+  void updateWebView(const ZPoint &pos);
+//  void updateBrowseSize();
 
   QDockWidget* getSliceViewDoc() const;
   void createDialogs();
@@ -254,10 +261,10 @@ private:
 
   ZPoint m_browsePos;
 
-  constexpr static int DEFAULT_BROWSE_WIDTH = 512;
-  constexpr static int DEFAULT_BROWSE_HEIGHT = 512;
-  int m_browseWidth = DEFAULT_BROWSE_WIDTH;
-  int m_browseHeight = DEFAULT_BROWSE_HEIGHT;
+  constexpr static int DEFAULT_BROWSE_WIDTH = 512; // No longer used
+  constexpr static int DEFAULT_BROWSE_HEIGHT = 512; // No longer used
+//  int m_browseWidth = DEFAULT_BROWSE_WIDTH;
+//  int m_browseHeight = DEFAULT_BROWSE_HEIGHT;
   EBrowseMode m_browseMode = EBrowseMode::NONE;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_browserColorScheme;
 

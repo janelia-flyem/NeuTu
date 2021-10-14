@@ -2910,10 +2910,8 @@ void ZFlyEmProofMvc::handleDvidTargetChange(const ZDvidTarget &target)
         view->enableCustomCheckBox(0, "blinking", view, SLOT(setBlinking(bool)));
       }
     }
-    if (getDvidTarget().hasSegmentation()) {
-      getViewButton(EViewButton::GOTO_BODY)->show();
-    }
-    getViewButton(EViewButton::GOTO_POSITION)->show();
+    updateViewButton(EViewButton::GOTO_POSITION);
+    updateViewButton(EViewButton::GOTO_BODY);
 
     m_dlgManager->getNeuroglancerLinkDlg()->init(getDvidEnv());
   }
@@ -6204,6 +6202,46 @@ void ZFlyEmProofMvc::saveSplitTask(uint64_t bodyId)
   }
 }
 
+void ZFlyEmProofMvc::setCutPlane(const ZPoint &v1, const ZPoint &v2)
+{
+  if (getPresenter()->getSliceAxis() != neutu::EAxis::ARB) {
+    getCompletePresenter()->setCutPlaneArb();
+  }
+  getMainView()->setCutPlane(v1, v2);
+}
+
+void ZFlyEmProofMvc::setCutPlane(const ZPlane &plane)
+{
+  if (getPresenter()->getSliceAxis() != neutu::EAxis::ARB) {
+    getCompletePresenter()->setCutPlaneArb();
+  }
+  getMainView()->setCutPlane(plane.getV1(), plane.getV2());
+}
+
+void ZFlyEmProofMvc::setCutPlane(const ZAffinePlane &plane)
+{
+  if (getPresenter()->getSliceAxis() != neutu::EAxis::ARB) {
+    getCompletePresenter()->setCutPlaneArb();
+  }
+  getMainView()->setCutPlane(plane);
+}
+
+void ZFlyEmProofMvc::setCutPlane(
+    const ZPoint &center, const ZPoint &v1, const ZPoint &v2)
+{
+  setCutPlane(ZAffinePlane(center, v1, v2));
+}
+
+void ZFlyEmProofMvc::setCutPlane(const ZAffineRect &rect)
+{
+  if (getPresenter()->getSliceAxis() != neutu::EAxis::ARB) {
+    getCompletePresenter()->setCutPlaneArb();
+  }
+  getMainView()->setViewPort(rect);
+}
+
+
+/*
 uint64_t ZFlyEmProofMvc::getBodyIdForSplit() const
 {
   return m_splitProject.getBodyId();
@@ -6213,7 +6251,7 @@ void ZFlyEmProofMvc::setBodyIdForSplit(uint64_t id)
 {
   m_splitProject.setBodyId(id);
 }
-
+*/
 
 void ZFlyEmProofMvc::loadSplitResult()
 {
@@ -7363,54 +7401,71 @@ void ZFlyEmProofMvc::initViewButton()
   }
 }
 
-void ZFlyEmProofMvc::updateViewButton()
+void ZFlyEmProofMvc::updateViewButton(EViewButton option)
 {
-  std::cout << "Update view button" << std::endl;
-  if (getCompleteDocument()->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
-    if (!getDvidTarget().readOnly() && getCompleteDocument()->isAdmin()) {
-      std::cout << "Update view button for admin" << std::endl;
+  bool visible = true;
+  switch (option) {
+  case EViewButton::GOTO_POSITION:
+    visible = getDvidTarget().isValid();
+    break;
+  case EViewButton::GOTO_BODY: {
+    visible = (getCompleteDocument()->getTag() ==
+                    neutu::Document::ETag::FLYEM_PROOFREAD) &&
+        !getCompletePresenter()->isSplitOn() &&
+        getDvidTarget().hasSegmentation();
+
+  }
+    break;
+  case EViewButton::ANNOTATE_ROUGHLY_TRACED:
+  case EViewButton::ANNOTATE_TRACED:
+    visible = !getDvidTarget().readOnly() && getCompleteDocument()->isAdmin();
+    if (visible) {
       std::set<uint64_t> bodySet =
           getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::ORIGINAL);
-      if (bodySet.size() == 1) {
+      visible = (bodySet.size() == 1);
+      if (visible) {
         uint64_t bodyId = *(bodySet.begin());
         ZString status(getCompleteDocument()->getBodyStatus(bodyId));
-//        ZFlyEmBodyAnnotation annot =
-//            getCompleteDocument()->getRecordedAnnotation(bodyId);
-//        if (annot.getBodyId() == bodyId) {
-//          ZString status(annot.getStatus());
-          status.toLower();
-          int rank = getCompleteDocument()->getBodyStatusRank(status);
-          auto pred = [&, this](
-              const std::string &buttonStatus) {
-            ZFlyEmProofDoc *doc = this->getCompleteDocument();
-            std::cout << "Body pred check" << buttonStatus << " "
+
+        status.toLower();
+        int rank = getCompleteDocument()->getBodyStatusRank(status);
+        auto pred = [&, this](
+            const std::string &buttonStatus) {
+          ZFlyEmProofDoc *doc = this->getCompleteDocument();
+          std::cout << "Body pred check" << buttonStatus << " "
                       << doc->isExpertBodyStatus(buttonStatus) << " "
                       << rank << " " << doc->getBodyStatusRank(buttonStatus)
                       << std::endl;
-            return doc->isExpertBodyStatus(buttonStatus) &&
-                rank > doc->getBodyStatusRank(buttonStatus);
-          };
-
-          //        if (pred("roughly traced")) {
-          //          std::cout << "Expert status" << std::endl;
-          //        }
-
-          getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->setVisible(
-                pred("roughly traced"));
-          getViewButton(EViewButton::ANNOTATE_TRACED)->setVisible(
-                pred("traced"));
-//        }
-      } else {
-        getViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED)->hide();
-        getViewButton(EViewButton::ANNOTATE_TRACED)->hide();
+          return doc->isExpertBodyStatus(buttonStatus) &&
+              rank > doc->getBodyStatusRank(buttonStatus);
+        };
+        if (option == EViewButton::ANNOTATE_ROUGHLY_TRACED) {
+          visible = pred("roughly traced");
+        } else if (option == EViewButton::ANNOTATE_TRACED) {
+          visible = pred("traced");
+        }
       }
     }
-
-    getViewButton(EViewButton::GOTO_BODY)->setVisible(
-          !getCompletePresenter()->isSplitOn());
-  } else {
-    getViewButton(EViewButton::GOTO_BODY)->hide();
+    break;
+  default:
+    break;
   }
+  getViewButton(option)->setVisible(visible);
+}
+
+void ZFlyEmProofMvc::updateViewButton()
+{
+  if (getRole() != ERole::ROLE_WIDGET) {
+    return;
+  }
+
+#ifdef _DEBUG_
+  std::cout << "Update view button" << std::endl;
+#endif
+
+  updateViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
+  updateViewButton(EViewButton::ANNOTATE_TRACED);
+  updateViewButton(EViewButton::GOTO_BODY);
 }
 
 void ZFlyEmProofMvc::makeViewButton(
