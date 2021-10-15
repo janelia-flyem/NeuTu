@@ -526,27 +526,6 @@ bool ZDvidDataSliceHelper::IsResIncreasing(
   return result;
 }
 
-/*
-bool ZDvidDataSliceHelper::containedIn(
-    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
-    bool centerCut) const
-{
-  bool contained = false;
-
-  if (m_currentViewParam.getViewPort().isEmpty() &&
-      !viewParam.getViewPort().isEmpty()) {
-    contained = true;
-  } else if (viewParam.contains(m_currentViewParam)) {
-    contained = ZDvidDataSliceHelper::IsResIncreasing(
-          getZoom(), getCenterCutWidth(), getCenterCutHeight(), usingCenterCut(),
-          zoom, centerCutX, centerCutY, centerCut,
-          getWidth(), getHeight(), getMaxZoom());
-  }
-
-  return contained;
-}
-*/
-
 bool ZDvidDataSliceHelper::actualContainedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool centerCut) const

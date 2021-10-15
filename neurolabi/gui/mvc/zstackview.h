@@ -583,8 +583,6 @@ public slots:
   void closeChildFrame();
 
 
-//  void setView(const ZStackViewParam &param);
-//  void setViewPort(const QRect &rect);
   void setViewPort(const ZAffineRect &rect);
   void maximizeViewPort();
 
@@ -597,12 +595,10 @@ public slots:
 
   void hideThresholdControl();
 
-//  void setDynamicObjectAlpha(int alpha);
   void resetViewProj();
 
   void enableCustomCheckBox(
       int index, const QString &text, QObject *receiver, const char *slot);
-//  void processWidgetCanvasUpdate(ZPixmap *canvas);
 
   void processCanvasUpdate(
       neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas);
