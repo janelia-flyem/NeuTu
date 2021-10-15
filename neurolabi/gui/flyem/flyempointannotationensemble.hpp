@@ -20,6 +20,9 @@ public:
   bool display_inner(
       QPainter *painter, const DisplayConfig &config) const override;
 
+  virtual bool display_selected(
+      QPainter *painter, const DisplayConfig &config) const;
+
   void addItem(const TItem &item);
   void removeItem(const ZIntPoint &pos);
   void updatePartner(const ZIntPoint &pos);
@@ -70,6 +73,24 @@ protected:
 };
 
 template<typename T, typename TChunk>
+bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_selected(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  bool painted =  false;
+  std::set<ZIntPoint> selected = getSelectedPos();
+  for (const ZIntPoint &pos : selected) {
+    auto item = getItem(pos);
+    if (item.isValid()) {
+      if (item.display(painter, config)) {
+        painted = true;
+      }
+    }
+  }
+
+  return painted;
+}
+
+template<typename T, typename TChunk>
 bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
     QPainter *painter, const DisplayConfig &config) const
 {
@@ -87,15 +108,9 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
       }
     });
   }, 1.5);
-  std::set<ZIntPoint> selected = getSelectedPos();
-  for (const ZIntPoint &pos : selected) {
-    auto item = getItem(pos);
-    if (item.isValid()) {
-      if (item.display(painter, config)) {
-        painted = true;
-      }
-    }
-  }
+
+  bool selectedPainted = display_selected(painter, config);
+  painted = painted || selectedPainted;
 
 #ifdef _DEBUG_0
   std::cout << "FlyEmPointAnnotationEnsemble<T, TChunk>::display: " << painted << std::endl;

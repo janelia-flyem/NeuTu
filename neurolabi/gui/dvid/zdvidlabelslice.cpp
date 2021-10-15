@@ -1851,6 +1851,7 @@ std::set<uint64_t> ZDvidLabelSlice::getSelected(
   switch (labelType) {
   case neutu::ELabelSource::ORIGINAL:
     selected = getSelectedOriginal();
+    break;
   case neutu::ELabelSource::MAPPED:
     if (m_bodyMerger != NULL) {
       selected = m_bodyMerger->getFinalLabel(getSelectedOriginal());
