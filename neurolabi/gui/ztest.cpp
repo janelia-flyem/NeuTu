@@ -33178,6 +33178,20 @@ void ZTest::test(MainWindow *host)
   target.setUuid("@test");
   std::cout << "uuid: " << ZDvidReader::InferUuid(target) << std::endl;
 #endif
+
+#if 1
+  ZDvidTarget target = ZDvidTargetFactory::MakeFromSpec(
+        "https://waspem-dvid2.flatironinstitute.org?"
+        "uuid=bd2d95d538754b8b8956ba1c9dbdb114&grayscale=sch1");
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    reader.updateMaxGrayscaleZoom();
+    std::cout << reader.getDvidTarget().getMaxGrayscaleZoom() << std::endl;
+    ZStack *stack = reader.readGrayScale(1527, 557, 1814, 256, 256, 1, 1);
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  }
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

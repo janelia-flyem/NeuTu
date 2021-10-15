@@ -851,6 +851,7 @@ bool ZDvidLabelSlice::consume(
   bool succ = false;
   if (array != NULL) {
     if (containedIn(viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
+      getHelper()->setViewParamLastUpdate(viewParam);
 //      getHelper()->setZoom(zoom);
 //      getHelper()->setViewParam(viewParam);
       getHelper()->setActualQuality(
