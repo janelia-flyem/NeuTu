@@ -219,6 +219,20 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
         config.append(ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES_EXC);
       }
       config.appendSeparator();
+      /* Bookmark actions */
+      const TStackObjectSet& bookmarkSet =
+          doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
+      if (!bookmarkSet.isEmpty()) {
+        QString groupName("Bookmarks");
+        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
+        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+        if (ZStackDocHelper::AllowingBodySelection(doc)) {
+          config.appendSeparator(groupName);
+          config.append(groupName, ZActionFactory::ACTION_BOOKMARK_SELECT_BODY);
+        }
+      }
+      config.appendSeparator();
+
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
       config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
       config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
@@ -304,19 +318,6 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
   if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
     if (!presenter->interactiveContext().acceptingRect()) {
-      /* Bookmark actions */
-      const TStackObjectSet& bookmarkSet =
-          doc->getSelected(ZStackObject::EType::FLYEM_BOOKMARK);
-      if (!bookmarkSet.isEmpty()) {
-        QString groupName("Bookmarks");
-        if (doc->hasSegmentation()) {
-          config.append(groupName, ZActionFactory::ACTION_BOOKMARK_SELECT_BODY);
-          config.appendSeparator(groupName);
-        }
-        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
-        config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
-      }
-
       //    QList<ZActionFactory::EAction> swcActionList;
       //SWC actions (submenu has to be added separately)
       QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();

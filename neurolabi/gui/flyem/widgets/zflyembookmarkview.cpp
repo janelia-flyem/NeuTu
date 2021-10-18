@@ -100,12 +100,6 @@ void ZFlyEmBookmarkView::createMenu()
 {
   m_contextMenu = new QMenu(this);
 
-  QAction *bodySelectionAction = new QAction("Select Bodies", this);
-  m_contextMenu->addAction(bodySelectionAction);
-  connect(bodySelectionAction, SIGNAL(triggered()),
-          this, SLOT(selectBodyUnderSelectedBookmark()));
-  m_contextMenu->addSeparator();
-
   QAction *checkAction = new QAction("Set Checked", this);
   m_contextMenu->addAction(checkAction);
   connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
@@ -114,8 +108,15 @@ void ZFlyEmBookmarkView::createMenu()
   m_contextMenu->addAction(unCheckAction);
   connect(unCheckAction, SIGNAL(triggered()),
           this, SLOT(uncheckCurrentBookmark()));
+  m_contextMenu->addSeparator();
+
+  QAction *bodySelectionAction = new QAction("Select Bodies", this);
+  m_contextMenu->addAction(bodySelectionAction);
+  connect(bodySelectionAction, SIGNAL(triggered()),
+          this, SLOT(selectBodyUnderSelectedBookmark()));
 
   if (m_enableDeletion) {
+    m_contextMenu->addSeparator();
     QAction *deleteAction = new QAction("Delete Selected", this);
     m_contextMenu->addAction(deleteAction);
     connect(deleteAction, SIGNAL(triggered()),
@@ -123,6 +124,7 @@ void ZFlyEmBookmarkView::createMenu()
   }
 
 #ifdef _DEBUG_
+  m_contextMenu->addSeparator();
   QAction *copyUrlAction = new QAction("Copy URL", this);
   m_contextMenu->addAction(copyUrlAction);
   connect(copyUrlAction, SIGNAL(triggered()),

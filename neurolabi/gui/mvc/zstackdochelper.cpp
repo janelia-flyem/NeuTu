@@ -242,3 +242,9 @@ bool ZStackDocHelper::AllowingBodyLock(const ZStackDoc *doc)
 
   return false;
 }
+
+bool ZStackDocHelper::AllowingBodySelection(const ZFlyEmProofDoc *doc)
+{
+  return (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) &&
+      doc->hasSegmentation();
+}
