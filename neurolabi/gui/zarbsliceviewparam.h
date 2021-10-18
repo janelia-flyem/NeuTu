@@ -6,6 +6,7 @@
 
 class QRect;
 class ZAffinePlane;
+class ZAffineRect;
 
 /*!
  * \brief The class of managing parameters of viewing an arbitrarily cut slice.
@@ -41,6 +42,7 @@ public:
   int getHeight() const;
 
   ZAffinePlane getAffinePlane() const;
+  ZAffineRect getAffineRect() const;
 
   /*!
    * \brief Move in the slicing coordinate system.

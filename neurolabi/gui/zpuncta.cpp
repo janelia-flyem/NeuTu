@@ -36,6 +36,7 @@ void ZPuncta::sort() const
   }
 }
 
+#if 0
 void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
                       neutu::EAxis sliceAxis) const
 {
@@ -68,6 +69,7 @@ void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
     punctum->display(painter, slice, option, sliceAxis);
   }
 }
+#endif
 
 void ZPuncta::clear()
 {

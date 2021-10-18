@@ -23,6 +23,9 @@ public slots:
   void updateDefaultNeuTuServerChecked(bool on);
   void updateDefaultTaskServerChecked(bool on);
 
+private slots:
+  void onConfigPushButton();
+
 private:
   std::string getNeuTuServer() const;
   std::string getTaskServer() const;
@@ -36,6 +39,7 @@ private:
 
   void init();
   void updateNeutuseWidget();
+  void updateCleavingServerWidget();
 
   void connectSignalSlot();
   static QString Shrink(const QString &str, int len);

@@ -1,0 +1,73 @@
+#!/bin/bash
+
+function check_lib
+{
+  libName=$1
+  libMinVersion=$2
+
+  libFound=false
+  libVersion="NA"
+
+  while read line
+  do
+    v=($line)
+    if [ ${v[0]} = "$libName" ]
+    then
+      libVersion=${v[1]}
+      libFound=true
+    fi
+  done < <(conda list $libName)
+
+  if [ ${libFound} = false ]
+  then
+    echo "Library check failed @$condaEnvPath: $libName NOT found"
+  else
+    minVersion=$libMinVersion
+    if [[ ${v[1]} < "$minVersion" ]]
+    then
+      echo "Library check failed @$condaEnvPath: $libName version too old: CURRENT ${v[1]}, REQUIRED >=$minVersion"
+    fi
+  fi
+}
+
+if [ $# -lt 1 ]
+then
+  echo "Usage: ./check_libdep <conda_env_path>"
+fi
+
+condaEnvPath=$1
+
+eval "condaEnv=`echo "$condaEnvPath" | sed 's/\(.*\)\/envs\/\([^\/]*\)\/*$/("\1" "\2")/'`"
+if [[ -n "${condaEnv[0]}" ]] && [[ -n "${condaEnv[1]}" ]]
+then
+  source ${condaEnv[0]}/bin/activate ${condaEnv[1]} > /dev/null
+
+  check_lib libneucore 0.1.5
+  check_lib libneumath 0.1
+#  libneucoreFound=false
+#  libneucoreVersion="NA"
+
+#  while read line
+#  do
+#    v=($line)
+#    if [ ${v[0]} = "libneucore" ]
+#    then
+#      libneucoreVersion=${v[1]}
+#      libneucoreFound=true
+#    fi
+#  done < <(conda list libneucore)
+
+#  if [ ${libneucoreFound} = false ]
+#  then
+#    echo "Library check failed @$condaEnvPath: libneucore NOT found;"
+#  else
+#    minVersion="0.1.5"
+#    if [[ ${v[1]} < "$minVersion" ]]
+#    then
+#      echo "Library check failed @$1: libneucore version too old: CURRENT ${v[1]}, REQUIRED >=$minVersion; "
+#    fi
+#  fi
+else
+  echo "WARNING: unable to check libraries in $condaEnvPath"
+fi
+ 

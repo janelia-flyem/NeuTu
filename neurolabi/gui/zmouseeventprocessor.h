@@ -6,6 +6,8 @@
 #include "zmouseeventmapper.h"
 #include "common/zsharedpointer.h"
 #include "geometry/zaffineplane.h"
+#include "data3d/zsliceviewtransform.h"
+#include "data3d/displayconfig.h"
 
 class ZInteractiveContext;
 class ZImageWidget;
@@ -20,15 +22,14 @@ public:
 
   void setInteractiveContext(ZInteractiveContext *context);
 //  void setImageWidget(ZImageWidget *widget);
-  void setSliceAxis(neutu::EAxis axis);
-  void setArbSlice(const ZAffinePlane &ap);
+//  void setSliceAxis(neutu::EAxis axis);
+//  void setArbSlice(const ZAffinePlane &ap);
   void setDocument(ZSharedPointer<ZStackDoc> doc);
 
-  neutu::EAxis getSliceAxis() const;
+//  neutu::EAxis getSliceAxis() const;
 
   const ZMouseEvent&
-  process(QMouseEvent *event, ZMouseEvent::EAction action,
-          const ZViewProj &viewProj, int z);
+  process(QMouseEvent *event, ZMouseEvent::EAction action, int viewId);
 
   //void getCurrentMousePosition() const;
   //void getLastMousePosition() const;
@@ -41,7 +42,7 @@ public:
 //      const ZIntPoint &pt, const ZViewProj &viewProj) const;
 //  ZPoint mapPositionFromWidgetToRawStack(
 //      int x, int y, int z, const ZViewProj &viewProj) const;
-////  void mapPositionFromWidgetToRawStack(double *x, double *y) const;
+//  void mapPositionFromWidgetToRawStack(double *x, double *y) const;
 //  void mapPositionFromWidgetToRawStack(
 //      double *x, double *y, const ZViewProj &viewProj) const;
 
@@ -51,10 +52,13 @@ public:
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
   ZPoint getStackPosition(
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
-  ZPoint getRawStackPosition(
-      Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
+  ZPoint getLatestPosition(
+      Qt::MouseButtons buttons, ZMouseEvent::EAction action,
+      neutu::data3d::ESpace space) const;
+//  ZPoint getRawStackPosition(
+//      Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
 
-  bool isPositionInStack(const ZMouseEvent &event) const;
+//  bool isPositionInStack(const ZMouseEvent &event) const;
 
   const ZStackDoc* getDocument() const;
 
@@ -73,10 +77,11 @@ private:
   ZMouseEventRecorder m_recorder;
   ZInteractiveContext *m_context;
 //  ZImageWidget *m_imageWidget;
-  neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
-  ZAffinePlane m_arbSlice; //Only valid for A_AXIS
+//  neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
+//  ZAffinePlane m_arbSlice; //Only valid for A_AXIS
 
   ZSharedPointer<ZStackDoc> m_doc;
+  ZSliceViewTransform m_transform;
 
   ZMouseEvent m_emptyEvent;
 

@@ -24,15 +24,21 @@ class ZDvidTile : public ZStackObject
 {
 public:
   ZDvidTile();
-  ~ZDvidTile();
+  ~ZDvidTile() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::DVID_TILE;
   }
 
 public:
+  virtual bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
+               */
   void clear();
 
   void update(int z);
@@ -72,7 +78,8 @@ public:
 
 //  void attachView(ZStackView *view);
 
-  ZRect2d getBoundBox() const;
+  ZCuboid getBoundBox() const override;
+//  ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
 //  void setImageData(const uint8_t *data, int width, int height);
@@ -92,7 +99,7 @@ private:
   int m_ix = 0;
   int m_iy = 0;
   int m_z = 0;
-  mutable int m_latestZ = 0;
+//  mutable int m_latestZ = 0;
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;

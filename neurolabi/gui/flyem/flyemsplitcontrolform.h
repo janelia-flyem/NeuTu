@@ -78,7 +78,7 @@ private slots:
 //  void clearBookmarkTable(ZFlyEmBodySplitProject *project);
 //  void locateBookmark(const QModelIndex &index);
   void locateBookmark(const ZFlyEmBookmark *bookmark);
-  void loadBookmark();
+//  void loadBookmark();
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
   void checkCurrentBookmark(bool checking);

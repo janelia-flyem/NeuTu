@@ -4,7 +4,11 @@
 #include <set>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #include <cmath>
+#include <functional>
+
+#include "neulib/core/utilities.h"
 
 #define NT_STR(s) #s
 #define NT_XSTR(s) NT_STR(s)
@@ -47,36 +51,13 @@ std::ostream& operator << (
 }
 
 template<typename T>
-struct ToUnsignedType {
-};
-
-template<>
-struct ToUnsignedType<int>
-{
-  using type = unsigned int;
-};
-
-template<>
-struct ToUnsignedType<int64_t>
-{
-  using type = uint64_t;
-};
-
-template <typename T>
-typename ToUnsignedType<T>::type UnsignedCrop(const T &v)
-{
-  if (v < 0) {
-    return typename ToUnsignedType<T>::type(0);
-  }
-
-  return typename ToUnsignedType<T>::type(v);
-}
-
-template<typename T>
 void assign(T *out, const T &v);
 
 template<typename T>
 std::set<T> intersect(const std::set<T> &s1, const std::set<T> &s2);
+
+template<typename T>
+std::set<T> setunion(const std::set<T> &s1, const std::set<T> &s2);
 
 template<typename T>
 std::set<T> setdiff(const std::set<T> &s1, const std::set<T> &s2);
@@ -93,6 +74,12 @@ void setremoveif(std::set<T> &s, UninaryPred pred)
   }
 }
 
+template <typename T>
+constexpr typename std::underlying_type<T>::type EnumValue(T val)
+{
+    return static_cast<typename std::underlying_type<T>::type>(val);
+}
+
 // generic solution
 template <class T>
 int numDigits(T number)
@@ -107,6 +94,7 @@ int numDigits(T number)
 }
 
 bool HasEnv(const std::string &name, const std::string &value);
+std::string GetEnv(const std::string &name);
 
 std::string GetVersionString();
 
@@ -114,7 +102,52 @@ uint64_t GetTimestamp();
 
 std::string ToString(const void *p);
 
+template<typename T>
+std::string ToString(const T &v)
+{
+  std::ostringstream stream;
+  stream << v;
+  return stream.str();
+}
+
+template<template<class...> class Container, typename T>
+std::string ToString(const Container<T> &container, const std::string &delimiter)
+{
+  std::string result = "";
+
+  typename Container<T>::const_iterator iter = container.begin();
+  if (iter != container.end()) {
+    result = ToString(*iter);
+    ++iter;
+  }
+
+  for (; iter != container.end(); ++iter) {
+    result += delimiter + ToString(*iter);
+  }
+
+  return result;
+}
+
+template <template<class...> class C, typename T>
+C<T> transform(const C<T> &in, std::function<T(T)> uop)
+{
+  C<T> out;
+  std::transform(in.begin(), in.end(), std::back_inserter(out), uop);
+  return out;
+}
+
+template <typename T>
+std::set<T> transform(const std::set<T> &in, std::function<T(T)> uop)
+{
+  std::set<T> out;
+  std::transform(in.begin(), in.end(), std::inserter(out, out.begin()), uop);
+  return out;
+}
+
 bool UsingLocalHost(const std::string &url);
+
+void ReportError(const std::string &msg);
+void ReportWarning(const std::string &msg);
 
 template<size_t N>
 size_t Length(const char (&)[N])
@@ -160,30 +193,73 @@ inline bool WithinCloseRange(const T &x, const T &minv, const T &maxv)
 }
 
 template<typename T>
-inline T ClipValue(const T &v, const T &lower, const T&upper)
+inline bool WithinCloseOpenRange(const T &x, const T &minv, const T &maxv)
 {
-  return (v < lower) ? lower : (v > upper) ? upper : v;
+  return (x >= minv) && (x < maxv);
 }
 
-template<typename T>
-inline bool ClipRange(const T &lower, const T&upper, T &x0, T &x1)
-{
-  if (x0 <= x1) {
-    if (x0 <= upper && x1 >= lower) {
-      if (x0 < lower) {
-        x0 = lower;
-      }
-      if (x1 > upper) {
-        x1 = upper;
-      }
-      return true;
+std::string GetRootUrl(const std::string &url);
+
+uint64_t ToUint64(const std::string &s);
+int64_t ToInt64(const std::string &s);
+
+int64_t GetTimeStamp();
+std::string GetUtcTimeString();
+
+/*!
+ * \brief Process partitions of a range
+ *
+ * The behavior of this function is undefined if x0 > x1 or n <= 0.
+ *
+ * \param x0 Min value of the range.
+ * \param x1 Max value of the range.
+ * \param n Number of partitions.
+ * \param f Function to process the partition. It takes min and max of a partition
+ *          as its parameters.
+ */
+void RangePartitionProcess(
+    int x0, int x1, int n, std::function<void(int, int)> f);
+
+//void RangePartitionProcess(
+//    int x0, int x1, int block, int n, std::function<void(int, int)> f);
+
+const static auto NullFunction = std::function<void()>();
+
+class ApplyOnce {
+public:
+  ApplyOnce(std::function<void()> startFunc, std::function<void()> endFunc) {
+    if (startFunc) {
+      startFunc();
+    }
+    m_endFunc = endFunc;
+  }
+
+  ~ApplyOnce() {
+    if (m_endFunc) {
+      m_endFunc();
     }
   }
 
-  return false;
+private:
+  std::function<void()> m_endFunc;
+};
+
+template<typename TEnum>
+constexpr typename std::underlying_type<TEnum>::type
+EnumToUnderlyingType(TEnum e) noexcept
+{
+  return static_cast<typename std::underlying_type<TEnum>::type>(e);
 }
 
-}
+struct Boolean {
+  Boolean(bool v) { value = v; }
+  operator bool() const {
+    return value;
+  }
+  bool value = false;
+};
+
+} //namespace neutu
 
 //template<>
 //int numDigits(int32_t x);
@@ -194,6 +270,15 @@ std::set<T> neutu::intersect(const std::set<T> &s1, const std::set<T> &s2)
   std::set<T> result;
   std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
                         std::inserter(result, result.begin()));
+  return result;
+}
+
+template<typename T>
+std::set<T> neutu::setunion(const std::set<T> &s1, const std::set<T> &s2)
+{
+  std::set<T> result;
+  std::set_union(s1.begin(), s1.end(), s2.begin(), s2.end(),
+                 std::inserter(result, result.begin()));
   return result;
 }
 

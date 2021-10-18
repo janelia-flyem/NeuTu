@@ -21,7 +21,7 @@ public:
 
   int run(
       const std::vector<std::string> &input, const std::string &output,
-      const ZJsonObject &config);
+      const ZJsonObject &config) override;
 
 private:
   ZDvidReader* parseInputPath(

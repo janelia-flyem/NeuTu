@@ -37,6 +37,7 @@ signals:
   void segmentVisibleChanged(bool visible);
   void mergingSelected();
   void dvidSetTriggered();
+  void dvidSetTriggered(const QString &name);
   void splitTriggered(uint64_t bodyId);
   void splitTriggered();
   void labelSizeChanged(int width, int height);
@@ -71,6 +72,8 @@ signals:
   void updatingMeshForSelectedBody();
   void showingInfo();
   void reportingBodyCorruption();
+  void importingUserBookmark();
+  void exportingUserBookmark();
 
 public slots:
   void setInfo(const QString &info);

@@ -6,6 +6,9 @@ include($${PWD}/geometry/geometry.pri)
 include($${PWD}/swc/swc.pri)
 include($${PWD}/interface/interface.pri)
 include($${PWD}/filesystem/filesystem.pri)
+include($${PWD}/neurolabi/neurolabi.pri)
+include($${PWD}/data3d/data3d.pri)
+include($${PWD}/bigdata/bigdata.pri)
 
 HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
@@ -49,7 +52,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcfeatureanalyzer.h \
    $${PWD}/zswcsizefeatureanalyzer.h \
    $${PWD}/zobject3darray.h \
-   $${PWD}/zdoublevector.h \
    $${PWD}/zkmeansclustering.h \
    $${PWD}/zswcshollfeatureanalyzer.h \
    $${PWD}/zswcspatialfeatureanalyzer.h \
@@ -177,10 +179,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zstackarray.h \
    $${PWD}/tr1_header.h \
    $${PWD}/zvoxelgraphics.h \
-   $${PWD}/bigdata/zdvidblockgrid.h \
-   $${PWD}/bigdata/zstackblockgrid.h \
-   $${PWD}/bigdata/zblockgrid.h \
-   $${PWD}/bigdata/zblockgridfactory.h \
    $${PWD}/zsparsestack.h \
    $${PWD}/zstackobject.h \
    $${PWD}/zobject3dfactory.h \
@@ -257,7 +255,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zswcfeatureanalyzer.cpp \
    $${PWD}/zswcsizefeatureanalyzer.cpp \
    $${PWD}/zobject3darray.cpp \
-   $${PWD}/zdoublevector.cpp \
    $${PWD}/zneurontracer.cpp \
    $${PWD}/zkmeansclustering.cpp \
    $${PWD}/zswcshollfeatureanalyzer.cpp \
@@ -362,10 +359,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zstackarray.cpp \
    $${PWD}/flyem/zflyemconfig.cpp \
    $${PWD}/zvoxelgraphics.cpp \
-   $${PWD}/bigdata/zdvidblockgrid.cpp \
-   $${PWD}/bigdata/zstackblockgrid.cpp \
-   $${PWD}/bigdata/zblockgrid.cpp \
-   $${PWD}/bigdata/zblockgridfactory.cpp \
    $${PWD}/zsparsestack.cpp \
    $${PWD}/zstackobject.cpp \
    $${PWD}/zobject3dfactory.cpp \
@@ -400,4 +393,7 @@ SOURCES += $${PWD}/zstack.cxx \
    $$PWD/flyem/zflyembodystatus.cpp \
    $$PWD/zgraph.cpp \
    $$PWD/zsegmentationscan.cpp
+
+DISTFILES += \
+  $$PWD/neurolabi/neurolabi.pri
 

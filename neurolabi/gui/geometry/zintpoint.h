@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <initializer_list>
 
 #include <boost/functional/hash.hpp>
 
@@ -39,6 +40,7 @@ public:
   inline void setZ(int z) { m_z = z; }
 
   int getValue(neutu::EAxis axis) const;
+  void setValue(int v, neutu::EAxis axis);
 
   const int& operator[] (int index) const;
   int& operator[] (int index);
@@ -114,7 +116,19 @@ public:
 
   std::string toString() const;
 
+  /*!
+   * \brief Convert the point to a string according to a template
+   *
+   * Any "$x"/"$X", "$y"/"$Y", "$z"/"$Z" substring in the template will be
+   * replaced by the X, Y, Z coordiates of the point respectively. An empty
+   * template results in a normal point string, which is the same from
+   * \a toString().
+   */
+  std::string toString(const std::string &templ) const;
+
   ZPoint toPoint() const;
+  ZPoint toMinCorner() const;
+  ZPoint toMaxCorner() const;
 
   /*!
    * \brief Test if the coordinates are (0, 0, 0)
@@ -123,11 +137,12 @@ public:
 
   bool equals(const ZIntPoint &pt) const;
 
+  double distanceSquareTo(double x, double y, double z) const;
   double distanceTo(double x, double y, double z) const;
 
   void shiftSliceAxis(neutu::EAxis axis);
   void shiftSliceAxisInverse(neutu::EAxis axis);
-  int getSliceCoord(neutu::EAxis axis) const;
+  int getCoord(neutu::EAxis axis) const;
 
   void invalidate();
   bool isValid() const;

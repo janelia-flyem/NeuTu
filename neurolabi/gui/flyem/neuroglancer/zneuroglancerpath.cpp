@@ -61,7 +61,7 @@ void ZNeuroglancerPath::addLayer(
   }
 }
 
-std::string ZNeuroglancerPath::getPath() const
+ZJsonObject ZNeuroglancerPath::toJsonObject() const
 {
   ZJsonObject rootObj;
   ZJsonArray layerJson;
@@ -75,8 +75,9 @@ std::string ZNeuroglancerPath::getPath() const
     rootObj.setEntry("layers", layerJson);
   }
 
-  ZJsonObject navObj = m_navigation.toJsonObject();
-  rootObj.setEntry("navigation", navObj);
+//  ZJsonObject navObj = m_navigation.toJsonObject();
+//  rootObj.setEntry("navigation", navObj);
+  m_navigation.configureJson(rootObj);
   if (m_selectedLayer) {
     ZJsonObject obj;
     obj.setEntry("layer", m_selectedLayer->getName());
@@ -84,8 +85,17 @@ std::string ZNeuroglancerPath::getPath() const
     rootObj.setEntry("selectedLayer", obj);
   }
   rootObj.setNonEmptyEntry("layout", m_layout);
-  rootObj.setEntry("perspectiveZoom", m_perspectiveZoom);
+  /*
+  if (m_perspectiveScale > 0) {
+    rootObj.setEntry("projectionScale", m_perspectiveScale);
+  }
+  */
 
-  return std::string("/#") + DATA_START_TAG + rootObj.dumpString(0);
+  return rootObj;
+}
+
+std::string ZNeuroglancerPath::getPath() const
+{
+  return std::string("/#") + DATA_START_TAG + toJsonObject().dumpString(0);
 }
 

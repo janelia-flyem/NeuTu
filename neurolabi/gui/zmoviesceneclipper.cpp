@@ -1,6 +1,7 @@
 #include "zmoviesceneclipper.h"
 
 #include "common/math.h"
+#include "common/utilities.h"
 
 #include "z3dwindow.h"
 #include "z3dvolumefilter.h"
@@ -20,7 +21,7 @@ ZMovieSceneClipper::ZMovieSceneClipper() : m_target(ETarget::UNKNOWN_TARGET),
 
 void ZMovieSceneClipper::print() const
 {
-  cout << "Target: " << neutu::EnumValue(m_target) << endl;
+  cout << "Target: " << neutu::ToString(m_target) << endl;
   cout << "Axis: " << m_axis << endl;
   cout << "Speed: " << m_lowerClipSpeed << ", " << m_upperClipSpeed << endl;
 }

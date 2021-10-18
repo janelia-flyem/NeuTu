@@ -5,22 +5,36 @@
 #include <QCoreApplication>
 #endif
 
-#include "geometry/zintcuboid.h"
+#include <chrono>
+
+#if defined(_QT_GUI_USED_)
+#include "zpainter.h"
+#endif
+
+#include "common/math.h"
 #include "common/utilities.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zcuboid.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
+//std::atomic<uint64_t> ZStackObject::m_currentHandle{0};
 
-ZStackObject::ZStackObject() : m_hitProtocal(EHitProtocol::HIT_DATA_POS),
-  m_style(EDisplayStyle::SOLID), m_target(ETarget::WIDGET),
-  m_zScale(1.0),
-  m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutu::display::VE_NONE)
+ZStackObject::ZStackObject()
 {
-  m_type = EType::UNIDENTIFIED;
   setSliceAxis(neutu::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
-  m_timeStamp = 0;
+//  m_handle = GetNextHandle();
+}
+
+ZStackObject::ZStackObject(const ZStackObject &obj)
+{
+  *this = obj;
+}
+
+ZStackObject::ZStackObject(ZStackObject &&obj)
+{
+  *this = std::move(obj);
 }
 
 ZStackObject::~ZStackObject()
@@ -44,10 +58,16 @@ ZStackObject::~ZStackObject()
 #endif
 }
 
+/*
+uint64_t ZStackObject::GetNextHandle()
+{
+//  std::lock_guard<std::mutex> guard(m_handleMutex);
+  return ++m_currentHandle;
+}
+*/
+
 #define RETURN_TYPE_NAME(v, t) \
-  if (v == EType::t) { \
-    return NT_STR(t); \
-  }
+  if (v == EType::t) return NT_STR(t)
 
 std::string ZStackObject::GetTypeName(EType type)
 {
@@ -96,12 +116,67 @@ std::string ZStackObject::getTypeName() const
   return GetTypeName(getType());
 }
 
-bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
-                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
-                           neutu::EAxis /*sliceAxis*/) const
+ZStackObject* ZStackObject::clone() const
+{
+  return nullptr;
+}
+
+const ZStackObjectHandle &ZStackObject::getHandle() const
+{
+  return m_handle;
+}
+
+ZStackObject& ZStackObject::operator=(ZStackObject &&obj)
+{
+  *this = obj;
+//  m_handle = std::move(obj.m_handle);
+  m_selectionCallbacks = std::move(obj.m_selectionCallbacks);
+  m_deselectionCallbacks = std::move(obj.m_deselectionCallbacks);
+
+  return *this;
+}
+
+ZStackObject& ZStackObject::operator=(const ZStackObject &obj)
+{
+  m_hitProtocal = obj.m_hitProtocal;
+  m_hitMap = obj.m_hitMap;
+  _hit = obj._hit;
+  m_color = obj.m_color;
+  m_target = obj.m_target;
+  m_type = obj.m_type;
+  m_coordSpace = obj.m_coordSpace;
+  m_basePenWidth = obj.m_basePenWidth;
+  m_zScale = obj.m_zScale;
+  m_source = obj.m_source;
+  m_objectClass = obj.m_objectClass;
+  m_uLabel = obj.m_uLabel;
+  m_zOrder = obj.m_zOrder;
+  m_role = obj.m_role;
+  m_hitPoint = obj.m_hitPoint;
+  m_sliceAxis = obj.m_sliceAxis;
+  m_timeStamp = obj.m_timeStamp;
+
+  m_visualEffect = obj.m_visualEffect;
+
+  m_selected = obj.m_selected;
+  m_isSelectable = obj.m_isSelectable;
+  m_hittable = obj.m_hittable;
+  m_isVisible = obj.m_isVisible;
+  m_projectionVisible = obj.m_projectionVisible;
+  m_usingCosmeticPen = obj.m_usingCosmeticPen;
+
+  return *this;
+}
+
+#if 0
+bool ZStackObject::display(
+    QPainter * /*painter*/, int /*z*/,
+    EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
+    neutu::EAxis /*sliceAxis*/) const
 {
   return false;
 }
+#endif
 
 void ZStackObject::setLabel(uint64_t label)
 {
@@ -113,17 +188,42 @@ void ZStackObject::setSelected(bool selected)
   m_selected = selected;
 
   if(m_selected) {
-    for(auto callback: m_callbacks_on_selection)
-    {
+    for(auto callback: m_selectionCallbacks) {
       callback(this);
     }
   } else {
-    for(auto callback: m_callbacks_on_deselection)
-    {
+    for(auto callback: m_deselectionCallbacks) {
       callback(this);
     }
   }
 }
+
+void ZStackObject::processHit(ESelection s)
+{
+  switch (s) {
+  case ESelection::SELECT_SINGLE:
+  case ESelection::SELECT_MULTIPLE:
+    setSelected(true);
+    break;
+  case ESelection::SELECT_TOGGLE_SINGLE:
+  case ESelection::SELECT_TOGGLE:
+    setSelected(!isSelected());
+    break;
+  case ESelection::DESELECT:
+    setSelected(false);
+    break;
+  }
+}
+
+void ZStackObject::deselect(bool recursive)
+{
+  setSelected(false);
+
+  if (recursive) {
+    deselectSub();
+  }
+}
+
 
 void ZStackObject::setColor(int red, int green, int blue)
 {
@@ -247,19 +347,76 @@ bool ZStackObject::isSliceVisible(int /*z*/, neutu::EAxis /*axis*/) const
   return isVisible();
 }
 
+//void ZStackObject::viewSpaceAlignedDisplay(
+//      QPainter */*painter*/, const ViewSpaceAlignedDisplayConfig &/*config*/) const
+//{
+
+//}
+
+ZStackObject *ZStackObject::aligned(
+    const ZAffinePlane &/*plane*/, neutu::EAxis /*sliceAxis*/) const
+{
+  return nullptr;
+}
+
+bool ZStackObject::isSliceVisible(
+    int z, neutu::EAxis axis, const ZAffinePlane &/*plane*/) const
+{
+  return isSliceVisible(z, axis);
+}
+
+bool ZStackObject::isSliceVisible(
+    const DisplayConfig &/*config*/, int /*canvasWidth*/, int /*canvasHeight*/) const
+{
+  return true;
+}
+
+bool ZStackObject::isSliceVisible(const DisplayConfig &/*config*/) const
+{
+  return true;
+}
+
+void ZStackObject::setHittable(bool on)
+{
+  m_hittable = on;
+}
+
 bool ZStackObject::hit(double /*x*/, double /*y*/, neutu::EAxis /*axis*/)
 {
   return false;
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
+bool ZStackObject::hit(double x, double y, neutu::EAxis axis, int /*viewId*/)
 {
+  return hit(x, y, axis);
+}
+
+bool ZStackObject::hit(double x, double y, double z, int viewId)
+{
+  if (m_hitMap.count(viewId) > 0) {
+    return m_hitMap.at(viewId)(this, x, y, z);
+  }
+
+  return hit(x, y, z);
+}
+
+bool ZStackObject::hit(double x, double y, double z)
+{
+  if (m_hittable) {
+    return _hit(this, x, y, z);
+  }
+
   return false;
 }
 
 bool ZStackObject::hit(const ZIntPoint &pt)
 {
   return hit(pt.getX(), pt.getY(), pt.getZ());
+}
+
+bool ZStackObject::hit(const ZIntPoint &pt, int viewId)
+{
+  return hit(pt.getX(), pt.getY(), pt.getZ(), viewId);
 }
 
 bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
@@ -286,6 +443,12 @@ bool ZStackObject::hitWidgetPos(
 void ZStackObject::setHitPoint(const ZIntPoint &pt)
 {
   m_hitPoint = pt;
+}
+
+void ZStackObject::setHitFunc(
+    std::function<bool(const ZStackObject*, double, double, double)> f)
+{
+  this->_hit = f;
 }
 
 bool ZStackObject::fromSameSource(const ZStackObject *obj) const
@@ -348,22 +511,6 @@ bool ZStackObject::IsSameClass(const std::string &s1, const std::string &s2)
   return IsSameSource(s1, s2);
 }
 
-/*
-bool ZStackObject::isEmptyTree(const ZStackObject *obj)
-{
-  bool passed = false;
-  if (obj != NULL) {
-    if (obj->getType() == EType::SWC) {
-      const ZSwcTree *tree = dynamic_cast<const ZSwcTree*>(obj);
-      if (tree != NULL) {
-        passed = tree->isEmpty();
-      }
-    }
-  }
-
-  return passed;
-}
-*/
 
 bool ZStackObject::IsSelected(const ZStackObject *obj)
 {
@@ -386,6 +533,16 @@ void ZStackObject::boundBox(ZIntCuboid *box) const
   }
 }
 
+ZCuboid ZStackObject::getBoundBox() const
+{
+  return ZCuboid();
+}
+
+ZCuboid ZStackObject::getBoundBox(int /*viewId*/) const
+{
+  return getBoundBox();
+}
+
 void ZStackObject::addVisualEffect(neutu::display::TVisualEffect ve)
 {
   m_visualEffect |= ve;
@@ -404,4 +561,35 @@ void ZStackObject::setVisualEffect(neutu::display::TVisualEffect ve)
 bool ZStackObject::hasVisualEffect(neutu::display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
+}
+
+void ZStackObject::setPrevZ(int z) const
+{
+  m_displayTrace.prevZ = z;
+  m_displayTrace.isValid = true;
+}
+
+bool ZStackObject::display(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  if (isVisible(config)) {
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+    painter->setRenderHint(QPainter::Antialiasing, m_usingCosmeticPen);
+    return display_inner(painter, config);
+  }
+
+  return false;
+}
+
+bool ZStackObject::display_inner(
+    QPainter */*painter*/, const DisplayConfig &/*config*/) const
+{
+  return false;
+}
+
+void ZStackObject::updateTimestamp()
+{
+  setTimestamp(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch()).count());
 }

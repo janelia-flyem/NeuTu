@@ -8,6 +8,7 @@
 #include "logging/zlog.h"
 #include "logging/zqslog.h"
 #include "neutubeconfig.h"
+#include "geometry/zcuboid.h"
 
 ZStackObjectGroup::ZStackObjectGroup() : m_currentZOrder(0)
 {
@@ -118,6 +119,14 @@ const ZStackObject* ZStackObjectGroup::getLastObjectUnsync(
   return obj;
 }
 
+void ZStackObjectGroup::setSelected(
+    const ZStackObjectHandle &handle, bool selected)
+{
+  ZStackObject *obj = getObject(handle, &m_mutex);
+  if (obj) {
+    setSelected(obj, selected);
+  }
+}
 
 void ZStackObjectGroup::setSelected(ZStackObject *obj, bool selected)
 {
@@ -143,6 +152,14 @@ void ZStackObjectGroup::setSelected(bool selected)
   setSelectedUnsync(selected);
 }
 
+void ZStackObjectGroup::setSelected(
+    bool selected, std::function<void(const ZStackObject*)> selChangeProc)
+{
+  QMutexLocker locker(&m_mutex);
+
+  setSelectedUnsync(selected, selChangeProc);
+}
+
 void ZStackObjectGroup::setSelectedUnsync(bool selected)
 {
   ZOUT(LTRACE(), 6) << "Select object";
@@ -152,8 +169,11 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
     ZStackObject *obj = *iter;
     getSelector()->setSelection(obj, selected);
     //obj->setSelected(selected);
-    //Bug???
-    getSelectedSetUnsync(obj->getType()).insert(obj);
+    if (selected) {
+      getSelectedSetUnsync(obj->getType()).insert(obj);
+    } else {
+      getSelectedSetUnsync(obj->getType()).remove(obj);
+    }
   }
 
   if (selected == false) {
@@ -164,6 +184,37 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
     }
   }
 }
+
+void ZStackObjectGroup::setSelectedUnsync(
+    bool selected, std::function<void(const ZStackObject*)> selectionChangeProc)
+{
+  ZOUT(LTRACE(), 6) << "Select object";
+
+  for (QList<ZStackObject*> ::iterator iter = m_objectList.begin();
+       iter != m_objectList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    bool selectionChanged = (obj->isSelected() != selected);
+    getSelector()->setSelection(obj, selected);
+    //obj->setSelected(selected);
+    if (selected) {
+      getSelectedSetUnsync(obj->getType()).insert(obj);
+    } else {
+      getSelectedSetUnsync(obj->getType()).remove(obj);
+    }
+    if (selectionChanged) {
+      selectionChangeProc(obj);
+    }
+  }
+
+  if (selected == false) {
+    for (TObjectSetMap::iterator iter = m_selectedSet.begin();
+         iter != m_selectedSet.end(); ++iter) {
+      TStackObjectSet &subset = *iter;
+      subset.clear();
+    }
+  }
+}
+
 
 void ZStackObjectGroup::setSelected(
     TStackObjectList &objList, TStackObjectSet &selectedSet, bool selected)
@@ -727,6 +778,19 @@ TStackObjectSet& ZStackObjectGroup::getSelectedSetUnsync(
   return  m_selectedSet[type];
 }
 
+ZCuboid ZStackObjectGroup::getSelectedBoundBox() const
+{
+  ZCuboid box;
+  for (const auto &objSet : m_selectedSet) {
+    auto objList = objSet.values();
+    for (const ZStackObject *obj : objList) {
+      box.join(obj->getBoundBox());
+    }
+  }
+
+  return box;
+}
+
 /*
 const TStackObjectSet& ZStackObjectGroup::getSelectedSet(
     ZStackObject::EType type) const
@@ -963,6 +1027,15 @@ void ZStackObjectGroup::add(const ZStackObject *obj, bool uniqueSource)
 
 #define ZSTACKOBECTGROUP_MAX_ZORDER INT_MAX
 
+void ZStackObjectGroup::addUnsync(ZStackObject *obj)
+{
+  m_objectList.append(obj);
+  if (obj->isSelected()) {
+    m_selectedSet[obj->getType()].insert(obj);
+  }
+  getObjectListUnsync(obj->getType()).append(const_cast<ZStackObject*>(obj));
+}
+
 void ZStackObjectGroup::addUnsync(ZStackObject *obj, bool uniqueSource)
 {
   if (obj != NULL && !containsUnsync(obj)) {
@@ -982,11 +1055,14 @@ void ZStackObjectGroup::addUnsync(ZStackObject *obj, bool uniqueSource)
       zOrder = ++m_currentZOrder;
     }
     obj->setZOrder(zOrder);
+    addUnsync(obj);
+    /*
     m_objectList.append(obj);
     if (obj->isSelected()) {
       m_selectedSet[obj->getType()].insert(obj);
     }
     getObjectListUnsync(obj->getType()).append(const_cast<ZStackObject*>(obj));
+    */
   }
 }
 
@@ -1012,11 +1088,14 @@ void ZStackObjectGroup::addUnsync(ZStackObject *obj, int zOrder, bool uniqueSour
           removeObjectUnsync(objList.begin(), objList.end(), true);
         }
       }
+      addUnsync(obj);
+      /*
       m_objectList.append(obj);
       if (obj->isSelected()) {
         m_selectedSet[obj->getType()].insert(obj);
       }
       getObjectListUnsync(obj->getType()).append(const_cast<ZStackObject*>(obj));
+      */
     }
   }
 }
@@ -1028,6 +1107,29 @@ void ZStackObjectGroup::add(ZStackObject *obj, int zOrder, bool uniqueSource)
   addUnsync(obj, zOrder, uniqueSource);
 }
 
+bool ZStackObjectGroup::hasObjectHandle(const ZStackObjectHandle &handle) const
+{
+  QMutexLocker locker(&m_mutex);
+  foreach (const ZStackObject *obj, m_objectList) {
+    if (obj->getHandle() == handle) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+ZStackObject* ZStackObjectGroup::getObject(const ZStackObjectHandle &handle, QMutex *mutex) const
+{
+  QMutexLocker locker(mutex);
+  foreach (ZStackObject *obj, m_objectList) {
+    if (obj->getHandle() == handle) {
+      return obj;
+    }
+  }
+  return nullptr;
+}
+
 bool ZStackObjectGroup::hasObject(const ZStackObject *obj) const
 {
   if (obj == NULL) {
@@ -1037,6 +1139,18 @@ bool ZStackObjectGroup::hasObject(const ZStackObject *obj) const
   QMutexLocker locker(&m_mutex);
 
   return m_objectList.contains(const_cast<ZStackObject*>(obj));
+}
+
+bool ZStackObjectGroup::hasObject(
+    ZStackObject::EType type, const std::string &source) const
+{
+  QMutexLocker locker(&m_mutex);
+
+  if (findFirstSameSourceUnsync(type, source)) {
+    return true;
+  }
+
+  return false;
 }
 
 bool ZStackObjectGroup::containsUnsync(const ZStackObject *obj) const
@@ -1069,7 +1183,7 @@ bool ZStackObjectGroup::hasObject(ZStackObject::EType type) const
   return hasObjectUnsync(type);
 }
 
-bool ZStackObjectGroup::hasObjectUnsync(ZStackObject::ETarget target) const
+bool ZStackObjectGroup::hasObjectUnsync(neutu::data3d::ETarget target) const
 {
   for (QList<ZStackObject*>::const_iterator iter = m_objectList.begin();
        iter != m_objectList.end(); ++iter) {
@@ -1082,7 +1196,7 @@ bool ZStackObjectGroup::hasObjectUnsync(ZStackObject::ETarget target) const
   return false;
 }
 
-bool ZStackObjectGroup::hasObject(ZStackObject::ETarget target) const
+bool ZStackObjectGroup::hasObject(neutu::data3d::ETarget target) const
 {
   QMutexLocker locker(&m_mutex);
 

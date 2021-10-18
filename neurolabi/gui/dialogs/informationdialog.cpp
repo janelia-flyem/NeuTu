@@ -1,4 +1,7 @@
 #include "informationdialog.h"
+
+#include <QPushButton>
+
 #include "ui_informationdialog.h"
 
 InformationDialog::InformationDialog(QWidget *parent) :

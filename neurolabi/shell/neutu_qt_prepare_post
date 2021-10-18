@@ -27,7 +27,7 @@ echo "  * Add qt version: ${CONDA_ENV_DIR}${reset}/bin/qmake"
 echo "  * Add Build & Run kit:"
 if [ `uname` = 'Darwin' ]
 then
-  echo "      Compiler: Clang (x86 64bit)"
+  echo "      Compiler: clt_clang or Clang (x86 64bit)"
 fi
 echo "      Qt version: the one added in the last step"
 echo ""

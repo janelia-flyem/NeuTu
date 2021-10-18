@@ -16,6 +16,7 @@ public:
   ~ZDvidNeuronTracer();
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setDvidReader(const ZDvidReader &reader);
 
 //  ZSwcTree *takeResult();
   ZSwcTree* getResult() const;
@@ -48,9 +49,9 @@ private:
   std::list<Local_Neuroseg*> m_locsegList;
   Locseg_Fit_Workspace *m_fitWorkspace;
 
-  Local_Neuroseg *m_tailSeg = nullptr;
-  Local_Neuroseg *m_headSeg = nullptr;
-  bool m_tuningEnd = true;
+//  Local_Neuroseg *m_tailSeg = nullptr;
+//  Local_Neuroseg *m_headSeg = nullptr;
+//  bool m_tuningEnd = true;
   double m_seedMinScore;
   double m_traceMinScore;
 };

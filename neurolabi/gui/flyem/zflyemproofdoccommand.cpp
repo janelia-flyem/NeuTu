@@ -19,6 +19,14 @@ ZFlyEmProofDoc* ZFlyEmProofDocCommand::MergeBody::getCompleteDocument()
 void ZFlyEmProofDocCommand::MergeBody::redo()
 {
   getCompleteDocument()->getBodyMerger()->redo();
+
+  auto bodySet =
+      getCompleteDocument()->getSelectedBodySet(neutu::ELabelSource::MAPPED);
+  getCompleteDocument()->recordBodySelection();
+  getCompleteDocument()->selectBody(bodySet.begin(), bodySet.end());
+  getCompleteDocument()->processBodySelection();
+  getCompleteDocument()->notifyBodySelectionChanged();
+
   getCompleteDocument()->updateBodyObject();
 
   getCompleteDocument()->notifyBodyMerged();

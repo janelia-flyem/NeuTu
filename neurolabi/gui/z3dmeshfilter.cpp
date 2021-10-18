@@ -695,7 +695,7 @@ void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
     return;
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "Selecting graph in " << this << std::endl;
   std::cout << "Original mesh count: " << m_origMeshList.size() << std::endl;
   std::cout << "Mesh count: " << m_meshList.size() << std::endl;

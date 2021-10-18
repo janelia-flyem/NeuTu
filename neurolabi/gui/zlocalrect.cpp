@@ -1,7 +1,10 @@
 #include "zlocalrect.h"
 #include "zlocalneuroseg.h"
 #include "tz_r2_rect.h"
+
+#include "common/mathdefs.h"
 #include "geometry/zpoint.h"
+#include "geometry/zcuboid.h"
 
 ZLocalRect::ZLocalRect()
 {
@@ -36,8 +39,21 @@ Local_Neuroseg* ZLocalRect::toLocalNeuroseg() const
   return locseg;
 }
 
-void ZLocalRect::display(ZPainter &painter, int slice, EDisplayStyle style,
-                         neutu::EAxis sliceAxis) const
+ZCuboid ZLocalRect::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
+}
+
+bool ZLocalRect::display(QPainter */*painter*/, const DisplayConfig &/*config*/) const
+{
+  return false;
+}
+
+#if 0
+void ZLocalRect::display(
+    ZPainter &painter, int slice, zstackobject::EDisplayStyle style,
+    neutu::EAxis sliceAxis) const
 {
   if (sliceAxis != neutu::EAxis::Z) {
     return;
@@ -49,6 +65,7 @@ void ZLocalRect::display(ZPainter &painter, int slice, EDisplayStyle style,
   ZLocalNeuroseg tmpseg(&locseg);
   tmpseg.display(painter, slice, style, sliceAxis);
 }
+#endif
 
 void ZLocalRect::fitStack(const Stack *stack, Receptor_Fit_Workspace *ws)
 {
@@ -133,8 +150,8 @@ ZDirectionalTemplate* ZLocalRect::extend(Dlist_Direction_e direction,
 {
   ZLocalRect *extension = NULL;
   double vec[2];
-  vec[0] = cos(m_template.transform.theta + TZ_PI_2);
-  vec[1] = sin(m_template.transform.theta + TZ_PI_2);
+  vec[0] = cos(m_template.transform.theta + neutu::HALF_PI);
+  vec[1] = sin(m_template.transform.theta + neutu::HALF_PI);
 
   switch (direction) {
   case DL_FORWARD:

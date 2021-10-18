@@ -1,29 +1,83 @@
 #include "zgeometry.h"
 #include <cmath>
+
+#include"common/utilities.h"
+#include "common/math.h"
+
 #include "zpoint.h"
 #include "zaffinerect.h"
 #include "zintcuboid.h"
 #include "zintpoint.h"
-
+#include "zcuboid.h"
+#include "zlinesegment.h"
 
 std::vector<ZAffineRect> zgeom::Partition(
     const ZAffineRect &rect, int row, int col)
 {
   std::vector<ZAffineRect> result;
 
-  int subwidth = rect.getWidth() / col;
-  int subheight = rect.getHeight() / row;
-  int heightRemainder = rect.getHeight() % row;
+  double subwidth = rect.getWidth() / col;
+  double subheight = rect.getHeight() / row;
+//  int heightRemainder = rect.getHeight() % row;
 
-  int currentOffsetY = -rect.getHeight() / 2;
+  double currentOffsetY = -rect.getHeight() / 2;
   for (int i = 0; i < row; ++i) {
-    int currentOffsetX = -rect.getWidth() / 2;
-    int height = subheight;
+    double currentOffsetX = -rect.getWidth() / 2;
+    double height = subheight;
+    /*
     if (heightRemainder > 0) {
       ++height;
       --heightRemainder;
     }
     int widthRemainder = rect.getWidth() % col;
+    */
+
+    for (int j = 0; j < col; ++j) {
+      double width = subwidth;
+      /*
+      if (widthRemainder > 0) {
+        ++width;
+        --widthRemainder;
+      }
+      */
+
+      ZAffineRect subrect;
+
+      ZPoint center = rect.getV1() * (currentOffsetX + width / 2) +
+          rect.getV2() * (currentOffsetY + height / 2) + rect.getCenter();
+      subrect.set(center, rect.getV1(), rect.getV2(), width, height);
+
+      result.push_back(subrect);
+
+      currentOffsetX += width;
+    }
+    currentOffsetY += height;
+  }
+
+  return result;
+}
+
+std::vector<ZAffineRect> zgeom::IntPartition(
+    const ZAffineRect &rect, int row, int col)
+{
+  std::vector<ZAffineRect> result;
+
+  int rectWidth = neutu::iround(rect.getWidth());
+  int rectHeight = neutu::iround(rect.getHeight());
+
+  int subwidth = rectWidth / col;
+  int subheight = rectHeight / row;
+  int heightRemainder = rectHeight % row;
+
+  double currentOffsetY = -rectHeight / 2;
+  for (int i = 0; i < row; ++i) {
+    double currentOffsetX = -rectWidth / 2;
+    int height = subheight;
+    if (heightRemainder > 0) {
+      ++height;
+      --heightRemainder;
+    }
+    int widthRemainder = rectWidth % col;
 
     for (int j = 0; j < col; ++j) {
       int width = subwidth;
@@ -48,7 +102,7 @@ std::vector<ZAffineRect> zgeom::Partition(
   return result;
 }
 
-void zgeom::transform(ZGeo3dScalarField *field,
+void zgeom::Transform(ZGeo3dScalarField *field,
                      const ZGeo3dTransform &transform)
 {
   transform.transform(field->getRawPointArray(), field->getPointNumber());
@@ -283,9 +337,459 @@ int zgeom::GetZoomLevel(int scale)
   return zoom;
 }
 
+ZPlane zgeom::GetPlane(neutu::EAxis axis)
+{
+  ZPlane plane;
+  switch (axis) {
+  case neutu::EAxis::X:
+    plane.set(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
+    break;
+  case neutu::EAxis::Y:
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
+    break;
+  case neutu::EAxis::Z:
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    break;
+  default:
+    break;
+  }
+
+  return plane;
+}
+
 void zgeom::CopyToArray(const ZIntPoint &pt, int v[])
 {
   v[0] = pt.getX();
   v[1] = pt.getY();
   v[2] = pt.getZ();
+}
+
+double zgeom::ComputeIntersection(
+    const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd)
+{
+  ZPoint v0 = plane.align(lineStart);
+  ZPoint v1 = plane.align(lineEnd);
+
+  double lambda = 0.0;
+  double sz = v0.getZ() - v1.getZ();
+  if (std::fabs(sz) > ZPoint::MIN_DIST) {
+    lambda = v0.getZ() / sz;
+  }
+
+  return lambda;
+}
+
+double zgeom::ComputeIntersection(const ZPlane &plane, const ZLineSegment &seg)
+{
+  return ComputeIntersection(plane, seg.getStartPoint(), seg.getEndPoint());
+}
+
+double zgeom::ComputeIntersection(const ZAffinePlane &plane, const ZLineSegment &seg)
+{
+  return ComputeIntersection(plane.getPlane(), seg - plane.getOffset());
+}
+
+ZPoint zgeom::ComputeIntersectionPoint(
+    const ZPlane &plane, const ZPoint &lineStart, const ZPoint &lineEnd)
+{
+  return ComputeIntersectionPoint(plane, ZLineSegment(lineStart, lineEnd));
+}
+
+ZPoint zgeom::ComputeIntersectionPoint(
+    const ZPlane &plane, const ZLineSegment &seg)
+{
+  double lambda = ComputeIntersection(plane, seg);
+
+  ZPoint intersection;
+  intersection.invalidate();
+  if (lambda >= 0.0 && lambda <= 1.0) {
+    intersection = seg.getIntercept(lambda);
+  }
+
+  return intersection;
+
+  /*
+  ZPoint v0 = plane.align(seg.getStartPoint());
+  ZPoint v1 = plane.align(seg.getEndPoint());
+
+  ZPoint intersection;
+  intersection.invalidate();
+
+  if ((v0.getZ() > 0.0 && v1.getZ() < 0.0) ||
+      (v0.getZ() < 0.0 && v1.getZ() > 0.0)) {
+    double lambda = std::fabs(v0.getZ()) /
+        (std::fabs(v0.getZ()) + std::fabs(v1.getZ()));
+    intersection = seg.getIntercept(lambda);
+  }
+
+  return intersection;
+  */
+}
+
+ZPoint zgeom::ComputeIntersectionPoint(
+    const ZAffinePlane &plane, const ZLineSegment &seg)
+{
+  ZPoint v0 = seg.getStartPoint();
+  ZPoint v1 = seg.getEndPoint();
+  v0 -= plane.getOffset();
+  v1 -= plane.getOffset();
+  double lambda = ComputeIntersection(plane.getPlane(), seg);
+
+  ZPoint intersection;
+  intersection.invalidate();
+  if (lambda > 0.0 && lambda < 1.0) {
+    intersection = seg.getIntercept(lambda);
+  }
+
+  return intersection;
+}
+
+bool zgeom::Intersects(
+    const ZAffineRect &rect, double x, double y, double z, double r)
+{
+  ZPoint pt = rect.getAffinePlane().align(ZPoint(x, y, z));
+
+  double halfWidth = rect.getWidth() * 0.5;
+  double halfHeight = rect.getHeight() * 0.5;
+
+  return neutu::WithinCloseRange(pt.x(), -halfWidth - r, halfWidth + r) &&
+      neutu::WithinCloseRange(pt.y(), -halfHeight - r, halfHeight + r) &&
+      neutu::WithinCloseRange(pt.z(), -r, r);
+}
+
+bool zgeom::Intersects(const ZAffineRect &rect, const ZLineSegment &seg)
+{
+  ZPoint offset = rect.getAffinePlane().getOffset();
+  ZPoint v0 = seg.getStartPoint() - offset;
+  ZPoint v1 = seg.getEndPoint() - offset;
+  ZPoint normal = rect.getAffinePlane().getNormal();
+  double z0 = v0.dot(normal);
+  double z1 = v1.dot(normal);
+
+//  ZPoint v0 = rect.getAffinePlane().align(seg.getStartPoint());
+//  ZPoint v1 = rect.getAffinePlane().align(seg.getEndPoint());
+
+  double lambda = 0.0;
+  double sz = z0 - z1;
+  if (std::fabs(sz) > ZPoint::MIN_DIST) {
+    lambda = z0 / sz;
+  }
+
+  if (lambda > 0.0 && lambda < 1.0) {
+    v0.set(v0.dot(rect.getAffinePlane().getV1()),
+           v0.dot(rect.getAffinePlane().getV2()), z0);
+    v1.set(v1.dot(rect.getAffinePlane().getV1()),
+           v1.dot(rect.getAffinePlane().getV2()), z1);
+
+    ZPoint intersection = ZLineSegment(v0, v1).getIntercept(lambda);
+//    ZPoint intersection = zgeom::ComputeIntersectionPoint(
+//          ZPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0)), ZLineSegment(v0, v1));
+    if (intersection.isValid()) {
+      double halfWidth = rect.getWidth() * 0.5;
+      double halfHeight = rect.getHeight() * 0.5;
+      return neutu::WithinCloseRange(intersection.x(), -halfWidth, halfWidth) &&
+          neutu::WithinCloseRange(intersection.y(), -halfHeight, halfHeight);
+    }
+  }
+
+  return false;
+}
+
+bool zgeom::Intersects(const ZAffineRect &r1, const ZAffineRect &r2)
+{
+  for (int index = 0; index <= 3; ++index) {
+    if (zgeom::Intersects(r1, r2.getSide(index))) {
+      return true;
+    }
+    if (zgeom::Intersects(r2, r1.getSide(index))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool zgeom::IntersectsApprox(
+    const ZAffineRect &rect, const ZCuboid &box,
+    double normalRange, double v1Range, double v2Range)
+{
+  if (rect.isEmpty()) {
+    return false;
+  }
+
+  ZPoint dc = box.getCenter() - rect.getCenter();
+  double d = std::fabs(dc.dot(rect.getAffinePlane().getNormal()));
+  if (d > normalRange) {
+    return false;
+  } else {
+    double u = std::fabs(dc.dot(rect.getAffinePlane().getV1()));
+    if (u > rect.getWidth() * 0.5 + v1Range) {
+      return false;
+    }
+    double v = std::fabs(dc.dot(rect.getAffinePlane().getV2()));
+    if (v > rect.getHeight() * 0.5 + v2Range) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void zgeom::EstimateBoxRange(
+    const ZCuboid &box, const ZPoint &a1, const ZPoint &a2, const ZPoint &a3,
+    double &r1, double &r2, double &r3)
+{
+  r1 = 0.0;
+  r2 = 0.0;
+  r3 = 0.0;
+
+  ZPoint boxCenter = box.getCenter();
+
+  for (int i = 0; i < 4; ++i) {
+    ZPoint v = box.getCorner(i) - boxCenter; //diagonal vector
+    double d = std::fabs(v.dot(a1));
+    if (d > r1) {
+      r1 = d;
+    }
+
+    d = std::fabs(v.dot(a2));
+    if (d > r2) {
+      r2 = d;
+    }
+
+    d = std::fabs(v.dot(a3));
+    if (d > r3) {
+      r3 = d;
+    }
+  }
+}
+
+bool zgeom::IntersectsApprox(const ZAffineRect &rect, const ZCuboid &box)
+{
+  double normalRange = 0.0;
+  double v1Range = 0.0;
+  double v2Range = 0.0;
+  EstimateBoxRange(
+        box, rect.getAffinePlane().getV1(), rect.getAffinePlane().getV2(),
+        rect.getAffinePlane().getNormal(), v1Range, v2Range, normalRange);
+  /*
+  double normalRange = 0.0;
+  double v1Range = 0.0;
+  double v2Range = 0.0;
+
+  ZPoint boxCenter = box.getCenter();
+
+  for (int i = 0; i < 4; ++i) {
+    ZPoint v = box.getCorner(i) - boxCenter; //diagonal vector
+    double d = std::fabs(v.dot(rect.getAffinePlane().getNormal()));
+    if (d > normalRange) {
+      normalRange = d;
+    }
+
+    d = std::fabs(v.dot(rect.getAffinePlane().getV1()));
+    if (d > v1Range) {
+      v1Range = d;
+    }
+
+    d = std::fabs(v.dot(rect.getAffinePlane().getV2()));
+    if (d > v2Range) {
+      v2Range = d;
+    }
+  }
+  */
+
+  return IntersectsApprox(
+        rect, box, normalRange, v1Range, v2Range);
+}
+
+ZIntCuboid zgeom::GetIntBoundBox(const ZAffineRect &rect)
+{
+  ZIntCuboid box;
+  for (int i = 0; i < 4; ++i) {
+    ZPoint corner = rect.getCorner(i);
+    box.join(corner);
+  }
+  return box;
+}
+
+std::pair<int, int> zgeom::ToIntRange(double x0, double x1)
+{
+  std::pair<int, int> result;
+  result.first = neutu::ifloor(x0);
+  result.second = neutu::ifloor(x1);
+  if ((double(result.second) == x1) && (result.first != result.second)) {
+    --result.second;
+  }
+
+  return result;
+}
+
+std::pair<int, int> zgeom::ToIntSegAtLeftCenter(double cx, double length)
+{
+  double halfLength = length * 0.5;
+  std::pair<int, int> range = ToIntRange(cx - halfLength, cx + halfLength);
+
+  int intLength = range.second - range.first + 1;
+  return std::pair<int, int>(
+        range.first + intLength / 2, intLength);
+}
+
+namespace {
+
+ZAffineRect get_face(const ZCuboid &box, int index)
+{
+  ZAffineRect rect;
+  switch (index) {
+  case 0:
+    rect.setCenter((box.getCorner(0) + box.getCorner(3)) * 0.5);
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.height()));
+    break;
+  case 1:
+    rect.setCenter((box.getCorner(4) + box.getCorner(7)) * 0.5);
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.height()));
+    break;
+  case 2:
+    rect.setCenter(((box.getCorner(0) + box.getCorner(6)) * 0.5));
+    rect.setPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.depth()), neutu::iround(box.height()));
+    break;
+  case 3:
+    rect.setCenter(((box.getCorner(1) + box.getCorner(7)) * 0.5));
+    rect.setPlane(ZPoint(0, 0, 1), ZPoint(0, 1, 0));
+    rect.setSize(neutu::iround(box.depth()), neutu::iround(box.height()));
+    break;
+  case 4:
+    rect.setCenter(((box.getCorner(0) + box.getCorner(5)) * 0.5));
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
+    break;
+  case 5:
+    rect.setCenter(((box.getCorner(2) + box.getCorner(7)) * 0.5));
+    rect.setPlane(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
+    rect.setSize(neutu::iround(box.width()), neutu::iround(box.depth()));
+    break;
+  default:
+    break;
+  }
+
+  return rect;
+}
+
+}
+
+bool zgeom::Intersects(const ZAffineRect &rect, const ZCuboid &box)
+{
+  if (rect.isEmpty()) {
+    return false;
+  }
+
+  if (box.isValid()) {
+    ZPoint center = box.getCenter();
+    double dist = std::fabs(rect.getAffinePlane().computeSignedDistance(center));
+    double t2 = box.getMinSideLength() * 0.5;
+    if (dist <= t2) {
+      if (rect.containsProjection(center)) {
+        return true;
+      }
+    }
+
+    double t1 = box.getDiagonalLength() * 0.5;
+    if (dist > t1) {
+      return false;
+    }
+
+
+    /*
+    if (std::fabs(
+          rect.getAffinePlane().computeSignedDistance(center)) >
+        box.getDiagonalLength() * 0.5) {
+      return false;
+    }
+        */
+
+    for (int i = 0; i < 4; ++i) {
+      if(box.contains(rect.getCorner(i))) {
+        return true;
+      }
+    }
+
+    for (int i = 0; i < 6; ++i) {
+      ZAffineRect r = get_face(box, i);
+      if (Intersects(rect, r)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool zgeom::Intersects(const ZAffineRect &rect, const ZIntCuboid &box)
+{
+  return Intersects(rect, ZCuboid::FromIntCuboid(box));
+}
+
+void zgeom::raster::ForEachNeighbor(
+    int x, int y, int z, int nsx, int nsy, int nsz,
+    std::function<void(int,int,int)> f)
+{
+  for (int k = -nsz; k <= nsz; ++k) {
+    for (int j = -nsy; j <= nsy; ++j) {
+      for (int i = -nsx; i <= nsx; ++i) {
+        if (i != 0 || j != 0 || k != 0) {
+          f(x + i, y + j, z + k);
+        }
+      }
+    }
+  }
+}
+
+template<>
+void zgeom::raster::ForEachNeighbor<1>(
+    int x, int y, int z, std::function<void(int,int,int)> f)
+{
+  f(x - 1, y, z);
+  f(x + 1, y, z);
+  f(x, y - 1, z);
+  f(x, y + 1, z);
+  f(x, y, z - 1);
+  f(x, y, z + 1);
+}
+
+template<>
+void zgeom::raster::ForEachNeighbor<2>(
+    int x, int y, int z, std::function<void(int,int,int)> f)
+{
+  ForEachNeighbor<1>(x, y, z, f);
+
+  f(x - 1, y - 1, z);
+  f(x + 1, y - 1, z);
+  f(x - 1, y + 1, z);
+  f(x + 1, y + 1, z);
+  f(x - 1, y, z -1);
+  f(x + 1, y, z - 1);
+  f(x - 1, y, z + 1);
+  f(x + 1, y, z + 1);
+  f(x, y - 1, z - 1);
+  f(x, y + 1, z - 1);
+  f(x, y - 1, z + 1);
+  f(x, y + 1, z + 1);
+}
+
+template<>
+void zgeom::raster::ForEachNeighbor<3>(
+    int x, int y, int z, std::function<void(int,int,int)> f)
+{
+  ForEachNeighbor<2>(x, y, z, f);
+
+  f(x - 1, y - 1, z - 1);
+  f(x + 1, y - 1, z - 1);
+  f(x - 1, y + 1, z - 1);
+  f(x + 1, y + 1, z - 1);
+  f(x - 1, y - 1, z + 1);
+  f(x + 1, y - 1, z + 1);
+  f(x - 1, y + 1, z + 1);
+  f(x + 1, y + 1, z + 1);
 }

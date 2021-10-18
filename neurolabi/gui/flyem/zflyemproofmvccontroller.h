@@ -29,6 +29,7 @@ public:
   static void Disable3DVisualization(ZFlyEmProofMvc *mvc);
   static void DisableSequencer(ZFlyEmProofMvc *mvc);
   static void DisableContextMenu(ZFlyEmProofMvc *mvc);
+  static void DisableBodyHit(ZFlyEmProofMvc *mvc);
   static void SetTodoDelegate(ZFlyEmProofMvc *mvc, ZStackDoc *todoDoc);
   static void UpdateProtocolRangeGlyph(
       ZFlyEmProofMvc *mvc, const ZIntCuboid &range);

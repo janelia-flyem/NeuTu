@@ -26,6 +26,7 @@
 #include "zflyembodymergeproject.h"
 #include "zflyembodycoloroption.h"
 #include "flyemdataconfig.h"
+#include "zflyemproofdoctracinghelper.h"
 
 class ZDvidSparseStack;
 class ZFlyEmSupervisor;
@@ -41,6 +42,10 @@ class ZStackArray;
 class ZFlyEmRoiManager;
 class ZStackBlockGrid;
 class ZDvidEnv;
+class ZRoiProvider;
+class FlyEmTodoEnsemble;
+class FlyEmSynapseEnsemble;
+class FlyEmBodyAnnotationManager;
 
 class ZFlyEmProofDoc : public ZStackDoc
 {
@@ -61,6 +66,7 @@ public:
 
 //  virtual void setDvidTarget(const ZDvidTarget &target);
   virtual bool setDvid(const ZDvidEnv &env);
+  virtual bool supervisorNeeded() const;
 
 //  virtual void updateTileData();
 
@@ -80,16 +86,20 @@ public:
     return m_labelInfo;
   }
 
+  bool hasSegmentation() const override;
+
   bool isDvidMutable() const;
 
-  bool isAdmin() const;
+  bool isAdmin() const override;
 
   void setGraySliceCenterCut(int width, int height);
   void setSegmentationCenterCut(int width, int height);
+  void setSegmentationVisibility(bool visible);
+  QColor getBodyColor(uint64_t bodyId) const;
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice(neutu::EAxis axis, bool sv) const;
-  ZDvidLabelSlice* getActiveLabelSlice(neutu::EAxis axis) const;
+  ZDvidLabelSlice* getDvidLabelSlice(bool sv) const;
+  ZDvidLabelSlice* getActiveLabelSlice() const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSliceList(bool sv);
   QList<ZDvidLabelSlice*> getFrontDvidLabelSliceList() const;
   QList<ZDvidLabelSlice*> getDvidBodySliceList() const;
@@ -98,13 +108,16 @@ public:
   void setSupervoxelMode(bool on, const ZStackViewParam &viewParam);
 
 //  ZDvidGraySlice* getDvidGraySlice() const;
-  ZDvidGraySlice* getDvidGraySlice(neutu::EAxis axis) const;
-  ZDvidGraySliceEnsemble* getDvidGraySliceEnsemble(neutu::EAxis axis) const;
+  ZDvidGraySlice* getDvidGraySlice() const;
+  ZDvidGraySliceEnsemble* getDvidGraySliceEnsemble() const;
 
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutu::EAxis axis) const;
   ZFlyEmToDoList* getTodoList(neutu::EAxis axis) const;
+
+  FlyEmTodoEnsemble* getTodoEnsemble() const;
+  FlyEmSynapseEnsemble* getSynapseEnsemble() const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
@@ -141,15 +154,21 @@ public:
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
 
-  uint64_t getLabelId(int x, int y, int z) override;
+  uint64_t getLabelId(int x, int y, int z, neutu::ELabelSource source) override;
   uint64_t getSupervoxelId(int x, int y, int z) override;
+  std::set<uint64_t> getLabelIdSet(
+      const std::vector<ZIntPoint> &ptArray, neutu::ELabelSource source) override;
 
   bool hasBodySelected() const;
 
   std::set<uint64_t> getSelectedBodySet(neutu::ELabelSource labelType) const;
-  void setSelectedBody(const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
-  void setSelectedBody(uint64_t bodyId, neutu::ELabelSource labelType);
+  void setSelectedBody(
+      const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
+  void setSelectedBody(
+      uint64_t bodyId, neutu::ELabelSource labelType);
   void toggleBodySelection(uint64_t bodyId, neutu::ELabelSource labelType);
+  void toggleBodySelection(
+      const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
   /*!
    * \brief Deselect bodies
    *
@@ -161,6 +180,8 @@ public:
   void addSelectedBody(
       const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
 
+  void addSelectionAt(int x, int y, int z);
+
   bool isSplittable(uint64_t bodyId) const;
 
   ZFlyEmBodyMerger* getBodyMerger() {
@@ -171,6 +192,8 @@ public:
     return &m_bodyMerger;
   }
 
+  FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
+
   ZFlyEmBodyMergeProject* getMergeProject() {
     return m_mergeProject;
   }
@@ -179,8 +202,22 @@ public:
     return m_mergeProject;
   }
 
-  void mergeSelected(ZFlyEmSupervisor *supervisor);
-  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
+  /*!
+   * \brief Get annotation for a body
+   *
+   * It will always try to refresh the cache.
+   */
+  ZJsonObject getBodyAnnotation(uint64_t bodyId) const;
+
+  void invalidateBodyAnnotationCache();
+
+  void mergeBodies(ZFlyEmSupervisor *supervisor);
+  void mergeBodies(
+      const std::vector<std::pair<uint64_t, uint64_t>> &targets,
+      ZFlyEmSupervisor *supervisor);
+
+//  void mergeSelected(ZFlyEmSupervisor *supervisor);
+//  void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
   void backupMergeOperation();
@@ -193,11 +230,16 @@ public:
   QList<ZFlyEmBookmark*> importFlyEmBookmark(const std::string &filePath);
   ZFlyEmBookmark* findFirstBookmark(const QString &key) const;
 
+  void importUserBookmark(const QString &filePath);
+  void exportUserBookmark(const QString &filePath);
+
 //  void saveCustomBookmark();
   void downloadBookmark();
 //  inline void setCustomBookmarkSaveState(bool state) {
 //    m_isCustomBookmarkSaved = state;
 //  }
+
+  bool canAddBookmarkAt(const ZIntPoint &pos, bool warning);
 
 //  virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
@@ -207,9 +249,10 @@ public:
 
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
-  void enhanceTileContrast(neutu::EAxis axis, bool highContrast);
+  void enhanceTileContrast(bool highContrast);
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void annotateBody(uint64_t bodyId, const ZJsonObject &annotation);
 //  void useBodyNameMap(bool on);
 
   bool selectBody(uint64_t bodyId);
@@ -220,6 +263,8 @@ public:
 
   void recordBodySelection();
   void processBodySelection();
+
+  void selectBodyOnMergeLink(bool appending);
 //  void syncBodySelection(ZDvidLabelSlice *labelSlice);
 
 //  std::vector<ZPunctum*> getTbar(uint64_t bodyId);
@@ -233,26 +278,33 @@ public:
 
   void downloadSynapseFunc();
 
-  void recordAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
-  void removeSelectedAnnotation(uint64_t bodyId);
+//  void recordBodyAnnotation(uint64_t bodyId, const ZFlyEmBodyAnnotation &anno);
+//  void recordBodyAnnotation(uint64_t bodyId, const ZJsonObject &anno);
+//  void removeSelectedAnnotation(uint64_t bodyId);
   template <typename InputIterator>
   void removeSelectedAnnotation(
       const InputIterator &first, const InputIterator &last);
-  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
+//  ZFlyEmBodyAnnotation getRecordedAnnotation(uint64_t bodyId) const;
+//  std::string getRecordedAnnotationStatus(uint64_t bodyId);
+  std::string getBodyStatus(uint64_t bodyId);
 
-  void verifyBodyAnnotationMap();
+//  void verifyBodyAnnotationMap();
 
+  template<template<class...> class Container>
   ZFlyEmBodyAnnotation getFinalAnnotation(
-      const std::vector<uint64_t> &bodyList);
+      const Container<uint64_t> &bodyList,
+      std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
+  ZJsonObject getFinalAnnotation(const std::vector<uint64_t> &bodyList,
+      std::function<void(uint64_t, const ZJsonObject&)> processAnnotation);
 
   /*!
    * \brief Remove unselected bodies from annotation map.
    *
    * This is a temporary solution to inconsistent selection update.
    */
-  void clearBodyAnnotationMap();
+//  void clearBodyAnnotationMap();
 
-  void activateBodyColorMap(const QString &colorMapName);
+  void activateBodyColorMap(const QString &colorMapName, bool updating);
   bool isActive(ZFlyEmBodyColorOption::EColorOption option);
 
   ZDvidReader& getDvidReader();
@@ -261,6 +313,9 @@ public:
   ZDvidWriter& getDvidWriter() {
     return m_dvidWriter;
   }
+
+  const ZDvidReader &getWorkReader();
+  ZDvidWriter& getWorkWriter();
 
   ZDvidReader* getSparseVolReader() {
     return &m_sparseVolReader;
@@ -281,6 +336,9 @@ public:
   void exportGrayscale(
       const ZIntCuboid &box, int dsIntv, const QString &fileName) const;
 
+  bool usingGenericBodyAnnotation() const;
+  ZJsonObject getBodyAnnotationSchema() const;
+
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
@@ -296,6 +354,8 @@ public:
   void updateMeshForSelected();
 
   void processAssignedInfo(int x, int y, int z);
+
+  void setLabelSliceHittable(bool on);
 
 public:
   void notifyBodyMerged();
@@ -314,10 +374,9 @@ public: //Synapse functions
   std::set<ZIntPoint> getSelectedSynapse() const;
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
-  void tryMoveSelectedSynapse(const ZIntPoint &dest, neutu::EAxis axis);
+//  void tryMoveSelectedSynapse(const ZIntPoint &dest);
   void annotateSelectedSynapse(ZJsonObject propJson, neutu::EAxis axis);
-  void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
-                               neutu::EAxis axis);
+  void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg);
 
   /*!
    * \brief Sync the synapse with DVID
@@ -339,20 +398,23 @@ public: //Synapse functions
 
   void removeSynapse(
       const ZIntPoint &pos, ZDvidSynapseEnsemble::EDataScope scope);
-  void addSynapse(
-      const ZDvidSynapse &synapse, ZDvidSynapseEnsemble::EDataScope scope);
+  void addSynapse(const ZDvidSynapse &synapse);
   void moveSynapse(
       const ZIntPoint &from, const ZIntPoint &to,
       ZDvidSynapseEnsemble::EDataScope scope = ZDvidSynapseEnsemble::EDataScope::GLOBAL);
   void updateSynapsePartner(const ZIntPoint &pos);
   void updateSynapsePartner(const std::set<ZIntPoint> &posArray);
+  void updateSynapse(const ZIntPoint &pos);
+  void updateSynapse(const std::set<ZIntPoint> &posArray);
   void highlightPsd(bool on);
+
+  ZDvidSynapse getSingleSelectedSynapse() const;
 
 public: //Todo list functions
   void removeTodoItem(
       const ZIntPoint &pos, ZFlyEmToDoList::EDataScope scope);
   void addTodoItem(const ZIntPoint &pos);
-  void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
+  void addTodoItem(const ZFlyEmToDoItem &item);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutu::EToDoAction action);
@@ -364,8 +426,7 @@ public: //Todo list functions
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 
-  void annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg,
-                                neutu::EAxis axis);
+  void annotateSelectedTodoItem(ZFlyEmTodoAnnotationDialog *dlg);
 
   void notifyTodoItemModified(
       const std::vector<ZIntPoint> &ptArray, bool emitingEdit = false);
@@ -399,6 +460,9 @@ public: //Bookmark functions
    */
   ZFlyEmBookmark* getBookmark(int x, int y, int z) const;
 
+public: //tracing
+  void trace(const ZPoint &pt);
+
 public:
   bool isDataValid(const std::string &data) const;
 
@@ -410,7 +474,8 @@ public:
   /*!
    * \brief Fetch DVID label slice data and set body selections
    */
-  void updateDvidLabelSlice(neutu::EAxis axis);
+//  void updateDvidLabelSlice(neutu::EAxis axis);
+  void updateDvidLabelSlice();
 
   void allowDvidLabelSliceBlinking(bool on);
 //  void updateDvidLabelSlice();
@@ -476,12 +541,32 @@ public:
   }
 
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
-  void updateBodyColor(ZSharedPointer<ZFlyEmBodyColorScheme> colorMap);
+  void updateBodyColor(
+      ZSharedPointer<ZFlyEmBodyColorScheme> colorMap, bool updating);
+  void setSelectedBodyColor(const QColor &color);
+  void resetSelectedBodyColor();
+
+  void syncBodySelection(ZStackObject *host);
+  void processLabelSliceHit(ZStackObject *host, ZStackObject::ESelection option);
+
+  void setBodyColor(uint64_t bodyId, const std::string &colorCode);
+  void setBodyColor(uint64_t bodyId, const QColor &color);
+  void setBodyColorFromStatus(uint64_t bodyId, const std::string &colorCode);
+
+
+  void setBodyColor(
+    const std::vector<uint64_t> &bodyList,
+    const std::vector<std::string> &colorList);
+  void setBodyColorFromStatus(
+    const std::vector<uint64_t> &bodyList,
+    const std::vector<std::string> &colorList);
 
   ZJsonArray getMergeOperation() const;
 
-  void prepareDvidLabelSlice(const ZStackViewParam &viewParam,
-      int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv);
+  void prepareDvidLabelSlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut, bool sv,
+      const std::string &source);
   void prepareDvidGraySlice(
       const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut,
@@ -498,17 +583,23 @@ public:
   void diagnose() const override;
 
   const ZContrastProtocol& getContrastProtocol() const;
-  const ZFlyEmBodyAnnotationProtocal& getBodyStatusProtocol() const;
+  const ZFlyEmBodyAnnotationProtocol& getBodyStatusProtocol() const;
+  bool isMergable(const ZFlyEmBodyAnnotation &annot) const;
+  bool isMergable(const ZJsonObject &annot) const;
   void updateDataConfig();
   void setContrastProtocol(const ZJsonObject &obj);
   void updateContrast(const ZJsonObject &protocolJson, bool hc);
   void uploadUserDataConfig();
 
-  //Obsolete. Use getCurrentGrayscaleReader() instead
-  ZDvidReader* getCurrentGrayscaleReader(neutu::EAxis axis) const;
+  void updateSegmentationOpacity(double opacity);
 
+  //Obsolete. Use getCurrentGrayscaleReader() instead
   ZDvidReader* getCurrentGrayscaleReader() const;
+
+//  ZDvidReader* getCurrentGrayscaleReader() const;
   ZDvidReader* getCurrentBodyGrayscaleReader();
+
+  ZMesh* makeRoiMesh(const QString &name);
 
   bool test();
 
@@ -519,6 +610,16 @@ public:
   virtual void executeRemoveTodoCommand() override;
 
   void toggleGrayscale(neutu::EAxis axis);
+
+  std::shared_ptr<ZRoiProvider> initRoiProvider();
+  std::shared_ptr<ZRoiProvider> getRoiProvider() const;
+
+  void addUploadTask(
+      const std::string &dataName, const std::string &key, const QByteArray &data);
+  void addUploadTask(std::function<void(ZDvidWriter &writer)> f);
+
+  void removeTodoList(
+      const QList<ZIntPoint> &todoList, bool allowingUndo);
 
 signals:
   void bodyMerged();
@@ -549,7 +650,7 @@ signals:
 
   void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
                           int zoom, int centerCutX, int centerCutY,
-                          bool usingCenterCut);
+                          bool usingCenterCut, const std::string &source);
   void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                          int zoom, int centerCutX, int centerCutY,
                          bool usingCenterCut, const std::string &source);
@@ -603,7 +704,6 @@ public slots:
   void updateDvidLabelObjectSliently();
   void updateDvidLabelObject(neutu::EAxis axis);
 
-
   void loadSynapse(const std::string &filePath);
   void downloadSynapse();
   void downloadSynapse(int x, int y, int z);
@@ -611,6 +711,7 @@ public slots:
   void downloadTodo(const ZIntPoint &pt);
   void downloadTodoList();
   void refreshSynapse();
+  void updateSynapseDefaultRadius(double preRadius, double postRadius);
 
   void processBookmarkAnnotationEvent(ZFlyEmBookmark *bookmark);
 //  void saveCustomBookmarkSlot();
@@ -635,6 +736,12 @@ public slots:
   bool checkInBodyWithMessage(
       uint64_t bodyId, neutu::EBodySplitMode mode);
 
+  void selectBodyAt(const QList<ZIntPoint> &posList, bool appending);
+  void selectBodyUnderSelectedObject(ZStackObject::EType type, bool appending);
+  void toggleBodiesAt(const QList<ZIntPoint> &posList);
+  void toggleBodyAt(const ZIntPoint &pos);
+  void toggleBodyUnderObject(const ZStackObject *obj);
+
   QString getBodyLockFailMessage(uint64_t bodyId);
 
   bool checkBodyWithMessage(
@@ -651,16 +758,19 @@ public slots:
 
   void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
                         int zoom, int centerCutX, int centerCutY,
-                        bool usingCenterCut);
+                        bool usingCenterCut, const std::string &source);
   void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
                        int zoom, int centerCutX, int centerCutY,
                        bool usingCenterCut, const std::string &source);
 
   void setTodoItemChecked(int x, int y, int z, bool checking);
 
+  void testSlot();
+
 protected:
   void autoSave() override;
-  void customNotifyObjectModified(ZStackObject::EType type) override;
+//  void customNotifyObjectModified(ZStackObject::EType type) override;
+  void _processObjectModified(const ZStackObjectInfoSet &infoSet) override;
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData(const ZDvidEnv &env);
@@ -676,6 +786,9 @@ protected:
   void prepareLabelSlice();
 //  void initGrayscaleSlice(neutu::EAxis axis);
   void initGrayscaleSlice(const ZDvidEnv &env, neutu::EAxis axis);
+  void initLabelSlice(neutu::EAxis axis);
+  void initTodoEnsemble();
+  void initSynapseEnsemble();
 
   void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
   void setGrayscaleReader(
@@ -688,8 +801,34 @@ protected:
       bool updatingMainReader);
 
   void makeKeyProcessor() override;
-
   bool _loadFile(const QString &filePath) override;
+
+  template<template<class...> class Container>
+  void setBodyColorT(
+      const Container<uint64_t> &bodyList, const QColor &color, size_t rank);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColorT(
+      const C1<uint64_t> &bodyList, const C2<QColor> &colorList, size_t rank);
+  template<template<class...> class C1, template<class...> class C2>
+  void setBodyColorT(
+      const C1<uint64_t> &bodyList, const C2<std::string> &colorList, size_t rank);
+
+  void setBodyColorR(uint64_t bodyId, const std::string &colorCode, size_t rank);
+
+  enum class EErrorType {
+    BODY_LOCK_NA
+  };
+
+  QString getWarning(EErrorType type);
+
+  ZSegmentAnnotationStore* getSegmentAnnotationStore() const override;
+
+  void setSelectedSynapseVerified(bool verified);
+
+  template<typename T, typename T2>
+  void updateDataSlice(T *slice, T2 *array, const ZStackViewParam &viewParam,
+                       int zoom, int centerCutX, int centerCutY,
+                       bool usingCenterCut, const std::string &source);
 
 private:
   void connectSignalSlot();
@@ -747,7 +886,8 @@ private:
       const ZFlyEmSequencerColorScheme &colorScheme,
       ZFlyEmBodyColorOption::EColorOption option);
 
-  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option);
+  void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option,
+                            bool updating);
 
   QString getAnnotationNameWarningDetail(
       const QMap<uint64_t, QVector<QString> > &nameMap) const;
@@ -757,9 +897,33 @@ private:
   void warnSynapseReadonly();
 
   ZDvidReader& getBookmarkReader();
+  ZDvidWriter& getBookmarkWriter();
+
+  /*
+  template<typename T>
+  void mergeSelected(
+      ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+      */
+
+  /*
+  template<typename T>
+  void mergeSelectedWithoutConflict(
+      ZFlyEmSupervisor *supervisor, const QMap<uint64_t, T> &annotationMap);
+      */
+
+//  template<typename T>
+//  void verifyBodyAnnotationMapG(const QMap<uint64_t, T> &annotationMap);
+
+  template<typename T>
+  void clearBodyAnnotationMap(QMap<uint64_t, T> &annotationMap) const;
+
+//  void notifyUserBookmkarModified();
+
+  std::vector<std::pair<uint64_t, uint64_t>> getMergeCandidate() const;
 
 private slots:
   void processBodyMergeUploaded();
+  void processBodyAnnotationUpdate(uint64_t bodyId, ZJsonObject annotation);
 
 protected:
   ZDvidEnv m_dvidEnv;
@@ -780,7 +944,8 @@ protected:
 
   ZDvidReader *m_mainGrayscaleReader = nullptr;
 
-  ZDvidReader m_bookmarkReader;
+  ZDvidWriter m_bookmarkWriter;
+//  ZDvidReader m_bookmarkReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
@@ -814,6 +979,7 @@ protected:
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
   bool m_supervoxelMode = false;
+  ZJsonObject m_bodyAnnotationSchema;
 
   bool m_isAdmin = false;
 
@@ -828,13 +994,19 @@ protected:
   QMap<ZFlyEmBodyColorOption::EColorOption,
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
 
-  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+//  QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
+//  QMap<uint64_t, ZJsonObject> m_genericAnnotationMap;
 
+  FlyEmBodyAnnotationManager *m_bodyAnnotationManager = nullptr;
   ZFlyEmRoiManager *m_roiManager = nullptr;
+
+  ZFlyEmProofDocTracingHelper m_tracingHelper;
 
   mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+
+  std::shared_ptr<ZRoiProvider> m_roiProvider;
 
   static const char *THREAD_SPLIT;
 };
@@ -848,15 +1020,15 @@ void ZFlyEmProofDoc::selectBody(
   }
 }
 
-template <typename InputIterator>
-void ZFlyEmProofDoc::removeSelectedAnnotation(
-    const InputIterator &first, const InputIterator &last)
-{
-  for (InputIterator iter = first; iter != last; ++iter) {
-    removeSelectedAnnotation(*iter);
-  }
-}
+extern template
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::vector>(
+    const std::vector<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
+extern template
+ZFlyEmBodyAnnotation ZFlyEmProofDoc::getFinalAnnotation<std::set>(
+    const std::set<uint64_t> &bodyList,
+    std::function<void(uint64_t, const ZFlyEmBodyAnnotation&)> processAnnotation);
 
 
 #endif // ZFLYEMPROOFDOC_H

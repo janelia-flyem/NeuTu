@@ -29,9 +29,14 @@
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
 {
-  m_view = NULL;
   m_presenter = NULL;
-  m_layout = new QHBoxLayout(this);
+  m_layout = new QVBoxLayout(this);
+  m_topLayout = new QHBoxLayout();
+  m_layout->addLayout(m_topLayout);
+  m_secondLayout = new QHBoxLayout();
+  m_layout->addLayout(m_secondLayout);
+  m_viewLayout = new QGridLayout();
+  m_layout->addLayout(m_viewLayout);
   m_progressSignal = new ZProgressSignal(this);
   setAcceptDrops(true);
 
@@ -55,7 +60,7 @@ ZStackMvc::~ZStackMvc()
   ZOUT(LTRACE(), 5) << "ZStackMvc destroyed";
 }
 
-ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
+ZStackMvc* ZStackMvc::Make(QWidget *parent, std::shared_ptr<ZStackDoc> doc)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
@@ -65,7 +70,7 @@ ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 }
 
 ZStackMvc* ZStackMvc::Make(
-    QWidget *parent, ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis)
+    QWidget *parent, std::shared_ptr<ZStackDoc> doc, neutu::EAxis axis)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
@@ -76,20 +81,54 @@ ZStackMvc* ZStackMvc::Make(
   return frame;
 }
 
-void ZStackMvc::construct(ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis)
+ZStackMvc* ZStackMvc::Make(
+    QWidget *parent, std::shared_ptr<ZStackDoc> doc,
+    const std::vector<neutu::EAxis> &axes)
 {
-  dropDocument(ZSharedPointer<ZStackDoc>(doc));
-  createView(axis);
-  createPresenter(axis);
+  ZStackMvc *frame = new ZStackMvc(parent);
+
+  BaseConstruct(frame, doc, axes);
+
+  return frame;
+}
+
+
+void ZStackMvc::construct(
+    std::shared_ptr<ZStackDoc> doc,  const std::vector<neutu::EAxis> &axes)
+{
+  dropDocument(std::shared_ptr<ZStackDoc>(doc));
+
+  if (axes.empty()) {
+    createView(neutu::EAxis::Z);
+    createPresenter(neutu::EAxis::Z, 1);
+  } else {
+    for (auto axis : axes) {
+      createView(axis);
+    }
+    createPresenter(axes.front(), 1);
+  }
 //  getPresenter()->createActions();
+
+//  layoutView();
 
   updateDocument();
 
-  m_view->prepareDocument();
+  for (ZStackView *view : m_viewList) {
+    view->prepareDocument();
+  }
 //  m_presenter->createActions();
   m_presenter->prepareView();
 
+  forEachView([](ZStackView*view) {
+    view->setHoverFocus(true);
+  });
+
   customInit();
+}
+
+void ZStackMvc::construct(std::shared_ptr<ZStackDoc> doc, neutu::EAxis axis)
+{
+  construct(doc, std::vector<neutu::EAxis>(1, axis));
 }
 
 void ZStackMvc::customInit()
@@ -97,9 +136,16 @@ void ZStackMvc::customInit()
 }
 
 void ZStackMvc::BaseConstruct(
-    ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutu::EAxis axis)
+    ZStackMvc *frame, std::shared_ptr<ZStackDoc> doc, neutu::EAxis axis)
 {
   frame->construct(doc, axis);
+}
+
+void ZStackMvc::BaseConstruct(
+      ZStackMvc *frame, std::shared_ptr<ZStackDoc> doc,
+      const std::vector<neutu::EAxis> &axes)
+{
+  frame->construct(doc, axes);
 }
 
 void ZStackMvc::createView()
@@ -110,9 +156,104 @@ void ZStackMvc::createView()
 void ZStackMvc::createView(neutu::EAxis axis)
 {
   if (m_doc.get() != NULL) {
-    m_view = new ZStackView(qobject_cast<QWidget*>(this));
-    m_layout->addWidget(m_view);
-    m_view->setSliceAxis(axis);
+    ZStackView *view = new ZStackView(qobject_cast<QWidget*>(this));
+//    m_layout->addWidget(view, 0, 0);
+
+    view->setSliceAxis(axis);
+
+    m_viewList.push_back(view);
+  }
+}
+
+void ZStackMvc::updateViewLayout()
+{
+  m_presenter->updateViewLayout();
+}
+
+void ZStackMvc::updateViewLayout(std::vector<int> viewLayoutIndices)
+{
+#ifdef _DEBUG_
+  std::cout << "Update view layout: ";
+  for (int index : viewLayoutIndices) {
+    std::cout << index << ", ";
+  }
+  std::cout << std::endl;
+#endif
+
+  bool updating = true;
+  if (viewLayoutIndices.size() == m_viewLayoutIndices.size()) {
+    updating = !std::equal(
+          viewLayoutIndices.begin(), viewLayoutIndices.end(),
+          m_viewLayoutIndices.begin());
+  }
+  if (updating) {
+    m_viewLayoutIndices = viewLayoutIndices;
+    layoutView();
+  }
+}
+
+void ZStackMvc::layoutView(ZStackView *view, int index)
+{
+  if (view) {
+    if (index >= 0) {
+      int row = index / 2;
+      int column = index % 2;
+      m_viewLayout->addWidget(view, row, column);
+      if (view != getMainView()) {
+//        view->setSliceViewTransform(getMainView()->getSliceViewTransform());
+        view->setWidgetReady(true);
+      }
+      if (!view->isVisible()) {
+        view->setVisible(true);
+//        getPresenter()->setSliceViewTransform(
+//              view->getViewId(), view->getSliceViewTransform());
+      }
+    } else {
+      view->setVisible(false);
+    }
+  }
+}
+
+void ZStackMvc::layoutView()
+{
+  neutu::ClearLayout(m_viewLayout, nullptr);
+//  int row = 0;
+//  int column = 0;
+
+  if (m_viewLayoutIndices.empty()) {
+    for (size_t i = 0; i < m_viewList.size(); ++i) {
+      layoutView(m_viewList[i], i);
+    }
+  } else {
+    for (size_t i = 0; i < m_viewLayoutIndices.size(); ++i) {
+      if (i < m_viewList.size()) {
+        layoutView(m_viewList[i], m_viewLayoutIndices[i]);
+      }
+    }
+    for (size_t i = m_viewLayoutIndices.size(); i < m_viewList.size(); ++i) {
+      m_viewList[i]->hide();
+    }
+  }
+  /*
+  for (ZStackView *view : m_viewList) {
+    m_viewLayout->addWidget(view, row, column++);
+    if (column == 2) {
+      column = 0;
+      ++row;
+    }
+  }
+  */
+}
+
+void ZStackMvc::updateViewData()
+{
+#ifdef _DEBUG_
+  std::cout << "ZStackMvc::updateViewData" << std::endl;
+#endif
+  for (auto view : m_viewList) {
+    if (view->isVisible()) {
+      view->updateSceneWithViewData();
+    }
   }
 }
 
@@ -123,22 +264,100 @@ void ZStackMvc::createPresenter()
   }
 }
 
-void ZStackMvc::createPresenter(neutu::EAxis axis)
+void ZStackMvc::createPresenter(neutu::EAxis axis, int viewCount)
 {
   createPresenter();
   if (m_presenter != NULL) {
-    m_presenter->setSliceAxis(axis);
+    m_presenter->setMainSliceAxis(axis);
+    m_presenter->setViewCount(viewCount);
+    connect(m_presenter, SIGNAL(actionTriggered(ZActionFactory::EAction)),
+            this, SLOT(processAction(ZActionFactory::EAction)));
   }
 }
 
 void ZStackMvc::attachDocument(ZStackDoc *doc)
 {
-  attachDocument(ZSharedPointer<ZStackDoc>(doc));
+  attachDocument(std::shared_ptr<ZStackDoc>(doc));
 }
 
-void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
+void ZStackMvc::attachDocument(std::shared_ptr<ZStackDoc> doc)
 {
   m_doc = doc;
+}
+
+ZStackView* ZStackMvc::getMainView() const
+{
+  if (!m_viewList.empty()) {
+    return m_viewList.front();
+  }
+
+  return nullptr;
+}
+
+ZStackView* ZStackMvc::getDefaultView() const
+{
+  ZStackView *view = getMouseHoveredView();
+  if (view == nullptr) {
+    view = getMainView();
+  }
+
+  return view;
+}
+
+ZStackView* ZStackMvc::getView(int viewId) const
+{
+  if (viewId == 0) {
+    return getMainView();
+  } else if (viewId == -1) {
+    return getDefaultView();
+  } else if (viewId > 0) {
+    for (auto view : m_viewList) {
+      if (view->getViewId() == viewId) {
+        return view;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+std::vector<ZStackView*> ZStackMvc::getViewList() const
+{
+  return m_viewList;
+}
+
+ZStackView* ZStackMvc::getMouseHoveredView() const
+{
+  for (ZStackView *view : m_viewList) {
+    if (view->imageWidget()->containsCurrentMousePostion()) {
+      return view;
+    }
+  }
+
+  return nullptr;
+}
+
+void ZStackMvc::forEachView(std::function<void(ZStackView*)> f) const
+{
+  for (ZStackView *view : m_viewList) {
+    f(view);
+  }
+}
+
+void ZStackMvc::forEachVisibleView(std::function<void (ZStackView *)> f) const
+{
+  for (ZStackView *view : m_viewList) {
+    if (view->isVisible()) {
+      f(view);
+    }
+  }
+}
+
+void ZStackMvc::setViewReady()
+{
+  for (ZStackView *view : m_viewList) {
+    view->setWidgetReady(true);
+  }
 }
 
 bool ZStackMvc::connectFunc(const QObject* obj1, const char *signal,
@@ -163,51 +382,51 @@ void ZStackMvc::connectSignalSlot()
 
 void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 {
-  connectAction(m_doc.get(), SIGNAL(stackRangeChanged()),
-                m_view, SLOT(updateStackRange()), Qt::DirectConnection);
-  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
-                m_view, SLOT(processStackChange(bool)), Qt::QueuedConnection);
-//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
-//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-//                m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)),
-//                Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
-                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(
-        m_doc.get(), SIGNAL(objectSelectionChanged(
-                              QList<ZStackObject*>,QList<ZStackObject*>)),
-        m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)),
-        Qt::AutoConnection);
-  connectAction(m_doc.get(),
-                SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
-                m_view, SLOT(paintStack()), Qt::AutoConnection);
+  for (ZStackView *view : m_viewList) {
+    connectAction(m_doc.get(), SIGNAL(stackRangeChanged()),
+                  view, SLOT(updateStackRange()), Qt::DirectConnection);
+    connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
+                  view, SLOT(processStackChange(bool)), Qt::AutoConnection);
+    connectAction(m_doc.get(),
+                  SIGNAL(objectSelectionChanged(
+                           const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
+                  view,
+                  SLOT(paintObject(
+                         const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
+                  Qt::AutoConnection);
+    connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
+                  view, SLOT(paintStack()), Qt::AutoConnection);
+    connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
+                  view, SLOT(updateViewBox()), Qt::QueuedConnection);
+  }
+
   connectAction(m_doc.get(), SIGNAL(zoomingTo(int, int, int)),
                 this, SLOT(zoomTo(int,int,int)), Qt::AutoConnection);
-  connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
-          this, SLOT(processViewChange(ZStackViewParam)), Qt::AutoConnection);
-
-  connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
-                m_view, SLOT(updateViewBox()), Qt::QueuedConnection);
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObjectInfoSet)),
-                m_presenter, SLOT(processObjectModified(ZStackObjectInfoSet)),
+                this, SLOT(processObjectModified(ZStackObjectInfoSet)),
                 Qt::AutoConnection);
 }
 
 void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 {
   updateDocSignalSlot(connectAction);
+
+  for (ZStackView *view : m_viewList) {
+    connectAction(view, SIGNAL(viewChanged(int)),
+                  this, SLOT(processViewChange(int)), Qt::AutoConnection);
+//    connectAction(view, SIGNAL(viewChanged(const ZStackViewParam &viewParam)),
+//                  this, SLOT(processViewChange(const ZStackViewParam &viewParam)),
+//                  Qt::AutoConnection);
+  }
+  connectAction(
+        m_presenter, SIGNAL(updatingViewLayout(std::vector<int>)),
+        this, SLOT(updateViewLayout(std::vector<int>)), Qt::AutoConnection);
+  connectAction(
+        m_presenter, SIGNAL(updatingViewData()),
+        this, SLOT(updateViewData()), Qt::AutoConnection);
+//  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
+//                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
+//                Qt::AutoConnection);
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //                m_presenter, SLOT(processSliceChangeEvent(int)));
 }
@@ -241,17 +460,14 @@ void ZStackMvc::updateDocument()
     if (m_presenter != NULL) {
       m_presenter->optimizeStackBc();
     }
-
-    if (m_view != NULL) {
-      m_view->reset();
-    }
   }
 }
 
 bool ZStackMvc::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
-    return m_presenter->processKeyPressEvent(event);
+    return m_presenter->processKeyPressEvent(
+          event, getDefaultView()->getViewId());
   }
 
   return false;
@@ -268,7 +484,7 @@ bool ZStackMvc::event(QEvent *event)
 {
   if (event->type() == QEvent::KeyPress) {
     if (m_presenter != NULL) {
-      if (m_presenter->processKeyPressEvent((QKeyEvent*) event)) {
+      if (m_presenter->processKeyPressEvent((QKeyEvent*) event, -1)) {
         event->accept();
       }
     }
@@ -278,10 +494,12 @@ bool ZStackMvc::event(QEvent *event)
   return QWidget::event(event);
 }
 
+/*
 void ZStackMvc::processViewChange()
 {
   processViewChange(getView()->getViewParameter(neutu::ECoordinateSystem::STACK));
 }
+*/
 
 /*
 void ZStackMvc::updateActiveViewData()
@@ -290,19 +508,131 @@ void ZStackMvc::updateActiveViewData()
 }
 */
 
+/*
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
   processViewChangeCustom(viewParam);
 
   emit viewChanged();
 }
+*/
 
-QRect ZStackMvc::getViewGeometry() const
+void ZStackMvc::blockViewChangeSignal(bool blocking)
 {
-  QRect rect = getView()->geometry();
-  rect.moveTo(getView()->mapToGlobal(rect.topLeft()));
+  m_signalingViewChange = !blocking;
+}
 
-  return rect;
+namespace {
+
+ZPlane get_orthor_ort(const ZPlane &ort, int fromViewIndex, int toViewIndex)
+{
+  ZPlane newOrt = ort;
+  if (fromViewIndex == 0) {
+    if (toViewIndex == 1) {
+      newOrt.set(ort.getNormal(), ort.getV2());
+    } else if (toViewIndex == 2) {
+      newOrt.set(ort.getV1(), ort.getNormal());
+    }
+  } else if (fromViewIndex == 1) {
+    if (toViewIndex == 0) {
+      newOrt.set(-ort.getNormal(), ort.getV2());
+    } else if (toViewIndex == 2) {
+      newOrt.set(-ort.getNormal(), ort.getV1());
+    }
+  } else if (fromViewIndex == 2) {
+    if (toViewIndex == 0) {
+      newOrt.set(ort.getV1(), -ort.getNormal());
+    } else if (toViewIndex == 1) {
+      newOrt.set(ort.getV2(), -ort.getNormal());
+    }
+  }
+
+  return newOrt;
+}
+
+}
+
+int ZStackMvc::getViewIndex(ZStackView *view)
+{
+  int index = -1;
+  for (size_t i = 0; i< m_viewList.size(); ++i) {
+    if (m_viewList[i] == view) {
+      if (m_viewLayoutIndices.empty()) {
+        index = i;
+      } else {
+        if (i < m_viewLayoutIndices.size()) {
+          index = m_viewLayoutIndices[i];
+        }
+      }
+      break;
+    }
+  }
+
+  return index;
+}
+
+int ZStackMvc::getViewIndex(int viewId)
+{
+  int index = -1;
+  for (size_t i = 0; i< m_viewList.size(); ++i) {
+    if (m_viewList[i]->getViewId() == viewId) {
+      if (m_viewLayoutIndices.empty()) {
+        index = i;
+      } else {
+        if (index < int(m_viewLayoutIndices.size())) {
+          index = m_viewLayoutIndices[i];
+        }
+      }
+      break;
+    }
+  }
+
+  return index;
+}
+
+
+void ZStackMvc::processViewChange(int viewId)
+{
+  if (m_signalingViewChange) {
+    emit viewChanged();
+  }
+
+  ZSliceViewTransform transform = getView(viewId)->getSliceViewTransform();
+  for (ZStackView *view : m_viewList) {
+    if (view->getViewId() != viewId) {
+      ZSliceViewTransform newTransform = view->getSliceViewTransform();
+      newTransform.copyWithoutOrientation(transform);
+//      newTransform.setCutPlane(view->getSliceViewTransform().getCutOrientation());
+      if (transform.getSliceAxis() == neutu::EAxis::ARB) {
+        newTransform.setCutPlane(
+              get_orthor_ort(
+                transform.getCutOrientation(),
+                getViewIndex(viewId), getViewIndex(view)));
+      }/* else {
+        newTransform.setCutPlane(view->getSliceViewTransform().getCutOrientation());
+      }
+      */
+//      newTransform.setRightHanded(view->getSliceViewTransform().rightHanded());
+      view->enableViewChangeSignal(false);
+      view->setSliceViewTransform(newTransform);
+      view->enableViewChangeSignal(true);
+    }
+  }
+
+  processViewChangeCustom(getMainView()->getViewParameter());
+}
+
+QRect ZStackMvc::getViewGeometry(int viewId) const
+{
+  ZStackView *view = getView(viewId);
+  if (view) {
+    QRect rect = view->geometry();
+    rect.moveTo(view->mapToGlobal(rect.topLeft()));
+
+    return rect;
+  }
+
+  return QRect();
 }
 
 QMainWindow* ZStackMvc::getMainWindow() const
@@ -323,7 +653,10 @@ QMainWindow* ZStackMvc::getMainWindow() const
 
 void ZStackMvc::dump(const QString &msg)
 {
-  getView()->dump(msg);
+  if (m_infoLabel) {
+    m_infoLabel->setText(msg);
+  }
+//  getView()->dump(msg);
 }
 
 void ZStackMvc::testSlot()
@@ -422,7 +755,7 @@ void ZStackMvc::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(neutu::GetFilePath(url).toStdString())) {
+    if (ZFileType::IsImageFile(neutu::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -446,6 +779,12 @@ void ZStackMvc::saveStack()
       }
     }
   }
+}
+
+void ZStackMvc::processObjectModified(const ZStackObjectInfoSet &objSet)
+{
+  getPresenter()->processObjectModified(objSet);
+//  getView()->paintObject(objSet.getTarget());
 }
 
 #if 0
@@ -521,8 +860,9 @@ void ZStackMvc::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
 }
 #endif
 
-void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
+void ZStackMvc::zoomWithWidthAligned(const ZStackView */*view*/)
 {
+  /*
   ZStackViewParam param = view->getViewParameter();
   ZViewProj viewProj = param.getViewProj();
 
@@ -539,6 +879,7 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());
   }
+  */
 
 #if 0
   ZIntPoint center = view->getViewCenter();
@@ -555,8 +896,9 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 #endif
 }
 
-void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
+void ZStackMvc::zoomWithHeightAligned(const ZStackView */*view*/)
 {
+  /*
   ZStackViewParam param = view->getViewParameter();
   ZViewProj viewProj = param.getViewProj();
 
@@ -573,6 +915,7 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 
     getView()->setViewProj(x0, y0, viewProj.getZoom());
   }
+  */
 
 #if 0
   ZIntPoint center = view->getViewCenter();
@@ -594,34 +937,34 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 
 void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 {
-  bool depthChanged = (pt.getZ() == getView()->getCurrentZ());
+  bool depthChanged = (pt.getZ() == getMainView()->getCurrentDepth());
 
   getPresenter()->blockSignals(true);
-  getPresenter()->setZoomRatio(zoomRatio);
+  getPresenter()->setZoomRatio(getMainView(), zoomRatio);
   getPresenter()->blockSignals(false);
 
-  getView()->blockSignals(true);
-  getView()->setViewPortCenter(pt, neutu::EAxisSystem::NORMAL);
-  getView()->blockSignals(false);
+  getMainView()->blockSignals(true);
+  getMainView()->setViewPortCenter(pt, neutu::EAxisSystem::NORMAL);
+  getMainView()->blockSignals(false);
 
-  getView()->processViewChange(true, depthChanged);
+  getMainView()->processViewChange(true, depthChanged);
 
-  getView()->highlightPosition(pt);
+  getMainView()->highlightPosition(pt);
 
 //  getView()->notifyViewChanged();
 }
 
+/*
 void ZStackMvc::zoomTo(const ZStackViewParam &param)
 {
   getView()->setView(param);
-  getView()->highlightPosition(param.getViewPort().center().x(),
-                               param.getViewPort().center().y(),
-                               param.getZ());
+  getView()->highlightPosition(param.getCutCenter().toIntPoint());
 }
+*/
 
 void ZStackMvc::zoomTo(int x, int y, int z, int width)
 {
-  getView()->zoomTo(x, y, z, width);
+  getMainView()->zoomTo(x, y, z, width);
 #if 0
   ZGeometry::shiftSliceAxis(x, y, z, getView()->getSliceAxis());
 
@@ -638,7 +981,7 @@ void ZStackMvc::zoomTo(int x, int y, int z, int width)
   getView()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
 #endif
 
-  getView()->highlightPosition(x, y, z);
+  getMainView()->highlightPosition(x, y, z);
 }
 
 
@@ -649,13 +992,15 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt)
 
 void ZStackMvc::goToSlice(int z)
 {
-  getView()->setZ(z);
+  getMainView()->setDepth(z);
 }
 
+/*
 void ZStackMvc::stepSlice(int dz)
 {
   getView()->stepSlice(dz);
 }
+*/
 
 void ZStackMvc::zoomTo(int x, int y, int z)
 {
@@ -683,37 +1028,76 @@ void ZStackMvc::zoomToL1(int x, int y, int z)
   */
 }
 
-void ZStackMvc::setDefaultViewPort(const QRect &rect)
+neutu::EAxis ZStackMvc::getSliceAxis() const
 {
-  getView()->setDefaultViewPort(rect);
+  return getMainView()->getSliceAxis();
 }
 
-QRect ZStackMvc::getViewPort() const
+void ZStackMvc::setDefaultViewPort(const QRect &rect)
 {
-  return getView()->getViewPort(neutu::ECoordinateSystem::STACK);
+  getMainView()->setDefaultViewPort(rect);
+}
+
+ZAffineRect ZStackMvc::getViewPort() const
+{
+  return getMainView()->getViewPort();
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const
 {
-  return getView()->getViewCenter();
+  return getMainView()->getViewCenter();
 }
 
 QSize ZStackMvc::getViewScreenSize() const
 {
-  return getView()->getScreenSize();
+  return getMainView()->getScreenSize();
 }
 
+void ZStackMvc::setZoomScale(double s)
+{
+  getMainView()->setZoomScale(s);
+}
+
+void ZStackMvc::setInitialScale(double s)
+{
+  getMainView()->setInitialScale(s);
+}
+
+/*
+void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
+{
+  for (ZStackView *view : m_viewList) {
+    view->blockViewChangeEvent(true);
+    if (view->getViewId() != viewParam.getViewId()) {
+      view->setSliceViewTransform(viewParam.getSliceViewTransform());
+    }
+    view->blockViewChangeEvent(false);
+  }
+}
+*/
+
+/*
 double ZStackMvc::getWidthZoomRatio() const
 {
   return getView()->getCanvasWidthZoomRatio();
 }
+*/
 
+/*
 double ZStackMvc::getHeightZoomRatio() const
 {
   return getView()->getCanvasHeightZoomRatio();
 }
+*/
 
 void ZStackMvc::shortcutTest()
 {
   std::cout << "Shortcut triggered: ZStackMvc::shortcutTest()" << std::endl;
+}
+
+void ZStackMvc::processAction(ZActionFactory::EAction action)
+{
+#ifdef _DEBUG_
+  LINFO() << "Action triggerd: " << action;
+#endif
 }

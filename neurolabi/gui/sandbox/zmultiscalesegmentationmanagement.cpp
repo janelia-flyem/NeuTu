@@ -12,22 +12,28 @@
 #include <QLineEdit>
 #include <set>
 #include <map>
+
 #include "time.h"
 #include "zmultiscalesegmentationmanagement.h"
 #include "zstackobject.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "zobject3dscanarray.h"
+#include "data3d/displayconfig.h"
+
 #include "mvc/zstackframe.h"
-#include "zsandbox.h"
+#include "mvc/zstackdoc.h"
 #include "mvc/zstackdocdatabuffer.h"
+
 #include "imgproc/zstackprocessor.h"
 #include "imgproc/zwatershedmst.h"
-#include "mvc/zstackdoc.h"
+
 #include "segment/zsegmentationnodewrapper.h"
 #include "mainwindow.h"
 #include "widgets/zpythonprocess.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
+#include "zsandbox.h"
+#include "zstackdocaccessor.h"
 
 
 using std::queue;
@@ -70,11 +76,11 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
     ids.push(id);
   } else {
     if(m_show_leaves->isChecked()){
-      for(auto t: m_seg_tree->getLeavesIDs(id)){
+      for(const auto &t: m_seg_tree->getLeavesIDs(id)){
         ids.push(t);
       }
     } else {
-      for(auto t: m_seg_tree->getChildrenIDs(id)){
+      for(const auto &t: m_seg_tree->getChildrenIDs(id)){
         ids.push(t);
       }
     }
@@ -92,6 +98,7 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
     wrapper->addCallBackOnDeselection(onDeselectMask);
     wrapper->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
     wrapper->setSelectable(true);
+    /*
     if(m_show_contour->isChecked()){
       wrapper->setDisplayStyle(ZStackObject::EDisplayStyle::BOUNDARY);
     } else {
@@ -99,6 +106,9 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
     }
     m_frame->document()->getDataBuffer()->addUpdate(wrapper, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
     m_frame->document()->getDataBuffer()->deliver();
+    */
+    ZStackDocAccessor::AddObject(m_frame->document().get(), wrapper);
+//    m_frame->document()->getDataBuffer()->addUpdate(wrapper, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
   }
 }
 
@@ -111,7 +121,7 @@ void ZMultiscaleSegmentationWindow::onNodeItemClicked(QTreeWidgetItem *item, int
 
 void ZMultiscaleSegmentationWindow::selectNode(const string& id){
   m_selected_id = id;
-  for(QTreeWidgetItem* wgt:m_view->selectedItems()){
+  foreach (QTreeWidgetItem* wgt, m_view->selectedItems()) {
     wgt->setSelected(false);
   }
 
@@ -152,7 +162,7 @@ void ZMultiscaleSegmentationWindow::updateTreeView(const std::string &id){
     if(items.size() > 0){
       QTreeWidgetItem* item = items.at(0);
       vector<string> ids = m_seg_tree->getChildrenIDs(t);
-      for(auto child_id : ids){
+      for(const auto &child_id : ids){
         QTreeWidgetItem* child = new QTreeWidgetItem(QStringList(QString::fromStdString(child_id)));
         item->addChild(child);
         if(!m_seg_tree->isLeaf(child_id)){
@@ -288,14 +298,14 @@ shared_ptr<ZStack> ZMultiscaleSegmentationWindow::_createSuperVoxel(const ZStack
     int height = box.getHeight();
     int depth = box.getDepth();
     if(height >= width && height >= depth){
-      box_a.setLastY(box.getFirstCorner().getY() + height/2);
-      box_b.setFirstY(box.getFirstCorner().getY() + height/2 + 1);
+      box_a.setMaxY(box.getMinCorner().getY() + height/2);
+      box_b.setMinY(box.getMinCorner().getY() + height/2 + 1);
     } else if(width >= height && width >= depth){
-      box_a.setLastX(box.getFirstCorner().getX() + width/2);
-      box_b.setFirstX(box.getFirstCorner().getX() + width/2 + 1);
+      box_a.setMaxX(box.getMinCorner().getX() + width/2);
+      box_b.setMinX(box.getMinCorner().getX() + width/2 + 1);
     } else {
-      box_a.setLastZ(box.getFirstCorner().getZ() + depth/2);
-      box_b.setFirstZ(box.getFirstCorner().getZ() + depth /2 + 1);
+      box_a.setMaxZ(box.getMinCorner().getZ() + depth/2);
+      box_b.setMinZ(box.getMinCorner().getZ() + depth /2 + 1);
     }
     shared_ptr<ZStack> stack_a = shared_ptr<ZStack>(stack.makeCrop(box_a));
     shared_ptr<ZStack> stack_b = shared_ptr<ZStack>(stack.makeCrop(box_b));
@@ -876,12 +886,12 @@ void ZMultiscaleSegmentationWindow::test(){
     for(uint8_t* p = seg->array8(); p < seg->array8() + seg->getVoxelNumber(); ++p){
       if(*p)*p=1;
     }
-    int x0 = seg->getBoundBox().getFirstCorner().getX();
-    int y0 = seg->getBoundBox().getFirstCorner().getY();
-    int z0 = seg->getBoundBox().getFirstCorner().getZ();
-    int x1 = seg->getBoundBox().getLastCorner().getX();
-    int y1 = seg->getBoundBox().getLastCorner().getY();
-    int z1 = seg->getBoundBox().getLastCorner().getZ();
+    int x0 = seg->getBoundBox().getMinCorner().getX();
+    int y0 = seg->getBoundBox().getMinCorner().getY();
+    int z0 = seg->getBoundBox().getMinCorner().getZ();
+    int x1 = seg->getBoundBox().getMaxCorner().getX();
+    int y1 = seg->getBoundBox().getMaxCorner().getY();
+    int z1 = seg->getBoundBox().getMaxCorner().getZ();
 
     clock_t start,end;
 

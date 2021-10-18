@@ -6,6 +6,7 @@
 #include "ztilemanager.h"
 #include "zswctree.h"
 #include "zpainter.h"
+#include "data3d/displayconfig.h"
 
 ZTileManagerView::ZTileManagerView(QWidget *parent) :
   QGraphicsView(parent)
@@ -18,15 +19,15 @@ void ZTileManagerView::paintEvent(QPaintEvent *event)
    QGraphicsView::paintEvent(event);
 
    if (swcVisible) {
-     ZPainter viewPainter(this->viewport());
-
-
-     QTransform transform;
+//     ZPainter viewPainter(this->viewport());
 
      QScrollBar* vSc;
      vSc = this->verticalScrollBar();
      QScrollBar* hSc;
      hSc = this->horizontalScrollBar();
+
+#if 0
+     QTransform transform;
      transform.translate(-hSc->value(),-vSc->value());
 
      transform.scale(this->transform().m11() ,
@@ -49,11 +50,19 @@ void ZTileManagerView::paintEvent(QPaintEvent *event)
      transform.scale(scale, scale);
 #endif
      viewPainter.setTransform(transform);
+#endif
+     neutu::data3d::DisplayConfig config;
+     config.setViewCanvasTransform(
+           -hSc->value(), -vSc->value(), this->transform().m11());
+     config.setSliceMode(neutu::data3d::EDisplaySliceMode::PROJECTION);
+     config.setStyle(neutu::data3d::EDisplayStyle::BOUNDARY);
 
+     QPainter painter(this->viewport());
      QList<ZSwcTree*> swcList = getParentWindow()->getDocument()->getSwcList();
      foreach (ZSwcTree *swc, swcList ) {
        if (swc != NULL) {
-         swc->display(viewPainter,-1, ZStackObject::EDisplayStyle::BOUNDARY, neutu::EAxis::Z);
+         swc->display(&painter, config);
+//         swc->display(viewPainter,-1, ZStackObject::EDisplayStyle::BOUNDARY, neutu::EAxis::Z);
        }
      }
    }

@@ -38,7 +38,7 @@ TEST(ZStackObjectInfoSet, Basic)
   ASSERT_TRUE(infoSet.getTarget().empty());
   ASSERT_FALSE(infoSet.contains(ZStackObject::EType::CUBE));
   ASSERT_FALSE(infoSet.contains(ZStackObject::EType::UNIDENTIFIED));
-  ASSERT_FALSE(infoSet.contains(ZStackObject::ETarget::NONE));
+  ASSERT_FALSE(infoSet.contains(neutu::data3d::ETarget::TARGET_NONE));
   ASSERT_FALSE(infoSet.contains(ZStackObjectRole::ROLE_NONE));
 
   ZStackObjectInfo info;
@@ -48,7 +48,7 @@ TEST(ZStackObjectInfoSet, Basic)
   ASSERT_TRUE(infoSet.getTarget().empty());
   ASSERT_FALSE(infoSet.contains(ZStackObject::EType::SWC));
   ASSERT_TRUE(infoSet.contains(ZStackObject::EType::UNIDENTIFIED));
-  ASSERT_TRUE(infoSet.contains(ZStackObject::ETarget::NONE));
+  ASSERT_TRUE(infoSet.contains(neutu::data3d::ETarget::TARGET_NONE));
   ASSERT_TRUE(infoSet.contains(ZStackObjectRole::ROLE_NONE));
 
   ZSwcTree tree;
@@ -70,6 +70,46 @@ TEST(ZStackObjectInfoSet, Basic)
   infoSet.add(ZStackObject::EType::CUBE,
               ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
   ASSERT_TRUE(infoSet.onlyVisibilityChanged(ZStackObject::EType::CUBE));
+  ASSERT_FALSE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+
+  infoSet.add(ZStackObject::EType::CUBE,
+              ZStackObjectInfo::STATE_MODIFIED);
+  ASSERT_TRUE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+
+  infoSet.clear();
+  ASSERT_FALSE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+
+  infoSet.add(ZStackObject::EType::CUBE,
+              ZStackObjectInfo::STATE_ADDED);
+  ASSERT_TRUE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+
+  infoSet.clear();
+  ASSERT_FALSE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+
+  infoSet.add(ZStackObject::EType::CUBE,
+              ZStackObjectInfo::STATE_REMOVED);
+  ASSERT_TRUE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+  ASSERT_FALSE(infoSet.hasDataModified(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR));
+
+  infoSet.clear();
+  ASSERT_FALSE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+
+  infoSet.add(ZStackObject::EType::CUBE,
+              ZStackObjectInfo::STATE_UNKNOWN);
+  ASSERT_TRUE(infoSet.hasDataModified(ZStackObject::EType::CUBE));
+
+  info.setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+
+  infoSet.add(info, ZStackObjectInfo::STATE_REMOVED);
+  ASSERT_TRUE(infoSet.hasDataModified(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR));
+
+  infoSet.clear();
+  infoSet.add(info, ZStackObjectInfo::STATE_ADDED);
+  ASSERT_TRUE(infoSet.hasDataModified(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR));
+
+  infoSet.clear();
+  infoSet.add(info, ZStackObjectInfo::STATE_MODIFIED);
+  ASSERT_TRUE(infoSet.hasDataModified(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR));
 }
 
 #endif

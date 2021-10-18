@@ -164,7 +164,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 //  m_synapseAnnotationFile = dvidTarget.getSourceString();
   QStringList annotationList = fdReader.readKeys(
         ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            dvidTarget.getBodyLabelName()).c_str());
   std::set<uint64_t> annotationSet;
   foreach (const QString &idStr, annotationList) {
@@ -186,8 +186,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
               FlyEmDataReader::ReadBodyAnnotation(fdReader, bodyId);
           name = annotation.getName();
 
-          if (!annotation.getType().empty()) {
-            type = annotation.getType();
+          if (!annotation.getClass().empty()) {
+            type = annotation.getClass();
           } else if (!name.empty()) {
             type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
           }
@@ -249,8 +249,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
         if (goodNeuron) {
           std::string type;
-          if (!annotation.getType().empty()) {
-            type = annotation.getType();
+          if (!annotation.getClass().empty()) {
+            type = annotation.getClass();
           } else if (!name.empty()) {
             type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
           }
@@ -403,8 +403,8 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
           if (!annotation.getName().empty()) {
             neuron.setName(annotation.getName());
           }
-          if (!annotation.getType().empty()) {
-            neuron.setType(annotation.getType());
+          if (!annotation.getClass().empty()) {
+            neuron.setType(annotation.getClass());
           }
         }
       }

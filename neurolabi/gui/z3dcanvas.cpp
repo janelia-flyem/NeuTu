@@ -14,6 +14,7 @@
 #include "z3dscene.h"
 #include "zpainter.h"
 #include "zopenglwidget.h"
+#include "data3d/displayconfig.h"
 
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
   : QGraphicsView(parent)
@@ -164,6 +165,7 @@ void Z3DCanvas::keyPressEvent(QKeyEvent* event)
 
   if (!m_interaction.processKeyPressEvent(event)) {
     broadcastEvent(event, width(), height());
+    updateView();
   }
 
   setCursor(m_interaction.getCursorShape());
@@ -224,6 +226,13 @@ void Z3DCanvas::dump(const QString &message)
   updateView();
 }
 
+void Z3DCanvas::processMessage(const ZWidgetMessage &message)
+{
+  if (message.hasTarget(ZWidgetMessage::TARGET_CUSTOM_AREA)) {
+    dump(message.toPlainString());
+  }
+}
+
 void Z3DCanvas::updateView()
 {
   viewport()->update();
@@ -273,10 +282,16 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
 
+  painter->setRenderHint(QPainter::HighQualityAntialiasing, true);
   foreach (ZStackObject *drawable, drawableList) {
     //drawable->setVisible(true);
-    drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
-                      ZStackObject::EDisplaySliceMode::DISPLAY_SLICE_SINGLE, neutu::EAxis::Z);
+    drawable->display(
+          painter,
+          neutu::data3d::DisplayConfigBuilder().style(
+            neutu::data3d::EDisplayStyle::NORMAL).cutPlane(neutu::EAxis::Z, 0));
+
+//    drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
+//                      ZStackObject::EDisplaySliceMode::SINGLE, neutu::EAxis::Z);
   }
 #else
   UNUSED_PARAMETER(painter);

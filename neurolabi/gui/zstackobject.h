@@ -1,16 +1,31 @@
 #ifndef ZSTACKOBJECT_H
 #define ZSTACKOBJECT_H
 
+#include <functional>
+#include <unordered_map>
+#include <atomic>
+
 #include "common/neutudefs.h"
-#include "zqtheader.h"
-//#include "zpainter.h"
-#include "zstackobjectrole.h"
+#include "common/utilities.h"
 #include "geometry/zintpoint.h"
-//#include "common/zsharedpointer.h"
+#include "geometry/zaffinerect.h"
+#include "data3d/defs.h"
+#include "data3d/zstackobjecthandle.h"
+#include "zqtheader.h"
+#include "zstackobjectrole.h"
 
 class ZPainter;
 class ZIntCuboid;
+class ZCuboid;
 
+namespace neutu {
+namespace data3d {
+class DisplayConfig;
+enum class EDisplayStyle;
+enum class EDisplaySliceMode;
+class ViewSpaceAlignedDisplayConfig;
+}
+}
 
 /*!
  * \brief The abstract class of representing an 3D object
@@ -18,6 +33,8 @@ class ZIntCuboid;
  * ZStackObject is a class of objects in a stack. We call those objects stack
  * objects. The common properties of a stack object are:
  *
+ *  Handle: each object has a unique handle that can be used as a reference of
+ *          the object. Once an object is created, its handle cannot be changed.
  *  Source: a string telling where the object is from. It can be empty, meaning
  *          that the object is from unknown source.
  *  Visibility: the object is visible or not.
@@ -47,47 +64,11 @@ class ZStackObject
 {
 public:
   ZStackObject();
+  ZStackObject(const ZStackObject &obj);
+  ZStackObject(ZStackObject &&obj);
   virtual ~ZStackObject();
 
-  enum class EType { //#Review-TZ: Consider moving types to a separate file with namespace zstackobject
-    UNIDENTIFIED = 0, //Unidentified type
-    SWC,
-    PUNCTUM,
-    MESH,
-    OBJ3D,
-    STROKE,
-    LOCSEG_CHAIN,
-    CONN,
-    OBJECT3D_SCAN,
-    SPARSE_OBJECT,
-    CIRCLE,
-    STACK_BALL,
-    STACK_PATCH,
-    RECT2D,
-    DVID_TILE,
-    DVID_GRAY_SLICE,
-    DVID_GRAY_SLICE_ENSEMBLE,
-    DVID_TILE_ENSEMBLE,
-    DVID_LABEL_SLICE,
-    DVID_SPARSE_STACK,
-    DVID_SPARSEVOL_SLICE,
-    STACK,
-    SWC_NODE,
-    GRAPH_3D,
-    PUNCTA,
-    FLYEM_BOOKMARK,
-    INT_CUBOID,
-    LINE_SEGMENT,
-    SLICED_PUNCTA,
-    DVID_SYNAPSE,
-    DVID_SYNAPE_ENSEMBLE,
-    CUBE,
-    DVID_ANNOTATION,
-    FLYEM_TODO_ITEM,
-    FLYEM_TODO_LIST,
-    CROSS_HAIR,
-    SEGMENTATION_ENCODER
-  };
+  using EType = neutu::data3d::EType;
 
   static std::string GetTypeName(EType type);
 
@@ -95,20 +76,10 @@ public:
     BLUE = 0, GREEN, RED, ALPHA
   };
 
-  enum class EDisplayStyle {
-    NORMAL, SOLID, BOUNDARY, SKELETON
-  };
-
-  enum class ETarget {
-    NONE,
-    STACK_CANVAS, OBJECT_CANVAS, WIDGET, TILE_CANVAS,
-    ONLY_3D, DYNAMIC_OBJECT_CANVAS, CANVAS_3D
-  };
-
-  enum class EDisplaySliceMode {
-    DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
-    DISPLAY_SLICE_SINGLE      //Display a cross section of the object
-  };
+  using EDisplayStyle = neutu::data3d::EDisplayStyle;
+  using EDisplaySliceMode = neutu::data3d::EDisplaySliceMode;
+  using DisplayConfig = neutu::data3d::DisplayConfig;
+  using ViewSpaceAlignedDisplayConfig = neutu::data3d::ViewSpaceAlignedDisplayConfig;
 
   enum class EHitProtocol {
     HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
@@ -121,7 +92,26 @@ public:
    */
   std::string getTypeName() const;
 
+  const ZStackObjectHandle& getHandle() const;
+
+  virtual ZStackObject* clone() const;
+  template<typename T>
+  static T* Clone(T *obj);
+
+  ZStackObject& operator=(const ZStackObject &obj);
+  ZStackObject& operator=(ZStackObject &&obj);
+
 //  virtual const std::string& className() const = 0;
+
+  enum class ESelection {
+    SELECT_SINGLE,
+    SELECT_MULTIPLE,
+    SELECT_TOGGLE,
+    SELECT_TOGGLE_SINGLE, //toggle selection and deselect other objects
+    DESELECT,
+  };
+
+  virtual void processHit(ESelection s);
 
   /*!
    * \brief Set the selection state
@@ -135,62 +125,75 @@ public:
    */
   bool isSelected() const { return m_selected; }
 
-  virtual void deselect(bool /*recursive*/) { setSelected(false); }
+  virtual void deselectSub() {};
+  void deselect(bool recursive);
 
-  typedef void(*CallBack)(ZStackObject*);
+  using CallBack = std::function<void(ZStackObject*)>;
+//  typedef void(*CallBack)(ZStackObject*);
 
   void addCallBackOnSelection(CallBack callback){
-    m_callbacks_on_selection.push_back(callback);}
+    m_selectionCallbacks.push_back(callback);}
 
   void addCallBackOnDeselection(CallBack callback){
-    m_callbacks_on_deselection.push_back(callback);}
+    m_deselectionCallbacks.push_back(callback);}
 
   /*!
-   * \brief Display an object to widget
+   * \brief The main painting function
    *
-   * \a painter stores the painting status changed by the function. The
-   * painting parameters, including pen and brush, of \a painter is expected to
-   * be restored after painting.
-   *
-   * \param slice Index of the slice to display. The index is the offset from
-   *    the current Z position to the start Z position in the painter. If it is
-   *    negative, it means that the projection mode has been turned on at the
-   *    current slice -(\a slice + 1).
-   */
-  virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option,
-      neutu::EAxis sliceAxis) const = 0;
-
-  /*!
-   * For special painting when ZPainter cannot be created
-   *
-   * \return false if nothing is painted. But returning true does not mean
-   *         if there is something painted.
+   * \return false if the object is not actually painted. Note the return value
+   * is only a hint. Even if it returns true, it does not mean that the object
+   * is actually painted.
    */
   virtual bool display(
-      QPainter *painter, int z, EDisplayStyle option,
-      EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
+      QPainter *painter, const DisplayConfig &config) const;
+
+  bool isVisible(const DisplayConfig &config) const {
+    return isVisible() && isVisible_inner(config);
+  }
+
+//  virtual void viewSpaceAlignedDisplay(
+//      QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const;
+
+  /*!
+   * \brief Get an aligned object if possible.
+   *
+   * The caller is responsible to manage the memory of the returned pointer.
+   */
+  virtual ZStackObject* aligned(
+      const ZAffinePlane &plane, neutu::EAxis sliceAxis) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
   inline void toggleVisible() { m_isVisible = !m_isVisible; }
 
-  inline void setDisplayStyle(EDisplayStyle style) { m_style = style; }
-  inline EDisplayStyle displayStyle() const { return m_style; }
+//  inline void setDisplayStyle(zstackobject::EDisplayStyle style) { m_style = style; }
+//  inline zstackobject::EDisplayStyle displayStyle() const { return m_style; }
 
-  inline ETarget getTarget() const { return m_target; }
-  inline void setTarget(ETarget target) { m_target = target; }
+  inline neutu::data3d::ETarget getTarget() const { return m_target; }
+  inline void setTarget(neutu::data3d::ETarget target) { m_target = target; }
 
   virtual bool isSliceVisible(int z, neutu::EAxis axis) const;
+  virtual bool isSliceVisible(
+      int z, neutu::EAxis axis, const ZAffinePlane &plane) const;
+  virtual bool isSliceVisible(const DisplayConfig &config) const;
+  virtual bool isSliceVisible(
+      const DisplayConfig &config, int canvasWidth, int canvasHeight) const;
 
+  void setHittable(bool on);
+
+  virtual bool hit(double x, double y, double z, int viewId);
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
+  virtual bool hit(const ZIntPoint &pt, int viewId);
   virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
                    neutu::EAxis axis);
   virtual bool hit(double x, double y, neutu::EAxis axis);
+  virtual bool hit(double x, double y, neutu::EAxis axis, int viewId);
   virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis);
 
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
+
+  void setHitFunc(std::function<bool(const ZStackObject*,double,double,double)> f);
 
   /*!
    * \brief Get bound box of the object.
@@ -199,6 +202,8 @@ public:
    * returning the result.
    */
   virtual void boundBox(ZIntCuboid *box) const;
+  virtual ZCuboid getBoundBox() const;
+  virtual ZCuboid getBoundBox(int viewId) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);
@@ -237,13 +242,15 @@ public:
     m_usingCosmeticPen = state;
   }
 
-  void setTimeStamp(int t){
+  void setTimestamp(int64_t t) {
     m_timeStamp = t;
   }
 
-  int getTimeStamp() const {
+  int64_t getTimestamp() const {
     return m_timeStamp;
   }
+
+  void updateTimestamp();
 
   virtual void setLabel(uint64_t label);
 
@@ -299,18 +306,26 @@ public:
       return (obj1.getZOrder() < obj2.getZOrder());
     }
 
-    bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
+    template<typename ZStackObjectPtr>
+    bool operator() (const ZStackObjectPtr &obj1, const ZStackObjectPtr &obj2) {
       return (obj1->getZOrder() < obj2->getZOrder());
     }
   };
 
   struct ZOrderBiggerThan {
     bool operator() (const ZStackObject &obj1, const ZStackObject &obj2) {
-      return (obj1.getZOrder() > obj2.getZOrder());
+      if (neutu::EnumValue(obj1.getTarget()) ==
+          neutu::EnumValue(obj2.getTarget())) {
+        return (obj1.getZOrder() > obj2.getZOrder());
+      }
+
+      return  neutu::EnumValue(obj1.getTarget()) >
+          neutu::EnumValue(obj2.getTarget());
     }
 
     bool operator() (const ZStackObject *obj1, const ZStackObject *obj2) {
-      return (obj1->getZOrder() > obj2->getZOrder());
+      return ZOrderBiggerThan()(*obj1, *obj2);
+//      return (obj1->getZOrder() > obj2->getZOrder());
     }
   };
 
@@ -390,41 +405,81 @@ public:
   static T* CastVoidPointer(void *p);
 
 protected:
-  EHitProtocol m_hitProtocal;
-  EDisplayStyle m_style;
-  QColor m_color;
-  ETarget m_target;
+  struct DisplayTrace {
+    int prevZ = 0;
+    bool isValid = false;
+  };
+  void setPrevZ(int z) const;
+
+  mutable std::function<bool(const ZStackObject*, double,double,double)>
+  _hit = [](const ZStackObject*, double,double,double) {
+    return false;
+  };
+
+  virtual bool isVisible_inner(const DisplayConfig &/*config*/) const {
+    return true;
+  }
+  virtual bool display_inner(QPainter *painter, const DisplayConfig &config) const;
+
+  mutable std::unordered_map<int,
+  std::function<bool(const ZStackObject*, double,double,double)>> m_hitMap;
+
+//  static uint64_t GetNextHandle();
+
+protected:
   static double m_defaultPenWidth;
+
+//protected:
+  EHitProtocol m_hitProtocal = EHitProtocol::HIT_DATA_POS;
+//  zstackobject::EDisplayStyle m_style = zstackobject::EDisplayStyle::SOLID;
+  QColor m_color;
+  neutu::data3d::ETarget m_target = neutu::data3d::ETarget::HD_OBJECT_CANVAS;
+  EType m_type = EType::UNIDENTIFIED;
+  neutu::data3d::ESpace m_coordSpace = neutu::data3d::ESpace::MODEL;
   double m_basePenWidth;
 
-  double m_zScale;
+  double m_zScale = 1.0;
   std::string m_source;
   std::string m_objectClass;
   std::string m_objectId;
   uint64_t m_uLabel = 0;
+//  uint64_t m_handle = 0;
+  ZStackObjectHandle m_handle;
 //  int m_label = -1;
-  int m_zOrder;
-  int m_timeStamp;
-  EType m_type;
-  ZStackObjectRole m_role;
+  int m_zOrder = 1;
+  int64_t m_timeStamp = 0;
+  ZStackObjectRole m_role = ZStackObjectRole::ROLE_NONE;
   ZIntPoint m_hitPoint;
   neutu::EAxis m_sliceAxis;
 
-  neutu::display::TVisualEffect m_visualEffect;
+  neutu::display::TVisualEffect m_visualEffect = neutu::display::VE_NONE;
 
-  mutable int m_prevDisplaySlice = -1;
-//  static const char *m_nodeAdapterId;
+  std::vector<CallBack> m_selectionCallbacks;
+  std::vector<CallBack> m_deselectionCallbacks;
 
-  std::vector<CallBack> m_callbacks_on_selection;
-  std::vector<CallBack> m_callbacks_on_deselection;
+//  mutable int m_prevDisplaySlice = -1;
+  mutable DisplayTrace m_displayTrace;
 
   bool m_selected = false;
   bool m_isSelectable = true;
+  bool m_hittable = true;
   bool m_isVisible = true;
   bool m_projectionVisible = true;
   bool m_usingCosmeticPen = false;
+
+//  static std::atomic<uint64_t> m_currentHandle;
+//  static std::mutex m_handleMutex;
 };
 
+template <typename T>
+T* ZStackObject::Clone(T *obj)
+{
+  if (obj) {
+    return dynamic_cast<T*>(obj->clone());
+  }
+
+  return nullptr;
+}
 
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)

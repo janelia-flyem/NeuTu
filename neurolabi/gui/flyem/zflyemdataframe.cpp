@@ -21,7 +21,7 @@
 #include "mvc/zstackdoc.h"
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
-#include "tz_darray.h"
+#include "neurolabi/numericarray.h"
 #include "zswctree.h"
 #include "zswcdisttrunkanalyzer.h"
 #include "zswclayerfeatureanalyzer.h"
@@ -48,7 +48,7 @@
 #include "dialogs/flyemhotspotdialog.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "dvid/zdviddata.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
@@ -944,7 +944,7 @@ QVector<const ZFlyEmNeuron*> ZFlyEmDataFrame::getTopMatch(
 
   if (!score.empty()) {
     vector<int> indexArray(score.size());
-    darray_qsort(&(score[0]), &(indexArray[0]), score.size());
+    neutu::array::Sort(&(score[0]), &(indexArray[0]), score.size());
 
     size_t size = min(score.size(), (size_t) ZFlyEmNeuron::TopMatchCapacity);
 

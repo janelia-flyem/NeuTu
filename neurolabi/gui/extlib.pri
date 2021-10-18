@@ -7,23 +7,21 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
     $${EXTLIB_DIR}/genelib/src $${NEUROLABI_DIR}/gui/ext
 
 contains(TEMPLATE, app) {
-exists($$DVIDCPP_PATH) {
+!isEmpty(DVIDCPP_PATH) {
+  exists($$DVIDCPP_PATH) {
     DEFINES += _ENABLE_LIBDVIDCPP_
     INCLUDEPATH += $$DVIDCPP_PATH/include
     LIBS += -L$$DVIDCPP_PATH/lib
     DEFINES += _LIBDVIDCPP_OLD_
-} else:exists($${BUILDEM_DIR}) {
-    INCLUDEPATH +=  $${BUILDEM_DIR}/include
-    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
-    DEFINES += _ENABLE_LIBDVIDCPP_
-} else:exists($${CONDA_ENV}) {
-    INCLUDEPATH += $${CONDA_ENV}/include
-    LIBS += -L$${CONDA_ENV}/lib
-    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
-    DEFINES += _ENABLE_LIBDVIDCPP_
+  }
+ }
 
-#    LIBS += $${CONDA_ENV}/lib/libhdf5.la $${CONDA_ENV}/lib/libhdf5_hl.la
-#    DEFINES += _ENABLE_HDF5_
+
+exists($${CONDA_ENV}) {
+  INCLUDEPATH += $${CONDA_ENV}/include
+  LIBS += -L$${CONDA_ENV}/lib
+  unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
+  DEFINES *= _ENABLE_LIBDVIDCPP_
 }
 
 exists($${CONDA_ENV}) {
@@ -122,12 +120,16 @@ LIBS *= -lboost_system -lboost_filesystem
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
-        LIBS *= -llowtis
-#        CONFIG(debug, debug|release) {
-#            LIBS *= -llowtis-g
-#        } else {
-#            LIBS *= -llowtis
-#        }
+#        LIBS *= -llowtis
+        CONFIG(debug, debug|release) {
+          CONFIG(debug_lowtis) {
+            LIBS *= -llowtis-g
+          } else {
+            LIBS *= -llowtis
+          }
+        } else {
+            LIBS *= -llowtis
+        }
     }
 
     !contains(DEFINES, _LIBDVIDCPP_OLD_) {
@@ -145,7 +147,7 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 #  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
-VTK_VER = 8.2
+VTK_VER = 9.0
 
 #
 exists($${CONDA_ENV}) {
@@ -153,6 +155,21 @@ exists($${CONDA_ENV}) {
   INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
   LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco -larchive -lrdkafka++
   INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
+
+  !CONFIG(NO_CONDA_LIB_CHECK) {
+    unix {
+      message("Checking libs ...")
+      libError = $$system(./check_conda_lib $${CONDA_ENV})
+      w=$${member(libError, 0)}
+      !isEmpty(libError) {
+        equals(w, "WARNING:") {
+          warning($${libError})
+        } else {
+          error("Library error: $${libError}")
+        }
+      }
+    }
+  }
 } else {
   INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
   LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp -L$$PWD/ext/draco/lib -ldracoenc -ldracodec -ldraco
@@ -173,6 +190,8 @@ win32 {
 macx {
   LIBS += -framework AGL -framework OpenGL
 }
+
+LIBS += -lneucore -lneumath
 #unix:!macx {
 #  LIBS += -lGL -lGLU
 #}
@@ -184,5 +203,6 @@ CONFIG(static_gtest) { # gtest from ext folder
 include(ext/QsLog/QsLog.pri)
 include(ext/libqxt.pri)
 include(ext/QFontIcon/QFontIcon/QFontIcon.pri)
+include(ext/QFunctionUtils/src/qfunctionutils.pri)
 
-HEADERS += ext/http/HTTPRequest.hpp
+HEADERS += ext/http/HTTPRequest.hpp ext/cpp-httplib/httplib.h

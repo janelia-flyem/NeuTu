@@ -38,8 +38,14 @@ public:
 //  virtual const std::string& className() const;
 
 public:
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+  /*
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const override;
+                       */
+  ZCuboid getBoundBox() const override;
 
 public: // I/O functions
   virtual void save(const char *filePath);

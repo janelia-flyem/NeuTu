@@ -27,6 +27,11 @@
 
 using namespace std;
 
+const char *NeutubeConfig::KEY_3D_CROSS_WIDTH = "3d_cross_width";
+const char *NeutubeConfig::KEY_MESH_SPLIT_THRE = "mesh_split_thre";
+const char *NeutubeConfig::KEY_SCROLL_COOLDOWN = "scroll_cooldown";
+const char *NeutubeConfig::KEY_SCROLL_COOLDOWN_ADAPTIVE = "scroll_cooldown_adaptive";
+
 NeutubeConfig::NeutubeConfig()
   #ifdef _QT_GUI_USED_
     : m_settings(QSettings::UserScope, "NeuTu-be")
@@ -87,9 +92,15 @@ void NeutubeConfig::init(const std::string &userName)
   m_loggingProfile = false;
   m_verboseLevel = 1;
 
-#ifdef _QT_GUI_USED_
+#ifdef _QT_GUI_USED_2
+  if (m_settings.contains("3d_cross_width")) {
+    m_3dcrossWidth = m_settings.value("3d_cross_width").toDouble();
+  }
   if (m_settings.contains("mesh_split_thre")) {
     m_meshSplitThreshold = m_settings.value("mesh_split_thre").toInt();
+  }
+  if (m_settings.contains("scroll_cooldown")) {
+    m_scrollCooldown = m_settings.value("scroll_cooldown").toInt();
   }
 #endif
 
@@ -148,6 +159,32 @@ void NeutubeConfig::setWorkDir(const string str)
   updateLogDir();
 }
 
+std::string NeutubeConfig::getPointPosFormat() const
+{
+#ifdef _QT_GUI_USED_
+  return getSettings().value("pointPosFormat", "").toString().toStdString();
+#else
+  return "";
+#endif
+}
+
+void NeutubeConfig::setPointPosFormat(const std::string &format)
+{
+#ifdef _QT_GUI_USED_
+  getSettings().setValue("pointPosFormat", QString::fromStdString(format));
+#endif
+}
+
+std::string NeutubeConfig::GetPointPosFormat()
+{
+  return getInstance().getPointPosFormat();
+}
+
+void NeutubeConfig::SetPointPosFormat(const std::string &format)
+{
+  getInstance().setPointPosFormat(format);
+}
+
 void NeutubeConfig::setUserName(const string &name)
 {
   m_userInfo.setUserName(name);
@@ -172,7 +209,7 @@ void NeutubeConfig::updateUserInfo()
     ZNetBufferReader reader;
     reader.read(url.c_str(), true);
     ZJsonObject obj;
-    obj.decode(reader.getBuffer().toStdString());
+    obj.decode(reader.getBuffer().toStdString(), false);
     if (obj.hasKey("config")) {
       ZJsonObject configObj(obj.value("config"));
       m_userInfo.setOrganization(ZJsonParser::stringValue(configObj["organization"]));
@@ -299,7 +336,7 @@ bool NeutubeConfig::load(const std::string &filePath)
     }
 
     node = doc.getRootElement().queryNode("dataPath");
-    m_dataPath = node.stringValue();
+//    m_dataPath = node.stringValue();
 
     node = doc.getRootElement().queryNode("docUrl");
     m_docUrl = node.stringValue();
@@ -307,9 +344,11 @@ bool NeutubeConfig::load(const std::string &filePath)
     node = doc.getRootElement().queryNode("developPath");
     m_developPath = node.stringValue();
 
+    /*
     if (m_dataPath.empty() && !m_developPath.empty()) {
       m_dataPath = m_developPath + "/neurolabi/data";
     }
+    */
 
     node = doc.getRootElement().queryNode("FlyEmQASegmentationTraining");
     if (!node.empty()) {
@@ -432,7 +471,7 @@ bool NeutubeConfig::load(const std::string &filePath)
 
 void NeutubeConfig::print()
 {
-  cout << m_dataPath << endl;
+//  cout << m_dataPath << endl;
 #if 0
   cout << "SWC repository: " << m_swcRepository << endl;
   cout << "Body connection classifier: " << m_segmentationClassifierPath << endl;
@@ -466,14 +505,22 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   case EConfigItem::DATA:
   {
     std::string dataPath;
+#if defined(PROJECT_PATH)
+    dataPath = neutu::JoinPath({PROJECT_PATH, "..", "data"});
+#endif
+
 #ifdef _QT_GUI_USED_
     if (m_settings.contains("data_dir")) {
       dataPath = m_settings.value("data_dir").toString().toStdString();
+    } else {
+      dataPath = neutu::GetEnv("NEUTU_DATA_DIR");
     }
 #endif
+    /*
     if (dataPath.empty()) {
       return m_dataPath;
     }
+    */
 
     return dataPath;
   }
@@ -572,6 +619,9 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   case EConfigItem::NEUPRINT_AUTH:
     return ZString::fullPath(NeutubeConfig::getInstance().getPath(
           NeutubeConfig::EConfigItem::WORKING_DIR), "neuprint_auth.json");
+  case EConfigItem::FLYEM_SERVICES_AUTH:
+    return ZString::fullPath(NeutubeConfig::getInstance().getPath(
+          NeutubeConfig::EConfigItem::WORKING_DIR), "flyem_services_auth.json");
   case EConfigItem::CONFIG_DIR:
     return ZString::fullPath(getApplicatinDir(), _CONFIG_FOLDER_);
   default:
@@ -1043,15 +1093,21 @@ bool NeutubeConfig::IsAdvancedMode()
 
 void NeutubeConfig::set3DCrossWidth(double w)
 {
-  m_3dcrossWidth = w;
+//  m_3dcrossWidth = w;
 #ifdef _QT_GUI_USED_
-  m_settings.setValue("3d_cross_width", w);
+  m_settings.setValue(KEY_3D_CROSS_WIDTH, w);
 #endif
 }
 
 double NeutubeConfig::get3DCrossWidth() const
 {
-  return m_3dcrossWidth;
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_3D_CROSS_WIDTH)) {
+    return m_settings.value(KEY_3D_CROSS_WIDTH).toDouble();
+  }
+#endif
+
+  return 5.0;
 }
 
 void NeutubeConfig::Set3DCrossWidth(int w)
@@ -1064,17 +1120,82 @@ int NeutubeConfig::Get3DCrossWidth()
   return getInstance().get3DCrossWidth();
 }
 
+void NeutubeConfig::setScrollCooldown(int t)
+{
+//  m_scrollCooldown = t;
+#ifdef _QT_GUI_USED_
+  m_settings.setValue(KEY_SCROLL_COOLDOWN, t);
+#endif
+}
+
+int NeutubeConfig::getScrollCooldown() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_SCROLL_COOLDOWN)) {
+    return m_settings.value(KEY_SCROLL_COOLDOWN).toInt();
+  }
+#endif
+
+  return 100;
+}
+
+void NeutubeConfig::useAdaptiveScrollCooldown(bool on)
+{
+//  m_scrollCooldown = t;
+#ifdef _QT_GUI_USED_
+  m_settings.setValue(KEY_SCROLL_COOLDOWN_ADAPTIVE, on);
+#endif
+}
+
+bool NeutubeConfig::adatpiveScrollCooldown() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_SCROLL_COOLDOWN_ADAPTIVE)) {
+    return m_settings.value(KEY_SCROLL_COOLDOWN_ADAPTIVE).toBool();
+  }
+#endif
+
+  return true;
+}
+
+void NeutubeConfig::SetScrollCooldown(int t)
+{
+  getInstance().setScrollCooldown(t);
+}
+
+int NeutubeConfig::GetScrollCooldown()
+{
+  return getInstance().getScrollCooldown();
+}
+
+void NeutubeConfig::UseAdaptiveScrollCooldown(bool on)
+{
+  getInstance().useAdaptiveScrollCooldown(on);
+}
+
+bool NeutubeConfig::AdatpiveScrollCooldown()
+{
+  return getInstance().adatpiveScrollCooldown();
+}
+
 void NeutubeConfig::setMeshSplitThreshold(size_t thre)
 {
-  m_meshSplitThreshold = thre;
+//  m_meshSplitThreshold = thre;
 #ifdef _QT_GUI_USED_
-  m_settings.setValue("mesh_split_thre", int(thre));
+  m_settings.setValue(KEY_MESH_SPLIT_THRE, int(thre));
 #endif
 }
 
 size_t NeutubeConfig::getMeshSplitThreshold() const
 {
-  return m_meshSplitThreshold;
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains(KEY_MESH_SPLIT_THRE)) {
+    return  m_settings.value(KEY_MESH_SPLIT_THRE).toULongLong();
+  }
+#endif
+
+  return 5000000;
+//  return m_meshSplitThreshold;
 }
 
 void NeutubeConfig::SetMeshSplitThreshold(size_t thre)
@@ -1167,6 +1288,16 @@ QString NeutubeConfig::GetNeuTuServer()
 QString NeutubeConfig::GetTaskServer()
 {
   return GetSettings().value("task_server").toString();
+}
+
+QString NeutubeConfig::GetCleaveServer()
+{
+  return GetSettings().value("cleave_server").toString();
+}
+
+void NeutubeConfig::SetCleaveServer(const QString &server)
+{
+  GetSettings().setValue("cleave_server", server);
 }
 
 bool NeutubeConfig::UsingDefaultFlyemConfig()

@@ -4,29 +4,41 @@
 #include <sstream>
 #include <algorithm>
 
+#include "common/utilities.h"
 #include "zjsonparser.h"
 #include "zjsonobject.h"
+#include "zjsonobjectparser.h"
 #include "zstring.h"
 
-const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "body ID";
+const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "bodyid";
 const char *ZFlyEmBodyAnnotation::KEY_NAME = "name";
-const char *ZFlyEmBodyAnnotation::KEY_TYPE = "class";
+const char *ZFlyEmBodyAnnotation::KEY_CLASS = "class";
+const char *ZFlyEmBodyAnnotation::KEY_TYPE = "type";
 const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
+const char *ZFlyEmBodyAnnotation::KEY_DESCRIPTION = "description";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
 const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
-const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "naming user";
+const char *ZFlyEmBodyAnnotation::KEY_LAST_MODIFIED_USER = "last_modified_by";
+const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD = "naming user";
+const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "instance_user";
+const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD = "status user";
+const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER = "status_user";
 const char *ZFlyEmBodyAnnotation::KEY_INSTANCE = "instance";
 const char *ZFlyEmBodyAnnotation::KEY_PROPERTY = "property";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_INPUT = "major input";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_OUTPUT = "major output";
 const char *ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE = "primary neurite";
+const char *ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER = "cell body fiber";
 const char *ZFlyEmBodyAnnotation::KEY_LOCATION = "location";
 const char *ZFlyEmBodyAnnotation::KEY_OUT_OF_BOUNDS = "out of bounds";
 const char *ZFlyEmBodyAnnotation::KEY_CROSS_MIDLINE = "cross midline";
 const char *ZFlyEmBodyAnnotation::KEY_NEURONTRANSMITTER = "neurotransmitter";
+const char *ZFlyEmBodyAnnotation::KEY_HEMILINEAGE = "hemilineage";
 const char *ZFlyEmBodyAnnotation::KEY_SYNONYM = "synonym";
+const char *ZFlyEmBodyAnnotation::KEY_NOTES = "notes";
 const char *ZFlyEmBodyAnnotation::KEY_CLONAL_UNIT = "clonal unit";
 const char *ZFlyEmBodyAnnotation::KEY_AUTO_TYPE = "auto-type";
+const char *ZFlyEmBodyAnnotation::KEY_TIMESTAMP = "timestamp";
 
 ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 {
@@ -35,25 +47,7 @@ ZFlyEmBodyAnnotation::ZFlyEmBodyAnnotation()
 /*member dependent*/
 void ZFlyEmBodyAnnotation::clear()
 {
-  m_bodyId = 0;
-  m_status.clear();
-  m_comment.clear();
-  m_name.clear();
-  m_type.clear();
-  m_userName.clear();
-  m_namingUser.clear();
-  m_instance.clear();
-  m_majorInput.clear();
-  m_majorOutput.clear();
-  m_primaryNeurite.clear();
-  m_location.clear();
-  m_outOfBounds = false;
-  m_crossMidline = false;
-  m_neurotransmitter.clear();
-  m_synonym.clear();
-  m_clonalUnit.clear();
-  m_autoType.clear();
-  m_property.clear();
+  *this = ZFlyEmBodyAnnotation();
 }
 
 void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
@@ -70,46 +64,52 @@ void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)
 ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
 {
   ZJsonObject obj;
-  if (m_bodyId > 0) {
-    obj.setEntry(KEY_BODY_ID, m_bodyId);
 
-    if (!m_name.empty()) {
-      obj.setEntry(KEY_NAME, m_name);
-    }
+  if (!m_name.empty()) {
+    obj.setEntry(KEY_NAME, m_name);
+  }
 
-    if (!m_type.empty()) {
-      obj.setEntry(KEY_TYPE, m_type);
-    }
+  if (!m_class.empty()) {
+    obj.setEntry(KEY_CLASS, m_class);
+  }
 
-    if (!m_status.empty()) {
-      obj.setEntry(KEY_STATUS, m_status);
-    }
+  if (!m_status.empty()) {
+    obj.setEntry(KEY_STATUS, m_status);
+  }
 
-    if (!m_comment.empty()) {
-      obj.setEntry(KEY_COMMENT, m_comment);
-    }
+  if (!m_comment.empty()) {
+    obj.setEntry(KEY_COMMENT, m_comment);
+  }
 
-    if (!m_userName.empty()) {
-      obj.setEntry(KEY_USER, m_userName);
-    }
+  if (!m_userName.empty()) {
+    obj.setEntry(KEY_USER, m_userName);
+  }
 
-    if (!m_namingUser.empty()) {
-      obj.setEntry(KEY_NAMING_USER, m_namingUser);
-    }
+  if (!m_namingUser.empty()) {
+    SetNamingUser(obj, m_namingUser);
+//    obj.setEntry(KEY_NAMING_USER, m_namingUser);
+  }
 
+  if (!m_statusUser.empty()) {
+    obj.setEntry(KEY_STATUS_USER, m_statusUser);
+  }
 
-    obj.setNonEmptyEntry(KEY_INSTANCE, m_instance);
-    obj.setNonEmptyEntry(KEY_MAJOR_INPUT, m_majorInput);
-    obj.setNonEmptyEntry(KEY_MAJOR_OUTPUT, m_majorOutput);
-    obj.setNonEmptyEntry(KEY_PRIMARY_NEURITE, m_primaryNeurite);
-    obj.setNonEmptyEntry(KEY_LOCATION, m_location);
-    obj.setTrueEntry(KEY_OUT_OF_BOUNDS, m_outOfBounds);
-    obj.setTrueEntry(KEY_CROSS_MIDLINE, m_crossMidline);
-    obj.setNonEmptyEntry(KEY_NEURONTRANSMITTER, m_neurotransmitter);
-    obj.setNonEmptyEntry(KEY_SYNONYM, m_synonym);
-    obj.setNonEmptyEntry(KEY_CLONAL_UNIT, m_clonalUnit);
-    obj.setNonEmptyEntry(KEY_AUTO_TYPE, m_autoType);
-    obj.setNonEmptyEntry(KEY_PROPERTY, m_property);
+  obj.setNonEmptyEntry(KEY_INSTANCE, m_instance);
+  obj.setNonEmptyEntry(KEY_MAJOR_INPUT, m_majorInput);
+  obj.setNonEmptyEntry(KEY_MAJOR_OUTPUT, m_majorOutput);
+  obj.setNonEmptyEntry(KEY_CELL_BODY_FIBER, m_primaryNeurite);
+  obj.setNonEmptyEntry(KEY_LOCATION, m_location);
+  obj.setTrueEntry(KEY_OUT_OF_BOUNDS, m_outOfBounds);
+  obj.setTrueEntry(KEY_CROSS_MIDLINE, m_crossMidline);
+  obj.setNonEmptyEntry(KEY_NEURONTRANSMITTER, m_neurotransmitter);
+  obj.setNonEmptyEntry(KEY_HEMILINEAGE, m_hemilineage);
+  obj.setNonEmptyEntry(KEY_NOTES, m_synonym);
+  obj.setNonEmptyEntry(KEY_CLONAL_UNIT, m_clonalUnit);
+  obj.setNonEmptyEntry(KEY_AUTO_TYPE, m_autoType);
+  obj.setNonEmptyEntry(KEY_PROPERTY, m_property);
+
+  if (m_timestamp > 0) {
+    obj.setEntry(KEY_TIMESTAMP, m_timestamp);
   }
 
   return obj;
@@ -140,6 +140,7 @@ void process_annotation_key(
 }
 */
 
+/*
 void ZFlyEmBodyAnnotation::setBodyId(int64_t bodyId)
 {
   if (bodyId < 0) {
@@ -153,6 +154,7 @@ void ZFlyEmBodyAnnotation::setBodyId(int bodyId)
 {
   setBodyId(int64_t(bodyId));
 }
+*/
 
 /*member dependent*/
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
@@ -163,17 +165,21 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
   if (!key.empty()) {
     uint64_t bodyId = ZString(key).firstUint64();
     if (bodyId > 0) {
-      setBodyId(bodyId);
+//      setBodyId(bodyId);
       ZJsonObject annotationJson(
           const_cast<json_t*>(obj[key.c_str()]),
           ZJsonObject::SET_INCREASE_REF_COUNT);
-      setType(ZJsonParser::stringValue(annotationJson["Type"]));
+      setClass(ZJsonParser::stringValue(annotationJson["Type"]));
       setName(ZJsonParser::stringValue(annotationJson["Name"]));
     }
   } else {
+    ZJsonObjectParser objParser;
+
+    /*
     if (obj.hasKey(KEY_BODY_ID)) {
       setBodyId(ZJsonParser::integerValue(obj[KEY_BODY_ID]));
     }
+    */
 
     if (obj.hasKey(KEY_STATUS)) {
       setStatus(ZJsonParser::stringValue(obj[KEY_STATUS]));
@@ -191,16 +197,27 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setName(ZJsonParser::stringValue(obj[KEY_NAME]));
     }
 
-    if (obj.hasKey(KEY_TYPE)) {
-      setType(ZJsonParser::stringValue(obj[KEY_TYPE]));
+    if (obj.hasKey(KEY_CLASS)) {
+      setClass(ZJsonParser::stringValue(obj[KEY_CLASS]));
     }
 
     if (obj.hasKey(KEY_USER)) {
       setUser(ZJsonParser::stringValue(obj[KEY_USER]));
     }
 
+    setNamingUser(GetNamingUser(obj));
+    /*
     if (obj.hasKey(KEY_NAMING_USER)) {
       setNamingUser(ZJsonParser::stringValue(obj[KEY_NAMING_USER]));
+    } else if (obj.hasKey(KEY_NAMING_USER_OLD)) {
+      setNamingUser(ZJsonParser::stringValue(obj[KEY_NAMING_USER_OLD]));
+    }
+    */
+
+    if (obj.hasKey(KEY_STATUS_USER)) {
+      setStatusUser(ZJsonParser::stringValue(obj[KEY_STATUS_USER]));
+    } else if (obj.hasKey(KEY_STATUS_USER_OLD)) {
+      setStatusUser(ZJsonParser::stringValue(obj[KEY_STATUS_USER_OLD]));
     }
 
     if (obj.hasKey(KEY_INSTANCE)) {
@@ -215,9 +232,15 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setMajorOutput(ZJsonParser::stringValue(obj[KEY_MAJOR_OUTPUT]));
     }
 
+    setPrimaryNeurite(
+          objParser.GetValue(
+            obj, std::vector<std::string>{KEY_CELL_BODY_FIBER, KEY_PRIMARY_NEURITE},
+            std::string()));
+    /*
     if (obj.hasKey(KEY_PRIMARY_NEURITE)) {
       setPrimaryNeurite(ZJsonParser::stringValue(obj[KEY_PRIMARY_NEURITE]));
     }
+    */
 
     if (obj.hasKey(KEY_LOCATION)) {
       setLocation(ZJsonParser::stringValue(obj[KEY_LOCATION]));
@@ -235,9 +258,17 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setNeurotransmitter(ZJsonParser::stringValue(obj[KEY_NEURONTRANSMITTER]));
     }
 
+    if (obj.hasKey(KEY_HEMILINEAGE)) {
+      setHemilineage(ZJsonParser::stringValue(obj[KEY_HEMILINEAGE]));
+    }
+
+    setSynonym(objParser.GetValue(
+                 obj, std::vector<std::string>{KEY_NOTES, KEY_SYNONYM}, std::string()));
+    /*
     if (obj.hasKey(KEY_SYNONYM)) {
       setSynonym(ZJsonParser::stringValue(obj[KEY_SYNONYM]));
     }
+    */
 
     if (obj.hasKey(KEY_CLONAL_UNIT)) {
       setClonalUnit(ZJsonParser::stringValue(obj[KEY_CLONAL_UNIT]));
@@ -247,11 +278,9 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setAutoType(ZJsonParser::stringValue(obj[KEY_AUTO_TYPE]));
     }
 
-    /*
-    process_annotation_key<std::string>(
-          obj, KEY_MAJOR_OUTPUT,
-          std::bind(&ZFlyEmBodyAnnotation::setMajorOutput, this, std::placeholders::_1));
-          */
+    if (obj.hasKey(KEY_TIMESTAMP)) {
+      m_timestamp = ZJsonParser::integerValue(obj[KEY_TIMESTAMP]);
+    }
   }
 }
 
@@ -290,6 +319,11 @@ std::string ZFlyEmBodyAnnotation::getNeurotransmitter() const
   return m_neurotransmitter;
 }
 
+std::string ZFlyEmBodyAnnotation::getHemilineage() const
+{
+  return m_hemilineage;
+}
+
 std::string ZFlyEmBodyAnnotation::getSynonym() const
 {
   return m_synonym;
@@ -317,9 +351,9 @@ std::string ZFlyEmBodyAnnotation::getName() const
 //  return getAutoName();
 }
 
-std::string ZFlyEmBodyAnnotation::getType() const
+std::string ZFlyEmBodyAnnotation::getClass() const
 {
-  return m_type;
+  return m_class;
 //  if (!m_type.empty()) {
 //    return m_type;
 //  }
@@ -340,6 +374,11 @@ std::string ZFlyEmBodyAnnotation::getInferredType() const
 std::string ZFlyEmBodyAnnotation::getAutoType() const
 {
   return m_autoType;
+}
+
+int64_t ZFlyEmBodyAnnotation::getTimestamp() const
+{
+  return m_timestamp;
 }
 
 void ZFlyEmBodyAnnotation::setMajorInput(const std::string &v)
@@ -377,6 +416,11 @@ void ZFlyEmBodyAnnotation::setNeurotransmitter(const std::string &v)
   m_neurotransmitter = v;
 }
 
+void ZFlyEmBodyAnnotation::setHemilineage(const std::string &v)
+{
+  m_hemilineage = v;
+}
+
 void ZFlyEmBodyAnnotation::setSynonym(const std::string &v)
 {
   m_synonym = v;
@@ -397,9 +441,20 @@ void ZFlyEmBodyAnnotation::setProperty(const std::string &v)
   m_property = v;
 }
 
-/*member dependent*/
+void ZFlyEmBodyAnnotation::updateTimestamp()
+{
+  m_timestamp = neutu::GetTimeStamp();
+}
+
+void ZFlyEmBodyAnnotation::UpdateTimeStamp(ZJsonObject &obj)
+{
+  obj.setEntry(KEY_TIMESTAMP, neutu::GetTimeStamp());
+}
+
 void ZFlyEmBodyAnnotation::print() const
 {
+  toJsonObject().print();
+  /*
   std::cout << "Body annotation:" << std::endl;
   std::cout << "  Body ID: " << m_bodyId << std::endl;
   std::cout << "  Type: " << m_type << std::endl;
@@ -417,14 +472,16 @@ void ZFlyEmBodyAnnotation::print() const
   std::cout << "  Out of Bounds: " << m_outOfBounds << std::endl;
   std::cout << "  Cross Midline: " << m_crossMidline << std::endl;
   std::cout << "  Neurotransmitter: " << m_neurotransmitter << std::endl;
+  std::cout << "  Hemilineage" << m_hemilineage << std::endl;
   std::cout << "  Synonym: " << m_synonym << std::endl;
+  */
 }
 
 /*member dependent*/
 bool ZFlyEmBodyAnnotation::isEmpty() const
 {
   return m_status.empty() && m_comment.empty() &&
-      m_type.empty() && getName().empty();
+      m_class.empty() && getName().empty();
 }
 
 int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
@@ -496,13 +553,21 @@ int ZFlyEmBodyAnnotation::CompareStatus(
 void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotation,
     const std::function<int(const std::string&)>& getStatusRank)
 {
+  /*
   if (m_bodyId == 0) {
     m_bodyId = annotation.getBodyId();
+  }
+  */
+
+  if (m_timestamp < annotation.m_timestamp) {
+    m_timestamp = annotation.m_timestamp;
   }
 
   if (getStatusRank(m_status) > getStatusRank(annotation.m_status)) {
 //    m_status = annotation.m_status;
+//    uint64_t bodyId = m_bodyId;
     *this = annotation;
+//    m_bodyId = bodyId;
   } else if (getStatusRank(m_status) == getStatusRank(annotation.m_status)) {
     if (m_comment.empty()) {
       m_comment = annotation.m_comment;
@@ -513,13 +578,17 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
       m_namingUser = annotation.m_namingUser;
     }
 
+    if (m_statusUser.empty()) {
+      m_statusUser = annotation.m_statusUser;
+    }
+
     if (m_instance.empty()) {
       m_instance = annotation.m_instance;
       m_namingUser = annotation.m_namingUser;
     }
 
-    if (m_type.empty()) {
-      m_type = annotation.m_type;
+    if (m_class.empty()) {
+      m_class = annotation.m_class;
     }
 
     if (m_userName.empty()) {
@@ -553,6 +622,10 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
       m_neurotransmitter = annotation.m_neurotransmitter;
     }
 
+    if (m_hemilineage.empty()) {
+      m_hemilineage = annotation.m_hemilineage;
+    }
+
     if (m_synonym.empty()) {
       m_synonym = annotation.m_synonym;
     }
@@ -578,7 +651,7 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
 #endif
 }
 
-std::string ZFlyEmBodyAnnotation::toString() const
+std::string ZFlyEmBodyAnnotation::brief(uint64_t bodyId) const
 {
   std::ostringstream stream;
 
@@ -590,11 +663,11 @@ std::string ZFlyEmBodyAnnotation::toString() const
       stream << getName();
     }
 
-    if (!getType().empty()) {
-      stream << ":" << getType();
+    if (!getClass().empty()) {
+      stream << ":" << getClass();
     }
 
-    stream << " (" << getBodyId() << ")";
+    stream << " (" << bodyId << ")";
 
     stream << ", " << getStatus() << " ]";
   }
@@ -607,10 +680,16 @@ bool ZFlyEmBodyAnnotation::isFinalized() const
   return (ZString(getStatus()).lower() == "finalized");
 }
 
+bool ZFlyEmBodyAnnotation::IsFinalized(const ZJsonObject &obj)
+{
+  return (ZString(GetStatus(obj)).lower() == "finalized");
+}
+
 bool ZFlyEmBodyAnnotation::hasSameUserStatus(const ZFlyEmBodyAnnotation &annot) const
 {
   return (m_userName == annot.m_userName) &&
-      (m_namingUser == annot.m_namingUser);
+      (m_namingUser == annot.m_namingUser) &&
+      (m_statusUser == annot.m_statusUser);
 }
 
 //member dependent
@@ -620,7 +699,7 @@ bool ZFlyEmBodyAnnotation::operator ==(const ZFlyEmBodyAnnotation &annot) const
       (m_status == annot.m_status) &&
       (m_comment == annot.m_comment) &&
       (m_name == annot.m_name) &&
-      (m_type == annot.m_type) &&
+      (m_class == annot.m_class) &&
 //      (m_userName == annot.m_userName) &&
 //      (m_namingUser == annot.m_namingUser) &&
       (m_instance == annot.m_instance) &&
@@ -632,5 +711,288 @@ bool ZFlyEmBodyAnnotation::operator ==(const ZFlyEmBodyAnnotation &annot) const
       (m_outOfBounds == annot.m_outOfBounds) &&
       (m_crossMidline == annot.m_crossMidline) &&
       (m_neurotransmitter == annot.m_neurotransmitter) &&
+      (m_hemilineage == annot.m_hemilineage) &&
       (m_synonym == annot.m_synonym);
 }
+
+std::string ZFlyEmBodyAnnotation::GetName(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(
+        obj, KEY_NAME, ZJsonObjectParser::GetValue(obj, KEY_INSTANCE, ""));
+}
+
+std::string ZFlyEmBodyAnnotation::GetStatus(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(obj, KEY_STATUS, "");
+}
+
+std::string ZFlyEmBodyAnnotation::GetType(const ZFlyEmBodyAnnotation &obj)
+{
+  return obj.getType();
+}
+
+std::string ZFlyEmBodyAnnotation::GetClass(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(obj, KEY_CLASS, "");
+}
+
+std::string ZFlyEmBodyAnnotation::GetType(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(obj, KEY_TYPE, "");
+}
+
+void ZFlyEmBodyAnnotation::SetStatus(ZJsonObject &obj, const std::string &status)
+{
+  obj.setEntry(KEY_STATUS, status);
+}
+
+std::string ZFlyEmBodyAnnotation::GetUser(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(obj, KEY_USER, "");
+}
+
+std::string ZFlyEmBodyAnnotation::GetStatusUser(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(
+        obj, KEY_STATUS_USER,
+        ZJsonObjectParser::GetValue(obj, KEY_STATUS_USER_OLD, ""));
+}
+
+std::string ZFlyEmBodyAnnotation::GetNamingUser(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(
+        obj, KEY_NAMING_USER,
+        ZJsonObjectParser::GetValue(obj, KEY_NAMING_USER_OLD, ""));
+}
+
+std::string ZFlyEmBodyAnnotation::GetLastModifiedBy(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(obj, KEY_LAST_MODIFIED_USER, "");
+}
+
+void ZFlyEmBodyAnnotation::SetUser(ZJsonObject &obj, const std::string &user)
+{
+  obj.setEntry(KEY_USER, user);
+}
+
+void ZFlyEmBodyAnnotation::SetNamingUser(
+    ZJsonObject &obj, const std::string &user)
+{
+  obj.setEntry(KEY_NAMING_USER, user);
+  obj.removeKey(KEY_NAMING_USER_OLD);
+}
+
+void ZFlyEmBodyAnnotation::SetStatusUser(
+    ZJsonObject &obj, const std::string &user)
+{
+  if (user.empty()) {
+    obj.removeKey(KEY_STATUS_USER);
+  } else {
+    obj.setEntry(KEY_STATUS_USER, user);
+  }
+
+  obj.removeKey(KEY_STATUS_USER_OLD);
+}
+
+void ZFlyEmBodyAnnotation::RemoveStatusUser(ZJsonObject &obj)
+{
+  obj.removeKey(KEY_STATUS_USER);
+  obj.removeKey(KEY_STATUS_USER_OLD);
+}
+
+/*
+void ZFlyEmBodyAnnotation::SetBodyId(ZJsonObject &obj, const uint64_t bodyId)
+{
+  obj.setEntry(KEY_BODY_ID, bodyId);
+}
+*/
+
+std::string ZFlyEmBodyAnnotation::GetName(const ZFlyEmBodyAnnotation &obj)
+{
+  return obj.getName();
+}
+
+std::string ZFlyEmBodyAnnotation::GetStatus(const ZFlyEmBodyAnnotation &obj)
+{
+  return obj.getStatus();
+}
+
+std::string ZFlyEmBodyAnnotation::GetClass(const ZFlyEmBodyAnnotation &obj)
+{
+  return obj.getClass();
+}
+
+ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
+    const ZJsonObject &target, const ZJsonObject &source,
+    const std::function<int (const std::string &)> &getStatusRank)
+{
+  ZJsonObject result;
+  std::string targetStatus = ZJsonObjectParser::GetValue(
+        target, "status", "");
+  std::string sourceStatus = ZJsonObjectParser::GetValue(
+        source, "status", "");
+  if (getStatusRank(targetStatus) == getStatusRank(sourceStatus)) {
+    result = target.clone();
+    bool passingNamingUser = false;
+    bool passingStatusUser = false;
+    //Move soure to empty fields of target
+    source.forEachValue([&](const std::string &key, ZJsonValue value) {
+      if (key == ZFlyEmBodyAnnotation::KEY_NAMING_USER ||
+          key == ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD ||
+          key == ZFlyEmBodyAnnotation::KEY_STATUS_USER ||
+          key == ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD) {
+        return;
+      }
+      if (value.isBoolean()) {
+        result.setEntry(
+              key, ZJsonObjectParser::GetValue(target, key, false) ||
+              value.toBoolean());
+      } else {
+        std::string stringValue = value.toString();
+        if (ZJsonObjectParser::GetValue(target, key, "").empty() &&
+            !stringValue.empty()) {
+          result.setEntry(key, stringValue);
+          if (key == ZFlyEmBodyAnnotation::KEY_NAME ||
+              key == ZFlyEmBodyAnnotation::KEY_INSTANCE) {
+            passingNamingUser = true;
+          } else if (key == ZFlyEmBodyAnnotation::KEY_STATUS) {
+            passingStatusUser = true;
+          }
+        }
+      }
+    });
+    if (passingNamingUser) {
+      SetNamingUser(result, GetNamingUser(source));
+    }
+    if (passingStatusUser) {
+      SetStatusUser(result, GetStatusUser(source));
+    }
+    /*
+    if (ZJsonObjectParser::GetValue(
+          result, ZFlyEmBodyAnnotation::KEY_BODY_ID, 0ll) == 0) {
+      int64_t bodyId = ZJsonObjectParser::GetValue(
+            source, ZFlyEmBodyAnnotation::KEY_BODY_ID, 0ll);
+      if (bodyId > 0) {
+        result.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, bodyId);
+      }
+    }
+    */
+    int64_t sourceTimeStamp = ZJsonObjectParser::GetValue(
+          source, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0ll);
+    int64_t targetTimeStamp = ZJsonObjectParser::GetValue(
+          result, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0ll);
+    if (sourceTimeStamp > targetTimeStamp) {
+      result.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, sourceTimeStamp);
+    }
+  } else if (getStatusRank(targetStatus) > getStatusRank(sourceStatus)) { //source has higher priority
+//    uint64_t bodyId = ZFlyEmBodyAnnotation::GetBodyId(target);
+    result = source.clone();
+    /*
+    if (bodyId > 0) {
+      ZFlyEmBodyAnnotation::SetBodyId(result, bodyId);
+    }
+    */
+  } else { //target has higher priority
+    result = target.clone();
+  }
+
+  return result;
+}
+
+std::string ZFlyEmBodyAnnotation::GetComment(const ZJsonObject &obj)
+{
+  return ZJsonObjectParser::GetValue(
+        obj, KEY_DESCRIPTION,
+        ZJsonObjectParser::GetValue(obj, KEY_COMMENT, ""));
+}
+
+void ZFlyEmBodyAnnotation::SetComment(
+    ZJsonObject &obj, const std::string &comment, bool usingDescription)
+{
+  if (comment.empty()) {
+    obj.removeKey(KEY_COMMENT);
+    obj.removeKey(KEY_DESCRIPTION);
+  } else {
+    if (usingDescription) {
+      obj.removeKey(KEY_COMMENT);
+      obj.setEntry(KEY_DESCRIPTION, comment);
+    } else {
+      obj.removeKey(KEY_DESCRIPTION);
+      obj.setEntry(KEY_COMMENT, comment);
+    }
+  }
+}
+
+void ZFlyEmBodyAnnotation::SetLastModifiedBy(
+    ZJsonObject &obj, const std::string &user)
+{
+  obj.setEntry(KEY_LAST_MODIFIED_USER, user);
+}
+
+void ZFlyEmBodyAnnotation::UpdateUserFields(
+    ZJsonObject &obj, const std::string &user, const ZJsonObject &oldObj)
+{
+  std::string newUser;
+  if (ZFlyEmBodyAnnotation::GetUser(obj).empty()) {
+    newUser = ZFlyEmBodyAnnotation::GetUser(oldObj);
+    if (newUser.empty()) {
+      newUser = user;
+    }
+  }
+
+  if (!newUser.empty()) {
+    ZFlyEmBodyAnnotation::SetUser(obj, newUser);
+  }
+
+  ZFlyEmBodyAnnotation::SetLastModifiedBy(obj, user);
+
+  std::string status = ZFlyEmBodyAnnotation::GetStatus(obj);
+  if (status != ZFlyEmBodyAnnotation::GetStatus(oldObj)) {
+    ZFlyEmBodyAnnotation::SetStatusUser(obj, user);
+  }
+
+  std::string name = ZFlyEmBodyAnnotation::GetName(obj);
+  std::string oldName = ZFlyEmBodyAnnotation::GetName(oldObj);
+  std::string namingUser = ZFlyEmBodyAnnotation::GetNamingUser(oldObj);
+  if (name != oldName) {
+    namingUser = user;
+  }
+  if (!namingUser.empty()) {
+    ZFlyEmBodyAnnotation::SetNamingUser(obj, namingUser);
+  }
+}
+
+std::string ZFlyEmBodyAnnotation::Brief(uint64_t bodyId, const ZJsonObject &obj)
+{
+  std::ostringstream stream;
+
+  if (obj.isEmpty()) {
+    stream << "[]";
+  } else {
+    stream << "[ ";
+    if (!GetName(obj).empty()) {
+      stream << GetName(obj);
+    }
+
+    if (!GetType(obj).empty()) {
+      stream << ":" << GetType(obj);
+    }
+
+    if (!GetClass(obj).empty()) {
+      stream << ":" << GetClass(obj);
+    }
+
+    stream << " (" << bodyId << ")";
+
+    stream << ", " << GetStatus(obj) << " ]";
+  }
+
+  return stream.str();
+}
+
+std::string ZFlyEmBodyAnnotation::Brief(
+    uint64_t bodyId, const ZFlyEmBodyAnnotation &obj)
+{
+  return obj.brief(bodyId);
+}
+

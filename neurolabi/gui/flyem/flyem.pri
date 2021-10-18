@@ -1,23 +1,48 @@
 include(dialogs/dialogs.pri)
 include(widgets/widgets.pri)
 include(neuroglancer/neuroglancer.pri)
+include(roi/roi.pri)
+include(tests/tests.pri)
 
 FORMS += \
+    $$PWD/auth/flyemauthtokendialog.ui \
     $$PWD/flyemdataframeoptiondialog.ui \
     $$PWD/flyemorthocontrolform.ui \
     $$PWD/flyemproofcontrolform.ui \
     $$PWD/flyemsplitcontrolform.ui \
-    $$PWD/zflyembodyannotationdialog.ui \
     $$PWD/zflyembookmarkannotationdialog.ui \
     $$PWD/zflyembookmarkfilter.ui \
     $$PWD/zflyemhackathonconfigdlg.ui
 
 HEADERS += \
+    $$PWD/auth/flyemauthserverclient.h \
+    $$PWD/auth/flyemauthtokendialog.h \
+    $$PWD/auth/flyemauthtokenhandler.h \
+    $$PWD/auth/flyemauthtokenstorage.h \
+    $$PWD/flyembodyannotationbuilder.h \
+    $$PWD/flyembodyannotationgenericdlgbuilder.h \
+    $$PWD/flyembodyannotationinteractivebuilder.h \
+    $$PWD/flyembodyannotationio.h \
+    $$PWD/flyembodyannotationlocalio.h \
+    $$PWD/flyembodyannotationmanager.h \
+    $$PWD/flyembodyannotationproofdocio.h \
     $$PWD/flyemdataframeoptiondialog.h \
     $$PWD/flyemdef.h \
     $$PWD/flyemorthocontrolform.h \
+    $$PWD/flyempointannotationensemble.hpp \
     $$PWD/flyemproofcontrolform.h \
     $$PWD/flyemsplitcontrolform.h \
+    $$PWD/flyemsynapseblockgrid.h \
+    $$PWD/flyemsynapsechunk.h \
+    $$PWD/flyemsynapsedvidsource.h \
+    $$PWD/flyemsynapseensemble.h \
+    $$PWD/flyemsynapsesource.h \
+    $$PWD/flyemtodoblockgrid.h \
+    $$PWD/flyemtodochunk.h \
+    $$PWD/flyemtododvidsource.h \
+    $$PWD/flyemtodoensemble.h \
+    $$PWD/flyemtodomocksource.h \
+    $$PWD/flyemtodosource.h \
     $$PWD/zarbslicescrollstrategy.h \
     $$PWD/zbcfset.h \
     $$PWD/zdvidgrayslicehighrestask.h \
@@ -30,7 +55,6 @@ HEADERS += \
     $$PWD/zflyembody3ddoccommand.h \
     $$PWD/zflyembody3ddockeyprocessor.h \
     $$PWD/zflyembody3ddocmenufactory.h \
-    $$PWD/zflyembodyannotationdialog.h \
     $$PWD/zflyembodyannotationprotocol.h \
     $$PWD/zflyembodycoloroption.h \
     $$PWD/zflyembodycolorscheme.h \
@@ -58,10 +82,12 @@ HEADERS += \
     $$PWD/zflyembookmarklistmodel.h \
     $$PWD/zflyembookmarkpresenter.h \
     $$PWD/zflyembookmarkptrarray.h \
+    $$PWD/zflyemcompositebodycolorscheme.h \
     $$PWD/zflyemdatabundle.h \
     $$PWD/zflyemdataframe.h \
     $$PWD/zflyemdoc3dbodystateaccessor.h \
     $$PWD/zflyemexternalneurondoc.h \
+    $$PWD/zflyemgeneralbodycolorscheme.h \
     $$PWD/zflyemhackathonconfigdlg.h \
     $$PWD/zflyemkeyoperationconfig.h \
     $$PWD/zflyemmb6analyzer.h \
@@ -90,6 +116,7 @@ HEADERS += \
     $$PWD/zflyemproofutil.h \
     $$PWD/zflyemqualityanalyzertask.h \
     $$PWD/zflyemqualityanalyzertaskmanager.h \
+    $$PWD/zflyemrandombodycolorscheme.h \
     $$PWD/zflyemroimanager.h \
     $$PWD/zflyemroiobjsmodel.h \
     $$PWD/zflyemroiproject.h \
@@ -131,13 +158,36 @@ HEADERS += \
     $$PWD/zflyemproofdocutil.h \
     $$PWD/zdvidlabelslicehighrestaskfactory.h \
     $$PWD/flyembodyselectionmanager.h \
-    $$PWD/zflyemproofdockeyprocessor.h
+    $$PWD/zflyemproofdockeyprocessor.h \
+    $$PWD/zflyemproofdoctracinghelper.h
 
 SOURCES += \
+    $$PWD/auth/flyemauthserverclient.cpp \
+    $$PWD/auth/flyemauthtokendialog.cpp \
+    $$PWD/auth/flyemauthtokenhandler.cpp \
+    $$PWD/auth/flyemauthtokenstorage.cpp \
+    $$PWD/flyembodyannotationbuilder.cpp \
+    $$PWD/flyembodyannotationgenericdlgbuilder.cpp \
+    $$PWD/flyembodyannotationinteractivebuilder.cpp \
+    $$PWD/flyembodyannotationio.cpp \
+    $$PWD/flyembodyannotationlocalio.cpp \
+    $$PWD/flyembodyannotationmanager.cpp \
+    $$PWD/flyembodyannotationproofdocio.cpp \
     $$PWD/flyemdataframeoptiondialog.cpp \
     $$PWD/flyemorthocontrolform.cpp \
     $$PWD/flyemproofcontrolform.cpp \
     $$PWD/flyemsplitcontrolform.cpp \
+    $$PWD/flyemsynapseblockgrid.cpp \
+    $$PWD/flyemsynapsechunk.cpp \
+    $$PWD/flyemsynapsedvidsource.cpp \
+    $$PWD/flyemsynapseensemble.cpp \
+    $$PWD/flyemsynapsesource.cpp \
+    $$PWD/flyemtodoblockgrid.cpp \
+    $$PWD/flyemtodochunk.cpp \
+    $$PWD/flyemtododvidsource.cpp \
+    $$PWD/flyemtodoensemble.cpp \
+    $$PWD/flyemtodomocksource.cpp \
+    $$PWD/flyemtodosource.cpp \
     $$PWD/zarbslicescrollstrategy.cpp \
     $$PWD/zbcfset.cpp \
     $$PWD/zdvidgrayslicehighrestask.cpp \
@@ -150,7 +200,6 @@ SOURCES += \
     $$PWD/zflyembody3ddoccommand.cpp \
     $$PWD/zflyembody3ddockeyprocessor.cpp \
     $$PWD/zflyembody3ddocmenufactory.cpp \
-    $$PWD/zflyembodyannotationdialog.cpp \
     $$PWD/zflyembodyannotationprotocol.cpp \
     $$PWD/zflyembodycoloroption.cpp \
     $$PWD/zflyembodycolorscheme.cpp \
@@ -178,10 +227,12 @@ SOURCES += \
     $$PWD/zflyembookmarklistmodel.cpp \
     $$PWD/zflyembookmarkpresenter.cpp \
     $$PWD/zflyembookmarkptrarray.cpp \
+    $$PWD/zflyemcompositebodycolorscheme.cpp \
     $$PWD/zflyemdatabundle.cpp \
     $$PWD/zflyemdataframe.cpp \
     $$PWD/zflyemdoc3dbodystateaccessor.cpp \
     $$PWD/zflyemexternalneurondoc.cpp \
+    $$PWD/zflyemgeneralbodycolorscheme.cpp \
     $$PWD/zflyemhackathonconfigdlg.cpp \
     $$PWD/zflyemkeyoperationconfig.cpp \
     $$PWD/zflyemmb6analyzer.cpp \
@@ -210,6 +261,7 @@ SOURCES += \
     $$PWD/zflyemproofutil.cpp \
     $$PWD/zflyemqualityanalyzertask.cpp \
     $$PWD/zflyemqualityanalyzertaskmanager.cpp \
+    $$PWD/zflyemrandombodycolorscheme.cpp \
     $$PWD/zflyemroimanager.cpp \
     $$PWD/zflyemroiobjsmodel.cpp \
     $$PWD/zflyemroiproject.cpp \
@@ -251,4 +303,5 @@ SOURCES += \
     $$PWD/zflyemproofdocutil.cpp \
     $$PWD/zdvidlabelslicehighrestaskfactory.cpp \
     $$PWD/flyembodyselectionmanager.cpp \
-    $$PWD/zflyemproofdockeyprocessor.cpp
+    $$PWD/zflyemproofdockeyprocessor.cpp \
+    $$PWD/zflyemproofdoctracinghelper.cpp

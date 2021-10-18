@@ -25,7 +25,7 @@ public:
     void init();
     ~TaskProtocolWindow();
 
-    BodyPrefetchQueue *getPrefetchQueue() const;
+//    BodyPrefetchQueue *getPrefetchQueue() const;
 
 public:
     void test();
@@ -64,6 +64,7 @@ protected:
     void emitInfo(const QString &msg);
     void emitWarning(const QString &msg);
     void emitMessage(const QString &msg, neutu::EMessageType type);
+    void setProtocolInfo(const QString &msg);
 
 private slots:
     void onNextButton();
@@ -132,8 +133,8 @@ private:
     QString m_DVIDServer;
     QString m_UUID;
     QList<QSharedPointer<TaskProtocolTask>> m_taskList;
-    ZFlyEmProofDoc * m_proofDoc;
-    ZFlyEmBody3dDoc * m_body3dDoc;
+    ZFlyEmProofDoc * m_proofDoc = nullptr;
+    ZFlyEmBody3dDoc * m_body3dDoc = nullptr;
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex = -1;
@@ -141,16 +142,19 @@ private:
     QWidget * m_currentTaskWidget = nullptr;
     QAction * m_currentTaskMenuAction = nullptr;
     bool m_nodeLocked;
-    BodyPrefetchQueue * m_prefetchQueue;
-    QThread * m_prefetchThread;
+    int m_lastPrefetchedIndex = -1;
+//    BodyPrefetchQueue * m_prefetchQueue;
+//    QThread * m_prefetchThread;
     int m_bodyRecycledExpected = 0;
     int m_bodyRecycledReceived = 0;
     int m_bodyMeshesAddedExpected = 0;
     int m_bodyMeshesAddedReceived = 0;
     int m_bodyMeshLoadedExpected = 0;
     int m_bodyMeshLoadedReceived = 0;
+    bool m_isUpdating = false;
     std::set<int> m_skippedTaskIndices;
     bool m_nextPrevAllowed = true;
+    QString m_defaultProtocolInfo;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
@@ -175,6 +179,8 @@ private:
     void updateBodyWindow(int taskIdBodiesToRemove = -1);
     void disableButtonsWhileUpdating(const QSet<uint64_t> &toRemove);
     void enableButtonsAfterUpdating();
+    void startUpdating(const QSet<uint64_t> &toRemove);
+    void endUpdating();
     int getNext();
     int getNextUncompleted();
     int getPrev();

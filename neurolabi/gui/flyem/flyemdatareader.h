@@ -19,6 +19,8 @@ class ZObject3dScan;
 class ZDvidSparseStack;
 class ZDvidTarget;
 class ZDvidSynapse;
+class ZDvidInfo;
+class ZDvidVersionDag;
 
 /*!
  * \brief The class for wrapping functions of reading flyem data.
@@ -34,11 +36,16 @@ public:
       const ZDvidReader &reader, uint64_t bodyId);
   static ZFlyEmBodyAnnotation ReadBodyAnnotation(
       const ZDvidReader &reader, uint64_t bodyId);
+  static ZJsonObject ReadGenericBodyAnnotation(
+      const ZDvidReader &reader, uint64_t bodyId);
 
   static std::vector<ZFlyEmToDoItem> ReadToDoItem(
       const ZDvidReader &reader, const ZIntCuboid &box);
   static ZFlyEmToDoItem ReadToDoItem(
       const ZDvidReader &reader, int x, int y, int z);
+  static ZFlyEmToDoItem ReadToDoItem(
+      const ZDvidReader &reader, const ZIntPoint &pos);
+  static ZIntCuboid ReadTodoDataRange(const ZDvidReader &reader);
 
   static ZMesh* ReadRoiMesh(
       const ZDvidReader &reader, const std::string &roiName,
@@ -64,6 +71,18 @@ public:
 
   static std::unordered_map<ZIntPoint, uint64_t> ReadSynapseLabel(
       const ZDvidReader &reader, const std::vector<ZDvidSynapse>& synapseArray);
+
+  static std::vector<ZDvidSynapse> ReadSynapse(
+      const ZDvidReader &reader, const ZIntCuboid &box,
+      dvid::EAnnotationLoadMode mode = dvid::EAnnotationLoadMode::NO_PARTNER);
+  static void UpdateSynapsePartner(
+      const ZDvidReader &reader, ZDvidSynapse *synapse);
+  static void UpdateSynapse(
+      const ZDvidReader &reader, ZDvidSynapse *synapse);
+  static ZDvidSynapse ReadSynapse(
+      const ZDvidReader &reader, const ZIntPoint &pos);
+  static std::string ReadBookmarkUser(
+      const ZDvidReader &reader, const ZIntPoint &pos);
 
 private:
   static ZMesh* LoadRoi(

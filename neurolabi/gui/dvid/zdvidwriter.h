@@ -41,6 +41,8 @@ public:
 
   bool openRaw(const ZDvidTarget &target);
 
+  void setAdmin(bool admin);
+
   void clear();
 
   const ZDvidTarget& getDvidTarget() const {
@@ -51,10 +53,19 @@ public:
     return m_reader;
   }
 
+  ZDvidReader& getDvidReader() {
+    return m_reader;
+  }
+
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 
   void writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom);
+
+  /*!
+   * \brief Delete all related mesh data
+   */
+  void deleteMesh(uint64_t bodyId);
 
   void writeSupervoxelMesh(const ZMesh &mesh, uint64_t svId);
 
@@ -63,9 +74,11 @@ public:
   void writeAnnotation(uint64_t bodyId, const ZJsonObject &obj);
   void writeAnnotation(const ZFlyEmNeuron &neuron);
 
-  void writeBodyAnntation(const ZFlyEmBodyAnnotation &annotation);
-  void removeBodyAnnotation(uint64_t bodyId);
+  void writeBodyAnnotation(
+      uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
+  void deleteBodyAnnotation(uint64_t bodyId);
 
+//  void removeBodyAnnotation(uint64_t bodyId);
 
   void writeRoiCurve(const ZClosedCurve &curve, const std::string &key);
   void deleteRoiCurve(const std::string &key);
@@ -96,6 +109,7 @@ public:
                    const std::string &annotationName);
   void syncSynapseLabelsz();
   void createSynapseLabelsz();
+  void reloadSynapseLabelsz();
 
   void syncData(
       const std::string &dataName, const std::string &syncDataName,
@@ -132,10 +146,9 @@ public:
                  const QString &minKey, const QString &maxKey);
 
   void deleteSkeleton(uint64_t bodyId);
-  void deleteMesh(uint64_t bodyId);
-  void deleteBodyAnnotation(uint64_t bodyId);
+//  void deleteMesh(uint64_t bodyId);
 
-  void invalidateBody(uint64_t bodyId);
+//  void invalidateBody(uint64_t bodyId);
 
   void postLog(const std::string &message);
   bool lockNode(const std::string &message);
@@ -207,7 +220,7 @@ public:
   void deleteToDoItem(int x, int y, int z);
   void writeToDoItem(const ZFlyEmToDoItem &item);
 
-  void writeLabel(const ZArray &label);
+  bool writeLabel(const ZArray &label);
   void writeLabel(const ZArray &label, int zoom);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId);
   void changeLabel(const ZIntCuboid &box, uint64_t oldId, uint64_t newId);
@@ -311,7 +324,7 @@ private:
 
   void parseStandardOutput();
   void init();
-  bool startService();
+//  bool startService();
 
 private:
 //  QEventLoop *m_eventLoop;
@@ -324,6 +337,7 @@ private:
   ZJsonObject m_jsonOutput;
   int m_statusCode;
   QString m_statusErrorMessage;
+  bool m_admin = false;
 
 #if defined(_ENABLE_LIBDVIDCPP_)
   std::shared_ptr<libdvid::DVIDNodeService> m_service;

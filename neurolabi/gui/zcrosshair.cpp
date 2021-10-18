@@ -8,7 +8,7 @@ ZCrossHair::ZCrossHair()
 
 void ZCrossHair::init()
 {
-  setTarget(ZStackObject::ETarget::WIDGET);
+  setTarget(neutu::data3d::ETarget::WIDGET);
   m_type = GetType();
   setZOrder(5);
   useCosmeticPen(true);
@@ -16,7 +16,7 @@ void ZCrossHair::init()
   setHitProtocal(EHitProtocol::HIT_WIDGET_POS);
 }
 
-
+#if 0
 void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                          ZStackObject::EDisplayStyle /*style*/,
                          neutu::EAxis sliceAxis) const
@@ -67,6 +67,7 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                    */
 
 }
+#endif
 
 bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis)
 {

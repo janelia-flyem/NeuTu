@@ -1,9 +1,10 @@
 #include "zjsonarray.h"
+
 #include "c_json.h"
 
 #include "common/utilities.h"
 #include "zjsonparser.h"
-#include "zerror.h"
+//#include "zerror.h"
 
 
 using namespace std;
@@ -200,6 +201,21 @@ std::vector<bool> ZJsonArray::toBoolArray() const
   return array;
 }
 
+std::vector<std::string> ZJsonArray::toStringArray() const
+{
+  std::vector<std::string> array;
+  if (m_data != NULL) {
+    for (size_t i = 0; i < size(); ++i) {
+      const json_t *value = at(i);
+      if (json_is_string(value)) {
+        array.push_back(json_string_value(value));
+      }
+    }
+  }
+
+  return array;
+}
+
 ZJsonArray& ZJsonArray::operator << (double e)
 {
   if (m_data == NULL) {
@@ -215,7 +231,7 @@ ZJsonArray& ZJsonArray::operator << (double e)
   return *this;
 }
 
-bool ZJsonArray::decode(const string &str)
+bool ZJsonArray::decode(const string &str, bool reportingError)
 {
   clear();
 
@@ -225,11 +241,11 @@ bool ZJsonArray::decode(const string &str)
   if (ZJsonParser::IsArray(obj)) {
     set(obj, true);
   } else {
-    if (obj == NULL) {
+    if (obj == NULL && reportingError) {
       parser.printError();
     } else {
       json_decref(obj);
-      RECORD_ERROR_UNCOND("Not a json array");
+      //      RECORD_ERROR_UNCOND("Not a json array");
     }
 
     return false;
@@ -250,4 +266,24 @@ std::string ZJsonArray::dumpJanssonString(size_t flags) const
 ZJsonValue ZJsonArray::value(size_t index) const
 {
   return ZJsonValue(at(index), ZJsonValue::SET_INCREASE_REF_COUNT);
+}
+
+void ZJsonArray::forEachString(std::function<void(const std::string &str)>f)
+{
+  for (size_t i = 0; i < size(); ++i) {
+    f(ZJsonParser::stringValue(at(i)));
+  }
+}
+
+ZJsonArray ZJsonArray::filter(std::function<bool(ZJsonValue)> pred)
+{
+  ZJsonArray result;
+  for (size_t i = 0; i< size(); ++i) {
+    ZJsonValue e = value(i);
+    if (pred(e)) {
+      result.append(e);
+    }
+  }
+
+  return result;
 }

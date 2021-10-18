@@ -2,6 +2,7 @@
 #define ZVIEWPROJ_H
 
 #include <QRect>
+#include <QTransform>
 
 class ZJsonObject;
 
@@ -41,6 +42,7 @@ public:
   QRectF getProjRect() const;
   QRect getViewPort() const;
   QPoint getViewPortCenter() const;
+  QRect getUnboundedViewPort() const;
 
   QPoint getWidgetCenter() const;
 
@@ -128,6 +130,11 @@ public:
 
   bool operator ==(const ZViewProj &viewProj) const;
   bool operator !=(const ZViewProj &viewProj) const;
+
+  /*!
+   * \brief View space to widget transform
+   */
+  QTransform getViewWidgetTransform() const;
 
 private:
   void init();

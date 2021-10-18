@@ -59,12 +59,18 @@ public:
     return m_dvidRepo;
   }
 
+  ZDvidTarget getDvidTarget(const std::string &name) const;
+
   std::string mapAddress(const std::string &address) const;
 
   std::string getDvidRootNode(const std::string &name) const;
 
   void setDefaultTaskServer(const std::string &taskServer);
   bool hasDefaultTaskServer() const;
+
+  void setDefaultAssignmentManager(const std::string &server);
+  void setDefaultAuthenticationServer(const std::string &server);
+  void setDefaultCleaveServer(const std::string &server);
 
   void setCustomTaskServer(const std::string &taskServer);
   std::string getTaskServer() const;
@@ -76,6 +82,14 @@ public:
 
   std::string getNeuroglancerServer() const {
     return m_neuroglancerServer;
+  }
+
+  std::string getDefaultAssignmentManager() const {
+    return m_defaultAssignmentManager;
+  }
+
+  std::string getDefaultAuthenticationServer() const {
+    return m_defaultAuthenticationServer;
   }
 
 #ifdef _QT_GUI_USED_
@@ -122,7 +136,8 @@ public:
   void setCustomNeuTuServer(const std::string &server);
   std::string getNeuTuServer() const;
   std::string getNeuTuServer(bool usingDefault) const;
-
+  std::string getCleaveServer() const;
+  void setCleaveServer(const std::string &server);
 
   std::string getUserName() const;
   /*
@@ -178,6 +193,8 @@ public:
     return m_uiStyleSheet;
   }
 
+  void setMappedNode(const std::string &key, const std::string &value);
+
 public:
   const static char *DVID_REPO_KEY;
   const static char *DVID_ROOT_KEY;
@@ -187,6 +204,9 @@ public:
   const static char *TASK_SERVER_KEY;
   const static char *NEUTU_SERVER_KEY;
   const static char *NEUROGLANCER_KEY;
+  const static char *AUTHENTICATION_SERVER_KEY;
+  const static char *CLEAVE_SERVER_KEY;
+  const static char *ASSIGNMENT_MANAGER_KEY;
   const static char *CENTERCUT_KEY;
   const static char *UI_KEY;
   const static char *STYLE_KEY;
@@ -223,6 +243,9 @@ private:
   std::string m_defaultNeuTuServer;
   bool m_usingDefaultTaskServer = true;
   std::string m_defaultTaskServer;
+  std::string m_defaultAuthenticationServer;
+  std::string m_defaultAssignmentManager;
+  std::string m_defaultCleaveServer;
   std::string m_uiStyleSheet;
 
   bool m_analyzingMb6;

@@ -2,17 +2,19 @@
 #define ZSTACKOBJECTGROUP_H
 
 #include <functional>
+#include <set>
 
 #include <QList>
 #include <QSet>
 #include <QMap>
-#include <set>
 #include <QMutex>
 
 #include "zstackobject.h"
 #include "zstackobjectselector.h"
 #include "common/zsharedpointer.h"
 //#include "flyem/zflyemtodoitem.h"
+
+class ZCuboid;
 
 /*!
  * \brief The aggregate class of ZStackObject
@@ -42,7 +44,10 @@ public:
   int getMaxZOrder() const;
 
   void setSelected(ZStackObject *obj, bool selected);
+  void setSelected(const ZStackObjectHandle &handle, bool selected);
   void setSelected(bool selected);
+  void setSelected(
+      bool selected, std::function<void(const ZStackObject*)> selChangeProc);
 
   void setSelected(ZStackObject::EType type, bool selected);
   void setSelected(ZStackObjectRole::TRole role, bool selected);
@@ -170,24 +175,35 @@ public:
   template<typename T>
   QList<T*> getObjectList() const;
 
+  template<typename T>
+  QList<T*> getObjectList(QMutex *mutex) const;
+
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
 
   TStackObjectSet getSelectedSet(ZStackObject::EType type) const;
 //  const TStackObjectSet& getSelectedSet(ZStackObject::EType type) const;
 
+  ZCuboid getSelectedBoundBox() const;
+
   TStackObjectSet getObjectSet(ZStackObject::EType type) const;
 
-  bool hasObject(ZStackObject::EType type) const;
-  bool hasObject(ZStackObject::ETarget target) const;
-  bool hasSelected() const;
-  bool hasSelected(ZStackObject::EType type) const;
   /*!
    * \brief Test if the group contains a specific object
    * \param obj The object to verify. The pointer does not have to be valid.
    * \return
    */
   bool hasObject(const ZStackObject *obj) const;
+
+  bool hasObject(ZStackObject::EType type) const;
+  bool hasObject(neutu::data3d::ETarget target) const;
+  bool hasObject(ZStackObject::EType type, const std::string &source) const;
+
+  bool hasSelected() const;
+  bool hasSelected(ZStackObject::EType type) const;
+
+  bool hasObjectHandle(const ZStackObjectHandle &handle) const;
+  ZStackObject* getObject(const ZStackObjectHandle &handle, QMutex *mutex) const;
 
   QList<ZStackObject::EType> getAllType() const;
 
@@ -199,6 +215,9 @@ public:
   int getMaxZOrderUnsync() const;
 
   void setSelectedUnsync(bool selected);
+  void setSelectedUnsync(
+      bool selected,
+      std::function<void(const ZStackObject*)> selectionChangeProc);
   void setSelectedUnsync(ZStackObject::EType type, bool selected);
 
   void setSelectedUnsync(ZStackObjectRole::TRole role, bool selected);
@@ -284,7 +303,7 @@ public:
   const TStackObjectSet& getSelectedSetUnsync(ZStackObject::EType type) const;
 
   bool hasObjectUnsync(ZStackObject::EType type) const;
-  bool hasObjectUnsync(ZStackObject::ETarget target) const;
+  bool hasObjectUnsync(neutu::data3d::ETarget target) const;
   bool hasSelectedUnsync() const;
   bool hasSelectedUnsync(ZStackObject::EType type) const;
 
@@ -298,11 +317,13 @@ private:
   ZStackObjectGroup& operator= (const ZStackObjectGroup &group);
   void setSelected(TStackObjectList &objList, TStackObjectSet &selectedSet,
                    bool selected);
+  void addUnsync(ZStackObject *obj);
 
 private:
   QList<ZStackObject*> m_objectList;
   TObjectListMap m_sortedGroup;
   TObjectSetMap m_selectedSet;
+//  TObjectSetMap m_prevSelectedSet;
   int m_currentZOrder;
 
   mutable QMutex m_mutex;
@@ -391,6 +412,8 @@ TStackObjectList ZStackObjectGroup::takeUnsync(
       if (objSet.contains(obj)) {
         miter.remove();
         getObjectListUnsync(obj->getType()).removeOne(obj);
+        getSelectedSetUnsync(obj->getType()).remove(obj);
+        getSelector()->removeObject(obj);
         objList.append(obj);
       }
     }
@@ -427,6 +450,14 @@ template<typename T>
 QList<T*> ZStackObjectGroup::getObjectList() const
 {
   QMutexLocker locker(&m_mutex);
+
+  return getObjectListUnsync<T>();
+}
+
+template<typename T>
+QList<T*> ZStackObjectGroup::getObjectList(QMutex *mutex) const
+{
+  QMutexLocker locker(mutex);
 
   return getObjectListUnsync<T>();
 }

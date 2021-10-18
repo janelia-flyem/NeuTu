@@ -54,7 +54,7 @@ class ZDvidTargetProviderDialog;
 class FlyEmBodyFilterDialog;
 class ZFlyEmNewBodySplitProjectDialog;
 class DvidSkeletonizeDialog;
-class ZFlyEmRoiDialog;
+//class ZFlyEmRoiDialog;
 class NewProjectMainWindow;
 class ShapePaperDialog;
 class DvidOperateDialog;
@@ -214,7 +214,7 @@ public slots:
 //  void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
-  ZProofreadWindow * startProofread();
+  ZProofreadWindow * startProofread(const QString &databaseName = "");
 //  void launchSplit(const QString &str);
 
 private:
@@ -226,6 +226,8 @@ private:
   void checkVersion();
 
   void testProgressBarFunc();
+
+  void addChildWindow(QMainWindow *window);
 
 protected:
   //a virtual function from QWidget. It is called when the window is closed.
@@ -503,8 +505,11 @@ private slots:
 
   void on_actionMake_Movie_2_triggered();
 
-  void tryToClose();
+//  void tryToClose();
   void showAndRaise();
+  void showChildWindow(QMainWindow *window);
+  void showChildWindow(QAction *action);
+  void removeChildWindow(QMainWindow *window);
 
   void on_actionTrace_Mask_triggered();
   void on_actionSeed_Mask_triggered();
@@ -521,6 +526,10 @@ private slots:
   void on_actionView_Segmentation_Meshes_triggered();
 
   void on_actionUpdate_Body_Info_triggered();
+
+  void on_actionSubtract_Background_Adaptive_triggered();
+
+  void on_actionExportSlice_triggered();
 
 private:
   void createActions();
@@ -710,7 +719,7 @@ private:
   QProgressDialog *m_progress;
   BcAdjustDialog *m_bcDlg;
   HelpDialog *m_helpDlg;
-  DiagnosisDialog *m_DiagnosisDlg;
+  DiagnosisDialog *m_DiagnosisDlg = nullptr;
   ResolutionDialog *m_resDlg;
   ZFlyEmHackathonConfigDlg *m_hackathonConfigDlg;
 
@@ -745,7 +754,7 @@ private:
 //  FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;
   DvidSkeletonizeDialog *m_dvidSkeletonizeDialog;
-  ZFlyEmRoiDialog *m_roiDlg;
+//  ZFlyEmRoiDialog *m_roiDlg;
   ShapePaperDialog *m_shapePaperDlg;
   DvidOperateDialog *m_dvidOpDlg;
   SynapseImportDialog *m_synapseDlg;
@@ -783,6 +792,9 @@ private:
 
   QTimer *m_autoCheckTimer;
   ZThreadFutureMap m_futureMap;
+
+  QActionGroup *m_windowActionGroup = nullptr;
+  QMap<QMainWindow*, QAction*> m_childWindowMap;
   //ZStackDocReader *m_docReader;
 };
 

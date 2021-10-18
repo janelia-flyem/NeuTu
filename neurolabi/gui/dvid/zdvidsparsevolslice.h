@@ -20,8 +20,14 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
   void setReader(ZDvidReader *reader);
 
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+               */
 
   void update();
   bool update(const ZStackViewParam &viewParam);

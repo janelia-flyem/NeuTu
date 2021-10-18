@@ -56,13 +56,15 @@ ZStackDocCommand::FlyEmBookmarkEdit::RemoveRemoteBookmark::~RemoveRemoteBookmark
 
 void ZStackDocCommand::FlyEmBookmarkEdit::RemoveRemoteBookmark::redo()
 {
-  ZDvidReader reader;
-  if (reader.open(m_doc->getDvidTarget())) {
-    m_backup = reader.readBookmarkJson(m_location);
-    ZDvidWriter writer;
-    if (writer.open(m_doc->getDvidTarget())) {
-      writer.deleteBookmark(m_location);
-    }
+//  ZDvidReader reader;
+//  if (reader.open(m_doc->getDvidTarget())) {
+  ZDvidWriter &writer = m_doc->getDvidWriter();
+  if (writer.good()) {
+    m_backup = writer.getDvidReader().readBookmarkJson(m_location);
+//    ZDvidWriter writer;
+//    if (writer.open(m_doc->getDvidTarget())) {
+    writer.deleteBookmark(m_location);
+//    }
   }
 }
 
@@ -107,16 +109,16 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::addRemoving(
 void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::redo()
 {
   if (!m_bookmarkArray.empty() && m_doc != NULL) {
-    ZDvidReader reader;
-    if (reader.open(m_doc->getDvidTarget())) {
+//    ZDvidReader reader;
+//    if (reader.open(m_doc->getDvidTarget())) {
 //      m_backup = reader.readBookmarkJson(m_bookmark->getCenter().toIntPoint());
-      ZDvidWriter writer;
-      if (writer.open(m_doc->getDvidTarget())) {
+      ZDvidWriter &writer = m_doc->getDvidWriter();
+      if (writer.good()) {
         for (std::vector<ZFlyEmBookmark*>::iterator
              iter = m_bookmarkArray.begin(); iter != m_bookmarkArray.end();
              ++iter) {
           ZFlyEmBookmark *bookmark = *iter;
-          writer.deleteBookmark(bookmark->getCenter().toIntPoint());
+          writer.deleteBookmark(bookmark->getCenter().roundToIntPoint());
         }
       }
 
@@ -124,14 +126,16 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::redo()
       m_doc->notifyBookmarkEdited(m_bookmarkArray);
       m_isInDoc = false;
     }
-  }
+//  }
 }
 
 void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::undo()
 {
   if (!m_bookmarkArray.empty() && m_doc != NULL) {
-    ZDvidWriter writer;
-    if (writer.open(m_doc->getDvidTarget())) {
+//    ZDvidWriter writer;
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    if (writer.good()) {
+//    if (writer.open(m_doc->getDvidTarget())) {
       writer.writeBookmark(m_bookmarkArray);
       if (writer.isStatusOk()) {
         m_doc->addLocalBookmark(m_bookmarkArray);
@@ -178,8 +182,8 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::addBookmark(
 void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
 {
   if (!m_bookmarkArray.empty() && m_doc != NULL) {
-    ZDvidWriter writer;
-    if (writer.open(m_doc->getDvidTarget())) {
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    if (writer.good()) {
       writer.writeBookmark(m_bookmarkArray);
       if (writer.isStatusOk()) {
         m_doc->addLocalBookmark(m_bookmarkArray);
@@ -196,12 +200,10 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
 void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::undo()
 {
   if (!m_bookmarkArray.empty() && m_doc != NULL) {
-    ZDvidReader reader;
-    if (reader.open(m_doc->getDvidTarget())) {
-      ZDvidWriter writer;
-      if (writer.open(m_doc->getDvidTarget())) {
-        writer.deleteBookmark(m_bookmarkArray);
-      }
+//    ZDvidReader reader;
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    if (writer.good()) {
+      writer.deleteBookmark(m_bookmarkArray);
 
       for (std::vector<ZFlyEmBookmark*>::const_iterator
            iter = m_bookmarkArray.begin(); iter != m_bookmarkArray.end();
@@ -238,8 +240,8 @@ ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::~ChangeBookmark()
 void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::redo()
 {
   if (m_bookmark != NULL && m_doc != NULL) {
-    ZDvidWriter writer;
-    if (writer.open(m_doc->getDvidTarget())) {
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    if (writer.good()) {
       writer.writeBookmark(m_newBookmark.toDvidAnnotationJson());
       if (writer.isStatusOk()) {
         m_backup = *m_bookmark;
@@ -257,8 +259,8 @@ void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::redo()
 void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::undo()
 {
   if (m_bookmark != NULL && m_doc != NULL) {
-    ZDvidWriter writer;
-    if (writer.open(m_doc->getDvidTarget())) {
+    ZDvidWriter &writer = m_doc->getDvidWriter();
+    if (writer.good()) {
       writer.writeBookmark(m_backup.toDvidAnnotationJson());
       if (writer.isStatusOk()) {
         *m_bookmark = m_backup;

@@ -143,6 +143,11 @@ public:
   int getNeighborNumber(int v) const;
   int getNeighbor(int v, int index) const;
 
+  /*!
+   * \brief Get connected sub-graphs
+   *
+   * \return The graph pointers owned by the ZGraph object itself.
+   */
   const std::vector<ZGraph*>& getConnectedSubgraph() const;
 
   inline void setProgressReporter(ZProgressReporter *reporter) {

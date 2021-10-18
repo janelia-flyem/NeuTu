@@ -56,10 +56,12 @@ ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId, ZObject3dScan *result)
   if (!m_coarseVol) {
     out = getDvidReader()->readBody(
           bodyId, m_labelType, m_zoom, m_range, m_canonizing, result);
-    out->setDsIntv(zgeom::GetZoomScale(m_zoom) - 1);
+    if (out) {
+      out->setDsIntv(zgeom::GetZoomScale(m_zoom) - 1);
+    }
   } else {
     out = getDvidReader()->readCoarseBody(bodyId, m_labelType, m_range, result);
-    if (m_canonizing) {
+    if (out && m_canonizing) {
       out->canonize();
     }
   }
@@ -100,23 +102,24 @@ ZIntCuboid ZDvidBodyHelper::getAdjustedRange() const
 
     int s = zgeom::GetZoomScale(m_zoom);
     range.scaleDown(s);
-    range.scale(s);
+    range.scaleUp(s);
 
     range.set(
-          ZIntPoint(AdjustMinCorner(range.getFirstCorner().getX(), scale.getX()),
-                    AdjustMinCorner(range.getFirstCorner().getY(), scale.getY()),
-                    AdjustMinCorner(range.getFirstCorner().getZ(), scale.getZ())),
-          ZIntPoint(AdjustMaxCorner(range.getLastCorner().getX(), scale.getX()),
-                    AdjustMaxCorner(range.getLastCorner().getY(), scale.getY()),
-                    AdjustMaxCorner(range.getLastCorner().getZ(), scale.getZ())));
+          ZIntPoint(AdjustMinCorner(range.getMinCorner().getX(), scale.getX()),
+                    AdjustMinCorner(range.getMinCorner().getY(), scale.getY()),
+                    AdjustMinCorner(range.getMinCorner().getZ(), scale.getZ())),
+          ZIntPoint(AdjustMaxCorner(range.getMaxCorner().getX(), scale.getX()),
+                    AdjustMaxCorner(range.getMaxCorner().getY(), scale.getY()),
+                    AdjustMaxCorner(range.getMaxCorner().getZ(), scale.getZ())));
   }
 
   return range;
 }
 
-std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
+std::vector<std::shared_ptr<ZObject3dScan> >
+ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
 {
-  std::vector<ZObject3dScan*> result;
+  std::vector<std::shared_ptr<ZObject3dScan>> result;
 
   ZIntCuboid range = getAdjustedRange();
 
@@ -136,7 +139,12 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
 //  LINFO() << "High res reading time:" << timer.elapsed() << "ms";
 
   if (highResObj != NULL) {
-    result.push_back(highResObj);
+    if (!highResObj->isEmpty()) {
+      result.emplace_back(highResObj);
+    } else {
+      delete highResObj;
+      ZWARN << "Failed to read highres object";
+    }
   }
 
   if (!range.isEmpty()) { //load low res parts
@@ -176,7 +184,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
 //      LINFO() << "Low res cropping time:" << timer.elapsed() << "ms";
       lowResObj->setDsIntv(scale - 1);
 
-      result.push_back(lowResObj);
+      result.emplace_back(lowResObj);
     }
   }
 

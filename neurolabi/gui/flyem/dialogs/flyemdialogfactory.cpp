@@ -4,6 +4,7 @@
 #include "../zflyemproofdoc.h"
 #include "../zflyemmisc.h"
 #include "../dialogs/flyembodyannotationdialog.h"
+#include "../dialogs/zgenericbodyannotationdialog.h"
 
 FlyEmDialogFactory::FlyEmDialogFactory()
 {
@@ -44,6 +45,29 @@ FlyEmBodyAnnotationDialog* FlyEmDialogFactory::MakeBodyAnnotationDialog(
   }
 
   for (const QString &status : doc->getAdminBodyStatusList()) {
+    dlg->addAdminStatus(status);
+  }
+
+  return dlg;
+}
+
+ZGenericBodyAnnotationDialog* FlyEmDialogFactory::MakeBodyAnnotaitonDialog(
+    ZFlyEmProofDoc *doc, ZJsonObject config, QWidget *parent)
+{
+  ZGenericBodyAnnotationDialog *dlg = new ZGenericBodyAnnotationDialog(parent);
+  dlg->setAdmin(doc->isAdmin());
+
+  dlg->configure(config);
+
+  QList<QString> statusList = doc->getBodyStatusList();
+
+  if (!statusList.empty()) {
+    dlg->setDefaultStatusList(statusList);
+  } else {
+    dlg->setDefaultStatusList(flyem::GetDefaultBodyStatus());
+  }
+
+  foreach (const QString &status, doc->getAdminBodyStatusList()) {
     dlg->addAdminStatus(status);
   }
 

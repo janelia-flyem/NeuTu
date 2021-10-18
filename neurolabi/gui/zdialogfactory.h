@@ -48,6 +48,10 @@ public:
   static bool Ask(const QString &title, const QString &msg, QWidget *parent);
   static void Warn(const QString &title, const QString &msg, QWidget *parent);
   static void Error(const QString &title, const QString &msg, QWidget *parent);
+  static void Error(
+      const QString &title, const QString &msg, const QString &detail,
+      QWidget *parent);
+  static void Info(const QString &title, const QString &msg, QWidget *parent);
 
   static bool WarningAskForContinue(
       const QString &title, const QString &msg, QWidget *parent);

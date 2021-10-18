@@ -25,21 +25,22 @@ public:
   ZProofreadWindow* getMainWindow() const;
   ZFlyEmProofMvc* getFlyEmProofMvc() const;
 
-  ZIntPoint getOffset() const;
+  ZIntPoint getCenter() const;
   ZIntPoint getSize() const;
   ZIntCuboid getBoundBox() const;
   ZIntPoint getFirstCorner() const;
   ZIntPoint getLastCorner() const;
 
-  int getOffsetX() const;
-  int getOffsetY() const;
-  int getOffsetZ() const;
+  int getCenterX() const;
+  int getCenterY() const;
+  int getCenterZ() const;
   int getWidth() const;
   int getHeight() const;
   int getDepth() const;
   int getDsIntv() const;
 
-  void setOffset(int x, int y, int z);
+  void setCenter(int x, int y, int z);
+  void setCenter(const ZIntPoint &pt);
   void setWidth(int width);
   void setHeight(int height);
   void setDepth(int depth);

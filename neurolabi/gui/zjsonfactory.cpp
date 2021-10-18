@@ -63,16 +63,26 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntPoint &pt)
   return array;
 }
 
+ZJsonArray ZJsonFactory::MakeJsonArray(const ZPoint &pt)
+{
+  ZJsonArray array;
+  array.append(pt.getX());
+  array.append(pt.getY());
+  array.append(pt.getZ());
+
+  return array;
+}
+
 ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntCuboid &box)
 {
   ZJsonArray array;
-  array.append(box.getFirstCorner().getX());
-  array.append(box.getFirstCorner().getY());
-  array.append(box.getFirstCorner().getZ());
+  array.append(box.getMinCorner().getX());
+  array.append(box.getMinCorner().getY());
+  array.append(box.getMinCorner().getZ());
 
-  array.append(box.getLastCorner().getX());
-  array.append(box.getLastCorner().getY());
-  array.append(box.getLastCorner().getZ());
+  array.append(box.getMaxCorner().getX());
+  array.append(box.getMaxCorner().getY());
+  array.append(box.getMaxCorner().getZ());
 
   return array;
 }
@@ -81,7 +91,7 @@ ZJsonArray ZJsonFactory::MakeJsonArray(const ZIntCuboid &box)
 ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
 {
   ZJsonObject json;
-  ZJsonArray posJson = MakeJsonArray(bookmark.getCenter().toIntPoint());
+  ZJsonArray posJson = MakeJsonArray(bookmark.getCenter().roundToIntPoint());
   json.setEntry("Pos", posJson);
   json.setEntry("Kind", "Note");
 
@@ -102,7 +112,10 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
   ZJsonObject propJson;
   propJson.setEntry(
         "body ID", QString("%1").arg(bookmark.getBodyId()).toStdString());
-  propJson.setEntry("time", bookmark.getTime().toStdString());
+//  propJson.setEntry("time", bookmark.getTime().toStdString());
+  if (bookmark.getTimestamp() > 0) {
+    propJson.setEntry("timestamp", std::to_string(bookmark.getTimestamp()));
+  }
   propJson.setEntry("status", bookmark.getStatus().toStdString());
   propJson.setEntry("comment", bookmark.getComment().toStdString());
   propJson.setEntry("type", bookmark.getTypeString().toStdString());
@@ -115,9 +128,10 @@ ZJsonObject ZJsonFactory::MakeAnnotationJson(const ZFlyEmBookmark &bookmark)
     propJson.setEntry("custom", "0");
   }
   propJson.setEntry("user", bookmark.getUserName().toStdString());
+  propJson.setNonEmptyEntry("prevUser", bookmark.getPrevUser());
 
   std::map<std::string, json_t*> additionalProp =
-      bookmark.getPropertyJson().toEntryMap(false);
+      bookmark.getPropJson().toEntryMap(false);
   for (std::map<std::string, json_t*>::iterator iter = additionalProp.begin();
        iter != additionalProp.end(); ++iter) {
     const std::string &key = iter->first;

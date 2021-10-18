@@ -3,6 +3,7 @@
 
 #include <set>
 #include <vector>
+#include <functional>
 
 template<typename T>
 struct add_const_to_pointee
@@ -94,6 +95,12 @@ public:
   const std::set<T>& getDeselectedSet() const;
 
   void removeObject(const T &obj);
+  void clearDeselected();
+  void clearSelected();
+  bool hasSelected() const;
+
+  void forEachSelected(std::function<void(const T& obj)> f);
+  void forEachDeselected(std::function<void(const T& obj)> f);
 
 protected:
   std::set<T> m_selectedSet;

@@ -15,17 +15,25 @@
 #include "zutils.h"
 #include "zstack.hxx"
 #include "flyem/zdvidgrayslicehighrestask.h"
+#include "vis2d/utilities.h"
+#include "data3d/displayconfig.h"
+
+/* Implementation details
+ *
+ * ZDvidGraySlice reads a slice from DVID and convert it into the form ready
+ * for painting. The conversion has two parts, incliuding m_imageCanvas for
+ * final rendering and m_image for host original grayscale values. These two are
+ * supposed to be synced all the time, i.e. whenever m_image is updated,
+ * m_imageCanvas should be updated too.
+ */
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
-  setTarget(ZStackObject::ETarget::TILE_CANVAS);
+  setTarget(neutu::data3d::ETarget::TILE_CANVAS);
   m_type = GetType();
-//  m_zoom = 0;
-//  m_maxWidth = 512;
-//  m_maxHeight = 512;
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAY_SCALE);
-  getHelper()->useCenterCut(false);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ERole::GRAYSCALE);
+//  getHelper()->useCenterCut(false);
 }
 
 ZDvidGraySlice::~ZDvidGraySlice()
@@ -33,17 +41,21 @@ ZDvidGraySlice::~ZDvidGraySlice()
   clear();
 }
 
-//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
-
 void ZDvidGraySlice::clear()
 { 
-//  m_reader.clear();
   m_helper->clear();
-  invalidatePixmap();
-//  delete m_reader;
-//  m_reader = NULL;
-//  m_dvidTarget.clear();
-//  m_image.clear();
+}
+
+std::shared_ptr<ZDvidGraySlice::DisplayBuffer>
+ZDvidGraySlice::getDisplayBuffer(int viewId) const
+{
+  std::lock_guard<std::mutex> guard(m_displayBufferMutex);
+
+  if (m_displayBufferMap.count(viewId) == 0) {
+    m_displayBufferMap[viewId] = std::shared_ptr<DisplayBuffer>(new DisplayBuffer);
+  }
+
+  return m_displayBufferMap.at(viewId);
 }
 
 const ZDvidReader& ZDvidGraySlice::getDvidReader() const
@@ -61,60 +73,51 @@ const ZDvidTarget& ZDvidGraySlice::getDvidTarget() const
   return getDvidReader().getDvidTarget();
 }
 
-int ZDvidGraySlice::getX() const
-{
-  return m_helper->getX();
-}
-
-int ZDvidGraySlice::getY() const
-{
-  return m_helper->getY();
-}
-
+/*
 int ZDvidGraySlice::getZ() const
 {
   return m_helper->getZ();
 }
+*/
 
-void ZDvidGraySlice::setZ(int z)
+/*
+int ZDvidGraySlice::getWidth(int viewId) const
 {
-  m_helper->setZ(z);
+  return m_helper->getWidth(viewId);
 }
 
-int ZDvidGraySlice::getWidth() const
+int ZDvidGraySlice::getHeight(int viewId) const
 {
-  return m_helper->getWidth();
+  return m_helper->getHeight(viewId);
 }
+*/
 
-int ZDvidGraySlice::getHeight() const
-{
-  return m_helper->getHeight();
-}
-
+/*
 int ZDvidGraySlice::getZoom() const
 {
   return m_helper->getZoom();
 }
+*/
 
-void ZDvidGraySlice::display(
-    ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    neutu::EAxis sliceAxis) const
+ZSliceCanvas& ZDvidGraySlice::getImageCanvas(int viewId) const
 {
-  if (sliceAxis != getSliceAxis()) {
-    return;
-  }
+  return getDisplayBuffer(viewId)->m_imageCanvas;
+}
 
-  int z = painter.getZOffset() + slice;
-#if 0
-  if (getSliceAxis() == neutube::Z_AXIS) {
-    const_cast<ZDvidGraySlice&>(*this).update(z);
-  }
+ZImage& ZDvidGraySlice::getImage(int viewId) const
+{
+  return getDisplayBuffer(viewId)->m_image;
+}
+
+bool ZDvidGraySlice::display_inner(
+    QPainter *painter, const DisplayConfig &config) const
+{
+#ifdef _DEBUG_2
+    m_imageCanvas.save(GET_TEST_DATA_DIR + "/_test.png");
 #endif
-
-  if (z == getZ() && !m_image.isNull()) {
-    const_cast<ZDvidGraySlice&>(*this).updatePixmap();
-    painter.drawPixmap(getX(), getY(), m_pixmap);
-  }
+  const_cast<ZDvidDataSliceHelper*>(getHelper())->setViewParamActive(
+        painter, config);
+  return getImageCanvas(config.getViewId()).paintTo(painter, config.getTransform());
 }
 
 void ZDvidGraySlice::updateContrast(bool highContrast)
@@ -131,69 +134,79 @@ void ZDvidGraySlice::updateContrast(const ZJsonObject &obj)
 
 void ZDvidGraySlice::updateContrast()
 {
-  m_image.setContrastProtocol(m_contrastProtocol);
-  m_image.updateContrast(m_usingContrastProtocol);
-  invalidatePixmap();
-#if 0
-  if (!m_contrastProtocal.isEmpty()) {
-    m_image.enhanceContrast(false);
-  } else {
-    m_image.enhanceContrast(true);
+  std::lock_guard<std::mutex> guard(m_displayBufferMutex);
+  for (auto &buffer : m_displayBufferMap) {
+    auto &image = buffer.second->m_image;
+    image.setContrastProtocol(m_contrastProtocol);
+    image.updateContrast(m_usingContrastProtocol);
+    buffer.second->m_imageCanvas.fromImage(image);
   }
-#endif
+//  m_image.setContrastProtocol(m_contrastProtocol);
+//  m_image.updateContrast(m_usingContrastProtocol);
+//  m_imageCanvas.fromImage(m_image);
 }
 
-bool ZDvidGraySlice::hasLowresRegion() const
+bool ZDvidGraySlice::hasLowresRegion(int viewId) const
 {
-  if (getZoom() > 0) {
+  if (getHelper()->getZoom(viewId, ZDvidDataSliceHelper::EViewParamOption::ACTIVE) > 0) {
     return true;
   }
 
-  QRect viewport = getViewPort();//m_currentViewParam.getViewPort();
-  if (viewport.width() > getHelper()->getCenterCutWidth() ||
-      viewport.height() > getHelper()->getCenterCutHeight()) {
-    return true;
+  if (!getHelper()->usingCenterCut()) {
+    return false;
   }
 
-  return false;
+  ZStackViewParam param = getHelper()->getViewParam(
+        viewId, ZDvidDataSliceHelper::EViewParamOption::ACTIVE);
+
+  ZAffineRect rect = param.getIntCutRect(
+        getHelper()->getDataRange(), getHelper()->getCenterCutWidth(),
+        getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
+
+  return (rect.getWidth() > getHelper()->getCenterCutWidth() ||
+      rect.getHeight() > getHelper()->getCenterCutHeight());
 }
 
-void ZDvidGraySlice::invalidatePixmap()
+void ZDvidGraySlice::updateImage(
+    const ZStack *stack, const ZStackViewParam &viewParam,
+    int zoom, int centerCutX, int centerCutY, bool usingCenterCut)
 {
-  m_isPixmapValid = false;
-}
-
-void ZDvidGraySlice::validatePixmap(bool v)
-{
-  m_isPixmapValid = v;
-}
-
-bool ZDvidGraySlice::isPixmapValid() const
-{
-  return m_isPixmapValid;
-}
-
-void ZDvidGraySlice::validatePixmap()
-{
-  m_isPixmapValid = true;
-}
-
-void ZDvidGraySlice::updateImage(const ZStack *stack)
-{
-//  QElapsedTimer timer;
-//  timer.start();
-
   if (stack != NULL) {
-    if (stack->width() != m_image.width() ||
-        stack->height() != m_image.height()) {
-      m_image = ZImage(stack->width(), stack->height(), QImage::Format_Indexed8);
-    }
-    m_image.setOffset(-stack->getOffset().getX(), -stack->getOffset().getY());
-    m_image.setData(stack->array8());
+    auto buffer = getDisplayBuffer(viewParam.getViewId());
+    buffer->m_image =
+        neutu::vis2d::GetSlice(*stack, stack->getOffset().getZ());
+    ZAffineRect rect = viewParam.getIntCutRect(
+          getHelper()->getDataRange(), centerCutX, centerCutY, usingCenterCut);
+
+    ZSliceViewTransform t = getHelper()->getCanvasTransform(
+          viewParam.getSliceAxis(), rect.getAffinePlane(),
+          stack->width(), stack->height(), zoom);
+    buffer->m_imageCanvas.setTransform(t);
+    buffer->m_imageCanvas.setOriginalCut(viewParam.getCutRect());
     updateContrast();
-  } else {
-    m_image.clear();
-    invalidatePixmap();
+  }
+}
+
+#if 0
+void ZDvidGraySlice::updateImage(
+    const ZStack *stack, neutu::EAxis axis,
+    const ZAffinePlane &ap, int zoom, int viewId)
+{
+  if (stack != NULL) {
+    auto buffer = getDisplayBuffer(viewId);
+    buffer->m_image =
+        neutu::vis2d::GetSlice(*stack, stack->getOffset().getZ());
+
+    ZSliceViewTransform t = getHelper()->getCanvasTransform(
+          axis, ap, stack->width(), stack->height(), zoom);
+
+    buffer->m_imageCanvas.setTransform(t);
+    updateContrast();
+
+#ifdef _DEBUG_2
+        std::cout << "Saving image canvas ..." << std::endl;
+        m_image.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
   }
 
 //  std::cout << "Grayscale udpating time: " << timer.elapsed() << std::endl;
@@ -202,15 +215,16 @@ void ZDvidGraySlice::updateImage(const ZStack *stack)
   m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 }
+#endif
 
-void ZDvidGraySlice::saveImage(const std::string &path)
+void ZDvidGraySlice::saveImage(const std::string &path, int viewId)
 {
-  m_image.save(path.c_str());
+  getImage(viewId).save(path.c_str());
 }
 
-void ZDvidGraySlice::savePixmap(const std::string &path)
+void ZDvidGraySlice::savePixmap(const std::string &path, int viewId)
 {
-  m_pixmap.save(path.c_str());
+  getImageCanvas(viewId).save(path.c_str());
 }
 
 #if 0
@@ -238,6 +252,7 @@ void ZDvidGraySlice::updateImage()
 }
 #endif
 
+#if 0
 void ZDvidGraySlice::updatePixmap()
 {
   if (!isPixmapValid()) {
@@ -245,7 +260,7 @@ void ZDvidGraySlice::updatePixmap()
     m_pixmap.convertFromImage(m_image);
     double scale = 1.0 / getScale();
     m_pixmap.setScale(scale, scale);
-    m_pixmap.setOffset(-getX(), -getY());
+//    m_pixmap.setOffset(-getX(), -getY());
     validatePixmap();
 
 #ifdef _DEBUG_2
@@ -259,17 +274,39 @@ void ZDvidGraySlice::updatePixmap()
 #endif
   }
 }
+#endif
 
-ZStackViewParam ZDvidGraySlice::getViewParam() const
+void ZDvidGraySlice::forEachViewParam(
+    std::function<void (const ZStackViewParam &)> f)
 {
-  return getHelper()->getViewParam();
+  getHelper()->forEachViewParam(f);
 }
 
+/*
+ZStackViewParam ZDvidGraySlice::getViewParam(int viewId) const
+{
+  return getHelper()->getViewParamLastUpdate(viewId);
+}
+*/
+
+ZIntCuboid ZDvidGraySlice::getDataRange() const
+{
+  return getHelper()->getDataRange();
+}
+
+void ZDvidGraySlice::trackViewParam(const ZStackViewParam &viewParam)
+{
+  getHelper()->setViewParamActive(viewParam);
+}
+
+/*
 QRect ZDvidGraySlice::getViewPort() const
 {
   return getHelper()->getViewPort();
 }
+*/
 
+#if 0
 void ZDvidGraySlice::setBoundBox(const ZRect2d &rect)
 {
   getHelper()->setBoundBox(rect);
@@ -278,7 +315,7 @@ void ZDvidGraySlice::setBoundBox(const ZRect2d &rect)
         QRect(rect.getX0(), rect.getY0(), rect.getWidth(), rect.getHeight()));
         */
 }
-
+#endif
 #if 0
 bool ZDvidGraySlice::isRegionConsistent() const
 {
@@ -288,37 +325,22 @@ bool ZDvidGraySlice::isRegionConsistent() const
 }
 #endif
 
-void ZDvidGraySlice::update(int z)
+bool ZDvidGraySlice::highResUpdateNeeded(int viewId) const
 {
-  if (getZ() != z) {
-//    ZStackViewParam viewParam = m_currentViewParam;
-    ZStackViewParam viewParam = getViewParam();
-    viewParam.moveSlice(z - viewParam.getZ());
-    forceUpdate(viewParam);
-//    m_currentViewParam.setZ(z);
-//    updateImage();
-  }
+  return getHelper()->highResUpdateNeeded(viewId);
 }
 
-/*
-bool ZDvidGraySlice::validateSize(int *width, int *height)
+void ZDvidGraySlice::processHighResParam(
+    int viewId,
+    std::function<void(
+      const ZStackViewParam &/*viewParam*/, int /*zoom*/,
+      int /*centerCutX*/, int /*centerCutY*/,
+      bool /*usingCenterCut*/)> f) const
 {
-  bool changed = false;
-
-  int area = (*width) * (*height);
-  if (area > m_maxWidth * m_maxHeight) {
-    if (*width > m_maxWidth) {
-      *width = m_maxWidth;
-    }
-    if (*height > m_maxHeight) {
-      *height = m_maxHeight;
-    }
-    changed = true;
-  }
-
-  return changed;
+  f(getHelper()->getViewParamActive(viewId),
+    getHelper()->getHighresZoom(
+      viewId, ZDvidDataSliceHelper::EViewParamOption::ACTIVE), 0, 0, false);
 }
-*/
 
 template<typename T>
 int ZDvidGraySlice::updateParam(T *param)
@@ -337,19 +359,21 @@ int ZDvidGraySlice::updateParam(T *param)
 
 bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
 {
+  /*
   if (viewParam.getSliceAxis() != getSliceAxis()) {
     return false;
   }
+  */
 
-  if (viewParam.getViewPort().isEmpty()) {
+  if (viewParam.isViewportEmpty()) {
     return false;
   }
 
   bool updated = false;
 
-  ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
-  if (getHelper()->hasNewView(newViewParam)) {
-    forceUpdate(newViewParam);
+//  ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
+  if (getHelper()->hasNewView(viewParam)) {
+    forceUpdate(viewParam);
     updated = true;
   }
 
@@ -378,75 +402,28 @@ bool ZDvidGraySlice::update(const ZArbSliceViewParam &viewParam)
 }
 */
 
+/*
 void ZDvidGraySlice::setZoom(int zoom)
 {
   getHelper()->setZoom(zoom);
 //  m_zoom = zoom;
 }
+*/
 
 void ZDvidGraySlice::setContrastProtocol(const ZContrastProtocol &cp)
 {
   m_contrastProtocol = cp;
 }
 
-int ZDvidGraySlice::getScale() const
+int ZDvidGraySlice::getActiveScale(int viewId) const
 {
-  return getHelper()->getScale();
+  return getHelper()->getScale(
+        viewId, ZDvidDataSliceHelper::EViewParamOption::ACTIVE);
 }
 
 void ZDvidGraySlice::setCenterCut(int width, int height)
 {
   getHelper()->setCenterCut(width, height);
-}
-
-void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
-{
-  ZIntCuboid box;
-  box.setFirstCorner(viewPort.left(), viewPort.top(), z);
-  box.setSize(viewPort.width(), viewPort.height(), 1);
-
-  int cx = getHelper()->getCenterCutWidth();
-  int cy = getHelper()->getCenterCutHeight();
-//  int z = box.getFirstCorner().getZ();
-
-
-  ZStack *stack = NULL;
-
-  if (getSliceAxis() == neutu::EAxis::Z) {
-    int zoom = getZoom();
-    if (hasLowresRegion()) {
-      ++zoom;
-    }
-
-    int scale = zgeom::GetZoomScale(zoom);
-    int remain = z % scale;
-    stack = getDvidReader().readGrayScaleLowtis(
-          box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-          z, box.getWidth(), box.getHeight(),
-          getZoom(), cx, cy, true);
-    if (scale > 1) {
-      if (remain > 0) {
-        //        int z1 = z + scale - remain;
-        int z1 = z - remain + scale;
-        ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              z1, box.getWidth(), box.getHeight(), getZoom(), cx, cy,
-              true);
-        //        double lambda = double(remain) / scale;
-        ZStackProcessor::IntepolateFovia(
-              stack, stack2, cx, cy, scale, z, z1, z, stack);
-        //        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
-        delete stack2;
-      }
-    }
-
-    getHelper()->setActualQuality(
-          getZoom(), cx, cy, true);
-  }
-
-  updateImage(stack);
-
-  delete stack;
 }
 
 bool ZDvidGraySlice::containedIn(
@@ -466,91 +443,117 @@ bool ZDvidGraySlice::consume(
   if (stack != NULL) {
     if (containedIn(viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
 //      getHelper()->setZoom(zoom);
-      getHelper()->setActualQuality(zoom, centerCutX, centerCutY, usingCenterCut);
-      getHelper()->setViewParam(viewParam);
+      getHelper()->setActualQuality(
+            zoom, centerCutX, centerCutY, usingCenterCut, viewParam.getViewId());
+//      getHelper()->setViewParam(viewParam);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
-      updateImage(stack);
+//      ZAffineRect rect = viewParam.getIntCutRect(
+//            getHelper()->getDataRange(), centerCutX, centerCutY, usingCenterCut);
+//      updateImage(stack, viewParam.getSliceAxis(), rect.getAffinePlane(),
+//                  zoom, viewParam.getViewId());
+      updateImage(stack, viewParam, zoom, centerCutX, centerCutY, usingCenterCut);
+#ifdef _DEBUG_2
+      std::cout << "Saving image canvas ..." << std::endl;
+      m_imageCanvas.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
+
       succ = true;
-    } else {
-      delete stack;
     }
+
+    delete stack;
   }
   return succ;
 }
 
-ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
+ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc, int viewId)
 {
-  ZDvidGraySliceHighresTask *task = NULL;
+  ZDvidGraySliceHighresTask *task = nullptr;
   const int maxSize = 1024*1024;
-  if (getHelper()->needHighResUpdate()
-      && getHelper()->getViewDataSize() < maxSize) {
+  if (getHelper()->highResUpdateNeeded(viewId)
+      && getHelper()->getViewDataSize(
+        viewId, ZDvidDataSliceHelper::EViewParamOption::ACTIVE) < maxSize) {
     task = new ZDvidGraySliceHighresTask;
-    task->setViewParam(getHelper()->getViewParam());
-    task->setZoom(getHelper()->getZoom());
-    task->useCenterCut(false);
-    task->setDelay(100);
+    task->setViewId(viewId);
+//    task->setViewParam(getHelper()->getViewParamActive(viewId));
+//    task->setZoom(getHelper()->getHighresZoom(viewId));
+//    task->useCenterCut(false);
+    task->setDelay(50);
     task->setDoc(doc);
     task->setHandle(getSource());
+    task->setName(QString("%1-%2").arg(this->getSource().c_str()).arg(viewId));
   }
 
   return task;
 }
 
+void ZDvidGraySlice::_forceUpdate(const ZStackViewParam &viewParam)
+{
+  forceUpdate(viewParam);
+}
+
 void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 {
+  /*
   if (viewParam.getSliceAxis() != m_sliceAxis) {
     return;
   }
+  */
 
-  if (m_sliceAxis != neutu::EAxis::Z && m_sliceAxis != neutu::EAxis::ARB) {
-    return;
-  }
-
-  if (isVisible()) {
-    setZoom(viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom()));
-//    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
-    if (m_sliceAxis == neutu::EAxis::Z) {
-      QRect viewPort = viewParam.getViewPort();
-      forceUpdate(viewPort, viewParam.getZ());
-    } else if (m_sliceAxis == neutu::EAxis::ARB) {
-//      setZoom(0); //Temporary fix for the crashing problem in grayscale retrieval
-      forceUpdate(viewParam.getSliceViewParam());
-      //Align the image with the view port, which is used by the painter
-      m_image.setOffset(viewParam.getViewPort().left(),
-                        viewParam.getViewPort().top());
-    }
-  } else {
-    invalidatePixmap();
-  }
-
-  getHelper()->setViewParam(viewParam);
-//  m_currentViewParam = viewParam;
-}
-
-void ZDvidGraySlice::forceUpdate(const ZArbSliceViewParam &viewParam)
-{
-  if (m_sliceAxis != neutu::EAxis::ARB || !viewParam.isValid()) {
-    return;
-  }
+  getHelper()->setViewParamLastUpdate(viewParam);
+//  setZoom(viewParam.getZoomLevel());
 
   if (isVisible()) {
-//    m_zoom = 0;
-#ifdef _DEBUG_
-    std::cout << "Gray center: " << viewParam.getCenter().toString() << std::endl;
+    ZAffineRect rect = getHelper()->getIntCutRect(
+          viewParam.getViewId(),
+          ZDvidDataSliceHelper::EViewParamOption::LAST_UPDATE);
+    int zoom = getHelper()->getZoom(
+          viewParam.getViewId(),
+          ZDvidDataSliceHelper::EViewParamOption::LAST_UPDATE);
+
+    if (!rect.isEmpty()) {
+      int cx = getHelper()->getCenterCutWidth();
+      int cy = getHelper()->getCenterCutHeight();
+#if 1
+      ZStack *stack = getDvidReader().readGrayScaleLowtis(
+            rect, zoom, cx, cy, getHelper()->usingCenterCut());
+      if (stack) {
+#if 1
+        int scale = zgeom::GetZoomScale(zoom);
+        if (scale > 1) {
+          ZPoint normal = rect.getAffinePlane().getNormal();
+          if (normal == ZPoint(0, 0, 1)) {
+            int z = int(normal.dot(rect.getCenter()));
+            int remain = z % scale;
+            if (remain > 0) {
+              int z1 = z - remain + scale;
+              ZAffineRect rect2 = rect;
+              rect2.translateDepth(scale - remain);
+              ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
+                    rect2, zoom, cx, cy, getHelper()->usingCenterCut());
+              ZStackProcessor::InterpolateFovia(
+                    stack, stack2, cx, cy, scale * 2, z, z1, z, stack);
+              delete stack2;
+            }
+          }
+        }
+
+        getHelper()->setActualQuality(
+              zoom, getHelper()->getCenterCutWidth(),
+              getHelper()->getCenterCutHeight(), true, viewParam.getViewId());
+        updateImage(
+              stack, viewParam, zoom, cx, cy, getHelper()->usingCenterCut());
+//        updateImage(
+//              stack, viewParam.getSliceAxis(), rect.getAffinePlane(),
+//              getHelper()->getZoom(), viewParam.getViewId());
 #endif
-
-    ZStack *stack = getDvidReader().readGrayScaleLowtis(
-          viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
-          viewParam.getWidth(), viewParam.getHeight(),
-          getZoom(), getHelper()->getCenterCutWidth(),
-          getHelper()->getCenterCutHeight(), true);
-    getHelper()->setActualQuality(
-          getZoom(), getHelper()->getCenterCutWidth(),
-          getHelper()->getCenterCutHeight(), true);
-    updateImage(stack);
-    delete stack;
-  } else {
-    invalidatePixmap();
+#ifdef _DEBUG_2
+        std::cout << "Saving stack" << std::endl;
+        stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+        delete stack;
+      }
+#endif
+    }
   }
 }
 
@@ -558,10 +561,12 @@ void ZDvidGraySlice::printInfo() const
 {
   std::cout << "Dvid grayscale: " << std::endl;
 //  m_res.print();
-  std::cout << "Offset: " << getX() << ", " << getY() << ", " << getZ() << std::endl;
-  std::cout << "Size: " << m_image.width() << " x " << m_image.height()
-            << std::endl;
-
+//  std::cout << "Offset: " << getX() << ", " << getY() << ", " << getZ() << std::endl;
+  std::lock_guard<std::mutex> guard(m_displayBufferMutex);
+  for (const auto &buffer : m_displayBufferMap) {
+    std::cout << "Size: " << buffer.second->m_imageCanvas.getWidth() << " x "
+              << buffer.second->m_imageCanvas.getHeight() << std::endl;
+  }
 }
 
 void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
@@ -572,14 +577,9 @@ void ZDvidGraySlice::setDvidTarget(const ZDvidTarget &target)
   } else {
     getHelper()->updateMaxZoom();
   }
-//  m_dvidTarget = target;
-//  getDvidReader().open(target);
 }
 
-ZRect2d ZDvidGraySlice::getBoundBox() const
+ZCuboid ZDvidGraySlice::getBoundBox(int viewId) const
 {
-  ZRect2d rect;
-  rect.set(getX(), getY(), getWidth(), getHeight());
-
-  return rect;
+  return ZCuboid::FromIntCuboid(getHelper()->getBoundBox(viewId));
 }

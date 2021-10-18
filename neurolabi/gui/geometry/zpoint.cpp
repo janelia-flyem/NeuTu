@@ -10,15 +10,20 @@
 #include <QPainter>
 #endif
 
+#include "neulib/math/utilities.h"
+
 #include "tz_geo3d_utils.h"
 #include "tz_coordinate_3d.h"
 #include "tz_geo3d_utils.h"
 
+#include "neulib/math/utilities.h"
 #include "common/math.h"
 #include "zintpoint.h"
 #include "zgeometry.h"
 
 const double ZPoint::MIN_DIST = 1e-5;
+const ZPoint ZPoint::INVALID_POINT = ZPoint::InvalidPoint();
+const ZPoint ZPoint::ORIGIN = ZPoint(0, 0, 0);
 
 ZPoint::ZPoint()
 {
@@ -68,6 +73,20 @@ void ZPoint::load(const char *filePath)
   UNUSED_PARAMETER(filePath);
 }
 */
+
+double ZPoint::distanceSquareTo(const ZPoint &pt) const
+{
+  return distanceSquareTo(pt.getX(), pt.getY(), pt.getZ());
+}
+
+double ZPoint::distanceSquareTo(double x, double y, double z) const
+{
+  double dx = m_x - x;
+  double dy  = m_y - y;
+  double dz = m_z - z;
+
+  return dx * dx + dy * dy + dz * dz;
+}
 
 double ZPoint::distanceTo(const ZPoint &pt) const
 {
@@ -382,7 +401,34 @@ ZPoint ZPoint::operator - () const
 
 ZIntPoint ZPoint::toIntPoint() const
 {
-  return ZIntPoint(neutu::iround(x()), neutu::iround(y()), neutu::iround(z()));
+  return ZIntPoint(
+        neulib::ifloor(x()), neulib::ifloor(y()), neulib::ifloor(z()));
+}
+
+ZPoint ZPoint::rounded() const
+{
+  return ZPoint(neutu::nround(x()), neutu::nround(y()), neutu::nround(z()));
+}
+
+bool ZPoint::hasIntCoord() const
+{
+  return (std::ceil(getX()) == getX()) && (std::ceil(getY()) == getY()) &&
+      (std::ceil(getZ()) == getZ());
+}
+
+std::vector<double> ZPoint::toArray() const
+{
+  return std::vector<double>({m_x, m_y, m_z});
+}
+
+void ZPoint::flipZ()
+{
+  m_z = -m_z;
+}
+
+ZIntPoint ZPoint::roundToIntPoint() const
+{
+  return ZIntPoint(neulib::nround(x()), neulib::nround(y()), neulib::nround(z()));
 }
 
 void ZPoint::rotate(double theta, double psi)
@@ -420,15 +466,15 @@ bool ZPoint::operator <(const ZPoint &pt) const
 
 void ZPoint::shiftSliceAxis(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
 void ZPoint::shiftSliceAxisInverse(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
-double ZPoint::getSliceCoord(neutu::EAxis axis) const
+double ZPoint::getValue(neutu::EAxis axis) const
 {
   switch (axis) {
   case neutu::EAxis::X:
@@ -442,6 +488,48 @@ double ZPoint::getSliceCoord(neutu::EAxis axis) const
   }
 
   return m_z;
+}
+
+void ZPoint::setValue(double v, neutu::EAxis axis)
+{
+  switch (axis) {
+  case neutu::EAxis::X:
+    m_x = v;
+    break;
+  case neutu::EAxis::Y:
+    m_y = v;
+    break;
+  case neutu::EAxis::Z:
+    m_z = v;
+    break;
+  case neutu::EAxis::ARB:
+    set(v, v, v);
+    break;
+  }
+}
+
+bool ZPoint::isValid() const
+{
+  return std::isnan(m_x) == false;
+}
+
+bool ZPoint::onAxis() const
+{
+  return (m_x == 0.0 && m_y == 0.0 && m_z != 0.0) ||
+      (m_x == 0.0 && m_y == 1.0 && m_z == 0.0) ||
+      (m_x == 1.0 && m_y == 0.0 && m_z == 0.0);
+}
+
+void ZPoint::invalidate()
+{
+  m_x = std::numeric_limits<double>::quiet_NaN();
+}
+
+ZPoint ZPoint::InvalidPoint()
+{
+  ZPoint pt;
+  pt.invalidate();
+  return pt;
 }
 
 std::ostream &operator<<(std::ostream &stream, const ZPoint &pt)

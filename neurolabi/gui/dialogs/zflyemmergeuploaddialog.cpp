@@ -22,3 +22,8 @@ bool ZFlyEmMergeUploadDialog::mergingToLargest() const
 {
   return ui->mergeCheckBox->isChecked();
 }
+
+bool ZFlyEmMergeUploadDialog::mergingToHighestStatus() const
+{
+  return ui->statusCheckBox->isChecked();
+}

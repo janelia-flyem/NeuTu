@@ -55,7 +55,27 @@ void ZFlyEmBodyConfig::decDsLevel()
 //    return false;
 //  }
 
-  --m_dsLevel;
+  if (m_nextDsLevel >= 0) {
+    m_dsLevel = m_nextDsLevel;
+    m_nextDsLevel = -1;
+  } else if (m_nextDsLevel == -1) {
+    --m_dsLevel;
+  }
+}
+
+void ZFlyEmBodyConfig::disableNextDsLevel()
+{
+  setNextDsLevel(-2);
+}
+
+void ZFlyEmBodyConfig::setNextDsLevel(int level)
+{
+  m_nextDsLevel = level;
+}
+
+bool ZFlyEmBodyConfig::hasNextDsLevel(int minLevel) const
+{
+  return (m_dsLevel > minLevel) && (m_nextDsLevel >= -1);
 }
 
 ZIntCuboid ZFlyEmBodyConfig::getRange() const
@@ -65,7 +85,7 @@ ZIntCuboid ZFlyEmBodyConfig::getRange() const
 
 bool ZFlyEmBodyConfig::isTar() const
 {
-  return ZFlyEmBodyManager::encodesTar(getBodyId());
+  return ZFlyEmBodyManager::EncodesTar(getBodyId());
 }
 
 bool ZFlyEmBodyConfig::isBodyTar() const
@@ -80,12 +100,12 @@ bool ZFlyEmBodyConfig::isSupervoxelTar() const
 
 int ZFlyEmBodyConfig::getBodyEncodeLevel() const
 {
-  return ZFlyEmBodyManager::encodedLevel(getBodyId());
+  return ZFlyEmBodyManager::EncodedLevel(getBodyId());
 }
 
 uint64_t ZFlyEmBodyConfig::getDecodedBodyId() const
 {
-  return ZFlyEmBodyManager::decode(getBodyId());
+  return ZFlyEmBodyManager::Decode(getBodyId());
 }
 
 neutu::EBodyLabelType ZFlyEmBodyConfig::getLabelType() const
@@ -96,7 +116,7 @@ neutu::EBodyLabelType ZFlyEmBodyConfig::getLabelType() const
 void ZFlyEmBodyConfig::setBodyId(uint64_t bodyId)
 {
   m_bodyId = bodyId;
-  if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+  if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
     m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
   }
 }

@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "common/utilities.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
@@ -142,6 +143,11 @@ double ZResolution::getUnitVoxelSize(EUnit unit) const
 double ZResolution::getVoxelSize(neutu::EAxis axis, EUnit unit) const
 {
   return m_voxelSize[neutu::EnumValue(axis)] * getUnitVoxelSize(unit);
+}
+
+ZPoint ZResolution::getVoxelDims(EUnit unit) const
+{
+  return m_voxelSize * getUnitVoxelSize(unit);
 }
 
 double ZResolution::getPlaneVoxelSize(neutu::EPlane plane) const

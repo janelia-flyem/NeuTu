@@ -6,7 +6,7 @@
 #include <QBitmap>
 #include <QFutureWatcher>
 
-#include "zsttransform.h"
+#include "vis2d/zsttransform.h"
 #include "neutube.h"
 
 class ZStack;
@@ -27,6 +27,7 @@ public:
   const ZStTransform& getProjTransform() const;
   ZStTransform& getProjTransform();
   void updateProjTransform(const QRect &viewPort, const QRectF &newProjRegion);
+  void setProjTransform(const ZStTransform &transform);
 
   void cleanUp();
   void clean(const QRect &rect);

@@ -1,11 +1,13 @@
 #ifndef ZPAINTBUNDLE_H
 #define ZPAINTBUNDLE_H
 
+#include <memory>
 #include <QList>
+#include <QMutex>
 
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-#include <boost/utility/enable_if.hpp>
+//#include <boost/iterator/iterator_facade.hpp>
+//#include <boost/type_traits/is_convertible.hpp>
+//#include <boost/utility/enable_if.hpp>
 
 #include "common/neutudefs.h"
 #include "swctreenode.h"
@@ -15,7 +17,11 @@
 #include "zswctree.h"
 #include "geometry/zintpoint.h"
 #include "zstackobjectsourcefactory.h"
+#include "data3d/displayconfig.h"
+#include "data3d/zsliceviewtransform.h"
+//#include "zstackviewparam.h"
 
+#if 0
 namespace impl {
 
 // note: dereference of this iterator return a pointer to [const] ZStackObject
@@ -46,15 +52,16 @@ public:
       if (pos == Begin) {
         m_listIdx = 0;
 //        m_swcNodeIter = m_bundle->m_swcNodes->begin();
-        while (m_listIdx < m_bundle->m_objLists.size() &&
-               m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+        while (m_listIdx < 1 &&
+               m_drawableIdx >= m_bundle->m_objList.size()) {
           ++m_listIdx;
         }
-        if (m_listIdx == m_bundle->m_objLists.size()) {
+//        if (m_listIdx == m_bundle->m_objLists.size()) {
 //          setSwcNodeAdaptor();
-        }
+//        }
       } else if (pos == End) {
-        m_listIdx = m_bundle->m_objLists.size();
+//        m_listIdx = m_bundle->m_objLists.size();
+        m_listIdx = 1;
 //        m_swcNodeIter = m_bundle->m_swcNodes->end();
       }
     }
@@ -80,8 +87,6 @@ private:
     return this->m_bundle == other.m_bundle &&
         this->m_listIdx == other.m_listIdx &&
         this->m_drawableIdx == other.m_drawableIdx;
-//    &&
-//        this->m_swcNodeIter == other.m_swcNodeIter;
   }
 
   void increment()
@@ -89,61 +94,28 @@ private:
     if (!m_bundle) {
       return;
     }
-    if (m_listIdx < m_bundle->m_objLists.size()) {
-      if (++m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+    if (m_listIdx < 1) {
+      if (++m_drawableIdx >= m_bundle->m_objList.size()) {
         ++m_listIdx;
         m_drawableIdx = 0;
-        while (m_listIdx < m_bundle->m_objLists.size() &&
-               m_drawableIdx >= m_bundle->m_objLists[m_listIdx]->size()) {
+        while (m_listIdx < 1 &&
+               m_drawableIdx >= m_bundle->m_objList.size()) {
           ++m_listIdx;
         }
-        if (m_listIdx == m_bundle->m_objLists.size()) { // move out of list, return first item of node set
+//        if (m_listIdx == 1) { // move out of list, return first item of node set
 //          setSwcNodeAdaptor();
-        }
+//        }
       }
-    }/* else if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // inside node set, move to next
-      ++m_swcNodeIter;
-      setSwcNodeAdaptor();
-    }*/
+    }
   }
 
   TStackDrawablePtr dereference() const
   {
-    return m_listIdx < m_bundle->m_objLists.size() ?
-          m_bundle->m_objLists[m_listIdx]->at(m_drawableIdx) :
+    return m_listIdx < 1 ?
+          m_bundle->m_objList.at(m_drawableIdx) :
           dynamic_cast<TStackDrawablePtr>(&m_nodeAdaptor);
   }
 
-#if 0
-  void setSwcNodeAdaptor()
-  {
-    if (m_swcNodeIter != m_bundle->m_swcNodes->end()) { // update ZCircle
-      /*
-      if ((iround(SwcTreeNode::z(*m_swcNodeIter)) ==
-           m_bundle->m_sliceIndex + m_bundle->getStackOffset().getZ()) ||
-          (m_bundle->m_sliceIndex == -1)) {
-        m_nodeAdaptor.setColor(255, 255, 0);
-      } else {
-        m_nodeAdaptor.setColor(164, 164, 0);
-      }
-      */
-      m_nodeAdaptor.set(SwcTreeNode::x(*m_swcNodeIter), SwcTreeNode::y(*m_swcNodeIter),
-                        SwcTreeNode::z(*m_swcNodeIter), SwcTreeNode::radius(*m_swcNodeIter));
-
-      m_nodeAdaptor.setColor(255, 255, 0);
-      m_nodeAdaptor.setSelected(true);
-      /*
-      m_nodeAdaptor.setVisualEffect(ZStackBall::VE_BOUND_BOX |
-                                    ZStackBall::VE_DASH_PATTERN |
-                                    ZStackBall::VE_NO_FILL);
-                                    */
-      m_nodeAdaptor.useCosmeticPen(
-            ZSwcTree::getHostState(*m_swcNodeIter, ZSwcTree::NODE_STATE_COSMETIC));
-      m_nodeAdaptor.setSource(ZStackObjectSourceFactory::MakeNodeAdaptorSource());
-//      m_nodeAdaptor.setSource(ZStackObject::getNodeAdapterId());
-    }
-  }
-#endif
   TPaintBundle* m_bundle;
   int m_listIdx;
   int m_drawableIdx;
@@ -153,46 +125,49 @@ private:
 };
 
 } // namespace impl
+#endif
+
 
 class ZPaintBundle
 {
 public:
-  typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
-  typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
+//  typedef impl::drawable_iter<ZPaintBundle, ZStackObject*> iterator;
+//  typedef impl::drawable_iter<ZPaintBundle const, const ZStackObject*> const_iterator;
 
-  ZPaintBundle(neutu::EAxis sliceAxis = neutu::EAxis::Z);
+  ZPaintBundle();
+  ~ZPaintBundle();
 
-  inline const_iterator begin() const { return const_iterator(this, const_iterator::Begin); }
-  inline const_iterator end() const { return const_iterator(this, const_iterator::End); }
+//  inline const_iterator begin() const { return const_iterator(this, const_iterator::Begin); }
+//  inline const_iterator end() const { return const_iterator(this, const_iterator::End); }
 
-  inline iterator begin() { return iterator(this, iterator::Begin); }
-  inline iterator end() { return iterator(this, iterator::End); }
+//  inline iterator begin() { return iterator(this, iterator::Begin); }
+//  inline iterator end() { return iterator(this, iterator::End); }
 
-  inline void clearAllDrawableLists() {
-    m_objLists.clear();
-    m_otherDrawables.clear();
-    m_objLists.push_back(&m_otherDrawables);
-  }
+  void clearAllDrawableLists();
 
-  inline void addDrawable(ZStackObject* obj) { if (obj) m_otherDrawables.push_back(obj); }
-  inline void removeDrawable(ZStackObject* obj) { m_otherDrawables.removeAll(obj); }
-  inline void addDrawableList(const QList<ZStackObject*>* lst) { if (lst) m_objLists.push_back(lst); }
-  inline void removeDrawableList(const QList<ZStackObject*>* lst) { m_objLists.removeAll(lst); }
+  void addDrawableList(const QList<ZStackObject*>& lst);
 
-//  inline void setSwcNodeList(const std::set<Swc_Tree_Node*>* lst) { if (lst) m_swcNodes = lst; }
-//  inline void unsetSwcNodeList() { m_swcNodes = &m_emptyNodeSet; }
+  void addWidgetObject(ZStackObject *obj);
+  void clearDynamicObjectList();
 
-  inline void setSliceIndex(int idx) { m_sliceIndex = idx; }
-  inline int sliceIndex() const { return m_sliceIndex; }
+  void setSliceViewTransform(const ZSliceViewTransform &t);
 
-  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
+//  inline int sliceIndex() const { return m_viewParam.getSliceIndex(); }
+//  void setViewParam(const ZStackViewParam &param);
 
+  neutu::EAxis getSliceAxis() const;
+
+  /*
   inline int getZ() const {
-    return m_sliceIndex + m_stackOffset.getZ();//.getSliceCoord(m_sliceAxis);
+    return m_viewParam.getZ();
   }
+  */
 
-  inline void setDisplayStyle(ZStackObject::EDisplayStyle style) { m_style = style; }
-  inline ZStackObject::EDisplayStyle displayStyle() const { return m_style; }
+  void setDisplayStyle(ZStackObject::EDisplayStyle style);
+  ZStackObject::EDisplayStyle getDisplayStyle() const;
+
+  void setDisplaySliceMode(neutu::data3d::EDisplaySliceMode mode);
+  neutu::data3d::EDisplaySliceMode getDisplaySliceMode() const;
 
   inline void setStackOffset(int x, int y, int z) {
     m_stackOffset.set(x, y, z);
@@ -201,24 +176,31 @@ public:
     m_stackOffset = offset;
   }
 
+  /*
   inline const ZIntPoint& getStackOffset() const {
     return m_stackOffset;
   }
+  */
 
+  QList<ZStackObject*> getVisibleObjectList(neutu::data3d::ETarget target) const;
+  QList<std::shared_ptr<ZStackObject> > getVisibleWidgetObjectList() const;
+//  void alignToCutPlane(const QList<std::shared_ptr<ZStackObject>> &objList) const;
+  bool hasWidgetObject() const;
 
 private:
-  template<typename T1, typename T2> friend class impl::drawable_iter;
+//  template<typename T1, typename T2> friend class impl::drawable_iter;
 
-  QList<const QList<ZStackObject*>*> m_objLists;
-//  const std::set<Swc_Tree_Node*>* m_swcNodes;
-  int m_sliceIndex;
-  ZStackObject::EDisplayStyle m_style;
+  QList<ZStackObject*> m_objList;
 
-  QList<ZStackObject*> m_otherDrawables; // collect single input
-//  std::set<Swc_Tree_Node*> m_emptyNodeSet; // make sure m_swcNodes always point to something
+  QList<std::shared_ptr<ZStackObject>> m_widgetObjectList; //Dynamically changing object; owned by the painter itself
+  mutable QMutex m_widgetObjectListMutex;
 
+  neutu::data3d::DisplayConfig m_displayConfig;
+//  ZStackObject::EDisplayStyle m_style;
+//  ZSliceViewTransform m_sliceViewTransform;
+//  ZStackViewParam m_viewParam;
   ZIntPoint m_stackOffset;
-  neutu::EAxis m_sliceAxis;
+//  neutu::data3d::ETarget m_target = neutu::data3d::ETarget::WIDGET;
 };
 
 #endif // ZPAINTBUNDLE_H

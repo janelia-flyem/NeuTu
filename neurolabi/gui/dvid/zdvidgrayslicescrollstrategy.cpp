@@ -11,8 +11,8 @@ ZDvidGraySliceScrollStrategy::ZDvidGraySliceScrollStrategy(ZStackView *view) :
 int ZDvidGraySliceScrollStrategy::scroll(int slice, int step) const
 {
   if (m_graySlice != NULL) {
-    if (m_graySlice->hasLowresRegion()) {
-      int scale = m_graySlice->getScale() * 2;
+    if (m_graySlice->hasLowresRegion(getViewId())) {
+      int scale = m_graySlice->getActiveScale(getViewId()) * 2;
       int newSlice = (slice / scale + step) * scale;
       return getValidSlice(newSlice);
     }

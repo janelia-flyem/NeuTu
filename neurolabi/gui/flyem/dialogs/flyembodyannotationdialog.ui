@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>524</width>
-    <height>586</height>
+    <height>619</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
      <item>
       <widget class="QLabel" name="bodyIdLabel">
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -46,14 +46,14 @@
      <item>
       <widget class="QLabel" name="namingUserLabel">
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="userLabel">
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -201,12 +201,26 @@
        <item>
         <widget class="QLabel" name="primaryNeuritelabel">
          <property name="text">
-          <string>Primary neurite:</string>
+          <string>Cell body fiber:</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLineEdit" name="primaryNeuriteLineEdit"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_17">
+       <item>
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>hemilineage</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="hemilineageEdit"/>
        </item>
       </layout>
      </item>
@@ -222,7 +236,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="somaGroupBox">
        <property name="title">
         <string>Soma</string>
        </property>
@@ -325,7 +339,7 @@
        <item>
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Synonym:</string>
+          <string>Notes:</string>
          </property>
         </widget>
        </item>

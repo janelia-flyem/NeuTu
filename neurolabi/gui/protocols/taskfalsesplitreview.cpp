@@ -615,7 +615,7 @@ bool TaskFalseSplitReview::loadSpecific(QJsonObject json)
     return false;
   }
 
-  m_visibleBodies.insert(ZFlyEmBodyManager::encode(m_bodyId, 0));
+  m_visibleBodies.insert(ZFlyEmBodyManager::Encode(m_bodyId, 0));
 
   return true;
 }

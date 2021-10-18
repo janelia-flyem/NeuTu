@@ -11,7 +11,7 @@
 #endif
 
 #include "geometry/zpoint.h"
-#include "zsttransform.h"
+#include "vis2d/zsttransform.h"
 
 class ZIntPoint;
 class ZImage;
@@ -65,11 +65,13 @@ public:
   void setStackOffset(const ZPoint &offset);
   void setZOffset(int z);
 
-  inline int getZOffset() { return m_z; }
+  inline int getZOffset() const { return m_z; }
 
-  inline int getZ(int slice) {
+  inline int getZ(int slice) const {
     return getZOffset() + slice;
   }
+
+//  int getSlice(int z) const;
 
   void setPainted(bool painted) {
     m_isPainted = painted;
@@ -113,6 +115,7 @@ public:
   void drawPixmap(int x, int y, const ZPixmap &image);
   //ignore transformation
   void drawPixmapNt(const ZPixmap &image);
+//  void drawPixmapNt(const QRectF &targetRect, const ZPixmap &image);
 
   void drawPixmap(const ZPixmap &image);
 
@@ -153,6 +156,9 @@ public:
   void drawLine(const QPointF &pt1, const QPointF &pt2);
   void drawLines(const QLine *lines, int lineCount);
   void drawLines(const std::vector<QLine> &lineArray);
+  void drawLines(
+      const std::vector<QLine> &lineArray, double x0, double y0,
+      int width, int height, double xScale, double yScale);
 
   void drawEllipse(const QRectF & rectangle);
   void drawEllipse(const QRect & rectangle);
@@ -185,6 +191,7 @@ public:
   void fillRect(const QRect &r, const QBrush &brush);
   void setOpacity(double alpha);
   void setCanvasRange(const QRectF &r) { m_canvasRange = r; }
+  void normalizeCanvasRange();
 
   bool isVisible(const QRectF &rect) const;
   bool isVisible(const QRect &rect) const;
@@ -193,6 +200,7 @@ public:
   QRectF getCanvasRange() const;
 #endif
 
+  double getScale(neutu::EAxis axis) const;
   /*
   const QRect& getFieldOfView() const {
     return m_projRegion;

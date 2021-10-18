@@ -4,6 +4,7 @@
 #include "z3dgl.h"
 
 #include <vector>
+#include <memory>
 #include <vtkSmartPointer.h>
 
 #include "zbbox.h"
@@ -59,11 +60,11 @@ public:
 
   ZMesh& operator=(ZMesh&&) = default;
 
-  ZMesh(const ZMesh&) = default;
+  ZMesh(const ZMesh&);
 
-  ZMesh& operator=(const ZMesh&) = default;
+  ZMesh& operator=(const ZMesh&);
 
-  void swap(ZMesh& rhs) noexcept;
+//  void swap(ZMesh& rhs) noexcept;
 
 //  virtual const std::string& className() const override;
 
@@ -71,13 +72,21 @@ public:
     return ZStackObject::EType::MESH;
   }
 
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+
+  /*
   virtual void display(
-      ZPainter &, int , EDisplayStyle ,
+      ZPainter &, int , zstackobject::EDisplayStyle ,
       neutu::EAxis ) const override
   {}
+  */
 
 //  void setLabel(uint64_t label) override;
 //  uint64_t getLabel() const;
+
+  ZMesh* clone() const override;
 
   // qt style read write name filter for filedialog
   static bool canReadFile(const QString& filename);
@@ -101,7 +110,7 @@ public:
 
   ZBBox<glm::dvec3> boundBox(const glm::mat4& transform) const;
 
-  ZCuboid getBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
   using ZStackObject::boundBox;
 
@@ -116,7 +125,7 @@ public:
   { return m_vertices; }
 
   void setVertices(const std::vector<glm::vec3>& vertices)
-  { m_vertices = vertices; validateObbTree(false);}
+  { m_vertices = vertices; invalidateCachedProperties();}
 
   std::vector<glm::dvec3> doubleVertices() const;
 
@@ -158,7 +167,7 @@ public:
   { return m_indices; }
 
   void setIndices(const std::vector<GLuint>& indices)
-  { m_indices = indices; validateObbTree(false);}
+  { m_indices = indices; invalidateCachedProperties();}
 
   bool hasIndices() const
   { return !m_indices.empty(); }
@@ -333,11 +342,16 @@ public:
   void scale(double sx, double sy, double sz);
 
   void pushObjectColor();
+  void pushObjectColor(const QColor &color);
 
   std::vector<ZPoint> intersectLineSeg(
       const ZPoint &start, const ZPoint &end) const;
 
   void append(const ZMesh &mesh);
+
+  std::vector<std::shared_ptr<ZMesh>> getSplitMeshList(size_t thre) const;
+
+  void printVertices() const;
 
 private:
   enum class BooleanOperationType
@@ -346,6 +360,8 @@ private:
   };
 
   void appendTriangle(const ZMesh& mesh, const glm::uvec3& triangle);
+  void appendTriangleList(
+      const ZMesh& mesh, const std::vector<glm::uvec3>& triangleList);
 
   double signedVolumeOfTriangle(const glm::vec3& v1,
                                 const glm::vec3& v2,
@@ -392,6 +408,14 @@ private:
 
   vtkSmartPointer<vtkOBBTree> getObbTree() const;
 
+  void invalidateCachedProperties() {
+    validateObbTree(false);
+    m_boundBox.reset();
+    m_splitMeshList.clear();
+//    m_splitCount.clear();
+//    m_splitThreshold = 0;
+  }
+
 private:
   friend class ZMeshIO;
 
@@ -406,7 +430,11 @@ private:
   std::vector<GLuint> m_indices;
 //  uint64_t m_label = 0;
 
+  mutable ZBBox<glm::dvec3> m_boundBox;
   mutable ObbTreeData m_obbTreeData;
+  mutable std::vector<std::shared_ptr<ZMesh>> m_splitMeshList;
+//  mutable std::vector<size_t> m_splitCount;
+//  mutable size_t m_splitThreshold = 0;
 //  mutable bool m_isObbTreeValid = false;
 //  mutable vtkSmartPointer<vtkOBBTree> m_obbTree;
 };

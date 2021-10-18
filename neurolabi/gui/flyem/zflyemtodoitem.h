@@ -19,11 +19,19 @@ public:
    *
    * With a position given, the object is set to a valid type.
    */
-  ZFlyEmToDoItem(const ZIntPoint &pos);
-  ZFlyEmToDoItem(int x, int y, int z);
+  explicit ZFlyEmToDoItem(const ZIntPoint &pos);
+  explicit ZFlyEmToDoItem(int x, int y, int z);
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
+  void display(ZPainter &painter, const DisplayConfig &config) const override;
+  */
+  /*
+  void viewSpaceAlignedDisplay(
+        QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const;
+        */
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::FLYEM_TODO_ITEM;
@@ -61,6 +69,10 @@ private:
       double x, double y, double radius) const;
   static void PaintOutline(
       ZPainter &painter, const QList<std::vector<QPointF>> &outline);
+
+  void viewSpaceAlignedDisplayC(
+        QPainter *painter, const ViewSpaceAlignedDisplayConfig &config,
+        const ZPoint &center) const;
 
 public:
   static const char *KEY_ACTION;

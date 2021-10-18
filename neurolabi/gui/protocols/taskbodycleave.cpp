@@ -1,9 +1,11 @@
 #include "taskbodycleave.h"
 
 #include <iostream>
+#include <exception>
 
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QInputDialog>
@@ -18,6 +20,7 @@
 #include <QNetworkRequest>
 #include <QPixmap>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSlider>
 #include <QTimer>
 #include <QUndoCommand>
@@ -27,6 +30,7 @@
 
 #include "logging/zlog.h"
 #include "logging/utilities.h"
+#include "neutubeconfig.h"
 
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
@@ -34,6 +38,9 @@
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
 #include "zdialogfactory.h"
+#include "zglobal.h"
+
+#include "qt/network/znetworkutils.h"
 
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
@@ -44,6 +51,7 @@
 #include "flyem/logging.h"
 #include "flyem/zflyembodyannotationprotocol.h"
 #include "flyem/flyemdatareader.h"
+#include "flyem/dialogs/flyemcleaveunassigneddialog.h"
 
 namespace {
 
@@ -66,6 +74,9 @@ namespace {
   static const QString CLEAVING_STATUS_FAILED = "Cleaving status: failed";
   static const QString CLEAVING_STATUS_SERVER_WARNINGS = "Cleaving status: server warnings";
   static const QString CLEAVING_STATUS_SERVER_INCOMPLETE = "Cleaving status: omitted meshes";
+
+  static const QString COLOR_SPEC_KEY_AGGLO_ID_COLORS = "agglo ID colors";
+  static const QString SETTINGS_KEY_AGGLO_COLOR_FILEPATH = "cleavingAggloColorFilepath";
 
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
   static const std::vector<glm::vec4> INDEX_COLORS({
@@ -90,6 +101,15 @@ namespace {
     glm::vec4(255, 215, 180, 255) / 255.0f, // coral
     glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
     glm::vec4(128, 128, 128, 255) / 255.0f, // gray
+  });
+
+  static const std::vector<glm::vec4> DEFAULT_AGGLO_INDEX_COLORS({
+    glm::vec4(255, 255, 255, 255) / 255.0f, // white (no index)
+    glm::vec4(  0, 128, 128, 255) / 255.0f, // teal
+    glm::vec4(230, 190, 255, 255) / 255.0f, // lavender
+    glm::vec4(170, 110,  40, 255) / 255.0f, // brown
+    glm::vec4(128,   0,   0, 255) / 255.0f, // maroon
+    glm::vec4(255, 215, 180, 255) / 255.0f, // coral
   });
 
   Z3DMeshFilter *getMeshFilter(ZStackDoc *doc)
@@ -174,6 +194,10 @@ namespace {
   // because it starts when the user presses a button to end task N-1.
 
   static QTime s_startupTimer;
+
+  static std::set<QString> s_warningTextToSuppress;
+
+  static std::vector<glm::vec4> s_aggloIndexColors;
 }
 
 //
@@ -377,7 +401,7 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   auto clean = [](QSet<uint64_t>& s) {
     QList<uint64_t> r;
     foreach (uint64_t id, s) {
-      if (ZFlyEmBodyManager::encodedLevel(id) > 0) r.append(id);
+      if (ZFlyEmBodyManager::EncodedLevel(id) > 0) r.append(id);
     }
     foreach (uint64_t id, r) {
       s.erase(s.find(id));
@@ -394,6 +418,16 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   m_networkManager = new QNetworkAccessManager(m_widget);
   connect(m_networkManager, SIGNAL(finished(QNetworkReply*)),
           this, SLOT(onNetworkReplyFinished(QNetworkReply*)));
+
+  if (s_aggloIndexColors.empty()) {
+    const QSettings &settings = NeutubeConfig::getInstance().getSettings();
+    QVariant value = settings.value(SETTINGS_KEY_AGGLO_COLOR_FILEPATH);
+    if (!value.isNull()) {
+      loadColorsAgglo(value.toString());
+    } else {
+      setDefaultColorsAgglo();
+    }
+  }
 }
 
 TaskBodyCleave::~TaskBodyCleave()
@@ -426,8 +460,8 @@ QJsonArray TaskBodyCleave::createFromGuiBodyId(ZFlyEmBody3dDoc *bodyDoc)
     bool ok = false;
     double min = std::numeric_limits<double>::min();
     double max = std::numeric_limits<double>::max();
-    double bodyId = QInputDialog::getDouble(window, "Create Body Cleave Task", "Body ID",
-                                            0, min, max, 0, &ok);
+    double bodyId = QInputDialog::getDouble(
+          window, "Create Body Cleave Task", "Body ID", 0, min, max, 0, &ok);
     if (ok && (bodyId != 0)) {
       QJsonObject json;
       json[KEY_BODY_ID] = QJsonValue(bodyId);
@@ -536,6 +570,13 @@ bool TaskBodyCleave::skip(QString &reason)
     reason = "tarsupervoxels HEAD failed";
   }
 
+#ifdef _DEBUG_
+  if (m_skip) {
+    m_skip = false;
+    reason += " - Ignore skip for debugging.";
+  }
+#endif
+
   LKINFO << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
             arg(timer.elapsed()).arg((m_skip ? "skip" : "not skip")).arg(m_bodyId);
 
@@ -559,11 +600,29 @@ bool TaskBodyCleave::skip(QString &reason)
   return m_skip;
 }
 
+void TaskBodyCleave::checkOutCurrent()
+{
+  if (m_supervisor->isEmpty() || !m_supervisor->getDvidTarget().isSupervised()) {
+    m_checkedOut = true;
+  } else {
+    m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
+  }
+}
+
+void TaskBodyCleave::checkInCurrent()
+{
+  if (m_supervisor->isEmpty() || !m_supervisor->getDvidTarget().isSupervised()) {
+    m_checkedOut = false;
+  } else {
+    if (m_checkedOut) {
+      m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
+    }
+  }
+}
+
 void TaskBodyCleave::beforeNext()
 {
-  if (m_checkedOut) {
-    m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
-  }
+  checkInCurrent();
 
   applyPerTaskSettings();
 
@@ -590,9 +649,12 @@ void TaskBodyCleave::beforeNext()
 //#Review-TZ: It duplicates code from askBodyCleave::beforeNext
 void TaskBodyCleave::beforePrev()
 {
+  /*
   if (m_checkedOut) {
     m_checkedOut = !m_supervisor->checkIn(m_bodyId, neutu::EBodySplitMode::NONE);
   }
+  */
+  checkInCurrent();
 
   applyPerTaskSettings();
 
@@ -621,7 +683,7 @@ void TaskBodyCleave::beforeLoading()
 
   KLog::SetOperationName("body_cleaving");
 
-  m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
+  checkOutCurrent();
   if (!m_checkedOut) {
     std::string owner = m_supervisor->getOwner(m_bodyId);
 
@@ -701,11 +763,17 @@ void TaskBodyCleave::onLoaded()
     }
   }
 
+  m_meshIdToAggloIndex.clear();
+  if (m_colorAggloButton->isChecked()) {
+    updateMeshIdToAggloIndex();
+  }
+
   m_startupTimes.push_back(s_startupTimer.elapsed());
 }
 
 void TaskBodyCleave::beforeDone()
 {
+  checkInCurrent();
   restoreOverallSettings(m_bodyDoc);
 
   flyem::LogBodyOperation("end cleavng", m_bodyId, neutu::EBodyLabelType::BODY);
@@ -742,7 +810,8 @@ void TaskBodyCleave::onShowCleavingChanged(int state)
 
   bool show = (state != Qt::Unchecked);
   enableCleavingUI(show);
-  applyColorMode(show);
+  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
+  applyColorMode(show, colorBySupervoxels);
 
   KINFO << QString("Show cleaving: %1").arg(show);
 }
@@ -939,6 +1008,57 @@ void TaskBodyCleave::onToggleShowChosenCleaveBody()
 
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
+  if (reply->url().path().contains("mapping")) {
+    aggloIndexReplyFinished(reply);
+  } else {
+    cleaveServerReplyFinished(reply);
+  }
+}
+
+void TaskBodyCleave::aggloIndexReplyFinished(QNetworkReply *reply)
+{
+  QNetworkReply::NetworkError error = reply->error();
+  if (error != QNetworkReply::NoError) {
+    displayWarning("Agglo Index Server Error", "Reply error: " + reply->errorString(), "", true);
+    return;
+  }
+
+  int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+  const int STATUS_OK = 200;
+  if (statusCode != STATUS_OK) {
+    displayWarning("Agglo Index Server Error", "Status code: " + QString::number(statusCode), "", true);
+    return;
+  }
+
+  QByteArray replyBytes = reply->readAll();
+  QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
+  if (!replyJsonDoc.isArray()) {
+    displayWarning("Agglo Index Server Error", "Reply is not a JSON array", "", true);
+    return;
+  }
+
+  QJsonArray replyJsonArray = replyJsonDoc.array();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  int i = 0;
+  for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+    ZMesh *mesh = *itMesh;
+    uint64_t id = mesh->getLabel();
+    std::size_t aggloIndex = std::size_t(replyJsonArray[i].toInt());
+
+    // If the query supervoxel ID is not in the mapping to agglomeration indices, the reply will
+    // siply return the ID again.  In this case, treat it as agglomeration index 1.
+    if (aggloIndex == id)
+      aggloIndex = 1;
+
+    m_meshIdToAggloIndex[id] = aggloIndex;
+    ++i;
+  }
+
+  updateColorsAgglo();
+}
+
+void TaskBodyCleave::cleaveServerReplyFinished(QNetworkReply *reply)
+{
   allowNextPrev(true);
 
   m_cleaveRepliesPending--;
@@ -966,11 +1086,11 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
       std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
 
       QJsonObject replyJsonAssn = replyJsonAssnVal.toObject();
-      for (QString key : replyJsonAssn.keys()) {
+      foreach (const QString &key, replyJsonAssn.keys()) {
         uint64_t cleaveIndex = key.toInt();
         QJsonValue value = replyJsonAssn[key];
         if (value.isArray()) {
-          for (QJsonValue idVal : value.toArray()) {
+          foreach (const QJsonValue &idVal, value.toArray()) {
             uint64_t id = idVal.toDouble();
             meshIdToCleaveIndex[id] = cleaveIndex;
           }
@@ -1004,7 +1124,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
         QJsonValue errorsVal = errorsIt.value();
         if (errorsVal.isArray()) {
           QJsonArray errorsArray = errorsVal.toArray();
-          for (QJsonValue error : errorsArray) {
+          foreach (const QJsonValue &error, errorsArray) {
             text += error.toString() + "\n";
           }
         }
@@ -1072,6 +1192,88 @@ void TaskBodyCleave::onChooseCleaveMethod()
     }
 
     KINFO << "Choose cleaving method: " + text;
+  }
+}
+
+void TaskBodyCleave::onColorByChanged()
+{
+  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
+  applyColorMode(false, colorBySupervoxels);
+}
+
+void TaskBodyCleave::onSpecifyAggloColor()
+{
+  QString filepath =
+      QFileDialog::getOpenFileName(m_widget, tr("Agglo color specification file"), "", tr("JSON Files (*.json)"));
+  if (!filepath.isEmpty()) {
+    if (loadColorsAgglo(filepath)) {
+      updateColorsAgglo();
+      QSettings &settings = NeutubeConfig::getInstance().getSettings();
+      settings.setValue(SETTINGS_KEY_AGGLO_COLOR_FILEPATH, filepath);
+    }
+  }
+}
+
+bool TaskBodyCleave::loadColorsAgglo(QString filepath)
+{
+  QFile file(filepath);
+  if (!file.open(QIODevice::ReadOnly)) {
+    displayWarning("Error opening file", "Cannot open color JSON file '" + filepath + "'");
+    return false;
+  }
+  QByteArray data = file.readAll();
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+  if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+    displayWarning("Error parsing file", "Cannot parse color JSON file '" + filepath + "'");
+    return false;
+  }
+  QJsonObject jsonObj = jsonDoc.object();
+  if (!jsonObj.contains(COLOR_SPEC_KEY_AGGLO_ID_COLORS)) {
+    displayWarning("Error parsing file", "Expected key \"" + COLOR_SPEC_KEY_AGGLO_ID_COLORS + "\"");
+    return false;
+  }
+  QJsonValue jsonColorsValue = jsonObj[COLOR_SPEC_KEY_AGGLO_ID_COLORS];
+  if (!jsonColorsValue.isArray()) {
+    displayWarning("Error parsing file", "Expected key \"" + COLOR_SPEC_KEY_AGGLO_ID_COLORS + "\" to have an array value");
+    return false;
+  }
+  QJsonArray jsonColorsArr = jsonColorsValue.toArray();
+
+  std::vector<glm::vec4> newIndexColors;
+  for (int i = 0; i < jsonColorsArr.count(); ++i) {
+    QJsonValue jsonColorValue = jsonColorsArr[i];
+    if (!jsonColorValue.isString()) {
+      displayWarning("Error parsing file", "Invalid color " + QString::number(i) + " which is not a string");
+      return false;
+    }
+    QString colorStr = jsonColorValue.toString();
+    QColor color = QColor(colorStr);
+    if (!color.isValid()) {
+      displayWarning("Error parsing file", "Invalid color " + QString::number(i));
+      return false;
+    }
+    glm::vec4 colorVec = glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.0f);
+    newIndexColors.push_back(colorVec);
+  }
+
+  if (newIndexColors.size() >= 3) {
+    s_aggloIndexColors.clear();
+    for (glm::vec4 colorVec : newIndexColors) {
+      s_aggloIndexColors.push_back(colorVec);
+    }
+  } else {
+    displayWarning("Error parsing file", "At least 3 valid colors are required");
+    return false;
+  }
+
+  return true;
+}
+
+void TaskBodyCleave::setDefaultColorsAgglo()
+{
+  s_aggloIndexColors.clear();
+  for (glm::vec4 colorVec : DEFAULT_AGGLO_INDEX_COLORS) {
+    s_aggloIndexColors.push_back(colorVec);
   }
 }
 
@@ -1160,11 +1362,60 @@ bool TaskBodyCleave::allowCompletion()
 
   std::vector<uint64_t> unassigned;
   if (getUnassignedMeshes(unassigned)) {
+    allow = false;
     if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      FlyEmCleaveUnassignedDialog *dlg =
+          new FlyEmCleaveUnassignedDialog(m_bodyDoc->getParent3DWindow());
+      std::size_t indexNotCleavedOff = getIndexNotCleavedOff();
+      dlg->setIndexNotCleavedOff(indexNotCleavedOff);
+      dlg->setUnassignedCount(unassigned.size());
+      if (dlg->exec() &&
+          dlg->getOption() != FlyEmCleaveUnassignedDialog::EOption::NONE) {
+        auto option = dlg->getOption();
+        if (option != FlyEmCleaveUnassignedDialog::EOption::NONE) {
+          CleaveCommand *command = new CleaveCommand(this, m_meshIdToCleaveIndex);
+          m_bodyDoc->pushUndoCommand(command);
+
+          std::map<uint64_t, std::size_t> meshIdToCleaveResultIndex(m_meshIdToCleaveResultIndex);
+
+          if (!unassigned.empty()) {
+            std::size_t maxIndex = 0;
+            for (auto it : m_meshIdToCleaveIndex) {
+              if (maxIndex < it.first) {
+                maxIndex = it.first;
+              }
+            }
+
+            for (uint64_t id : unassigned) {
+              switch (option) {
+              case FlyEmCleaveUnassignedDialog::EOption::MAIN_BODY:
+                meshIdToCleaveResultIndex[id] = indexNotCleavedOff;
+                break;
+              case FlyEmCleaveUnassignedDialog::EOption::NEW_BODY:
+                meshIdToCleaveResultIndex[id] = ++maxIndex;
+                break;
+              default:
+                throw std::runtime_error("Invalid option for cleaving unassigned supervoxels.");
+                break;
+              }
+            }
+          }
+          CleaveCommand::addReply(command->requestNumber(), meshIdToCleaveResultIndex);
+          CleaveCommand::displayReply(this, command->requestNumber());
+          allow = true;
+        }
+
+      /*
       QString title = "Warning";
       QString text = (unassigned.size() == 1) ? "A supervoxel is unassigned. " : "Some supervoxels are unassigned. ";
-      std::size_t indexNotCleavedOff = getIndexNotCleavedOff();
-      text += "Save them with the main body (seed color " + QString::number(indexNotCleavedOff) + ")?";
+
+
+      bool cleavingUnassigned = false;
+      if (cleavingUnassigned) {
+        text += "Saving each of then as a new body?";
+      } else {
+        text += "Save them with the main body (seed color " + QString::number(indexNotCleavedOff) + ")?";
+      }
 
       QMessageBox::StandardButton chosen =
           QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::Cancel,
@@ -1174,13 +1425,26 @@ bool TaskBodyCleave::allowCompletion()
         m_bodyDoc->pushUndoCommand(command);
 
         std::map<uint64_t, std::size_t> meshIdToCleaveResultIndex(m_meshIdToCleaveResultIndex);
-        for (uint64_t id : unassigned) {
-          meshIdToCleaveResultIndex[id] = indexNotCleavedOff;
+
+        if (!unassigned.empty()) {
+          std::size_t maxIndex = 0;
+          for (auto it : m_meshIdToCleaveIndex) {
+            if (maxIndex < it.first) {
+              maxIndex = it.first;
+            }
+          }
+
+          for (uint64_t id : unassigned) {
+            if (cleavingUnassigned) {
+              meshIdToCleaveResultIndex[id] = ++maxIndex;
+            } else {
+              meshIdToCleaveResultIndex[id] = indexNotCleavedOff;
+            }
+          }
         }
         CleaveCommand::addReply(command->requestNumber(), meshIdToCleaveResultIndex);
         CleaveCommand::displayReply(this, command->requestNumber());
-      } else {
-        allow = false;
+        */
       }
     }
   }
@@ -1215,8 +1479,10 @@ bool TaskBodyCleave::cleaveVerified(
     const std::map<std::size_t, std::vector<uint64_t> > &cleaveIndexToMeshIds,
     size_t indexNotCleavedOff) const
 {
-  ZFlyEmBodyAnnotation annot = FlyEmDataReader::ReadBodyAnnotation(
-        m_bodyDoc->getMainDvidReader(), m_bodyId);
+//  ZFlyEmBodyAnnotation annot = FlyEmDataReader::ReadBodyAnnotation(
+//        m_bodyDoc->getMainDvidReader(), m_bodyId);
+
+  ZJsonObject annot = m_bodyDoc->getBodyAnnotation(m_bodyId);
 
   if (!annot.isEmpty()) {
 //    size_t mainSize = 0;
@@ -1230,12 +1496,6 @@ bool TaskBodyCleave::cleaveVerified(
           size_t svSize = getSupervoxelSize(svId);
           cleaveSize += svSize;
         }
-//        size_t svSize = getSupervoxelSize(svId);
-//        if (element.first == indexNotCleavedOff) {
-//          mainSize += svSize;
-//        } else {
-//          cleaveSize += svSize;
-//        }
       }
     }
 
@@ -1243,10 +1503,11 @@ bool TaskBodyCleave::cleaveVerified(
           m_bodyId, neutu::EBodyLabelType::BODY);
 
     if (cleaveSize + cleaveSize > bodySize) {
-      const ZFlyEmBodyAnnotationProtocal &bodyStatusProtocol =
+      const ZFlyEmBodyAnnotationProtocol &bodyStatusProtocol =
           m_bodyDoc->getBodyStatusProtocol();
       if (!bodyStatusProtocol.isEmpty()) {
-        if (bodyStatusProtocol.preservingId(annot.getStatus())) {
+        if (bodyStatusProtocol.preservingId(
+              ZFlyEmBodyAnnotation::GetStatus(annot))) {
           ZDialogFactory::Warn(
                 "Cleave Forbidden",
                 QString("You cannot cleave off a large portion "
@@ -1317,7 +1578,7 @@ void TaskBodyCleave::onCompleted()
   bool doWriteOutput = true;
   if (const char* doWriteOutputStr = std::getenv("NEU3_CLEAVE_UPDATE_SEGMENTATION")) {
 
-    // For now, at least, allow direct updating of the DVID egmentation to be disabled
+    // For now, at least, allow direct updating of the DVID segmentation to be disabled
     // by an environment variable.
 
     doWriteOutput = (std::string(doWriteOutputStr) != "no");
@@ -1330,14 +1591,15 @@ void TaskBodyCleave::onCompleted()
             responseLabels, mutationIds);
     }
   }
-  writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds, responseLabels, mutationIds);
+  writeAuxiliaryOutput(
+        reader, writer, cleaveIndexToMeshIds, responseLabels, mutationIds);
 
   if (succeeded) {
 
     // Hide the super voxels that are being cleaved off.
 
     m_hiddenCleaveIndices.clear();
-    for (auto it : cleaveIndexToMeshIds) {
+    for (const auto &it : cleaveIndexToMeshIds) {
       std::size_t cleaveIndex = it.first;
       if (cleaveIndex != indexNotCleavedOff) {
         m_hiddenCleaveIndices.insert(cleaveIndex);
@@ -1381,6 +1643,17 @@ void TaskBodyCleave::buildTaskWidget()
   m_showBodyCheckBox->setChecked(true);
   connect(m_showBodyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowBodyChanged(int)));
 
+  m_colorSupervoxelsButton = new QRadioButton("Color by supervoxels", m_widget);
+  m_colorSupervoxelsButton->setChecked(true);
+  connect(m_colorSupervoxelsButton, SIGNAL(toggled(bool)), this, SLOT(onColorByChanged()));
+
+  m_colorAggloButton = new QRadioButton("Color by agglo", m_widget);
+  // FIXME: combine radio buttons to avoid redundant toggle calls.
+//  connect(m_colorAggloButton, SIGNAL(toggled(bool)), this, SLOT(onColorByChanged()));
+
+  m_specifyAggloColorButton = new QPushButton("Specify...", m_widget);
+  connect(m_specifyAggloColorButton, SIGNAL(clicked(bool)), this, SLOT(onSpecifyAggloColor()));
+
   QVBoxLayout *cleaveIndexActionsLayout = new QVBoxLayout;
   cleaveIndexActionsLayout->addWidget(m_selectBodyButton);
   cleaveIndexActionsLayout->addWidget(m_showBodyCheckBox);
@@ -1389,6 +1662,13 @@ void TaskBodyCleave::buildTaskWidget()
   cleaveLayout1->addWidget(m_showCleavingCheckBox);
   cleaveLayout1->addWidget(m_cleaveIndexComboBox);
   cleaveLayout1->addLayout(cleaveIndexActionsLayout);
+
+  QHBoxLayout *cleaveLayout3 = new QHBoxLayout;
+  cleaveLayout3->addWidget(m_colorSupervoxelsButton);
+  QHBoxLayout *cleaveLayout3a = new QHBoxLayout;
+  cleaveLayout3a->addWidget(m_colorAggloButton);
+  cleaveLayout3a->addWidget(m_specifyAggloColorButton);
+  cleaveLayout3->addLayout(cleaveLayout3a);
 
   m_showSeedsOnlyCheckBox = new QCheckBox("Show seeds only", m_widget);
   m_showSeedsOnlyCheckBox->setChecked(false);
@@ -1402,6 +1682,7 @@ void TaskBodyCleave::buildTaskWidget()
 
   QVBoxLayout *layout = new QVBoxLayout;
   layout->addLayout(cleaveLayout1);
+  layout->addLayout(cleaveLayout3);
   layout->addLayout(cleaveLayout2);
 
   m_widget->setLayout(layout);
@@ -1508,6 +1789,45 @@ void TaskBodyCleave::updateColors()
   }
 }
 
+void TaskBodyCleave::updateMeshIdToAggloIndex()
+{
+  if (m_meshIdToAggloIndex.empty()) {
+    QString strArray = "[";
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+    for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+      ZMesh *mesh = *itMesh;
+      uint64_t id = mesh->getLabel();
+      if (strArray.at(strArray.size() - 1) != '[')
+        strArray += ", ";
+      strArray += QString::number(id);
+    }
+    strArray += "]";
+    QByteArray byteArray = strArray.toUtf8();
+
+    std::string server = "http://" + m_bodyDoc->getDvidTarget().getAddressWithPort();
+    std::string uuid = m_bodyDoc->getDvidTarget().getUuid();
+    std::string baseName = m_bodyDoc->getDvidTarget().getBodyLabelName();
+    std::string api = server + "/api/node/" + uuid + "/" + baseName + "_agglo_levels/mapping";
+
+    QUrl url(api.c_str());
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    m_networkManager->sendCustomRequest(request, "GET", byteArray);
+  }
+}
+
+void TaskBodyCleave::updateColorsAgglo()
+{
+  if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
+    if (m_meshIdToAggloIndex.empty()) {
+      updateMeshIdToAggloIndex();
+    } else {
+      filter->setColorIndexing(s_aggloIndexColors, m_meshIdToAggloIndex);
+    }
+  }
+}
+
 void TaskBodyCleave::bodiesForCleaveIndex(std::set<uint64_t> &result,
                                           std::size_t cleaveIndex,
                                           bool ignoreSeedsOnly)
@@ -1551,18 +1871,22 @@ void TaskBodyCleave::applyPerTaskSettings()
 
   CleaveCommand::clearReplyUndo();
 
-  bool showingCleaving = m_showCleavingCheckBox->isChecked();
-  applyColorMode(showingCleaving);
+//  bool showingCleaving = m_showCleavingCheckBox->isChecked();
+//  bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
+//  applyColorMode(showingCleaving, colorBySupervoxels);
 }
 
-void TaskBodyCleave::applyColorMode(bool showingCleaving)
+void TaskBodyCleave::applyColorMode(bool showingCleaving, bool colorBySupervoxels)
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
     if (showingCleaving) {
       updateColors();
       filter->setColorMode("Indexed Color");
-    } else {
+    } else if (colorBySupervoxels) {
       filter->setColorMode("Mesh Source");
+    } else {
+      updateColorsAgglo();
+      filter->setColorMode("Indexed Color");
     }
   }
 }
@@ -1580,6 +1904,28 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
   for (auto it : m_actionToComboBoxIndex) {
     it.first->setEnabled(showingCleaving);
   }
+  m_colorSupervoxelsButton->setEnabled(!showingCleaving);
+  m_colorAggloButton->setEnabled(!showingCleaving);
+  m_specifyAggloColorButton->setEnabled(!showingCleaving);
+}
+
+QString TaskBodyCleave::getCleaveServer() const
+{
+  return ZGlobal::GetInstance().getCleaveServer();
+}
+
+QString TaskBodyCleave::GetCleaveServerApi(const QString &server)
+{
+  if (!server.isEmpty()) {
+    return server + "/compute-cleave";
+  }
+
+  return "";
+}
+
+QString TaskBodyCleave::getCleaveServerApi() const
+{
+  return GetCleaveServerApi(getCleaveServer());
 }
 
 void TaskBodyCleave::cleave(unsigned int requestNumber)
@@ -1602,7 +1948,7 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
 
   QJsonObject requestJsonSeeds;
 
-  for (auto it : cleaveIndexToMeshIds) {
+  for (const auto &it : cleaveIndexToMeshIds) {
     QJsonArray requestJsonSeedsForCleaveIndex;
     for (uint64_t id : it.second) {
       requestJsonSeedsForCleaveIndex.append(QJsonValue(qint64(id)));
@@ -1625,22 +1971,18 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   if (m_bodyDoc->usingOldMeshesTars()) {
     requestJson["mesh-instance"] =
         ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   } else {
     requestJson["mesh-instance"] =
         ZDvidData::GetName(ZDvidData::ERole::TAR_SUPERVOXELS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
   }
 
   requestJson["request-number"] = int(requestNumber);
 
-  // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
-  if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
-    server = serverOverride;
-  }
+  QString server = getCleaveServerApi();
 
   QUrl url(server);
   QNetworkRequest request(url);
@@ -1655,6 +1997,31 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   m_networkManager->post(request, requestData);
 
   KINFO << QString("Cleave posted: ") + QString(requestData);
+}
+
+QString TaskBodyCleave::getInfo() const
+{
+  QString server = getCleaveServer();
+  if (server.isEmpty()) {
+    return TaskProtocolTask::getInfo();
+  }
+
+  return "Cleaving server: " + server;
+}
+
+QString TaskBodyCleave::getError() const
+{
+  QString server = getCleaveServer();
+  if (server.isEmpty()) {
+    return "Cleaving CANNOT be done: cleaving server missing!";
+  }
+
+  if (!ZNetworkUtils::IsAvailable(GetCleaveServerApi(server), "HAS_OPTIONS")) {
+    return "Cleaving CANNOT be done:<br>--unable to connect to " +
+        server + " for cleaving.";
+  }
+
+  return "";
 }
 
 bool TaskBodyCleave::getUnassignedMeshes(std::vector<uint64_t> &result) const
@@ -1769,11 +2136,7 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
         for (QJsonValue warning : warningsArray) {
           text += warning.toString() + "\n";
         }
-
-        if (m_warningTextToSuppress.find(text) == m_warningTextToSuppress.end()) {
-          displayWarning(title, text, "", true);
-        }
-
+        displayWarning(title, text, "", true);
         return true;
       }
     }
@@ -1831,6 +2194,10 @@ bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t
 void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
                                     const QString& details, bool allowSuppression)
 {
+  if (allowSuppression && (s_warningTextToSuppress.find(text) != s_warningTextToSuppress.end())) {
+    return;
+  }
+
   // Display the warning at idle time, after the rendering event has been processed,
   // so the results of cleaving will be visible when the warning is presented.
 
@@ -1855,7 +2222,7 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
       msgBox.exec();
 
       if (msgBox.clickedButton() == okAndSuppress) {
-          m_warningTextToSuppress.insert(text);
+        s_warningTextToSuppress.insert(text);
       }
     }
   });
@@ -1911,7 +2278,8 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
 
       QString frac = QString::number(i) + " of " + QString::number(cleaveIndexToMeshIds.size());
 
-      std::string response = writer.post(urlCleave, jsonBody);
+      std::string response = writer.post(
+            ZDvidUrl::AppendSourceQuery(urlCleave), jsonBody);
       QString labelStr;
       if (writer.isStatusOk()) {
         QJsonDocument responseDoc = QJsonDocument::fromJson(response.c_str());
@@ -2023,7 +2391,7 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
     // Include the IDs (labels) for the new bodies DVID created when cleaving (to allow undo later).
 
     QJsonArray jsonNewBodyIds;
-    for (QString id : newBodyIds) {
+    for (const QString &id : newBodyIds) {
       jsonNewBodyIds.append(id);
     }
     jsonExtra[KEY_BODY_IDS_CREATED] = jsonNewBodyIds;
@@ -2065,7 +2433,7 @@ ZJsonArray TaskBodyCleave::readAuxiliaryOutput(const ZDvidReader &reader) const
   if (reader.hasData(instance)) {
     std::string key(std::to_string(m_bodyId));
     std::string url = ZDvidUrl(m_bodyDoc->getDvidTarget()).getKeyUrl(instance, key);
-    result = reader.readJsonArray(url);
+    result = reader.readJsonArray(ZDvidUrl::AppendSourceQuery(url));
   }
 
   return result;
@@ -2153,7 +2521,7 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
 
   m_maxLevel = json[KEY_MAXLEVEL].toDouble();
 
-  m_visibleBodies.insert(ZFlyEmBodyManager::encode(m_bodyId, 0));
+  m_visibleBodies.insert(ZFlyEmBodyManager::EncodeTar(m_bodyId));
 
   QString assignedUser = json[KEY_ASSIGNED_USER].toString();
   if (!assignedUser.isEmpty()) {

@@ -1,16 +1,19 @@
 #ifndef Z3DCANVAS_H
 #define Z3DCANVAS_H
 
-#include "zutils.h"
-#include "zglmutils.h"
-#include "zstroke2d.h"
-#include "flyem/zinteractionengine.h"
+#include <deque>
+#include <memory>
+
 #include <QGraphicsView>
 #include <QSurfaceFormat>
 #include <QInputEvent>
 #include <QShortcut>
-#include <deque>
-#include <memory>
+
+#include "zutils.h"
+#include "zglmutils.h"
+#include "zstroke2d.h"
+#include "zwidgetmessage.h"
+#include "flyem/zinteractionengine.h"
 
 class ZOpenGLWidget;
 
@@ -94,6 +97,7 @@ public:
   { viewport()->setCursor(c); }
 
   void dump(const QString &message);
+  void processMessage(const ZWidgetMessage &message);
 
   void paintCustomRegion(const QImage &image);
 

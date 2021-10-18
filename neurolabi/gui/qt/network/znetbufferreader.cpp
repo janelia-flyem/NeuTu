@@ -4,6 +4,7 @@
 #include <QEventLoop>
 #include <QTimer>
 
+#include "common/utilities.h"
 #include "logging/utilities.h"
 #include "logging/zlog.h"
 
@@ -12,15 +13,32 @@ ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
   _init();
 }
 
+ZNetBufferReader::~ZNetBufferReader()
+{
+#ifdef _DEBUG_0
+  std::cout << __func__ << std::endl;
+#endif
+}
+
 void ZNetBufferReader::_init()
 {
   m_eventLoop = new QEventLoop(this);
-  connect(this, &ZNetBufferReader::readingCanceled,
-          this, &ZNetBufferReader::cancelReading);
+//  connect(this, &ZNetBufferReader::readingCanceled,
+//          this, &ZNetBufferReader::cancelReading);
   connect(this, &ZNetBufferReader::readingDone,
           m_eventLoop, &QEventLoop::quit);
-  connect(this, &ZNetBufferReader::checkingStatus,
-          this, &ZNetBufferReader::waitForReading);
+//  connect(this, &ZNetBufferReader::checkingStatus,
+//          this, &ZNetBufferReader::waitForReading);
+}
+
+QTimer* ZNetBufferReader::getTimer()
+{
+  if (m_timer == nullptr) {
+    m_timer = new QTimer(this);
+    connect(m_timer, &QTimer::timeout, this, &ZNetBufferReader::handleTimeout);
+  }
+
+  return m_timer;
 }
 
 QNetworkAccessManager* ZNetBufferReader::getNetworkAccessManager()
@@ -34,10 +52,17 @@ QNetworkAccessManager* ZNetBufferReader::getNetworkAccessManager()
 
 void ZNetBufferReader::resetNetworkReply()
 {
-  if (m_networkReply != NULL) {
-    m_networkReply->disconnect();
+  if (m_networkReply) {
+    m_networkReply->disconnect(this);
+    m_networkReply->abort();
     m_networkReply->deleteLater();
+    m_networkReply = nullptr;
   }
+}
+
+void ZNetBufferReader::abort()
+{
+  resetNetworkReply();
 }
 
 void ZNetBufferReader::connectNetworkReply()
@@ -61,7 +86,7 @@ void ZNetBufferReader::read(const QString &url, bool outputingUrl)
 
   resetNetworkReply();
   QNetworkRequest req = QNetworkRequest(url);
-  foreach (const auto &p, m_header) {
+  for (const auto &p : m_header.toStdMap()) {
     req.setRawHeader(p.first.toUtf8(), p.second.toUtf8());
   }
   m_networkReply = getNetworkAccessManager()->get(req);
@@ -96,16 +121,15 @@ void ZNetBufferReader::readPartial(
   waitForReading();
 }
 
-void ZNetBufferReader::readHead(const QString &url)
+void ZNetBufferReader::readHead(const QString &url, int timeout)
 {
   startReading();
 
-//  qDebug() << url;
   neutu::LogUrlIO("HEAD", url);
-//  KINFO << "HEAD " + url;
 
   resetNetworkReply();
 
+  startRequestTimer(timeout);
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
   connectNetworkReply();
   connect(m_networkReply, &QNetworkReply::readyRead,
@@ -114,20 +138,57 @@ void ZNetBufferReader::readHead(const QString &url)
   waitForReading();
 }
 
-bool ZNetBufferReader::hasHead(const QString &url)
+void ZNetBufferReader::readOptions(const QString &url, int timeout)
 {
   startReading();
 
-//  qDebug() << url;
+  neutu::LogUrlIO("OPTIONS", url);
+
+  resetNetworkReply();
+
+  startRequestTimer(timeout);
+  m_networkReply = getNetworkAccessManager()->sendCustomRequest(
+        QNetworkRequest(url), "OPTIONS");
+  connectNetworkReply();
+  connect(m_networkReply, &QNetworkReply::readyRead,
+          this, &ZNetBufferReader::readBuffer);
+
+  waitForReading();
+}
+
+bool ZNetBufferReader::hasHead(const QString &url, int timeout)
+{
+  startReading();
+
   neutu::LogUrlIO("HEAD", url);
 
   resetNetworkReply();
+  startRequestTimer(timeout);
   m_networkReply = getNetworkAccessManager()->head(QNetworkRequest(url));
   connectNetworkReply();
 
   waitForReading();
 
-  return m_status == neutu::EReadStatus::OK;
+  return m_status == neutu::EReadStatus::OK ||
+      m_status == neutu::EReadStatus::NO_CONTENT;
+}
+
+bool ZNetBufferReader::hasOptions(const QString &url, int timeout)
+{
+  startReading();
+
+  neutu::LogUrlIO("OPTIONS", url);
+
+  resetNetworkReply();
+  startRequestTimer(timeout);
+  m_networkReply = getNetworkAccessManager()->sendCustomRequest(
+        QNetworkRequest(url), "OPTIONS");
+  connectNetworkReply();
+
+  waitForReading();
+
+  return m_status == neutu::EReadStatus::OK ||
+      m_status == neutu::EReadStatus::NO_CONTENT;
 }
 
 void ZNetBufferReader::post(const QString &url, const QByteArray &data)
@@ -138,7 +199,7 @@ void ZNetBufferReader::post(const QString &url, const QByteArray &data)
   startReading();
   QNetworkRequest request(url);
   QString headInfo;
-  foreach (const auto &p, m_header) {
+  for (const auto &p : m_header.toStdMap()) {
     request.setRawHeader(p.first.toUtf8(), p.second.toUtf8());
     headInfo += p.first + ":" + p.second.left(10) + "; ";
   }
@@ -177,29 +238,91 @@ bool ZNetBufferReader::isReadable(const QString &url)
   return m_status == neutu::EReadStatus::OK;
 }
 
+void ZNetBufferReader::startRequestTimer(int timeout)
+{
+  if (timeout > 0) {
+    getTimer()->stop();
+    getTimer()->start(timeout);
+#ifdef _DEBUG_0
+    std::cout << "Start timer." << std::endl;
+#endif
+  }
+}
+
 void ZNetBufferReader::startReading()
 {
-  m_isReadingDone = false;
-  m_buffer.clear();
-  m_status = neutu::EReadStatus::OK;
+//  m_isReadingDone = false;
+  cancelReading();
+  waitForReading();
+
+  clearBuffer();
+  m_status = neutu::EReadStatus::INPROGRESS;
+  m_statusCode = 0;
+}
+
+QMap<QByteArray, QByteArray> ZNetBufferReader::getResponseHeaderMap() const
+{
+  QMap<QByteArray, QByteArray> headerMap;
+  for (const auto &headerPair : m_responseHeader) {
+    headerMap[headerPair.first] = headerPair.second;
+  }
+
+  return headerMap;
+}
+
+QByteArray ZNetBufferReader::getResponseHeader(
+    const QByteArray &headerName) const
+{
+  for (const auto &headerPair : m_responseHeader) {
+    if (headerPair.first == headerName) {
+      return headerPair.second;
+    }
+  }
+
+  return QByteArray();
 }
 
 void ZNetBufferReader::endReading(neutu::EReadStatus status)
 {
+  if (!isReadingInproress()) { //No need to end reading when it's not in progress
+    return;
+  }
+
+#ifdef _DEBUG_0
+  std::cout << __func__ << ": " << neutu::EnumValue(status) << std::endl;
+#endif
+
   m_status = status;
-  m_isReadingDone = true;
 
-  if (m_networkReply != NULL) {
-    QVariant statusCode = m_networkReply->attribute(
-          QNetworkRequest::HttpStatusCodeAttribute);
+  if (m_timer) { //delete timer here explicitly to avoid thread confusion
+    m_timer->stop();
+    m_timer->deleteLater();
+    m_timer = nullptr;
+  }
 
-    m_statusCode = statusCode.toInt();
-    if (m_statusCode != 200) {
-      KWARN << QString("Status code: %1").arg(m_statusCode);
-      m_status = neutu::EReadStatus::BAD_RESPONSE;
+//  m_isReadingDone = true;
+
+  if (m_networkReply) {
+    m_responseHeader = m_networkReply->rawHeaderPairs();
+
+    if (m_status == neutu::EReadStatus::FINISHED) {
+      QVariant statusCode = m_networkReply->attribute(
+            QNetworkRequest::HttpStatusCodeAttribute);
+
+      m_statusCode = statusCode.toInt();
+      if (m_statusCode < 200 || m_statusCode >= 300) {
+        KWARN << QString("Status code: %1").arg(m_statusCode);
+        m_status = neutu::EReadStatus::BAD_RESPONSE;
+      } else if (m_statusCode == 204) {
+        m_status = neutu::EReadStatus::NO_CONTENT;
+      } else {
+        m_status = neutu::EReadStatus::OK;
+      }
     }
+
+    m_networkReply->disconnect(this);
     m_networkReply->deleteLater();
-    m_networkReply = NULL;
+    m_networkReply = nullptr;
   }
 
   emit readingDone();
@@ -207,12 +330,19 @@ void ZNetBufferReader::endReading(neutu::EReadStatus status)
 
 bool ZNetBufferReader::isReadingDone() const
 {
-  return m_isReadingDone;
+  return m_status != neutu::EReadStatus::INPROGRESS &&
+      m_status != neutu::EReadStatus::NONE;
+//  return m_isReadingDone;
+}
+
+bool ZNetBufferReader::isReadingInproress() const
+{
+  return m_status == neutu::EReadStatus::INPROGRESS;
 }
 
 void ZNetBufferReader::waitForReading()
 {
-  if (!isReadingDone()) {
+  if (isReadingInproress()) {
     m_eventLoop->exec();
   }
 }
@@ -221,8 +351,15 @@ void ZNetBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
 {
   if (m_networkReply != NULL) {
     KWARN << m_networkReply->errorString();
+#ifdef _DEBUG_0
+    std::cout << __func__ << ": " << m_networkReply->errorString().toStdString() << std::endl;
+#endif
   }
   endReading(neutu::EReadStatus::FAILED);
+
+#ifdef _DEBUG_0
+  std::cout << __func__ << ": done" << std::endl;
+#endif
 }
 
 void ZNetBufferReader::readBuffer()
@@ -234,17 +371,21 @@ void ZNetBufferReader::readBufferPartial()
 {
   m_buffer.append(m_networkReply->readAll());
   if (m_buffer.size() > m_maxSize) {
-    endReading(m_status);
+    if (m_networkReply) {
+      m_networkReply->abort();
+    }
+//    endReading(m_status);
   }
 }
 
 void ZNetBufferReader::finishReading()
 {
-  endReading(m_status);
+  endReading(neutu::EReadStatus::FINISHED);
 }
 
 void ZNetBufferReader::handleTimeout()
 {
+  resetNetworkReply();
   endReading(neutu::EReadStatus::TIMEOUT);
 }
 
@@ -261,11 +402,17 @@ neutu::EReadStatus ZNetBufferReader::getStatus() const
 void ZNetBufferReader::clearBuffer()
 {
   m_buffer.clear();
+  m_responseHeader.clear();
 }
 
 bool ZNetBufferReader::hasRequestHeader(const QString &key) const
 {
   return m_header.count(key) > 0;
+}
+
+void ZNetBufferReader::removeRequestHeader(const QString &key)
+{
+  m_header.remove(key);
 }
 
 void ZNetBufferReader::setRequestHeader(const QString &key, const QString &value)

@@ -24,7 +24,7 @@ QByteArray ZDvidResultService::ReadData(const QString &path)
 
   QUrl url(path);
   if (url.scheme() == "http") {
-    ZDvidTarget target = dvid::MakeTargetFromUrl(path.toStdString());
+    ZDvidTarget target = dvid::MakeTargetFromUrl_deprecated(path.toStdString());
     if (target.isValid()) {
       ZDvidReader *reader =
           ZGlobal::GetInstance().getDvidReader(target.getSourceString(true));
@@ -40,7 +40,7 @@ void ZDvidResultService::WriteData(const QString &path, const QByteArray &data)
 {
   QUrl url(path);
   if (url.scheme() == "http") {
-    ZDvidTarget target = dvid::MakeTargetFromUrl(path.toStdString());
+    ZDvidTarget target = dvid::MakeTargetFromUrl_deprecated(path.toStdString());
     if (target.isValid()) {
       ZDvidWriter *writer =
           ZGlobal::GetInstance().getDvidWriter(target.getSourceString(true));
@@ -187,7 +187,7 @@ QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(
     const QString &server, const QString &key)
 {
   ZDvidTarget target;
-  target.setFromUrl(server.toStdString());
+  target.setFromUrl_deprecated(server.toStdString());
   ZDvidUrl dvidUrl(target);
   QString path(dvidUrl.getKeyUrl("result_split", key.toStdString()).c_str());
 

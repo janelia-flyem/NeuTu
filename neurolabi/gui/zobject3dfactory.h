@@ -74,6 +74,8 @@ public:
                                        ZObject3dScan *result = NULL);
 
   static ZObject3dScan MakeObject3dScan(const ZIntCuboid &box);
+  static ZObject3dScan* MakeObject3dScan(
+      const ZIntCuboid &box, ZObject3dScan *result);
 
   static ZStack* MakeBoundaryStack(const ZStack &stack);
   /*!

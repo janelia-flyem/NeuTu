@@ -18,6 +18,10 @@
 #include "zspgrowparser.h"
 #include "zstackfactory.h"
 
+#ifdef _DEBUG_
+#include "neutubeconfig.h"
+#endif
+
 ZStackProcessor::ZStackProcessor()
 {
 }
@@ -907,7 +911,9 @@ void ZStackProcessor::SubtractBackground(ZStack *stack)
 {
   for (int c = 0; c < stack->channelNumber(); ++c) {
     int commonIntensity = Stack_Common_Intensity(stack->c_stack(c), 0, 65535);
-    Stack_Subc(stack->c_stack(c), commonIntensity);
+    if (double(commonIntensity) < Stack_Mean(stack->c_stack())) {
+      Stack_Subc(stack->c_stack(c), commonIntensity);
+    }
   }
 }
 
@@ -1052,7 +1058,7 @@ void ZStackProcessor::ShrinkSkeleton(Stack *stack, int level)
   }
 }
 
-ZStack* ZStackProcessor::Intepolate(
+ZStack* ZStackProcessor::Interpolate(
     const ZStack *stack1, const ZStack *stack2, double lambda, ZStack *out)
 {
   if (stack1->kind() == GREY && stack2->kind() == GREY &&
@@ -1079,13 +1085,22 @@ static void interpolateArray(
     const uint8_t *array1, const uint8_t *array2,
     int x0, int x1, int yOffset, double lambda, uint8_t *outArray)
 {
-  for (int x = x0; x < x1; ++x) {
-    int offset = yOffset + x;
-    outArray[offset] =
-        neutu::iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
+  if (lambda <= 0.0) {
+    size_t offset = yOffset + x0;
+    memcpy(outArray + offset , array1 + offset, x1 - x0);
+  } else if (lambda >= 1.0) {
+    size_t offset = yOffset + x0;
+    memcpy(outArray + offset , array2 + offset, x1 - x0);
+  } else {
+    for (int x = x0; x < x1; ++x) {
+      int offset = yOffset + x;
+      outArray[offset] =
+          neutu::iround(array1[offset] * (1.0 - lambda) + array2[offset] * lambda);
+    }
   }
 }
 
+#if 0
 ZStack* ZStackProcessor::IntepolateFovia(
     const ZStack *stack1, const ZStack *stack2, int cw, int ch,
     double lambda, ZStack *out)
@@ -1126,8 +1141,9 @@ ZStack* ZStackProcessor::IntepolateFovia(
 
   return out;
 }
+#endif
 
-ZStack* ZStackProcessor::IntepolateFovia(
+ZStack* ZStackProcessor::InterpolateFovia(
     const ZStack *stack1, const ZStack *stack2, int cw, int ch,
     int scale, int z1, int z2, int z, ZStack *out)
 {
@@ -1160,6 +1176,11 @@ ZStack* ZStackProcessor::IntepolateFovia(
     double lambda1 = double(z - prevZ) / (nextZ - prevZ);
     double lambda2 = double(z - prevCenterZ) / (nextCenterZ - prevCenterZ);
 
+#ifdef _DEBUG_0
+    stack1->save(GET_TEST_DATA_DIR + "/_test1.tif");
+    stack2->save(GET_TEST_DATA_DIR + "/_test2.tif");
+    std::cout << "🦋 interpolate " << prevZ << " | " << z << " | " << nextZ << std::endl;
+#endif
 
     if (w <= cw || h <= ch) { //always high res
       for (int y = h - 1; y >= 0; --y) {
@@ -1187,6 +1208,12 @@ ZStack* ZStackProcessor::IntepolateFovia(
     return NULL;
   }
 
+#ifdef _DEBUG_0
+  if (out) {
+    out->save(GET_TEST_DATA_DIR + "/_test3.tif");
+  }
+#endif
+
   return out;
 }
 
@@ -1203,7 +1230,7 @@ static void interpolateArray(
   }
 }
 
-ZStack* ZStackProcessor::IntepolatePri(
+ZStack* ZStackProcessor::InterpolatePri(
     const ZStack *stack1, const ZStack *stack2, int scale, int cw, int ch,
     double lambda, ZStack *out)
 {
@@ -1281,6 +1308,155 @@ void ZStackProcessor::ShrinkSkeleton(Stack *stack)
   for (std::vector<size_t>::const_iterator iter = indexArray.begin();
        iter != indexArray.end(); ++iter) {
     stack->array[*iter] = 0;
+  }
+}
+
+namespace {
+
+bool has_data(Stack *stack)
+{
+  if (stack) {
+    if (stack->array &&
+        stack->width > 0 && stack->height > 0 && stack->depth > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool has_data(ZStack *stack)
+{
+  if (stack) {
+    return stack->hasData();
+  }
+
+  return false;
+}
+
+//For int type only
+template<typename T>
+void subtract_background_adaptive(T* array, int width, int height, int depth,
+                             int nsample, int stride, T* out)
+{
+  if (nsample > 0 && stride > 0) {
+    size_t area = size_t(width) * height;
+    size_t voxelCount = area * depth;
+
+    bool allocated = false;
+
+    if (array == out) {
+      array = new T[voxelCount];
+      std::memcpy(array, out, voxelCount * sizeof(T));
+      allocated = true;
+    }
+
+    size_t offset = 0;
+    for (int z = 0; z < depth; ++z) {
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          double backgroundSum = 0;
+          int count = 0;
+          for(int step = 1 ; step <= nsample; ++step) {
+            int dist = stride * step;
+
+            if (x >= dist) { //along -x
+              backgroundSum += array[offset - dist];
+              ++count;
+            }
+
+            if (x + dist < width) { //along x
+              backgroundSum += array[offset + dist];
+              ++count;
+            }
+
+            if (y >= dist) { //along -y
+              backgroundSum += array[offset - dist * width];
+              ++count;
+            }
+
+            if (y + dist < height) { //along y
+              backgroundSum += array[offset + dist * width];
+              ++count;
+            }
+
+            if (z >= dist) { //along -z
+              backgroundSum += array[offset - size_t(dist) * area];
+              ++count;
+            }
+
+            if (z + dist < depth) { //along z
+              backgroundSum += array[offset + size_t(dist) * area];
+              ++count;
+            }
+          }
+
+          if (count > 0) {
+            double diff = array[offset] - backgroundSum / count;
+            if (diff < 0) {
+              out[offset] = 0;
+            } else {
+              out[offset] = neutu::iround(diff);
+            }
+          } else {
+            out[offset] = array[offset];
+          }
+
+          ++offset;
+        }
+      }
+    }
+
+    if (allocated) {
+      delete []array;
+    }
+  }
+}
+
+}
+
+void ZStackProcessor::SubtractBackgroundAdaptive(
+    Stack *stack, int nsample, int stride)
+{
+  if (has_data(stack)) {
+    Image_Array ima;
+    ima.array = stack->array;
+
+    switch (stack->kind) {
+    case GREY:
+      subtract_background_adaptive(
+            ima.array8, stack->width, stack->height, stack->depth,
+            nsample, stride, ima.array8);
+      break;
+    case GREY16:
+      subtract_background_adaptive(
+            ima.array16, stack->width, stack->height, stack->depth,
+            nsample, stride, ima.array16);
+      break;
+    case COLOR:
+      for (size_t c = 0; c < 3; ++c) {
+        size_t voxelCount = Stack_Voxel_Number(stack);
+        uint8_t *array = stack->array + voxelCount * c;
+        subtract_background_adaptive(
+              array, stack->width, stack->height, stack->depth,
+              nsample, stride, array);
+      }
+      break;
+    default:
+      std::cerr << "Unsupported image kind for adaptive image background subtraction: "
+                << stack->kind << std::endl;
+      break;
+    }
+  }
+}
+
+void ZStackProcessor::SubtractBackgroundAdaptive(
+    ZStack *stack, int nsample, int stride)
+{
+  if (has_data(stack)) {
+    for (int c = 0; c < stack->channelNumber(); ++c) {
+      SubtractBackgroundAdaptive(stack->c_stack(c), nsample, stride);
+    }
   }
 }
 

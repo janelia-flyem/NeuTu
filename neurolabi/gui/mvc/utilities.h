@@ -14,11 +14,10 @@ class ZPoint;
 namespace neutu {
 
 namespace mvc {
-QString ComposeViewInfo(ZStackView *view, const QPoint &widgetPos);
-QString ComposeStackDataInfo(
-    ZStackDoc *doc, double cx, double cy, int z, neutu::EAxis axis,
+QString ComposeViewInfo(ZStackView *view, const ZPoint &dataPos);
+QString ComposeStackDataInfo(ZStackDoc *doc, const ZIntPoint &pos,
     neutu::mvc::ViewInfoFlags f);
-ZPoint MapWidgetPosToData(const ZStackView *view, const ZPoint &widgetPos);
+//ZPoint MapWidgetPosToData(const ZStackView *view, const ZPoint &widgetPos);
 
 } //namespace mvc
 

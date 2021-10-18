@@ -11,11 +11,17 @@ class ZStackPatch : public ZStackObject
 {
 public:
   ZStackPatch(ZStack *stack = NULL);
-  ~ZStackPatch();
+  ~ZStackPatch() override;
 
 public:
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+  /*
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const override;
+                       */
 
 //  virtual const std::string& className() const;
 
@@ -25,10 +31,12 @@ public:
   int getZOffset() const;
   void setScale(double sx, double sy);
 
-  ZStack* getStack() { return m_stack; }
+  ZStack* getStack() const { return m_stack; }
 
   inline void setXScale(double sx) { m_sx = sx; }
   inline void setYScale(double sy) { m_sy = sy; }
+
+  ZCuboid getBoundBox() const override;
 
 private:
   ZStack *m_stack;

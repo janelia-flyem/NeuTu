@@ -4,12 +4,17 @@
 #include <QtConcurrentRun>
 #endif
 
+#include "tz_3dgeom.h"
+#include "tz_geo3d_point_array.h"
 #include "tz_voxel_graphics.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_stack_attribute.h"
 #include "common/math.h"
 #include "zpainter.h"
 #include "c_stack.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zpointarray.h"
+#include "zstack.hxx"
 
 ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
 {
@@ -18,7 +23,7 @@ ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
   m_profile = NULL;
   m_filterStack = NULL;
   m_isOwner = isOwner;
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
 }
 
 ZLocalNeuroseg::~ZLocalNeuroseg()
@@ -42,17 +47,22 @@ ZLocalNeuroseg::~ZLocalNeuroseg()
   }
 }
 
+bool ZLocalNeuroseg::display(QPainter */*painter*/, const DisplayConfig &/*config*/) const
+{
+  return false;
+}
+
+#if 0
 void ZLocalNeuroseg::display(
     ZPainter &painter, int sliceIndex, EDisplayStyle option,
     const QColor &color) const
 { //todo
 #if defined(_QT_GUI_USED_)
-  if (option == ZStackObject::EDisplayStyle::NORMAL) {
-    option = ZStackObject::EDisplayStyle::SOLID;
+  if (option == EDisplayStyle::NORMAL) {
+    option = EDisplayStyle::SOLID;
   }
 
-  if ((option == ZStackObject::EDisplayStyle::SOLID) ||
-      (option == ZStackObject::EDisplayStyle::BOUNDARY)) {
+  if ((option == EDisplayStyle::SOLID) || (option == EDisplayStyle::BOUNDARY)) {
     if (m_locseg->seg.r1 * m_locseg->seg.scale <= 0.0) {
       return;
     }
@@ -76,8 +86,8 @@ void ZLocalNeuroseg::display(
   Local_Neuroseg_Bottom(m_locseg, bottom_position);
 
   switch(option) {
-  case ZStackObject::EDisplayStyle::SOLID:
-  case ZStackObject::EDisplayStyle::BOUNDARY:
+  case zstackobject::EDisplayStyle::SOLID:
+  case zstackobject::EDisplayStyle::BOUNDARY:
     {
       double offpos[3];
       int c[3];          /* position of the original point in filter range */
@@ -123,7 +133,7 @@ void ZLocalNeuroseg::display(
                 (m_filterStack->array[offset] > 0)) {
                 */
             if (m_filterStack->array[offset] > 0) {
-              if (option == ZStackObject::EDisplayStyle::BOUNDARY) {
+              if (option == zstackobject::EDisplayStyle::BOUNDARY) {
                 int k = sliceIndex - region_corner[2];
                 if (IS_IN_OPEN_RANGE3(i, j, k, 0, m_filterStack->width-1,
                                       0, m_filterStack->height - 1,
@@ -164,7 +174,7 @@ void ZLocalNeuroseg::display(
                 }
                 new_offset += area;
               }
-              if (option == ZStackObject::EDisplayStyle::BOUNDARY) {
+              if (option == zstackobject::EDisplayStyle::BOUNDARY) {
                 int v2;
                 int neighbor[4];
                 Stack_Neighbor_Offset(4, Stack_Width(m_filterStack),
@@ -218,7 +228,7 @@ void ZLocalNeuroseg::display(
     }
     break;
         
-  case ZStackObject::EDisplayStyle::SKELETON:
+  case zstackobject::EDisplayStyle::SKELETON:
     {
       double top_position[3];
       Local_Neuroseg_Top(m_locseg, top_position);
@@ -261,7 +271,7 @@ void ZLocalNeuroseg::display(
 }
 
 void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
-                             EDisplayStyle style, int label) const
+                             zstackobject::EDisplayStyle style, int label) const
 {
 #if defined(_QT_GUI_USED_)
   double center_position[3];
@@ -275,8 +285,8 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
     }
   }
 
-  if (style == ZStackObject::EDisplayStyle::NORMAL) {
-    style = ZStackObject::EDisplayStyle::SOLID;
+  if (style == zstackobject::EDisplayStyle::NORMAL) {
+    style = zstackobject::EDisplayStyle::SOLID;
   }
 
   int channel[3];
@@ -308,8 +318,8 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
   Local_Neuroseg_Bottom(m_locseg, bottom_position);
 
   switch(style) {
-  case ZStackObject::EDisplayStyle::SOLID:
-  case ZStackObject::EDisplayStyle::BOUNDARY:
+  case zstackobject::EDisplayStyle::SOLID:
+  case zstackobject::EDisplayStyle::BOUNDARY:
     {
       double offpos[3];
       int c[3];          /* position of the original point in filter range */
@@ -368,7 +378,7 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
               if ((point[0] >= 0) && (point[0] < image->width()) &&
                   (point[1] >= 0) && (point[1] < image->height()) &&
                   (/*filter[offset] > 0*/ m_filterStack->array[offset] > 0)) {
-                if (style == ZStackObject::EDisplayStyle::BOUNDARY) {
+                if (style == zstackobject::EDisplayStyle::BOUNDARY) {
                   if (Stack_Neighbor_Min(m_filterStack,
                                          6, point[0], point[1], point[2])
                     > 0.0) {
@@ -467,6 +477,7 @@ void ZLocalNeuroseg::display(
 {
   display(painter, z, option, getColor());
 }
+#endif
 
 void ZLocalNeuroseg::save(const char *filePath)
 {
@@ -503,6 +514,36 @@ void ZLocalNeuroseg::updateProfile(const Stack *stack, int option)
   }
 }
 
+bool ZLocalNeuroseg::hitMask(const ZStack *stack) const
+{
+  if (stack) {
+    ZPointArray ptArray = sample(1.0, 1.0);
+    for (const ZPoint &pt : ptArray) {
+      if (stack->getIntValue(neutu::iround(pt.x()), neutu::iround(pt.y()),
+                             neutu::iround(pt.z())) > 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool ZLocalNeuroseg::hitMask(const Stack *stack) const
+{
+  if (stack) {
+    ZPointArray ptArray = sample(1.0, 1.0);
+    for (const ZPoint &pt : ptArray) {
+      if (C_Stack::value(stack, neutu::iround(pt.x()), neutu::iround(pt.y()),
+                         neutu::iround(pt.z())) > 0.0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 void ZLocalNeuroseg::topPosition(double pos[]) const
 {
   Neuroseg_Top(&(m_locseg->seg), pos);
@@ -530,6 +571,12 @@ void ZLocalNeuroseg::asyncGenerateFilterStack() const
 #endif
 }
 
+ZCuboid ZLocalNeuroseg::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
+}
+
 void ZLocalNeuroseg::generateFilterStack()
 {
   double bottom_position[3];
@@ -554,6 +601,96 @@ void ZLocalNeuroseg::generateFilterStack()
 #ifdef _DEBUG_2
   C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test.tif", m_filterStack);
 #endif
+}
+
+void ZLocalNeuroseg::transform(coordinate_3d_t *points, size_t count) const
+{
+  if (m_locseg) {
+    if (m_locseg->seg.alpha != 0.0) {
+      Rotate_Z(Coordinate_3d_Double_Array(points),
+               Coordinate_3d_Double_Array(points),
+               count, m_locseg->seg.alpha, 0);
+    }
+
+    if (m_locseg->seg.curvature >= NEUROSEG_MIN_CURVATURE) {
+      double curvature = m_locseg->seg.curvature;
+      if (curvature > NEUROSEG_MAX_CURVATURE) {
+        curvature = NEUROSEG_MAX_CURVATURE;
+      }
+
+      Geo3d_Point_Array_Bend(
+            points, count, m_locseg->seg.h / curvature);
+    }
+
+    if ((m_locseg->seg.theta != 0.0) || (m_locseg->seg.psi != 0.0)) {
+      Rotate_XZ((double *) points, (double *) points, count,
+                m_locseg->seg.theta, m_locseg->seg.psi, 0);
+    }
+
+    double pos[2][3];
+    Neuroseg_Bottom(&(m_locseg->seg), pos[0]);
+    Local_Neuroseg_Bottom(m_locseg, pos[1]);
+    double offset[3];
+    offset[0] = pos[1][0] - pos[0][0];
+    offset[1] = pos[1][1] - pos[0][1];
+    offset[2] = pos[1][2] - pos[0][2];
+
+    Geo3d_Point_Array_Translate(points, count, offset[0], offset[1], offset[2]);
+  }
+}
+
+double ZLocalNeuroseg::getHeight() const
+{
+  if (m_locseg) {
+    return m_locseg->seg.h;
+  }
+
+  return 0.0;
+}
+
+double ZLocalNeuroseg::getRadius(double z) const
+{
+  if (m_locseg) {
+    return NEUROSEG_RADIUS(&(m_locseg->seg), z);
+  }
+
+  return 0.0;
+}
+
+ZPointArray ZLocalNeuroseg::sample(double xyStep, double zStep) const
+{
+  ZPointArray points;
+
+  if (xyStep > 0.0 && zStep > 0.0) {
+    double height = getHeight();
+    for (double z = 0; z <= height; z += zStep) {
+      double radius = getRadius(z);
+      if (radius > xyStep * 0.1) {
+        for (double y = -radius; y <= radius; y += xyStep) {
+          for (double x = -radius; x <= radius; x += xyStep) {
+            if ((x * x + y * y) / (radius * radius) < 1.001) {
+              points.append(x, y, z);
+            }
+          }
+        }
+      }
+    }
+
+    if (!points.isEmpty()) {
+      coordinate_3d_t *coordArray = new coordinate_3d_t[points.size()];
+      for (size_t i = 0; i < points.size(); ++i) {
+        coordArray[i][0] = points[i].x();
+        coordArray[i][1] = points[i].y();
+        coordArray[i][2] = points[i].z();
+      }
+      transform(coordArray, points.size());
+      for (size_t i = 0; i < points.size(); ++i) {
+        points[i].set(coordArray[i][0], coordArray[i][1], coordArray[i][2]);
+      }
+    }
+  }
+
+  return points;
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)

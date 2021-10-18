@@ -3,14 +3,18 @@
  * @author Ting Zhao
  */
 
-#ifndef _ZSTACKVIEW_H_
-#define _ZSTACKVIEW_H_
+#ifndef ZSTACKVIEW_H_
+#define ZSTACKVIEW_H_
+
+#include <atomic>
+#include <memory>
 
 #include <QImage>
 #include <QWidget>
 #include <QPixmap>
-#include <vector>
 #include <QCheckBox>
+#include <vector>
+#include <functional>
 
 #include "zstackframe.h"
 #include "widgets/zparameter.h"
@@ -23,8 +27,9 @@
 #include "zmultiscalepixmap.h"
 #include "zarbsliceviewparam.h"
 #include "mvc/mvcdef.h"
-
-//#include "zstackdoc.h"
+#include "concurrent/zworkerwrapper.h"
+#include "data3d/zsliceviewtransform.h"
+#include "zstackobjectpaintsorter.h"
 
 class ZStackDoc;
 class ZStackPresenter;
@@ -55,6 +60,7 @@ class ZStackViewParam;
 class ZStackObjectPainter;
 class ZStackViewRecorder;
 class ZStackViewRecordDialog;
+class ZSliceCanvas;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -66,13 +72,13 @@ class ZStackViewRecordDialog;
  * represented by the ZStackFrame class (and its derivatives) or the
  * ZStackMvc class.
  */
-class ZStackView : public QWidget {
+class ZStackView : public QWidget, ZWorkerWrapper {
   Q_OBJECT
 
 public:
-  explicit ZStackView(ZStackFrame *parent = 0);
-  explicit ZStackView(QWidget *parent = 0);
-  virtual ~ZStackView();
+  explicit ZStackView(ZStackFrame *parent);
+  explicit ZStackView(QWidget *parent = nullptr);
+  ~ZStackView() override;
 
 public:
   /*!
@@ -81,7 +87,7 @@ public:
    * This function is for synchorinizing the view controls such as depth slider
    * and channel controls with stack update in the document.
    */
-  void reset(bool updatingScreen = true);
+//  void reset(bool updatingScreen = true);
 
   enum class EMode {
     NORMAL, IMAGE_ONLY, PLAIN_IMAGE
@@ -95,15 +101,7 @@ public:
     DIRECT //Update immediately
   };
 
-//  enum class ViewInfoFlag {
-//    NONE = 0,
-//    RAW_STACK_COORD = BIT_FLAG(1),
-//    DATA_COORD = BIT_FLAG(2),
-//    WINDOW_SCALE = BIT_FLAG(3),
-//    IMAGE_VALUE = BIT_FLAG(4)
-//  };
-
-//   Q_DECLARE_FLAGS(ViewInfoFlags, ViewInfoFlag)
+  int getViewId() const;
 
   bool viewingInfo(neutu::mvc::ViewInfoFlags f) const;
   void setViewInfoFlag(neutu::mvc::ViewInfoFlags f);
@@ -116,12 +114,19 @@ public:
    */
   void updateImageScreen(EUpdateOption option);
 
+  struct RefreshConfig {
+    EUpdateOption updateOption = EUpdateOption::QUEUED;
+    bool widgetCanvasUpdateRequired = true;
+  };
+
+  void refreshScreen(const RefreshConfig &config);
+
   /*!
    * \brief Restore the view from a bad setting
    *
    * The definition of a bad setting is provided by ZImageWidget::isBadView().
    */
-  void restoreFromBadView();
+  bool restoreFromBadView();
 
   /*!
    * \brief Get the parent frame
@@ -140,7 +145,7 @@ public:
   ZSharedPointer<ZStackDoc> buddyDocument() const;
   ZStackPresenter* buddyPresenter() const;
 
-  QSize sizeHint() const;
+  QSize sizeHint() const override;
 
   /*!
    * \brief Get the widget of data display
@@ -188,13 +193,23 @@ public:
    * \return The current Z position, which is defined as the slice index plus
    * the Z coordinate of the stack offset.
    */
-  int getCurrentZ() const;
+  int getCurrentDepth() const;
+
+  ZPlane getCutOrientation() const;
 
   //int threshold();
 
   void setSliceAxis(neutu::EAxis axis);
-  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
-  ZAffinePlane getAffinePlane() const;
+  neutu::EAxis getSliceAxis() const;// { return m_sliceAxis; }
+//  ZAffinePlane getAffinePlane() const;
+
+  void setRightHanded(bool r);
+
+  void setCutPlane(neutu::EAxis axis);
+  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
+  void setCutPlane(const ZAffinePlane &plane);
+  void setZoomScale(double s);
+  void setInitialScale(double s);
 
   /*!
    * \brief Get stack data from the buddy document
@@ -206,8 +221,8 @@ public:
    */
   void prepareDocument();
 
-  virtual void resizeEvent(QResizeEvent *event);
-  virtual void showEvent(QShowEvent *event);
+//  virtual void resizeEvent(QResizeEvent *event) override;
+  virtual void showEvent(QShowEvent *event) override;
 
   /*!
    * \brief Get the information of the view as a list of strings.
@@ -242,27 +257,23 @@ public:
   void paintStackBuffer();
   void paintMaskBuffer();
 
-  /*!
-   * \brief Update the buffer of object canvas.
-   */
-  void paintObjectBuffer();
-  bool paintTileCanvasBuffer();
 
-  //void paintObjectBuffer(ZImage *canvas, ZStackObject::ETarget target);
+//  bool paintTileCanvasBuffer();
 
-  void paintObjectBuffer(ZStackObject::ETarget target);
-  void paintObjectBuffer(ZPainter &painter, ZStackObject::ETarget target);
+  //void paintObjectBuffer(ZImage *canvas, neutu::data3d::ETarget target);
 
-  void paintActiveDecorationBuffer();
-  void paintDynamicObjectBuffer();
+//  void paintActiveDecorationBuffer();
+//  void paintDynamicObjectBuffer();
 
 
   ZStack* getStrokeMask(uint8_t maskValue);
   ZStack* getStrokeMask(neutu::EColor color);
 
+  ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
 
-  void exportObjectMask(const std::string &filePath);
-  void exportObjectMask(neutu::EColor color, const std::string &filePath);
+
+//  void exportObjectMask(const std::string &filePath);
+//  void exportObjectMask(neutu::EColor color, const std::string &filePath);
 
   inline void setSizeHintOption(neutu::ESizeHintOption option) {
     m_sizeHintOption = option;
@@ -292,6 +303,8 @@ public:
    */
   bool isDepthScrollable();
 
+  void ignoreScroll(bool on);
+  void pauseScroll();
 
   void setViewPortFrozen(bool state);
   void setDepthFrozen(bool state);
@@ -301,6 +314,10 @@ public:
   void zoomTo(const ZIntPoint &pt);
 
   void zoomTo(int x, int y, int z, int w);
+  void zoomTo(const ZIntPoint &pt, int w);
+  void zoomTo(const ZPoint &pt, int w, bool showingHint);
+
+  void rotateView(double da, double db);
 
   void printViewParam() const;
   void setMaxViewPort(int s) {
@@ -326,27 +343,30 @@ public: //Message system implementation
 
 public:
   static QImage::Format stackKindToImageFormat(int kind);
-  double getCanvasWidthZoomRatio() const;
-  double getCanvasHeightZoomRatio() const;
-  double getProjZoomRatio() const;
+//  double getCanvasWidthZoomRatio() const;
+//  double getCanvasHeightZoomRatio() const;
+//  double getProjZoomRatio() const;
   void setInfo();
   bool isImageMovable() const;
 
   int getZ(neutu::ECoordinateSystem coordSys) const;
-  ZIntPoint getCenter(
-      neutu::ECoordinateSystem coordSys = neutu::ECoordinateSystem::STACK) const;
 
-  QRect getViewPort(neutu::ECoordinateSystem coordSys) const;
+  ZPoint getCutCenter() const;
+  ZAffineRect getCutRect() const;
+//  ZIntPoint getCenter(
+//      neutu::ECoordinateSystem coordSys = neutu::ECoordinateSystem::STACK) const;
+
+  ZAffineRect getViewPort() const;
   ZStackViewParam getViewParameter() const;
-  ZStackViewParam getViewParameter(
-      neutu::ECoordinateSystem coordSys,
-      neutu::View::EExploreAction action = neutu::View::EExploreAction::EXPLORE_UNKNOWN) const;
 
-  QRectF getProjRegion() const;
+//  QRectF getProjRegion() const;
   ZViewProj getViewProj() const;
 
   //Get transform from view port to proj region
-  ZStTransform getViewTransform() const;
+//  ZStTransform getViewTransform() const;
+
+  ZPoint transform(
+      const ZPoint &pt, neutu::data3d::ESpace src, neutu::data3d::ESpace dst) const;
 
   /*!
    * \brief Set the viewport offset
@@ -354,16 +374,18 @@ public:
    * (\a x, \a y) is supposed to the world coordinates of the first corner of
    * the viewport. The real position will be adjusted to fit in the canvas.
    */
-  void setViewPortOffset(int x, int y);
+//  void setViewPortOffset(int x, int y);
 
   void setViewPortCenter(int x, int y, int z, neutu::EAxisSystem system);
   void setViewPortCenter(const ZIntPoint &center, neutu::EAxisSystem system);
 
+  /*
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
   void setViewProj(const ZViewProj &vp);
-  void updateViewParam(const ZStackViewParam &param);
-  void updateViewParam(const ZArbSliceViewParam &param);
+  */
+//  void updateViewParam(const ZStackViewParam &param);
+//  void updateViewParam(const ZArbSliceViewParam &param);
   void resetViewParam(const ZArbSliceViewParam &param);
 
   ZIntPoint getViewCenter() const;
@@ -376,16 +398,19 @@ public:
 
 //  void notifyViewPortChanged();
 
+  bool isViewChanged(const ZSliceViewTransform &t);
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
-  void processViewChange(bool redrawing);
+
+  bool signalingViewChange() const;
+  void enableViewChangeSignal(bool on);
+//  void processViewChange(bool redrawing);
 //  void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
   void setSmoothDisplay(bool on);
 
-  void notifyViewChanged(const ZStackViewParam &param);
-  void notifyViewChanged();
+//  void notifyViewChanged(const ZStackViewParam &param);
 
   /*!
    * \brief Get the size of the image window.
@@ -397,10 +422,12 @@ public:
 
   void addToolButton(QPushButton *button);
   void removeToolButton(QPushButton *button);
+  void setWidgetReady(bool ready);
 
 
 public: //Change view parameters
-  void move(const QPoint& src, const QPointF &dst);
+  void moveViewPort(const QPoint& src, const QPointF &dst);
+  void moveViewPort(const ZPoint &src, int a, int b);
   void moveViewPort(int dx, int dy);
 
   void increaseZoomRatio();
@@ -418,46 +445,42 @@ public: //Change view parameters
 
   void updateContrastProtocal();
 
+  ZPoint getAnchorPoint(neutu::data3d::ESpace space) const;
+  std::set<neutu::data3d::ETarget> updateViewData();
+  void updateSceneWithViewData();
+
 public: //View parameters for arbitrary plane
-  ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
-  ZArbSliceViewParam getSliceViewParam() const;
+//  ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
+//  ZArbSliceViewParam getSliceViewParam() const;
+  ZSliceViewTransform getSliceViewTransform() const;
+  void setSliceViewTransform(const ZSliceViewTransform &t);
 
   void updateDataInfo(const QPoint &widgetPos);
+
+  void updateObjectCanvasVisbility(bool visible);
 //  void setSliceViewParam(const ZArbSliceViewParam &param);
 //  void showArbSliceViewPort();
 
+  void invalidateObjectSorter();
+  void updateObjectSorter();
+
 protected:
-  ZIntCuboid getViewBoundBox() const;
+//  ZIntCuboid getViewBoundBox() const;
   ZIntCuboid getCurrentStackRange() const;
   int getDepth() const;
 
   void clearCanvas();
-  template<typename T>
-  void resetCanvasWithStack(T &canvas, ZPainter *painter);
+//  template<typename T>
+//  void resetCanvasWithStack(T &canvas, ZPainter *painter);
 
-  virtual void resetCanvasWithStack(
-      ZMultiscalePixmap &canvas, ZPainter *painter);
+//  virtual void resetCanvasWithStack(
+//      ZMultiscalePixmap &canvas, ZPainter *painter);
 
 //  void reloadTileCanvas();
 //  bool reloadObjectCanvas(bool repaint = false);
   void reloadCanvas();
 
-  virtual void updateImageCanvas();
-  void updateMaskCanvas();
-  void clearObjectCanvas();
-  void clearTileCanvas();
-  void updateObjectCanvas();
-  void updateTileCanvas();
-  void updateDynamicObjectCanvas();
-  void updateActiveDecorationCanvas();
-  void updatePaintBundle();
-  void updateCanvas(ZStackObject::ETarget target);
-
-  ZPainter* getTileCanvasPainter();
-  ZPainter* getObjectCanvasPainter();
-
-  ZPixmap* updateProjCanvas(ZPixmap *canvas, ZPainter *painter);
-  ZPixmap* updateViewPortCanvas(ZPixmap *canvas);
+//  ZSliceCanvas* updateCanvas(ZSliceCanvas *canvas);
 
   void connectSignalSlot();
 
@@ -466,7 +489,7 @@ protected:
    *
    * It is usually the same as the size of a stack slice.
    */
-  QSize getCanvasSize() const;
+//  QSize getCanvasSize() const;
 
   //help functions
   virtual void paintSingleChannelStackSlice(ZStack *stack, int slice);
@@ -474,19 +497,18 @@ protected:
   void paintSingleChannelStackMip(ZStack *stack);
   void paintMultipleChannelStackMip(ZStack *stack);
 
-  std::set<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
-  std::set<ZStackObject::ETarget> updateViewData();
+  std::set<neutu::data3d::ETarget> updateViewData(const ZStackViewParam &param);
 
   void init();
 
-  ZPainter* getPainter(ZStackObject::ETarget target);
-  ZPixmap* getCanvas(ZStackObject::ETarget target);
-  void setCanvasVisible(ZStackObject::ETarget target, bool visible);
+//  ZPainter* getPainter(neutu::data3d::ETarget target);
+//  ZPixmap* getCanvas(neutu::data3d::ETarget target);
+//  void setCanvasVisible(neutu::data3d::ETarget target, bool visible);
 //  void resetDepthControl();
 
   void setSliceRange(int minSlice, int maxSlice);
 
-  bool event(QEvent *event);
+  bool event(QEvent *event) override;
 
   void enableOffsetAdjustment(bool on);
 
@@ -522,11 +544,13 @@ public slots:
 
   void paintStack();
   void paintMask();
-  void paintObject();
-  void paintObject(QList<ZStackObject *> selected,
-                   QList<ZStackObject *> deselected);
+//  void paintObject();
+//  void paintObject(QList<ZStackObject *> selected,
+//                   QList<ZStackObject *> deselected);
+  void paintObject(const ZStackObjectInfoSet &selected,
+                   const ZStackObjectInfoSet &deselected);
   void paintActiveDecoration();
-  void paintActiveTile();
+//  void paintActiveTile();
 
   void mouseReleasedInImageWidget(QMouseEvent *event);
   void mousePressedInImageWidget(QMouseEvent *event);
@@ -546,8 +570,8 @@ public slots:
   void setStackInfo(const QString &info);
   void autoThreshold();
   void setThreshold(int thre);
-  void setZ(int z);
-  void setZQuitely(int z);
+  void setDepth(int z);
+//  void setZQuitely(int z);
 
   void displayActiveDecoration(bool display = true);
   void request3DVis();
@@ -559,45 +583,84 @@ public slots:
   void closeChildFrame();
 
 
-  void setView(const ZStackViewParam &param);
-  void setViewPort(const QRect &rect);
+  void setViewPort(const ZAffineRect &rect);
   void maximizeViewPort();
 
   void updateZSpinBoxValue();
 
-  void paintObject(ZStackObject::ETarget target);
-  void paintObject(const std::set<ZStackObject::ETarget> &targetSet);
+  void paintObject(neutu::data3d::ETarget target);
+  void paintObject(const std::set<neutu::data3d::ETarget> &targetSet);
 
   void dump(const QString &msg);
 
   void hideThresholdControl();
 
-  void setDynamicObjectAlpha(int alpha);
   void resetViewProj();
 
   void enableCustomCheckBox(
       int index, const QString &text, QObject *receiver, const char *slot);
 
+  void processCanvasUpdate(
+      neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas);
+
+  void notifyViewChanged();
+  void syncTransformControl();
+  void updateDataInfo();
+
+  void notifySliceSliderPressed();
+  void notifySliceSliderReleased();
+
+  void setBlinking(bool on);
+
 signals:
 //  void currentSliceChanged(int);
-  void viewChanged(ZStackViewParam param);
+  void viewChanged(const ZStackViewParam &param);
+  void viewChanged(int viewId);
 //  void viewPortChanged();
   void messageGenerated(const ZWidgetMessage &message);
   void changingSetting();
-  void sliceSliderPressed();
-  void sliceSliderReleased();
+  void sliceSliderPressed(ZStackView*);
+  void sliceSliderReleased(ZStackView*);
   void closingChildFrame();
   void autoTracing();
+  void widgetCanvasUpdated(ZPixmap *canvas);
+  void canvasUpdated(neutu::data3d::ETarget target,
+                     std::shared_ptr<ZSliceCanvas> canvas);
+  void sliceAxisChanged();
+//  void widgetCanvasUpdated(ZImage *canvas);
 
 private:
   void hideLayout(QLayout *layout, bool removing);
 
   void updateSliceFromZ(int z);
   void recordViewParam();
-  void updateSliceViewParam();
+//  void updateSliceViewParam();
   void prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter);
 
-  ZStack* getObjectMask(uint8_t maskValue);
+  std::shared_ptr<ZSliceCanvas> getClearCanvas(neutu::data3d::ETarget target);
+//  ZSliceCanvas* getClearVisibleCanvas(neutu::data3d::ETarget target);
+
+//  void paintObjectBuffer(ZSliceCanvas &canvas, neutu::data3d::ETarget target);
+
+  void updateObjectBuffer(
+      std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target);
+
+  void updateObjectBuffer(
+      std::shared_ptr<ZSliceCanvas> canvas, const QList<ZStackObject*> &objList);
+  void updateObjectBuffer(
+      std::shared_ptr<ZSliceCanvas> canvas, QPainter *painter,
+      const QList<ZStackObject*> &objList);
+  void updateObjectBuffer(
+      std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target,
+      const QList<ZStackObject*> &objList);
+  void updateObjectBuffer(
+      neutu::data3d::ETarget target, const QList<ZStackObject*> &objList);
+  void updateObjectBuffer(neutu::data3d::ETarget target);
+
+  template<template<class...> class Container>
+  void updateObjectBuffer(const Container<neutu::data3d::ETarget> &targetList);
+
+//  ZStack* getObjectMask(uint8_t maskValue);
 
   //Stack space offset
   int getZ0() const;
@@ -606,13 +669,26 @@ private:
   /*!
    * \brief Get object mask of a certain color
    */
-  ZStack* getObjectMask(neutu::EColor color, uint8_t maskValue);
+//  ZStack* getObjectMask(neutu::EColor color, uint8_t maskValue);
 
   void configurePainter(ZStackObjectPainter &painter);
 
   void logViewParam();
 //  void setCentralView(int width, int height);
-  void syncArbViewCenter();
+//  void syncArbViewCenter();
+
+//  void requestWidgetCanvasUpdate();
+//  void addWidgetCanvasTask();
+//  void notifyWidgetCanvasUpdate(ZPixmap *canvas);
+
+//  void addNonblockCanvasTask(
+//      neutu::data3d::ETarget target, const QList<ZStackObject *> &objList);
+  void addNonblockCanvasTask(
+      std::shared_ptr<ZSliceCanvas> canvas, neutu::data3d::ETarget target,
+      const QList<ZStackObject *> &objList);
+  void notifyCanvasUpdate(
+      neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas);
+//  void notifyWidgetCanvasUpdate(ZImage *canvas);
 
   class ViewParamRecordOnce {
   public:
@@ -631,7 +707,13 @@ private:
 
   void tryAutoRecord();
 
+  void setDepthRangeQuietly(int minZ, int maxZ);
+
+private slots:
+  void processTransformChange();
+
 protected:
+  int m_viewId;
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;
@@ -641,21 +723,10 @@ protected:
   ZImage *m_image = NULL;
 //  ZPainter m_imagePainter;
   ZImage *m_imageMask = NULL;
-//  ZPixmap *m_objectCanvas;
-  ZPixmap *m_dynamicObjectCanvas = NULL;
-  double m_dynamicObjectOpacity;
 
-  ZPixmap *m_objectCanvas = NULL;
-  ZPainter m_objectCanvasPainter;
-
-  neutu::EAxis m_sliceAxis;
-
-  ZPainter m_tileCanvasPainter;
-  ZPixmap *m_activeDecorationCanvas = NULL;
-//  ZMultiscalePixmap m_tileCanvas;
-  ZPixmap *m_tileCanvas = NULL;
+//  ZSliceCanvas *m_tileCanvas = NULL;
   ZImageWidget *m_imageWidget;
-  ZLabeledSpinBoxWidget *m_zSpinBox;
+  ZLabeledSpinBoxWidget *m_depthSpinBox;
 
   QVBoxLayout *m_layout;
   QHBoxLayout *m_topLayout;
@@ -677,7 +748,8 @@ protected:
 
   neutu::ESizeHintOption m_sizeHintOption;
 
-  ZPaintBundle m_paintBundle;
+//  ZPaintBundle m_paintBundle;
+  ZStackObjectPaintSorter m_paintSorter;
   bool m_isRedrawBlocked;
 //  QMutex m_mutex;
 
@@ -687,14 +759,20 @@ protected:
   bool m_depthFrozen;
   bool m_viewPortFrozen;
   bool m_viewChangeEventBlocked;
+  bool m_signalingViewChange = true;
+  bool m_ignoringScroll = false;
+  bool m_blinking = false;
+  int64_t m_scrollPausedTime = 0;
 
   ZScrollSliceStrategy *m_sliceStrategy;
 
   QRect m_defaultViewPort;
-  ZStackViewParam m_oldViewParam;
+//  ZStackViewParam m_oldViewParam;
   bool m_viewParamRecorded = false;
   bool m_viewParamRecordOnce = false;
-  ZArbSliceViewParam m_sliceViewParam;
+//  ZArbSliceViewParam m_sliceViewParam;
+//  ZSliceViewTranform m_mainTransform;
+//  ZSliceViewTranform m_prevMainTransform;
   int m_maxViewPort = 0;
 
   neutu::mvc::ViewInfoFlags m_viewFlags =
@@ -703,10 +781,13 @@ protected:
       neutu::mvc::ViewInfoFlag::WINDOW_SCALE |
       neutu::mvc::ViewInfoFlag::IMAGE_VALUE;
 
-  ZIntCuboid m_currentStackRange;
+//  ZIntCuboid m_currentStackRange;
+  ZPoint m_lastModelPosForDataInfo;
 
   std::shared_ptr<ZStackViewRecorder> m_recorder;
   ZStackViewRecordDialog *m_recordDlg = nullptr;
+
+  static std::atomic<int> m_nextViewId;
 };
 
 #endif

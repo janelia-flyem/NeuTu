@@ -11,15 +11,22 @@
 #include "tz_voxel_graphics.h"
 #include "tz_tvoxel.h"
 
+#include "common/utilities.h"
 #include "common/math.h"
 #include "c_stack.h"
 #include "zobject3darray.h"
 #include "zstack.hxx"
-#include "zpainter.h"
 #include "geometry/zcuboid.h"
 #include "geometry/zintcuboid.h"
 #include "geometry/zpoint.h"
 #include "geometry/zintpoint.h"
+
+#include "data3d/displayconfig.h"
+
+#if _QT_GUI_USED_
+#include "vis2d/utilities.h"
+#include "vis2d/zslicepainter.h"
+#endif
 
 using namespace std;
 
@@ -32,7 +39,7 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_hitVoxelIndex(-1)
     }
   }
 
-  setTarget(ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 }
 
@@ -48,7 +55,7 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
     set(i, *iter, width, height, dx, dy, dz);
   }
 
-  setTarget(ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 }
 
@@ -170,8 +177,46 @@ bool ZObject3d::load(const char *filePath)
   return false;
 }
 
+bool ZObject3d::display(QPainter *painter, const DisplayConfig &config) const
+{
+  ZSlice3dPainter s3Painter;
+  s3Painter.setModelViewTransform(config.getWorldViewTransform());
+  s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
+  neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+  QPen pen(getColor());
+  pen.setCosmetic(false);
+  painter->setPen(pen);
+
+  painter->setRenderHint(QPainter::Antialiasing, false);
+
+  int z = neutu::iround(config.getCutPlane().getOffset().getZ());
+
+  std::vector<ZPoint> points;
+  if (config.getSliceAxis() == neutu::EAxis::Z) {
+    //Screening first can make painting much faster
+    //Todo: apply this to other view orientations
+    for (size_t i = 0; i < m_voxelArray.size() / 3; i++) {
+      const int *v = m_voxelArray.data() + i * 3;
+      if (z == v[2]) {
+        points.emplace_back(v[0], v[1], v[2]);
+      }
+    }
+  } else {
+    for (size_t i = 0; i < m_voxelArray.size() / 3; i++) {
+      const int *v = m_voxelArray.data() + i * 3;
+      points.emplace_back(v[0], v[1], v[2]);
+      //    s3Painter.drawPoint(painter, v[0], v[1], v[2]);
+    }
+  }
+  s3Painter.drawPoints(painter, points);
+
+  return s3Painter.getPaintedHint();
+}
+
+#if 0
 void ZObject3d::display(
-    ZPainter &painter, int slice, EDisplayStyle option,
+    ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
     neutu::EAxis sliceAxis) const
 {  
   UNUSED_PARAMETER(option);
@@ -260,6 +305,7 @@ void ZObject3d::display(
   UNUSED_PARAMETER(option);
 #endif
 }
+#endif
 
 void ZObject3d::labelStack(Stack *stack) const
 {
@@ -452,7 +498,7 @@ void ZObject3d::exportCsvFile(string filePath)
   fclose(fp);
 }
 
-ZObject3d* ZObject3d::clone() const
+ZObject3d *ZObject3d::clone() const
 {
   ZObject3d *obj = new ZObject3d();
 
@@ -994,8 +1040,8 @@ void ZObject3d::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     if (!isEmpty()) {
-      box->setFirstCorner(getX(0), getY(0), getZ(0));
-      box->setLastCorner(getX(0), getY(0), getZ(0));
+      box->setMinCorner(getX(0), getY(0), getZ(0));
+      box->setMaxCorner(getX(0), getY(0), getZ(0));
       box->set(getX(0), getY(0), getZ(0), getX(0), getY(0), getZ(0));
     }
     for (size_t i = 1; i < size(); i++) {
@@ -1006,12 +1052,20 @@ void ZObject3d::boundBox(ZIntCuboid *box) const
   }
 }
 
-ZIntCuboid ZObject3d::getBoundBox() const
+ZIntCuboid ZObject3d::getIntBoundBox() const
 {
   ZIntCuboid cuboid;
   boundBox(&cuboid);
 
   return cuboid;
+}
+
+ZCuboid ZObject3d::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getIntBoundBox());
+
+  return box;
 }
 
 ZIntPoint ZObject3d::getCentralVoxel() const

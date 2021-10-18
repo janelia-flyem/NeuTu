@@ -17,6 +17,8 @@ class ZDvidTarget;
 class ZBrowserOpener;
 class QMainWindow;
 class NeuPrintReader;
+class ZJsonObject;
+class ZDvidBufferReader;
 
 class ZGlobal
 {
@@ -73,13 +75,18 @@ public:
   NeuPrintReader *getNeuPrintReader();
   QString getNeuPrintServer() const;
   void setNeuPrintServer(const QString &server);
-  QString getNeuPrintToken() const;
+  QString getNeuPrintToken(const std::string &key) const;
   QString getNeuPrintAuth() const;
 
   NeuPrintReader* makeNeuPrintReader();
-  NeuPrintReader* makeNeuPrintReader(const QString &uuid);
+  NeuPrintReader* makeNeuPrintReaderFromUuid(const QString &uuid);
 
   static void InitKafkaTracer(std::string serviceName = "");
+
+  QString getCleaveServer() const;
+
+  std::shared_ptr<ZDvidBufferReader> takeDvidBufferReader() const;
+  void returnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader);
 
 public:
   static ZDvidReader* GetDvidReader(
@@ -94,12 +101,16 @@ public:
       const std::string &url, const std::string &key = "");
   static ZDvidWriter* GetDvidWriterFromUrl(
       const std::string &url, const std::string &key = "");
+  static std::shared_ptr<ZDvidBufferReader> TakeDvidBufferReader();
+  static void ReturnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader);
 
 public:
   ZDvidSparseStack* readDvidSparseStack(const std::string &url) const;
   ZBrowserOpener* getBrowserOpener() const;
 
   static void CopyToClipboard(const std::string &str);
+
+  ZJsonObject readJsonObjectFromUrl(const std::string& url);
 
 private:
   /*

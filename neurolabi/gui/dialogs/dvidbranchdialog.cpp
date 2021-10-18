@@ -511,7 +511,7 @@ ZDvidTarget &DvidBranchDialog::getDvidTarget() {
 
     if (!ui->grayscaleSourceCheckBox->isChecked()) {
         ZDvidNode grayscaleNode;
-        grayscaleNode.setServer(ui->grayscaleServerBox->text().toStdString());
+        grayscaleNode.setHost(ui->grayscaleServerBox->text().toStdString());
         grayscaleNode.setPort(ui->grayscalePortBox->text().toInt());
         grayscaleNode.setUuid(ui->grayscaleUUIDBox->text().toStdString());
         m_dvidTarget.setGrayScaleSource(grayscaleNode);
@@ -519,7 +519,7 @@ ZDvidTarget &DvidBranchDialog::getDvidTarget() {
 
     if (!ui->tileSourceCheckBox->isChecked()) {
         ZDvidNode tileNode;
-        tileNode.setServer(ui->tileServerBox->text().toStdString());
+        tileNode.setHost(ui->tileServerBox->text().toStdString());
         tileNode.setPort(ui->tilePortBox->text().toInt());
         tileNode.setUuid(ui->tileUUIDBox->text().toStdString());
         m_dvidTarget.setTileSource(tileNode);
@@ -613,11 +613,11 @@ void DvidBranchDialog::launchOldDialog() {
 
         if (target.getGrayScaleSource().isValid()) {
             ui->grayscaleSourceCheckBox->setChecked(true);
-            ui->grayscaleServerBox->setText(QString::fromStdString(target.getGrayScaleSource().getAddress()));
+            ui->grayscaleServerBox->setText(QString::fromStdString(target.getGrayScaleSource().getHost()));
             ui->grayscalePortBox->setValue(target.getGrayScaleSource().getPort());
             ui->grayscaleUUIDBox->setText(QString::fromStdString(target.getGrayScaleSource().getUuid()));
 
-            if (target.getAddress() != target.getGrayScaleSource().getAddress() ||
+            if (target.getAddress() != target.getGrayScaleSource().getHost() ||
                 target.getPort() != target.getGrayScaleSource().getPort() ||
                 target.getUuid() != target.getGrayScaleSource().getUuid()) {
                 ui->grayscaleSourceCheckBox->setChecked(false);
@@ -626,11 +626,11 @@ void DvidBranchDialog::launchOldDialog() {
 
         if (target.getTileSource().isValid()) {
             ui->tileSourceCheckBox->setChecked(true);
-            ui->tileServerBox->setText(QString::fromStdString(target.getTileSource().getAddress()));
+            ui->tileServerBox->setText(QString::fromStdString(target.getTileSource().getHost()));
             ui->tilePortBox->setValue(target.getTileSource().getPort());
             ui->tileUUIDBox->setText(QString::fromStdString(target.getTileSource().getUuid()));
 
-            if (target.getAddress() != target.getTileSource().getAddress() ||
+            if (target.getAddress() != target.getTileSource().getHost() ||
                 target.getPort() != target.getTileSource().getPort() ||
                 target.getUuid() != target.getTileSource().getUuid()) {
                 ui->tileSourceCheckBox->setChecked(false);

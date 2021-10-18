@@ -413,7 +413,7 @@ void flyem::Service::FaceOrphanOverlap::loadFaceOrphanBody(
     m_faceOrphanBody.push_back(obj);
     //Check which face it is in
     Cuboid_I box;
-    obj.getBoundBox(&box);
+    obj.getIntBoundBox(&box);
 #ifdef _DEBUG_2
     Print_Cuboid_I(&box);
 #endif
@@ -497,7 +497,7 @@ void flyem::Service::FaceOrphanOverlap::loadFaceOrphanBodyMock(
     m_faceOrphanBody.push_back(obj);
     //Check which face it is in
     Cuboid_I box;
-    obj.getBoundBox(&box);
+    obj.getIntBoundBox(&box);
 #ifdef _DEBUG_2
     Print_Cuboid_I(&box);
 #endif
@@ -588,14 +588,14 @@ void flyem::Service::FaceOrphanOverlap::exportJsonFile(
     pt.append(neutu::iround(z));
     obj.setEntry("marker", pt);
 
-    ZIntCuboid box = body.getBoundBox();
+    ZIntCuboid box = body.getIntBoundBox();
     bool isOrphan = true;
     int hitIndex1 = m_cuboidArray.hitTest(
-          box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-          box.getFirstCorner().getZ());
+          box.getMinCorner().getX(), box.getMinCorner().getY(),
+          box.getMinCorner().getZ());
     int hitIndex2 = m_cuboidArray.hitTest(
-          box.getLastCorner().getX(), box.getLastCorner().getY(),
-          box.getLastCorner().getZ());
+          box.getMaxCorner().getX(), box.getMaxCorner().getY(),
+          box.getMaxCorner().getZ());
     if ( hitIndex1 < 0 || hitIndex2 < 0 || hitIndex1 != hitIndex2) {
       isOrphan = false;
     }

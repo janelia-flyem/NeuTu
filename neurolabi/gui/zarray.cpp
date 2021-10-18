@@ -18,6 +18,22 @@ ZArray::ZArray(ZArray::Value_Type type, int ndims, mylib::Dimn_Type *dims)
   m_startCoordinates.resize(ndims, 0);
 }
 
+ZArray::ZArray(Value_Type type, const std::vector<int> &dims)
+{
+  if (dims.empty()) {
+    return;
+  }
+
+  std::vector<mylib::Dimn_Type> cdims(dims.size());
+  for (size_t i = 0; i < dims.size(); ++i) {
+    cdims[i] = dims[i];
+  }
+
+  m_data = Make_Array(mylib::PLAIN_KIND, type, dims.size(), cdims.data());
+  setZero();
+  m_startCoordinates.resize(dims.size(), 0);
+}
+
 ZArray::ZArray(const ZArray &array)
 {
   *this = array;
@@ -51,9 +67,9 @@ void ZArray::printInfo() const
       std::cout << "Empty array" << std::endl;
     } else {
       std::cout << "Array(#): " << mylib::Array_Refcount(m_data) << std::endl;
-      std::cout << "  size: " << dim(0);
-      for (int i = 1; i < ndims(); i++) {
-        std::cout << " x " << dim(i);
+      std::cout << "  size: " << getDim(0);
+      for (int i = 1; i < getRank(); i++) {
+        std::cout << " x " << getDim(i);
       }
       std::cout << std::endl;
 
@@ -93,6 +109,21 @@ void ZArray::printInfo() const
   }
 }
 
+void* ZArray::getDataPointer(size_t offset) const
+{
+  if (m_data == nullptr) {
+    return nullptr;
+  }
+
+  if (m_data->data == nullptr) {
+    return nullptr;
+  }
+
+  return reinterpret_cast<void*>(
+        reinterpret_cast<uint8_t*>(m_data->data) + offset);
+}
+
+
 size_t ZArray::getElementNumber() const
 {
   if (m_data == NULL) {
@@ -100,10 +131,10 @@ size_t ZArray::getElementNumber() const
   }
 
   size_t s = 0;
-  if (ndims() > 0) {
+  if (getRank() > 0) {
     s = 1;
-    for (int i = 0; i < ndims(); ++i) {
-      s *= dim(i);
+    for (int i = 0; i < getRank(); ++i) {
+      s *= getDim(i);
     }
   }
 
@@ -115,22 +146,54 @@ bool ZArray::isEmpty() const
   return getElementNumber() == 0;
 }
 
+bool ZArray::withinDataRange(const std::vector<int> &coords) const
+{
+  if (int(coords.size()) != getRank()) {
+    return false;
+  }
+
+  for (int i = 0; i < getRank(); ++i) {
+    if (coords[i] < m_startCoordinates[i] ||
+        coords[i] - m_startCoordinates[i] >= getDim(i)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void ZArray::setZero()
 {
   if (!isEmpty()) {
-    bzero(m_data->data, getByteNumber());
+    memset(m_data->data, 0, getByteNumber());
+//    bzero(m_data->data, getByteNumber());
   }
+}
+
+size_t ZArray::getBytePerElement() const
+{
+  return getValueTypeSize(valueType());
 }
 
 size_t ZArray::getByteNumber() const
 {
-  return getElementNumber() * getValueTypeSize(valueType());
+  return getElementNumber() * getBytePerElement();
 }
 
 void ZArray::copyDataFrom(const void *data)
 {
   if (data != NULL) {
     memcpy(m_data->data, data, getByteNumber());
+  }
+}
+
+void ZArray::copyDataFrom(
+    const void *data, size_t elementOffset, size_t elementCount)
+{
+  if (data && (elementOffset < getElementNumber())) {
+    elementCount = std::min(elementCount, getElementNumber() - elementOffset);
+    memcpy((char*)(m_data->data) + elementOffset * getBytePerElement(),
+           data, elementCount * getBytePerElement());
   }
 }
 
@@ -199,7 +262,7 @@ void ZArray::print() const
 
 uint64_t ZArray::getUint64Value(size_t index) const
 {
-  if (index > getElementNumber()) {
+  if (index >= getElementNumber()) {
     return 0;
   }
 
@@ -210,16 +273,16 @@ uint64_t ZArray::getUint64Value(size_t index) const
 
 int ZArray::getDim(int index) const
 {
-  if (index < 0 || index >= ndims()) {
+  if (index < 0 || index >= getRank()) {
     return 1;
   }
 
-  return dim(index);
+  return m_data->dims[index];
 }
 
 int ZArray::getStartCoordinate(int index) const
 {
-  if (index < 0 || index >= ndims()) {
+  if (index < 0 || index >= getRank()) {
     return 0;
   }
 
@@ -228,7 +291,7 @@ int ZArray::getStartCoordinate(int index) const
 
 void ZArray::setStartCoordinate(int index, int x)
 {
-  if (index >= 0 && index < ndims()) {
+  if (index >= 0 && index < getRank()) {
     m_startCoordinates[index] = x;
   }
 }
@@ -245,3 +308,128 @@ void ZArray::setStartCoordinate(int x, int y, int z)
   m_startCoordinates[2] = z;
 }
 
+namespace {
+
+struct MIndex {
+  MIndex(const std::vector<int> &start, const std::vector<int> &dims):
+    m_start(start), m_dims(dims) {
+    startIter();
+  }
+
+  size_t getRank() const {
+    return m_dims.size();
+  }
+
+  void startIter() {
+    m_coords = m_start;
+    m_coords[0] -= 1;
+  }
+
+  inline int getMaxCoord(int i) const {
+    return m_start[i] + m_dims[i] - 1;
+  }
+
+  bool hasNext() const {
+    for (int i = getRank() - 1; i >= 0; --i) {
+      if (m_coords[i] < getMaxCoord(i)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool next() {
+    if (hasNext()) {
+      size_t ndims = getRank();
+      for (size_t i = 0; i < ndims; ++i) {
+        if (m_coords[i] >= getMaxCoord(i)) {
+          m_coords[i] = m_start[i];
+        } else {
+          ++m_coords[i];
+          break;
+        }
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
+
+  std::vector<int> m_start;
+  std::vector<int> m_dims;
+  std::vector<int> m_coords;
+};
+
+}
+
+size_t ZArray::getIndex(const std::vector<int> &coords) const
+{
+  size_t index = 0;
+  size_t stride = 1;
+  for (int i = 0; i < getRank(); ++i) {
+    index += stride * (coords[i] - m_startCoordinates[i]);
+    stride *= getDim(i);
+  }
+
+  return index;
+}
+
+ZArray* ZArray::crop(
+    const std::vector<int> &corner, const std::vector<int> &dims) const
+{
+  if (int(corner.size()) != getRank() && int(dims.size()) != getRank()) {
+    return nullptr;
+  }
+
+  ZArray *array = new ZArray(m_data->type, dims);
+
+  array->setZero();
+  array->setStartCoordinate(corner);
+
+
+  if (withinDataRange(corner)) {
+    int minX = std::max(corner[0], getStartCoordinate(0));
+    int maxX = std::min(
+          corner[0] + dims[0] - 1, getStartCoordinate(0) + getDim(0) - 1);
+    size_t nbyteToCopy = (maxX - minX + 1) * getBytePerElement();
+    size_t targetOffset = 0;
+
+    MIndex index(std::vector<int>(++(corner.begin()), corner.end()),
+                 std::vector<int>(++(dims.begin()), dims.end()));
+    while (index.next()) {
+      std::vector<int> coords(1);
+      coords[0] = corner[0];
+      coords.insert(coords.end(), index.m_coords.begin(), index.m_coords.end());
+      if (withinDataRange(coords)) {
+        size_t sourceOffset = getIndex(coords) * getBytePerElement();
+        memcpy(array->getDataPointer(targetOffset),
+               this->getDataPointer(sourceOffset), nbyteToCopy);
+      }
+      targetOffset += dims[0] * getBytePerElement();
+    }
+  }
+
+  return array;
+}
+
+std::vector<int> ZArray::getDimVector() const
+{
+  std::vector<mylib::Dimn_Type> dims(getRank());
+  for (int i = 0; i < getRank(); ++i) {
+    dims[i] = getDim(i);
+  }
+
+  return dims;
+}
+
+void ZArray::forEachCoordinates(
+    std::function<void (const std::vector<int> &)> f) const
+{
+  MIndex index(m_startCoordinates, getDimVector());
+  while (index.next()) {
+    f(index.m_coords);
+  }
+}

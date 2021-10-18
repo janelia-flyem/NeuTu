@@ -395,7 +395,7 @@ void ZStackWatershedContainer::addSeed(const ZStroke2d &seed)
 
 void ZStackWatershedContainer::addSeed(const ZObject3d &seed)
 {
-  expandSeedArray(seed.clone());
+  expandSeedArray(dynamic_cast<ZObject3d*>(seed.clone()));
 //  m_seedArray.push_back(seed.clone());
 #if 0
   ZStack stack;
@@ -539,7 +539,7 @@ void ZStackWatershedContainer::setRange(
 
 void ZStackWatershedContainer::setRange(const ZIntCuboid &range)
 {
-  setRange(range.getFirstCorner(), range.getLastCorner());
+  setRange(range.getMinCorner(), range.getMaxCorner());
 }
 
 void ZStackWatershedContainer::setRange(
@@ -630,7 +630,7 @@ ZStack* ZStackWatershedContainer::getSourceStack()
         m_source = m_stack;
       } else {
         ZIntCuboid fullRange = m_stack->getBoundBox();
-        ZIntPoint corner = m_range.getFirstCorner() - fullRange.getFirstCorner();
+        ZIntPoint corner = m_range.getMinCorner() - fullRange.getMinCorner();
 
         Stack *rawSource = C_Stack::crop(
               m_stack->c_stack(m_channel),
@@ -638,7 +638,7 @@ ZStack* ZStackWatershedContainer::getSourceStack()
               m_range.getWidth(), m_range.getHeight(), m_range.getDepth(), NULL);
         m_source = new ZStack();
         m_source->consume(rawSource);
-        m_source->setOffset(m_range.getFirstCorner());
+        m_source->setOffset(m_range.getMinCorner());
       }
     }
   }
@@ -739,7 +739,7 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
     container.setName(getName() + "_refiner" + std::to_string(index++));
 
     std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
-          *stack, *boundaryStack, subbound.getBoundBox());
+          *stack, *boundaryStack, subbound.getIntBoundBox());
     //          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
     for (ZObject3d *seed : newSeeds) {
       container.consumeSeed(seed);
@@ -894,7 +894,7 @@ ZIntCuboid ZStackWatershedContainer::GetSeedRange(
 {
   ZIntCuboid box;
   for (ZObject3d *obj : seedArray) {
-    box.join(obj->getBoundBox());
+    box.join(obj->getIntBoundBox());
   }
 
   return box;
@@ -963,18 +963,18 @@ std::vector<ZObject3d*> ZStackWatershedContainer::MakeBorderSeed(
     const uint8_t *boundaryArray = boundaryStack.array8();
     const uint8_t *array = stack.array8();
 
-    boundaryBox.scale(ZIntPoint(sx, sy, sz));
+    boundaryBox.scaleUp(ZIntPoint(sx, sy, sz));
     boundaryBox.expand(1, 1, 1);
     boundaryBox.intersect(
           ZIntCuboid(0, 0, 0, width * sx - 1, height * sy - 1, depth * sz - 1));
 
-    int bx0 = boundaryBox.getFirstCorner().getX();
-    int by0 = boundaryBox.getFirstCorner().getY();
-    int bz0 = boundaryBox.getFirstCorner().getZ();
+    int bx0 = boundaryBox.getMinCorner().getX();
+    int by0 = boundaryBox.getMinCorner().getY();
+    int bz0 = boundaryBox.getMinCorner().getZ();
 
-    int bx1 = boundaryBox.getLastCorner().getX();
-    int by1 = boundaryBox.getLastCorner().getY();
-    int bz1 = boundaryBox.getLastCorner().getZ();
+    int bx1 = boundaryBox.getMaxCorner().getX();
+    int by1 = boundaryBox.getMaxCorner().getY();
+    int bz1 = boundaryBox.getMaxCorner().getZ();
 
     int x0 = stack.getOffset().getX() * sx;
     int y0 = stack.getOffset().getY() * sy;

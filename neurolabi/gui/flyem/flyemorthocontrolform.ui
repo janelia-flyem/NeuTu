@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>376</width>
+    <width>384</width>
     <height>319</height>
    </rect>
   </property>
@@ -46,6 +46,13 @@
       <widget class="QPushButton" name="reloadPushButton">
        <property name="text">
         <string>Reload @ Crosshair</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="autoCheckBox">
+       <property name="text">
+        <string>Auto</string>
        </property>
       </widget>
      </item>
@@ -100,6 +107,9 @@
         <iconset resource="../gui.qrc">
          <normaloff>:/images/smooth.png</normaloff>:/images/smooth.png</iconset>
        </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item>
@@ -139,7 +149,6 @@
    </item>
   </layout>
   <zorder>messageWidget</zorder>
-  <zorder>reloadPushButton</zorder>
   <zorder>locateToPushButton</zorder>
  </widget>
  <customwidgets>

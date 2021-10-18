@@ -52,6 +52,9 @@ public:
     virtual QMenu * getTaskMenu();
     virtual bool usePrefetching();
     virtual bool allowCompletion();
+    virtual QString getInfo() const;
+    virtual QString getWarning() const;
+    virtual QString getError() const;
 
     virtual ProtocolTaskConfig getTaskConfig() const;
     virtual bool allowingSplit(uint64_t bodyId) const;

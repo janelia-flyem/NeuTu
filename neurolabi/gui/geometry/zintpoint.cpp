@@ -2,6 +2,7 @@
 #include <iostream>
 #include <climits>
 #include <stdexcept>
+#include <neulib/core/stringbuilder.h>
 
 #include "zerror.h"
 #include "zpoint.h"
@@ -258,6 +259,19 @@ std::string ZIntPoint::toString() const
   return stream.str();
 }
 
+std::string ZIntPoint::toString(const std::string &templ) const
+{
+  if (templ.empty()) {
+    return toString();
+  }
+
+  return neulib::StringBuilder(templ).
+      replace("$X", "$x").replace("$Y", "$y").replace("$Z", "$z").
+      replace("$x", std::to_string(getX())).
+      replace("$y", std::to_string(getY())).
+      replace("$z", std::to_string(getZ()));
+}
+
 ZIntPoint ZIntPoint::operator - () const
 {
   if (!isValid()) {
@@ -272,6 +286,16 @@ ZPoint ZIntPoint::toPoint() const
   return ZPoint(getX(), getY(), getZ());
 }
 
+ZPoint ZIntPoint::toMinCorner() const
+{
+  return toPoint();
+}
+
+ZPoint ZIntPoint::toMaxCorner() const
+{
+  return toPoint() + 1.0;
+}
+
 bool ZIntPoint::isZero() const
 {
   return (getX() == 0) && (getY() == 0) && (getZ() == 0);
@@ -281,6 +305,15 @@ bool ZIntPoint::equals(const ZIntPoint &pt) const
 {
   return (getX() == pt.getX()) && (getY() == pt.getY()) &&
       (getZ() == pt.getZ());
+}
+
+double ZIntPoint::distanceSquareTo(double x, double y, double z) const
+{
+  double dx = m_x - x;
+  double dy = m_y - y;
+  double dz = m_z - z;
+
+  return dx * dx + dy * dy + dz * dz;
 }
 
 double ZIntPoint::distanceTo(double x, double y, double z) const
@@ -375,15 +408,15 @@ ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
 
 void ZIntPoint::shiftSliceAxis(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
 void ZIntPoint::shiftSliceAxisInverse(neutu::EAxis axis)
 {
-  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+  zgeom::ShiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
-int ZIntPoint::getSliceCoord(neutu::EAxis axis) const
+int ZIntPoint::getCoord(neutu::EAxis axis) const
 {
   switch (axis) {
   case neutu::EAxis::X:
@@ -399,6 +432,24 @@ int ZIntPoint::getSliceCoord(neutu::EAxis axis) const
   return m_z;
 }
 
+void ZIntPoint::setValue(int v, neutu::EAxis axis)
+{
+  switch (axis) {
+  case neutu::EAxis::X:
+    m_x = v;
+    break;
+  case neutu::EAxis::Y:
+    m_y = v;
+    break;
+  case neutu::EAxis::Z:
+    m_z = v;
+    break;
+  case neutu::EAxis::ARB:
+    set(v, v, v);
+    break;
+  }
+}
+
 void ZIntPoint::invalidate()
 {
   set(INT_MIN, INT_MIN, INT_MIN);
@@ -411,7 +462,7 @@ bool ZIntPoint::IsValid(int x)
 
 bool ZIntPoint::isValid() const
 {
-  return m_x != INT_MIN || m_y != INT_MIN || m_z != INT_MIN;
+  return IsValid(m_x) && IsValid(m_y) && IsValid(m_z);
 }
 
 void ZIntPoint::read(std::istream &stream)

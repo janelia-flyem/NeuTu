@@ -5,13 +5,14 @@
 
 class QRect;
 class QRectF;
+class ZAffineRect;
 
 class ZRect2d : public ZStackObject
 {
 public:
   ZRect2d();
   ZRect2d(int x0, int y0, int width, int height);
-  virtual ~ZRect2d();
+  virtual ~ZRect2d() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::RECT2D;
@@ -24,19 +25,31 @@ public:
   inline int getWidth() const { return m_width; }
   inline int getHeight() const { return m_height; }
 
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  bool isEmpty() const;
+
+  ZIntPoint getCenter() const;
+
+  void setViewId(int viewId);
+
+//  bool hit(double x, double y, neutu::EAxis axis) override;
+//  bool hit(double x, double y, double z) override;
 
   bool contains(double x, double y) const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis sliceAxis) const;
-  bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
+  virtual void display(
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+                       neutu::EAxis sliceAxis) const override;
+
+  bool display(
+      QPainter *rawPainter, int z, zstackobject::EDisplayStyle option,
+      zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+  */
 
 //  virtual const std::string& className() const;
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
   }
@@ -46,6 +59,9 @@ public:
   int getZSpan() const {
     return m_zSpan;
   }
+
+  void updateZSpanWithRadius();
+  void updateZSpanWithMinSide();
 
   bool isValid() const;
 
@@ -62,18 +78,21 @@ public:
   /*!
    * \brief Set the last corner of the rectable
    */
-  void setLastCorner(int x, int y);
-  void setFirstCorner(int x, int y);
+  void setMaxCorner(int x, int y);
+  void setMinCorner(int x, int y);
+
+  void setStartCorner(int x, int y);
+  void setEndCorner(int x, int y);
 
   /*!
     * \brief Set size by fixing the first corner.
     */
   void setSize(int width, int height);
 
-  int getFirstX() const;
-  int getFirstY() const;
-  int getLastX() const;
-  int getLastY() const;
+  int getMinX() const;
+  int getMinY() const;
+  int getMaxX() const;
+  int getMaxY() const;
 
   inline void setZ(int z) { m_z = z; }
   inline int getZ() const { return m_z; }
@@ -87,18 +106,33 @@ public:
       const QRectF &sourceRectIn, const QRectF &sourceRectOut,
       const QRectF &targetRectIn);
 
+  ZCuboid getBoundBox() const override;
+  ZIntCuboid getIntBoundBox() const;
+
+  ZAffineRect getAffineRect() const;
+
+  bool hit(double x, double y, double z, int viewId) override;
+
 private:
   void init(int x0, int y0, int width, int height);
   void preparePen(QPen &pen) const;
 
 private:
-  int m_x0;
-  int m_y0;
-  int m_width;
-  int m_height;
-  int m_z;
-  int m_zSpan;
-  bool m_isPenetrating;
+  int m_x0 = 0;
+  int m_y0 = 0;
+  int m_width = 0;
+  int m_height = 0;
+  int m_z = 0;
+  int m_zSpan = 0;
+  bool m_isPenetrating = false;
+
+  int m_sx0 = 0;
+  int m_sy0 = 0;
+
+  int m_viewId = 0;
+
+  mutable std::function<ZCuboid(const ZRect2d &rect)> _getBoundBox;
+  mutable std::function<ZAffineRect(const ZRect2d &rect)> _getAffineRect;
 //  NeuTube::EAxis m_sliceAxis;
 };
 

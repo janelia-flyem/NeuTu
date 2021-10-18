@@ -6,6 +6,8 @@
  * @author Ting Zhao
  */
 
+#include <functional>
+
 #include <QMdiSubWindow>
 #include <QString>
 #include <QStringList>
@@ -123,8 +125,8 @@ public:
   void exportChainFileList(const QString &filePath);
   //void exportChainConnection(const QString &filePath);
   //void exportChainConnectionFeat(const QString &filePath);
-  void exportObjectMask(const QString &filePath);
-  void exportObjectMask(neutu::EColor color, const QString &filePath);
+//  void exportObjectMask(const QString &filePath);
+//  void exportObjectMask(neutu::EColor color, const QString &filePath);
 //  ZStack* getObjectMask();
 //  ZStack* getObjectMask(neutube::EColor color);
   ZStack* getStrokeMask();
@@ -170,6 +172,7 @@ public:
   void load(const QStringList &fileList);
   void load(const QString &filePath);
   void load(const std::string &filePath);
+  void load(std::function<void(ZStackDoc*)> loadFunc);
 
   void disconnectAll();
 
@@ -180,6 +183,7 @@ public:
   void findLoopInStack();
   void bwthin();
   void skeletonize();
+  void exportSlice();
 
 public:
   void setViewInfo(const QString &info);
@@ -231,6 +235,7 @@ public:
 
   void invertStack();
   void subtractBackground();
+  void subtractBackgroundAdaptive();
   void removeChildFrame(ZStackFrame *frame);
   void detachParentFrame();
   void removeAllChildFrame();
@@ -270,7 +275,7 @@ public slots:
   void notifyUser(const QString &message);
   void locateSwcNodeIn3DView();
   void notifyViewChanged(const ZStackViewParam &param);
-  void setView(const ZStackViewParam &param);
+//  void setView(const ZStackViewParam &param);
   void closeAllChildFrame();
   void showSetting();
   void autoTrace();
@@ -278,7 +283,7 @@ public slots:
   void startProgress(const QString &title);
 
 private slots:
-  void updateSwcExtensionHint();
+//  void updateSwcExtensionHint();
   void testSlot();
 
 signals:

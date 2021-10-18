@@ -7,12 +7,12 @@ ZDvidBlockGrid::ZDvidBlockGrid()
 
 void ZDvidBlockGrid::setStartIndex(int x, int y, int z)
 {
-  m_grid.setFirstCorner(x, y, z);
+  m_grid.setMinCorner(x, y, z);
 }
 
 void ZDvidBlockGrid::setEndIndex(int x, int y, int z)
 {
-  m_grid.setLastCorner(x, y, z);
+  m_grid.setMaxCorner(x, y, z);
 }
 
 void ZDvidBlockGrid::setGridSize(int width, int height, int depth)
@@ -41,13 +41,13 @@ int ZDvidBlockGrid::getHashIndex(const ZIntPoint &blockIndex) const
 {
   int index = -1;
 
-  if (IS_IN_CLOSE_RANGE(blockIndex.getX(), m_grid.getFirstCorner().getX(),
-                        m_grid.getLastCorner().getX()) &&
-      IS_IN_CLOSE_RANGE(blockIndex.getY(), m_grid.getFirstCorner().getY(),
-                        m_grid.getLastCorner().getY()) &&
-      IS_IN_CLOSE_RANGE(blockIndex.getZ(), m_grid.getFirstCorner().getY(),
-                        m_grid.getLastCorner().getY())) {
-    ZIntPoint adjustedBlockIndex = blockIndex - m_grid.getFirstCorner();
+  if (IS_IN_CLOSE_RANGE(blockIndex.getX(), m_grid.getMinCorner().getX(),
+                        m_grid.getMaxCorner().getX()) &&
+      IS_IN_CLOSE_RANGE(blockIndex.getY(), m_grid.getMinCorner().getY(),
+                        m_grid.getMaxCorner().getY()) &&
+      IS_IN_CLOSE_RANGE(blockIndex.getZ(), m_grid.getMinCorner().getY(),
+                        m_grid.getMaxCorner().getY())) {
+    ZIntPoint adjustedBlockIndex = blockIndex - m_grid.getMinCorner();
     int area = m_grid.getWidth() * m_grid.getHeight();
     int width = m_grid.getWidth();
     index = area * adjustedBlockIndex.getZ() +
@@ -60,7 +60,7 @@ int ZDvidBlockGrid::getHashIndex(const ZIntPoint &blockIndex) const
 ZIntCuboid ZDvidBlockGrid::getBlockBox(const ZIntPoint &blockIndex) const
 {
   ZIntCuboid cuboid;
-  cuboid.setFirstCorner(getBlockPosition(blockIndex));
+  cuboid.setMinCorner(getBlockPosition(blockIndex));
   cuboid.setSize(m_blockSize.getX(), m_blockSize.getY(), m_blockSize.getZ());
 
   return cuboid;
@@ -101,9 +101,9 @@ ZDvidBlockGrid::Location ZDvidBlockGrid::getLocation(int x, int y, int z) const
   y -= m_minPoint.getY();
   z -= m_minPoint.getZ();
 
-  location.setBlockIndex(x / m_blockSize.getX() + m_grid.getFirstCorner().getX(),
-                         y / m_blockSize.getY() + m_grid.getFirstCorner().getY(),
-                         z / m_blockSize.getZ() + m_grid.getFirstCorner().getZ());
+  location.setBlockIndex(x / m_blockSize.getX() + m_grid.getMinCorner().getX(),
+                         y / m_blockSize.getY() + m_grid.getMinCorner().getY(),
+                         z / m_blockSize.getZ() + m_grid.getMinCorner().getZ());
 
   ZIntPoint blockPosition = getBlockPosition(location.getBlockIndex());
 

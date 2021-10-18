@@ -12,10 +12,10 @@
 class ZJsonObject;
 class ZFlyEmBodyAnnotation;
 
-class ZFlyEmBodyAnnotationProtocal
+class ZFlyEmBodyAnnotationProtocol
 {
 public:
-  ZFlyEmBodyAnnotationProtocal();
+  ZFlyEmBodyAnnotationProtocol();
 
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
@@ -37,20 +37,36 @@ public:
   bool isAdminAccessible(const std::string &status) const;
   bool isExpertStatus(const std::string &status) const;
   bool preservingId(const std::string &status) const;
+  std::string getColorCode(const std::string &status) const;
 //  bool hasConflict(const std::string &s1, const std::string &s2) const;
 
   std::vector<std::vector<uint64_t>> getConflictBody(
       const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const;
+  std::vector<std::vector<uint64_t>> getConflictBody(
+      const QMap<uint64_t, ZJsonObject> &annotMap) const;
+  std::vector<std::vector<uint64_t>> getConflictBody(
+      const QMap<uint64_t, std::string> &statusMap) const;
+
+  std::vector<std::vector<uint64_t>> getExclusionBody(
+      const QMap<uint64_t, std::string> &statusMap) const;
+
+private:
+  static std::vector<std::vector<uint64_t>> MapBody(
+      const QMap<uint64_t, std::string> &statusMap,
+      const std::vector<std::set<std::string>> &groupList,
+      bool selfConflict = true);
 
 public:
   static const char* KEY_STATUS;
   static const char* KEY_CONFILICT;
+  static const char* KEY_EXCLUSION;
 
 private:
   std::vector<ZFlyEmBodyStatus> m_statusList;
 
   std::unordered_map<std::string, ZFlyEmBodyStatus> m_statusMap;
   std::vector<std::set<std::string>> m_conflictStatus;
+  std::vector<std::set<std::string>> m_exclusionStatus;
   ZFlyEmBodyStatus m_emptyStatus;
 };
 

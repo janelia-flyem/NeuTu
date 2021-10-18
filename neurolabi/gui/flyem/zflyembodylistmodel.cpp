@@ -46,7 +46,7 @@ QVariant ZFlyEmBodyListModel::data(const QModelIndex &index, int role) const
 {
   switch (role) {
   case Qt::ForegroundRole:
-    if (ZFlyEmBodyManager::encodingSupervoxel(getBodyId(index))) {
+    if (ZFlyEmBodyManager::EncodingSupervoxel(getBodyId(index))) {
       return QColor(0, 128, 0);
     }
     break;
@@ -54,11 +54,11 @@ QVariant ZFlyEmBodyListModel::data(const QModelIndex &index, int role) const
   {
     uint64_t bodyId = getBodyId(index);
     if (bodyId > 0) {
-      uint64_t decodedBodyId = ZFlyEmBodyManager::decode(bodyId);
-      if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+      uint64_t decodedBodyId = ZFlyEmBodyManager::Decode(bodyId);
+      if (ZFlyEmBodyManager::EncodingSupervoxel(bodyId)) {
         return QString("%1 (sv)").arg(decodedBodyId);
-      } else if (ZFlyEmBodyManager::encodesTar(bodyId) &&
-                 ZFlyEmBodyManager::encodedLevel(bodyId) == 0) {
+      } else if (ZFlyEmBodyManager::EncodesTar(bodyId) &&
+                 ZFlyEmBodyManager::EncodedLevel(bodyId) == 0) {
         return QString("%1 (c)").arg(decodedBodyId);
       } else {
         return QString("%1").arg(decodedBodyId);
@@ -92,13 +92,15 @@ uint64_t ZFlyEmBodyListModel::GetBodyId(const QString &str)
   if (bodyId == 0) {
     QRegularExpression regexp("^(supervoxel|sv|c)[:\\s]*([0-9]+)",
                               QRegularExpression::CaseInsensitiveOption);
+#ifdef _DEBUG_
     qDebug() << "Input body str:" << str;
+#endif
     QRegularExpressionMatch match = regexp.match(str);
     if (match.hasMatch()) {
       bodyId = match.captured(2).toULongLong();
       if (bodyId > 0) {
         if (match.captured(1) == "c") {
-          bodyId = ZFlyEmBodyManager::encode(bodyId);
+          bodyId = ZFlyEmBodyManager::Encode(bodyId);
         } else {
           bodyId = ZFlyEmBodyManager::EncodeSupervoxel(bodyId);
         }
@@ -171,12 +173,23 @@ void ZFlyEmBodyListModel::removeRowList(const QList<int> &rowList)
 void ZFlyEmBodyListModel::addBody(uint64_t bodyId)
 {
   if (!m_bodySet.contains(bodyId)) {
-    insertRow(rowCount());
-    QModelIndex modelIndex = index(rowCount() - 1);
+    int row = rowCount();
+    if (row > 0) {
+      if (getBodyId(row - 1) == 0) {
+        row = row - 1;
+      }
+    }
+
+    if (row == rowCount()){
+      insertRow(row);
+    }
+
+    QModelIndex modelIndex = index(row);
     setData(modelIndex, QString("%1").arg(bodyId), Qt::EditRole);
   }
 }
 
+/*
 void ZFlyEmBodyListModel::addBodySliently(uint64_t bodyId)
 {
   if (m_bodySet.contains(bodyId)) {
@@ -185,6 +198,7 @@ void ZFlyEmBodyListModel::addBodySliently(uint64_t bodyId)
     setData(modelIndex, QString("%1").arg(bodyId), Qt::EditRole);
   }
 }
+*/
 
 bool ZFlyEmBodyListModel::isBodyProtected(uint64_t bodyId) const
 {

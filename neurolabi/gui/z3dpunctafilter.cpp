@@ -519,26 +519,31 @@ void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int)
   }
 
   if (e->type() == QEvent::MouseButtonRelease) {
-    if (std::abs(e->x() - m_startCoord.x) < 2 &&
-        std::abs(m_startCoord.y - e->y()) < 2) { //moving distinguishment
-      if (e->modifiers() == Qt::ControlModifier)
-        emit punctumSelected(m_pressedPunctum, true);
-      else
-        emit punctumSelected(m_pressedPunctum, false);
-      if (m_pressedPunctum) {
+    const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
+
+    if (obj == m_pressedPunctum) {
+      if (std::abs(e->x() - m_startCoord.x) < 2 &&
+          std::abs(m_startCoord.y - e->y()) < 2) { //moving distinguishment
+        if (e->modifiers() == Qt::ControlModifier)
+          emit punctumSelected(m_pressedPunctum, true);
+        else
+          emit punctumSelected(m_pressedPunctum, false);
+        if (m_pressedPunctum) {
 #ifdef _DEBUG_
-        addLog(std::string(__FUNCTION__) + ": selecting punctum: " +
-               neutu::ToString(m_pressedPunctum));
+          addLog(std::string(__FUNCTION__) + ": selecting punctum: " +
+                 neutu::ToString(m_pressedPunctum));
 #endif
-        e->accept();
+          e->accept();
+        }
       }
-    }
 #ifdef _DEBUG_
-    if (m_pressedPunctum) {
-      addLog(std::string(__FUNCTION__) + ": punctum reset: " +
-             neutu::ToString(m_pressedPunctum));
-    }
+      if (m_pressedPunctum) {
+        addLog(std::string(__FUNCTION__) + ": punctum reset: " +
+               neutu::ToString(m_pressedPunctum));
+      }
 #endif
+    }
+
     m_pressedPunctum = nullptr;
   }
 }

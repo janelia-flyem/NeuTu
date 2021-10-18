@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "common/neutudefs.h"
 
@@ -28,6 +29,11 @@ public:
   inline void set(const ZPoint &pt) {
     set(pt.x(), pt.y(), pt.z());
   }
+
+  inline void set(double v) {
+    set(v, v, v);
+  }
+
   inline double x() const { return m_x; }
   inline double y() const { return m_y; }
   inline double z() const { return m_z; }
@@ -51,8 +57,16 @@ public:
   inline void setY(double y) { m_y = y; }
   inline void setZ(double z) { m_z = z; }
 
+  inline void addX(double x) { m_x += x; }
+  inline void addY(double y) { m_y += y; }
+  inline void addZ(double z) { m_z += z; }
+
+  void flipZ();
+
   double distanceTo(const ZPoint &pt) const;
   double distanceTo(double x, double y, double z) const;
+  double distanceSquareTo(const ZPoint &pt) const;
+  double distanceSquareTo(double x, double y, double z) const;
   double length() const;
   double lengthSqure() const;
 
@@ -120,7 +134,11 @@ public:
   void rotate(double theta, double psi);
   void rotate(double theta, double psi, const ZPoint &center);
 
+  bool hasIntCoord() const;
   ZIntPoint toIntPoint() const;
+  ZIntPoint roundToIntPoint() const;
+  std::vector<double> toArray() const;
+  ZPoint rounded() const;
 
   friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);
 
@@ -150,13 +168,30 @@ public:
     }
   };
 
+
+  /*!
+   * \brief Check if the point is on an axis
+   *
+   * An origin is not considered as on any axis.
+   */
+  bool onAxis() const;
+
   void shiftSliceAxis(neutu::EAxis axis);
   void shiftSliceAxisInverse(neutu::EAxis axis);
 
-  double getSliceCoord(neutu::EAxis axis) const;
+  double getValue(neutu::EAxis axis) const;
+  void setValue(double v, neutu::EAxis axis);
+
+  void invalidate();
+  bool isValid() const;
 
 public:
   const static double MIN_DIST;
+  const static ZPoint INVALID_POINT;
+  const static ZPoint ORIGIN;
+
+private:
+  static ZPoint InvalidPoint();
 
 private:
   double m_x;

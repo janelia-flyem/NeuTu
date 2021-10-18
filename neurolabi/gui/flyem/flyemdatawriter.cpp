@@ -31,7 +31,7 @@ void FlyEmDataWriter::UpdateBodyStatus(
   annot.print();
 #endif
   annot.setStatus(newStatus);
-  writer.writeBodyAnntation(annot);
+  writer.writeBodyAnnotation(bodyId, annot);
 
 #ifdef _DEBUG_
   ZFlyEmBodyAnnotation newAnnot =
@@ -41,6 +41,7 @@ void FlyEmDataWriter::UpdateBodyStatus(
 #endif
 }
 
+#if 0
 void FlyEmDataWriter::RewriteBody(ZDvidWriter &writer, uint64_t bodyId)
 {
   uint64_t newBodyId = 0;
@@ -59,13 +60,14 @@ void FlyEmDataWriter::RewriteBody(ZDvidWriter &writer, uint64_t bodyId)
 
         if (!annotation.isEmpty()) {
           writer.deleteBodyAnnotation(bodyId);
-          annotation.setBodyId(newBodyId);
-          writer.writeBodyAnntation(annotation);
+//          annotation.setBodyId(newBodyId);
+          writer.writeBodyAnnotation(newBodyId, annotation);
         }
       }
     }
   }
 }
+#endif
 
 void FlyEmDataWriter::UploadUserDataConfig(
     ZDvidWriter &writer, const FlyEmDataConfig &config)
@@ -76,6 +78,18 @@ void FlyEmDataWriter::UploadUserDataConfig(
   std::string userName = NeutubeConfig::GetUserName();
   writer.writeJson(ZDvidData::GetName(ZDvidData::ERole::NEUTU_CONFIG),
                    "user_" + userName, obj);
+}
+
+void FlyEmDataWriter::WriteRoiData(
+    ZDvidWriter &writer, const std::string &name, const ZObject3dScan &roi)
+{
+  if (!writer.getDvidReader().hasData(name)) {
+    writer.createData("roi", name);
+  } else {
+    writer.deleteData("roi", name);
+  }
+  std::cout << "Writing " << name << std::endl;
+  writer.writeRoi(roi, name);
 }
 
 void FlyEmDataWriter::UploadRoi(
@@ -175,6 +189,47 @@ void FlyEmDataWriter::TransferRoiData(
   }
 }
 
+void FlyEmDataWriter::TransferRoiData(
+      const ZDvidReader &reader,
+      const std::vector<std::string> &sourceRoiNameList,
+      ZDvidWriter &writer, const std::string &targetRoiName,
+      std::function<void(std::string)> errorMsgHandler)
+{
+  if (reader.good() && writer.good() && !sourceRoiNameList.empty()) {
+    std::string newTargetRoiName = targetRoiName;
+    std::string sourceRoiName = sourceRoiNameList.front();
+    if (!sourceRoiName.empty()) {
+      if (newTargetRoiName.empty()) {
+        newTargetRoiName = sourceRoiName;
+      }
+
+      ZObject3dScan roi = reader.readRoi(sourceRoiName);
+      for (size_t i = 1; i < sourceRoiNameList.size(); ++i) {
+        reader.readRoi(sourceRoiNameList[i], &roi, true);
+      }
+      roi.canonize();
+
+      if (!roi.isEmpty()) {
+        if (!writer.getDvidReader().hasData(newTargetRoiName)) {
+          writer.createData("roi", newTargetRoiName);
+        } else {
+          writer.deleteData("roi", newTargetRoiName);
+        }
+        std::cout << "Writing " << newTargetRoiName << std::endl;
+        writer.writeRoi(roi, newTargetRoiName);
+      } else {
+        process_error_message(
+              "WARNING: no source ROI data found.", errorMsgHandler);
+      }
+    } else {
+      process_error_message("WARNING: empty source ROI name", errorMsgHandler);
+    }
+  } else {
+    process_error_message("WARNING: empty source ROI list", errorMsgHandler);
+  }
+}
+
+
 
 void FlyEmDataWriter::TransferRoiRef(
     const ZDvidReader &reader, const std::string &sourceRoiName,
@@ -244,4 +299,30 @@ void FlyEmDataWriter::TransferRoi(
 
   //Transfer ROI mesh
   TransferRoiRef(reader, sourceRoiName, writer, targetRoiName, errorMsgHandler);
+}
+
+void FlyEmDataWriter::WriteMeshMerge(
+    ZDvidWriter &writer, uint64_t targetId,
+    const std::vector<uint64_t> &bodyIdArray)
+{
+  if (writer.good()) {
+    if (!bodyIdArray.empty()) {
+      ZJsonArray json;
+      json.append(targetId);
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId != targetId) {
+          json.append(bodyId);
+        }
+      }
+      writer.writeJson(
+            writer.getDvidTarget().getMeshName(),
+            ZDvidUrl::GetMeshKey(targetId, ZDvidUrl::EMeshType::MERGED), json);
+    }
+  }
+}
+
+void FlyEmDataWriter::WriteTodoItem(
+    ZDvidWriter &writer, const ZFlyEmToDoItem &item)
+{
+  writer.writeToDoItem(item);
 }

@@ -47,7 +47,7 @@ void ZSegmentationTree::maskStack(const std::string &id, ZStack &stack) const{
 }
 
 
-vector<int> ZSegmentationTree::getChildrenLabels(const string& id) const{
+vector<int> ZSegmentationTree::getChildrenLabels(const std::string& id) const{
   ZSegmentationNode* node = m_root->find(id);
   if(node){
     return node->getChildrenLabels();
@@ -56,9 +56,9 @@ vector<int> ZSegmentationTree::getChildrenLabels(const string& id) const{
 }
 
 
-vector<string> ZSegmentationTree::getChildrenIDs(const std::string &id) const{
+vector<std::string> ZSegmentationTree::getChildrenIDs(const std::string &id) const{
   ZSegmentationNode* node = m_root->find(id);
-  vector<string> rv;
+  vector<std::string> rv;
   if(node){
     for(auto label: node->getChildrenLabels()){
       auto child = node->getChildByLabel(label);
@@ -72,17 +72,21 @@ vector<string> ZSegmentationTree::getChildrenIDs(const std::string &id) const{
 
 
 bool ZSegmentationTree::hasID(const std::string &id) const{
-  vector<string> ids = m_root->getAllIDs();
+  return m_root->hasId(id);
+
+  /*
+  vector<std::string> ids = m_root->getAllIDs();
   for(auto i: ids){
     if(i == id){
       return true;
     }
   }
   return false;
+  */
 }
 
 
-string ZSegmentationTree::getChildID(const std::string &id, int label) const{
+std::string ZSegmentationTree::getChildID(const std::string &id, int label) const{
   ZSegmentationNode* parent = m_root->find(id);
   if(parent){
     auto child = parent->getChildByLabel(label);
@@ -239,9 +243,9 @@ bool ZSegmentationTree::contains(const std::string &id, int x, int y, int z) con
 }
 
 
-vector<string> ZSegmentationTree::getLeavesIDs(const std::string &id) const{
+vector<std::string> ZSegmentationTree::getLeavesIDs(const std::string &id) const{
   ZSegmentationNode* node = m_root->find(id);
-  vector<string> rv;
+  vector<std::string> rv;
   if (node){
     for(auto leaf: node->getLeaves()){
       rv.push_back(leaf->getID());
@@ -251,10 +255,10 @@ vector<string> ZSegmentationTree::getLeavesIDs(const std::string &id) const{
 }
 
 
-vector<string> ZSegmentationTree::getAllIDs(const std::string &id) const{
+vector<std::string> ZSegmentationTree::getAllIDs(const std::string &id) const{
   ZSegmentationNode* node = m_root->find(id);
   if(node){
     return node->getAllIDs();
   }
-  return vector<string>();
+  return vector<std::string>();
 }

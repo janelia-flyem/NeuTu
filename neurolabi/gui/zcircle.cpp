@@ -64,7 +64,7 @@ void ZCircle::set(const ZPoint &center, double r)
 
 void ZCircle::display(
     ZPainter &painter, int n,
-    ZStackObject::EDisplayStyle style, neutu::EAxis sliceAxis) const
+    EDisplayStyle style, neutu::EAxis sliceAxis) const
 {
   if (!isVisible() || sliceAxis != neutu::EAxis::Z) {
     return;
@@ -136,7 +136,8 @@ double ZCircle::getAdjustedRadius(double r) const
   return adjustedRadius;
 }
 
-void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle style) const
+void ZCircle::displayHelper(
+    ZPainter *painter, int stackFocus, EDisplayStyle style) const
 {
   std::ignore = style;
 //  UNUSED_PARAMETER(style);
@@ -176,7 +177,7 @@ void ZCircle::displayHelper(ZPainter *painter, int stackFocus, EDisplayStyle sty
   }
 
   if (visible) {
-    if (!hasVisualEffect(neutu::display::Sphere::VE_NO_CIRCLE)) {
+    if (!hasVisualEffect(neutu::display::Sphere::VE_NO_BORDER)) {
       //qDebug() << painter->brush().color();
       QColor color = painter->getPenColor();
       color.setAlphaF(alpha);

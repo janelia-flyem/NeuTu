@@ -76,7 +76,7 @@ QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutu::EAxis axis
     int wx = neutu::iround(x);
     int wy = neutu::iround(y);
     int wz = z;
-    zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
+    zgeom::ShiftSliceAxisInverse(wx, wy, wz, axis);
 //    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);
     uint64_t bodyId = flyem::ZSegmentationAnalyzer::channelCodeToId(
           segmentation->color(wx, wy, wz));

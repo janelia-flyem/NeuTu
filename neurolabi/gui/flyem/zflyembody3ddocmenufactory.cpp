@@ -117,6 +117,14 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
 #endif
     }
 
+    /*
+    if (isMutable) {
+      if (doc->getSelectedSingleNormalBodyId() > 0) {
+        config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+      }
+    }
+    */
+
     config.appendSeparator();
     config.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
     config.append(ZActionFactory::ACTION_SHOW_DONE);
@@ -180,6 +188,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
       if (doc->getTag() == neutu::Document::ETag::FLYEM_BODY_3D ||
           doc->getTag() == neutu::Document::ETag::FLYEM_BODY_3D_COARSE) {
         config.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
+//        config.append(ZActionFactory::ACTION_FLYEM_SYNC_BODY_COLOR);
 
         if (ReadyForAction(doc, ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {
           config.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
@@ -188,6 +197,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     } else if (doc->getTag() == neutu::Document::ETag::FLYEM_MESH) {
 #if !defined(_NEU3_)
       config.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
+      config.append(ZActionFactory::ACTION_FLYEM_SYNC_BODY_COLOR);
 #endif
     }
 
@@ -219,12 +229,6 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     }
 
     config.append(ZActionFactory::ACTION_PUNCTA_ADD_SELECTION);
-
-    if (isMutable) {
-      if (doc->getSelectedSingleNormalBodyId() > 0) {
-        config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
-      }
-    }
   }
 
   config.appendSeparator();

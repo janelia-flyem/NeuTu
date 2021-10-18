@@ -4,17 +4,27 @@
 #include <QPen>
 #include <QBitmap>
 
+#include "tz_geo3d_utils.h"
+#include "tz_geometry.h"
+
 #include "common/math.h"
+#include "common/utilities.h"
+
 #include "neutubeconfig.h"
 #include "geometry/zintpoint.h"
+#include "geometry/zgeometry.h"
+#include "geometry/zintcuboid.h"
+
 #include "zstack.hxx"
 #include "zobject3d.h"
 #include "zjsonobject.h"
-#include "tz_geometry.h"
-#include "zpainter.h"
-#include "geometry/zgeometry.h"
-#include "geometry/zintcuboid.h"
-#include "tz_geo3d_utils.h"
+
+#include "data3d/zviewplanetransform.h"
+#include "data3d/displayconfig.h"
+#include "vis2d/zslicepainter.h"
+#include "vis2d/utilities.h"
+#include "vis2d/zslicecanvas.h"
+
 
 const double ZStroke2d::m_minWidth = 1.0;
 #ifdef _FLYEM_
@@ -105,6 +115,42 @@ void ZStroke2d::setLast(double x, double y)
   }
 }
 
+void ZStroke2d::updateWithLast(const ZPoint &pt)
+{
+  updateWithLast(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStroke2d::updateWithLast(double x, double y, double z)
+{
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
+  setLast(x, y);
+  setZ(z);
+}
+
+void ZStroke2d::set(double x, double y, double z)
+{
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
+  set(x, y);
+  setZ(z);
+}
+
+void ZStroke2d::set(const ZPoint &pt)
+{
+  set(pt.getX(), pt.getY(), pt.getZ());
+}
+
+void ZStroke2d::append(double x, double y, double z)
+{
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
+  append(x, y);
+  setZ(z);
+}
+
+void ZStroke2d::append(const ZPoint &pt)
+{
+  append(pt.getX(), pt.getY(), pt.getZ());
+}
+
 void ZStroke2d::setLabel(uint64_t label)
 {
   m_uLabel = label;
@@ -132,23 +178,118 @@ void ZStroke2d::setEraser(bool enabled)
   } else if (getLabel() == 0) {
     setLabel(1);
   }
-  /*
-  if (enabled) {
-    m_label = 0;
-  } else {
-    if (m_label == 0) {
-      m_label = 1;
+}
+
+bool ZStroke2d::display(QPainter *painter, const DisplayConfig &config) const
+{
+  ZSliceCanvas canvas; //Must be outside of the scope to live long enough
+  bool painted = false;
+
+  if (!m_pointArray.empty() &&
+      getSliceAxis() != neutu::EAxis::ARB && isVisible()) {
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+    QPainter *canvasPainter = painter;
+    std::unique_ptr<ZSliceCanvasPaintHelper> paintHelper;
+
+    double s = config.getViewCanvasTransform().getScale();
+    if (s > 2.0) {
+      int width = neutu::iceil(painter->device()->width() / s);
+      int height = neutu::iceil(painter->device()->height() / s);
+      ZSliceViewTransform t;
+      //It's important to set to an int center to match image pixel positions,
+      //and keep its shape during panning by keeping the residuals constant.
+      t.setModelViewTransform(
+            config.getWorldViewTransform().getSliceAxis(),
+            config.getWorldViewTransform().getCutCenter().rounded());
+
+      t.setViewCanvasTransform(width / 2, height / 2, 1.0);
+
+      canvas.set(
+            painter->device()->width(), painter->device()->height(), t,
+            ZSliceCanvas::ESetOption::DIFF_CLEAR);
+
+      paintHelper = std::unique_ptr<ZSliceCanvasPaintHelper>(
+            new ZSliceCanvasPaintHelper(canvas));
+      canvasPainter = paintHelper->getPainter();
+    }
+
+    QBrush brush(getColor());
+    QPen pen(getColor());
+    pen.setCosmetic(m_usingCosmeticPen);
+    pen.setWidthF(getPenWidth());
+
+    if (m_isFilled && m_pointArray.size() == 1) {
+      pen.setColor(Qt::transparent);
+    } else {
+      brush.setColor(Qt::transparent);
+    }
+    canvasPainter->setPen(pen);
+    canvasPainter->setBrush(brush);
+
+    double radius = m_width * 0.5;
+    if (m_pointArray.size() == 1) {
+      const QPointF &pos = m_pointArray.front();
+      ZPoint center;
+      center.set(pos.x(), pos.y(), m_z);
+      center.shiftSliceAxis(getSliceAxis());
+
+      if (paintHelper) {
+        paintHelper->drawBall(center, radius, 0.0, 0.0);
+        canvas.setPainted(paintHelper->getPaintedHint());
+        canvas.paintTo(painter, config.getTransform());
+//        canvasPainter->end();
+        painted = canvas.isPainted();
+      } else {
+        auto s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+        s3Painter.drawBall(
+              canvasPainter, center, radius, 0.0, 0.0);
+        painted = s3Painter.getPaintedHint();
+      }
+    } else {
+      if (m_isFilled) {
+        pen.setWidthF(m_width);
+        canvasPainter->setPen(pen);
+        if (paintHelper) {
+          paintHelper->drawPlanePolyline(
+                canvasPainter, m_pointArray, m_z, getSliceAxis());
+          canvas.setPainted(paintHelper->getPaintedHint());
+          canvas.paintTo(painter, config.getTransform());
+          painted = canvas.isPainted();
+        } else {
+          auto s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+          s3Painter.drawPlanePolyline(
+                canvasPainter, m_pointArray, m_z, getSliceAxis());
+          painted = s3Painter.getPaintedHint();
+        }
+      }
+    }
+
+    if (isSelected()) {
+      pen.setCosmetic(true);
+      pen.setWidthF(1.0);
+      pen.setColor(Qt::yellow);
+      painter->setPen(pen);
+      auto s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+
+      radius = std::max(0.5, radius - 1.0);
+      s3Painter.drawBall(painter, getFirstPoint(), radius, 1.0, 0.5);
+      if (m_pointArray.size() > 1) {
+        s3Painter.drawBall(painter, getLastPoint(), radius, 1.0, 0.5);
+      }
+      s3Painter.drawPlanePolyline(painter, m_pointArray, m_z, getSliceAxis());
     }
   }
- // m_isEraser = isEraser;
-  if (isEraser()) {
-    m_color.setRgb(255, 255, 255);
-  } else {
-    m_color.setRgb(255, 0, 0);
-  }
-  m_color.setAlpha(128);
-  */
+
+  return painted;
 }
+
+#if 0
+void ZStroke2d::display(
+      QPainter *painter, const DisplayConfig &config) const
+{
+
+}
+
 
 void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
                         neutu::EAxis sliceAxis) const
@@ -290,7 +431,7 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   //z -= iround(painter.getOffset().z());
 
   QColor color = m_color;
-  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_SINGLE && m_z != z) {
+  if (sliceMode == EDisplaySliceMode::SINGLE && m_z != z) {
     if (isEraser()) {
       return painted;
     }
@@ -337,6 +478,7 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
 
   return painted;
 }
+#endif
 
 ZStack* ZStroke2d::toLabelStack(int label) const
 {
@@ -388,6 +530,7 @@ ZStack* ZStroke2d::toLabelStack(int label) const
 
   return stack;
 }
+
 
 void ZStroke2d::labelImage(QImage *image) const
 {
@@ -546,11 +689,9 @@ bool ZStroke2d::isEmpty() const
   return m_pointArray.empty();
 }
 
-ZStroke2d* ZStroke2d::clone()
+ZStroke2d *ZStroke2d::clone() const
 {
-  ZStroke2d *stroke = new ZStroke2d(*this);
-
-  return stroke;
+  return new ZStroke2d(*this);
 }
 
 
@@ -600,10 +741,36 @@ bool ZStroke2d::getPoint(double *x, double *y, size_t index) const
   return true;
 }
 
+ZPoint ZStroke2d::getPoint(size_t index) const
+{
+  ZPoint pt;
+  pt.invalidate();
+  if (index < m_pointArray.size()) {
+    pt.set(m_pointArray[index].x(), m_pointArray[index].y(), m_z);
+  }
+
+  return pt;
+}
+
+ZPoint ZStroke2d::getFirstPoint() const
+{
+  return getPoint(0);
+}
+
+ZPoint ZStroke2d::getLastPoint() const
+{
+  if (!m_pointArray.empty()) {
+    return getPoint(m_pointArray.size() - 1);
+  }
+
+  return ZPoint::INVALID_POINT;
+}
+
 
 void ZStroke2d::print() const
 {
-  std::cout << "Stroke points (z=" << getZ() << ")" << std::endl;
+  std::cout << "Stroke points (z=" << getZ() << ", w=" << getWidth() << ")"
+            << std::endl;
   foreach (QPointF point, m_pointArray) {
     std::cout << "  " << point.x() << " " << point.y() << std::endl;
   }
@@ -965,7 +1132,7 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
 {
   bool hit = false;
 
-  zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
+  zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
 
   if (neutu::iround(z) == m_z) {
     hit = hitTest(x, y, getSliceAxis());
@@ -988,7 +1155,7 @@ void ZStroke2d::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     ZCuboid cuboid = getBoundBox();
-    box->setFirstCorner(cuboid.firstCorner().toIntPoint());
-    box->setLastCorner(cuboid.lastCorner().toIntPoint());
+    box->setMinCorner(cuboid.getMinCorner().roundToIntPoint());
+    box->setMaxCorner(cuboid.getMaxCorner().roundToIntPoint());
   }
 }

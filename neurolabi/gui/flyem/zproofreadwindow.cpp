@@ -13,6 +13,8 @@
 #include <QMimeData>
 #include <QInputDialog>
 
+#include "qfonticon.h"
+
 #include "common/math.h"
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
@@ -26,6 +28,7 @@
 #include "zprogresssignal.h"
 #include "zwidgetmessage.h"
 #include "mvc/zstackpresenter.h"
+#include "zactionlibrary.h"
 
 #include "widgets/zflyembookmarkview.h"
 #include "zflyemdataloader.h"
@@ -36,18 +39,27 @@
 #include "zflyemproofdoc.h"
 #include "zflyemproofpresenter.h"
 #include "neuroglancer/zneuroglancerpathparser.h"
+#include "flyem/auth/flyemauthtokendialog.h"
+#include "flyem/auth/flyemauthtokenhandler.h"
+#include "protocols/protocolassignmentdialog.h"
 
 #include "dialogs/flyembodyfilterdialog.h"
 #include "dialogs/dvidoperatedialog.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 #include "dialogs/zflyembodysplitdialog.h"
+#include "dialogs/userfeedbackdialog.h"
 
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
 {
   init();
+}
+
+ZProofreadWindow::~ZProofreadWindow()
+{
+  delete m_actionLibrary;
 }
 
 template <typename T>
@@ -72,10 +84,11 @@ void ZProofreadWindow::init()
   layout->setMargin(1);
   widget->setLayout(layout);
 
-//  ZDvidTarget target;
-//  target.set("http://emdata1.int.janelia.org", "9db", 8500);
-
-  m_mainMvc = ZFlyEmProofMvc::Make(/*target*/);
+  std::vector<neutu::EAxis> axes;
+  axes.push_back(neutu::EAxis::Z);
+  axes.push_back(neutu::EAxis::X);
+  axes.push_back(neutu::EAxis::Y);
+  m_mainMvc = ZFlyEmProofMvc::Make(axes);
   m_mainMvc->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
 
   layout->addWidget(m_mainMvc);
@@ -150,6 +163,7 @@ void ZProofreadWindow::init()
 
   connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
           this, SLOT(showAndRaise()));
+  connect(m_mainMvc, SIGNAL(dvidReady()), this, SLOT(postDvidReady()));
 
   setCentralWidget(widget);
 
@@ -168,6 +182,7 @@ void ZProofreadWindow::init()
 //  m_progressSignal->connectProgress(m_mainMvc->getProgressSignal());
   m_progressSignal->connectSlot(this);
 
+  m_actionLibrary = new ZActionLibrary(this);
   createMenu();
   createToolbar();
   statusBar()->showMessage("Load a database to start proofreading");
@@ -175,7 +190,9 @@ void ZProofreadWindow::init()
   connect(m_segSlider, SIGNAL(valueChanged(int)),
           m_mainMvc, SLOT(setLabelAlpha(int)));
   m_mainMvc->setLabelAlpha(m_segSlider->value());
-
+  m_mainMvc->getCompletePresenter()->getSegmentationAlpha = [&]() {
+    return m_segSlider->value();
+  };
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
   m_mainMvc->configure();
@@ -216,6 +233,12 @@ void ZProofreadWindow::createDialog()
   m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
   m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
+
+  if (!GET_FLYEM_CONFIG.getDefaultAssignmentManager().empty()) {
+    m_authTokenDlg = new FlyEmAuthTokenDialog(this);
+    connect(m_authTokenDlg, SIGNAL(requestUpdateAuthIcon()), this, SLOT(updateAuthTokenIcon()));
+    m_protocolAssignmentDlg = new ProtocolAssignmentDialog(this);
+  }
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -245,6 +268,11 @@ void ZProofreadWindow::profile()
   m_mainMvc->profile();
 }
 
+void ZProofreadWindow::testSlot()
+{
+  m_mainMvc->testSlot();
+}
+
 void ZProofreadWindow::showSettings()
 {
   m_mainMvc->showSetting();
@@ -256,7 +284,7 @@ QProgressDialog* ZProofreadWindow::getProgressDialog()
     m_progressDlg = new QProgressDialog(this);
     m_progressDlg->setWindowModality(Qt::WindowModal);
     m_progressDlg->setAutoClose(true);
-    m_progressDlg->setCancelButton(0);
+    m_progressDlg->setCancelButton(nullptr);
   }
 
   return m_progressDlg;
@@ -297,7 +325,7 @@ void ZProofreadWindow::createMenu()
           this, &ZProofreadWindow::loadDatabaseFromUrl);
   fileMenu->addAction(m_loadDvidUrlAction);
 
-  m_importBookmarkAction = new QAction("Import Bookmarks", this);
+  m_importBookmarkAction = new QAction("Import Assigned Bookmarks", this);
   m_importBookmarkAction->setIcon(QIcon(":/images/import_bookmark.png"));
   fileMenu->addAction(m_importBookmarkAction);
   connect(m_importBookmarkAction, SIGNAL(triggered()),
@@ -353,7 +381,7 @@ void ZProofreadWindow::createMenu()
   m_viewSegmentationAction->setCheckable(true);
   m_viewSegmentationAction->setChecked(true);
   connect(m_viewSegmentationAction, SIGNAL(toggled(bool)),
-          m_mainMvc, SLOT(showSegmentation(bool)));
+          m_mainMvc, SLOT(setSegmentationVisible(bool)));
 
   m_viewTodoAction = new QAction("Todo", this);
   m_viewTodoAction->setIcon(QIcon(":/images/view_todo.png"));
@@ -399,11 +427,18 @@ void ZProofreadWindow::createMenu()
   connect(m_openExtNeuronWindowAction, SIGNAL(triggered()),
           m_mainMvc, SLOT(showExternalNeuronWindow()));
 
+  QMenu *viewControlMenu = new QMenu("Controls", this);
+  QAction *synpasePropertyControlAction = new QAction("Synapses", this);
+  connect(synpasePropertyControlAction, SIGNAL(triggered()),
+          m_mainMvc, SLOT(showSynapsePropertyDlg()));
+  viewControlMenu->addAction(synpasePropertyControlAction);
+
   m_viewMenu->addAction(m_viewSynapseAction);
   m_viewMenu->addAction(m_viewBookmarkAction);
   m_viewMenu->addAction(m_viewSegmentationAction);
   m_viewMenu->addAction(m_viewTodoAction);
   m_viewMenu->addAction(m_viewRoiAction);
+  m_viewMenu->addMenu(viewControlMenu);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_contrastAction);
   m_viewMenu->addAction(m_smoothAction);
@@ -451,6 +486,17 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, SLOT(openProtocol()));
   m_toolMenu->addAction(m_openProtocolsAction);
 
+  m_openAuthDialogAction = new QAction("Open Auth Dialog", this);
+  connect(m_openAuthDialogAction, SIGNAL(triggered()), this, SLOT(showAuthTokenDialog()));
+  updateAuthTokenIcon();
+  m_toolMenu->addAction(m_openAuthDialogAction);
+
+  m_openProtocolAssignmentDialogAction = new QAction("Open Assignment Dialog", this);
+  m_openProtocolAssignmentDialogAction->setIcon(QFontIcon::icon(0xf01c, Qt::darkGreen));
+  connect(m_openProtocolAssignmentDialogAction, SIGNAL(triggered()),
+          this, SLOT(showProtocolAssignmentDialog()));
+  m_toolMenu->addAction(m_openProtocolAssignmentDialogAction);
+
   m_tuneContrastAction = new QAction("Tune Contrast", this);
   connect(m_tuneContrastAction, &QAction::triggered,
           m_mainMvc, &ZFlyEmProofMvc::tuneGrayscaleContrast);
@@ -476,6 +522,12 @@ void ZProofreadWindow::createMenu()
           m_mainMvc, &ZFlyEmProofMvc::configureRecorder);
   m_toolMenu->addAction(recorderAction);
 
+  QAction *feedbackAction = m_actionLibrary->getAction(
+        ZActionFactory::ACTION_USER_FEEDBACK, this, SLOT(processFeedback()));
+  m_toolMenu->addAction(feedbackAction);
+
+  feedbackAction->setVisible(neutu::HasEnv("NEUTU_USER_FEEDBACK", "yes"));
+
   menuBar()->addMenu(m_toolMenu);
 
   m_advancedMenu = new QMenu("Advanced", this);
@@ -485,9 +537,9 @@ void ZProofreadWindow::createMenu()
           this, SIGNAL(showingMainWindow()));
   m_advancedMenu->addAction(mainWindowAction);
 
-  QAction *testAction = new QAction("Test", this);
-  connect(testAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
-  m_advancedMenu->addAction(testAction);
+  QAction *stressTestAction = new QAction("Stress Test", this);
+  connect(stressTestAction, SIGNAL(triggered()), this, SLOT(stressTestSlot()));
+  m_advancedMenu->addAction(stressTestAction);
 
   QAction *diagnoseAction = new QAction("Diagnose", this);
   connect(diagnoseAction, SIGNAL(triggered()), this, SLOT(diagnose()));
@@ -497,9 +549,18 @@ void ZProofreadWindow::createMenu()
   connect(settingAction, SIGNAL(triggered()), this, SLOT(showSettings()));
   m_advancedMenu->addAction(settingAction);
 
-  QAction *profileAction = new QAction("Profile", this);
-  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
-  m_advancedMenu->addAction(profileAction);
+//  QAction *profileAction = new QAction("Profile", this);
+  QAction *profileAction = m_actionLibrary->getAction(
+        ZActionFactory::ACTION_PROFILE, this, SLOT(profile()));
+//  profileAction->setEnabled(neutu::HasEnv("NEUTU_PROFILE", "yes"));
+//  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
+  if (neutu::HasEnv("NEUTU_PROFILE", "yes")) {
+    m_advancedMenu->addAction(profileAction);
+  }
+
+  QAction *testAction = new QAction("Test", this);
+  connect(testAction, SIGNAL(triggered()), this, SLOT(testSlot()));
+  m_advancedMenu->addAction(testAction);
 
 
 //  m_viewMenu->setEnabled(false);
@@ -529,88 +590,146 @@ void ZProofreadWindow::enableTargetAction(bool on)
   m_tuneContrastAction->setEnabled(on);
   m_loadDvidAction->setEnabled(!on);
   m_loadDvidUrlAction->setEnabled(!on);
+  m_openAuthDialogAction->setEnabled(
+        on && !GET_FLYEM_CONFIG.getDefaultAuthenticationServer().empty());
+  m_openProtocolAssignmentDialogAction->setEnabled(
+        on && !GET_FLYEM_CONFIG.getDefaultAssignmentManager().empty());
+  m_actionLibrary->getAction(ZActionFactory::ACTION_PROFILE)->setEnabled(!on);
 }
 
 void ZProofreadWindow::addSynapseActionToToolbar()
 {
-  m_synapseToolbar = new QToolBar(this);
-  m_synapseToolbar->setIconSize(QSize(24, 24));
-  m_synapseToolbar->addSeparator();
-  m_synapseToolbar->addWidget(new QLabel("Synapse"));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar = new QToolBar(this);
+  m_verticalToolbar->setIconSize(QSize(24, 24));
+  m_verticalToolbar->addSeparator();
+  m_verticalToolbar->addWidget(new QLabel("Synapse"));
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_ADD_PRE));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_ADD_POST));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_DELETE));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_MOVE));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_LINK));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_UNLINK));
-  m_synapseToolbar->addAction(
+  m_verticalToolbar->addAction(
         m_mainMvc->getCompletePresenter()->getAction(
           ZActionFactory::ACTION_SYNAPSE_HLPSD));
 
-  m_synapseToolbar->addSeparator();
-  m_synapseToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+  m_verticalToolbar->addSeparator();
+  m_verticalToolbar->addAction(m_mainMvc->getCompletePresenter()->getAction(
                                 ZActionFactory::ACTION_ENTER_RECT_ROI_MODE));
 
-  addToolBar(Qt::LeftToolBarArea, m_synapseToolbar);
+  addToolBar(Qt::LeftToolBarArea, m_verticalToolbar);
 }
 
 void ZProofreadWindow::createToolbar()
 {
-  m_toolBar = new QToolBar(this);
-  m_toolBar->setObjectName(QString::fromUtf8("toolBar"));
-  m_toolBar->setIconSize(QSize(24, 24));
-  addToolBar(Qt::TopToolBarArea, m_toolBar);
+  m_mainToolBar = new QToolBar(this);
+  m_mainToolBar->setObjectName(QString::fromUtf8("toolBar"));
+  m_mainToolBar->setIconSize(QSize(24, 24));
+  addToolBar(Qt::TopToolBarArea, m_mainToolBar);
 
-  m_toolBar->addAction(m_importBookmarkAction);
+  m_mainToolBar->addAction(m_importBookmarkAction);
 
-  m_toolBar->addSeparator();
-  m_toolBar->addAction(m_viewSynapseAction);
-  m_toolBar->addAction(m_viewBookmarkAction);
-  m_toolBar->addAction(m_viewTodoAction);
-  m_toolBar->addAction(m_viewRoiAction);
+  m_mainToolBar->addSeparator();
+  m_mainToolBar->addAction(m_viewSynapseAction);
+  m_mainToolBar->addAction(m_viewBookmarkAction);
+  m_mainToolBar->addAction(m_viewTodoAction);
+  m_mainToolBar->addAction(m_viewRoiAction);
 
-  m_toolBar->addSeparator();
-  m_toolBar->addAction(m_viewSegmentationAction);
+  m_mainToolBar->addSeparator();
+  m_mainToolBar->addAction(m_viewSegmentationAction);
   QAction *svAction = m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW);
-  m_toolBar->addAction(svAction);
+  m_mainToolBar->addAction(svAction);
   svAction->setVisible(false);
 
   m_segSlider = new QSlider(Qt::Horizontal, this);
   m_segSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
   m_segSlider->setRange(0, 255);
-  m_segSlider->setValue(128);
-  m_toolBar->addWidget(m_segSlider);
+  m_segSlider->setValue(77);
+  m_mainToolBar->addWidget(m_segSlider);
+  m_mainToolBar->addSeparator();
+  m_mainToolBar->addAction(m_contrastAction);
+  m_mainToolBar->addAction(m_smoothAction);
+  m_mainToolBar->addSeparator();
 
-  m_toolBar->addSeparator();
-  m_toolBar->addAction(m_contrastAction);
-  m_toolBar->addAction(m_smoothAction);
-  m_toolBar->addSeparator();
+  QActionGroup *viewAxisGroup = new QActionGroup(this);
+  auto addViewAction = [&](neutu::EAxis axis) {
+    QAction *action = nullptr;
+    switch (axis) {
+    case neutu::EAxis::X:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_X);
+      break;
+    case neutu::EAxis::Y:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_Y);
+      break;
+    case neutu::EAxis::Z:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_Z);
+      break;
+    case neutu::EAxis::ARB:
+      action = m_mainMvc->getCompletePresenter()->getAction(
+                ZActionFactory::ACTION_VIEW_AXIS_ARB);
+      break;
+    default:
+      break;
+    }
+    if (action) {
+      action->setChecked(m_mainMvc->getSliceAxis() == axis);
+      viewAxisGroup->addAction(action);
+      m_mainToolBar->addAction(action);
+    }
+  };
+  addViewAction(neutu::EAxis::X);
+  addViewAction(neutu::EAxis::Y);
+  addViewAction(neutu::EAxis::Z);
+  addViewAction(neutu::EAxis::ARB);
+
+  QActionGroup *viewLayoutGroup = new QActionGroup(this);
+
+  auto addViewLayoutAction = [&](ZActionFactory::EAction option, bool checked) {
+    QAction *action = m_mainMvc->getCompletePresenter()->getAction(option);
+    action->setChecked(checked);
+    viewLayoutGroup->addAction(action);
+    m_mainToolBar->addAction(action);
+  };
+
+  addViewLayoutAction(ZActionFactory::EAction::ACTION_VIEW_LAYOUT_1, true);
+  addViewLayoutAction(ZActionFactory::EAction::ACTION_VIEW_LAYOUT_2, false);
+  addViewLayoutAction(ZActionFactory::EAction::ACTION_VIEW_LAYOUT_3, false);
+
+  m_mainToolBar->addSeparator();
 
   if (m_openSequencerAction != NULL) {
-     m_toolBar->addAction(m_openSequencerAction);
+     m_mainToolBar->addAction(m_openSequencerAction);
   }
 
-  m_toolBar->addAction(m_neuprintAction);
+  m_mainToolBar->addAction(m_neuprintAction);
 
-  m_toolBar->addAction(m_openTodoAction);
-  m_toolBar->addAction(m_openProtocolsAction);
-  m_toolBar->addAction(m_roiToolAction);
+  m_mainToolBar->addAction(m_openTodoAction);
+  m_mainToolBar->addAction(m_openProtocolsAction);
+  m_mainToolBar->addAction(m_roiToolAction);
+  m_mainToolBar->addAction(m_openAuthDialogAction);
+  m_mainToolBar->addAction(m_openProtocolAssignmentDialogAction);
 
-  m_toolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
+  m_mainToolBar->addAction(m_mainMvc->getCompletePresenter()->getAction(
         ZActionFactory::ACTION_VIEW_SCREENSHOT));
+
+  m_mainToolBar->addAction(
+        m_actionLibrary->getAction(ZActionFactory::ACTION_USER_FEEDBACK));
 
   addSynapseActionToToolbar();
 }
@@ -629,6 +748,27 @@ void ZProofreadWindow::operateDvid()
 {
   m_dvidOpDlg->show();
   m_dvidOpDlg->raise();
+}
+
+void ZProofreadWindow::showAuthTokenDialog() {
+    m_authTokenDlg->show();
+    m_authTokenDlg->raise();
+}
+
+void ZProofreadWindow::updateAuthTokenIcon() {
+    FlyEmAuthTokenHandler handler;
+    if (!handler.hasMasterToken()) {
+        // medium dark red, halfway between Qt::red and Qt::darkRed
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf023, QColor(192, 0, 0, 255)));
+    } else {
+        // medium dark yellow, halfway between Qt::yellow and Qt::darkYellow
+        m_openAuthDialogAction->setIcon(QFontIcon::icon(0xf084, QColor(192, 192, 0, 255)));
+    }
+}
+
+void ZProofreadWindow::showProtocolAssignmentDialog() {
+    m_protocolAssignmentDlg->show();
+    m_protocolAssignmentDlg->raise();
 }
 
 void ZProofreadWindow::launchSplit(uint64_t bodyId, neutu::EBodySplitMode mode)
@@ -700,7 +840,8 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
   neutu::LogMessage(msg);
 
-  if (msg.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+  if (msg.hasTargetIn(
+        ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_TEXT_APPENDING)) {
     if (msg.getType() == neutu::EMessageType::ERROR) {
       m_messageWidget->dumpError(msg.toHtmlString(), msg.isAppending());
     } else {
@@ -833,6 +974,7 @@ void ZProofreadWindow::updateDvidTargetWidget(const ZDvidTarget &target)
       ZActionFactory::ACTION_SYNAPSE_LINK)->setVisible(false);
     m_mainMvc->getCompletePresenter()->getAction(
       ZActionFactory::ACTION_SYNAPSE_UNLINK)->setVisible(false);
+    setWindowIcon(QFontIcon::icon(0xf023, QColor(205, 127, 50, 128)));
   }
 
 //  m_neuprintAction->setVisible(m_mainMvc->hasNeuPrint());
@@ -976,6 +1118,13 @@ void ZProofreadWindow::showAndRaise()
   raise();
 }
 
+void ZProofreadWindow::loadDatabaseFromName(const QString &name)
+{
+  if (!name.isEmpty()) {
+    getMainMvc()->setDvidFromName(name.toStdString());
+  }
+}
+
 void ZProofreadWindow::loadDatabase()
 {
   QString filename = ZDialogFactory::GetOpenFileName(
@@ -1010,3 +1159,23 @@ void ZProofreadWindow::loadDatabaseFromUrl()
   */
 
 }
+
+void ZProofreadWindow::postDvidReady()
+{
+  getMainMvc()->updateRoiWidget();
+  getMainMvc()->setViewReady();
+}
+
+void ZProofreadWindow::processFeedback()
+{
+  UserFeedbackDialog dlg;
+  if (dlg.exec()) {
+    dlg.send([this](const QString &msg) {
+      this->dump(
+            ZWidgetMessage(msg, neutu::EMessageType::INFORMATION,
+                           ZWidgetMessage::TARGET_TEXT_APPENDING));
+    });
+  }
+}
+
+

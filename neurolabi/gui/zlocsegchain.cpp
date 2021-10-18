@@ -5,6 +5,7 @@
 #include "tz_geo3d_utils.h"
 #include "tz_workspace.h"
 #include "tz_stack_attribute.h"
+#include "geometry/zcuboid.h"
 
 ZLocsegChain::ZLocsegChain(Locseg_Chain *chain)
 {
@@ -53,7 +54,7 @@ void ZLocsegChain::init(Locseg_Chain *chain)
   m_endColor.setRgb(0, 0, 255, 255);
 
   m_source = "traced";
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 }
 
@@ -115,6 +116,13 @@ void ZLocsegChain::updateBufferChain()
   }
 }
 
+ZCuboid ZLocsegChain::getBoundBox() const
+{
+  //Todo
+  return ZCuboid();
+}
+
+#if 0
 void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
                            neutu::EAxis sliceAxis) const
 {
@@ -196,6 +204,8 @@ void ZLocsegChain::display(ZPainter &painter, int slice, EDisplayStyle option,
     }
   }
 }
+#endif
+
 
 int ZLocsegChain::swcFprint(FILE *fp, int start_id, int parent_id,
                             double z_scale)

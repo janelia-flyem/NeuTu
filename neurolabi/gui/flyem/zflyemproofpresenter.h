@@ -2,6 +2,7 @@
 #define ZFLYEMPROOFPRESENTER_H
 
 #include <memory>
+#include <functional>
 
 #include "mvc/zstackpresenter.h"
 #include "dvid/zdvidsynapse.h"
@@ -41,7 +42,7 @@ public:
   void disableSplit();
   void setSplitEnabled(bool s);
 
-  bool processKeyPressEvent(QKeyEvent *event) override;
+  bool processKeyPressEvent(QKeyEvent *event, int viewId) override;
   bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL) override;
 
@@ -80,6 +81,10 @@ public:
   void setTodoDelegate(std::unique_ptr<ZFlyEmToDoDelegate> &&delegate);
 
   bool allowingBlinkingSegmentation() const;
+  bool allowingBodySplit() const;
+  bool allowingBodySelection() const;
+
+  void setBodyHittable(bool on);
 //  void setLabelAlpha(int alpha) {
 //    m_labelAlpha = alpha;
 //  }
@@ -88,12 +93,17 @@ public:
 //    return m_labelAlpha;
 //  }
 
+public:
+  std::function<int()> getSegmentationAlpha = []() {
+    return 75;
+  };
+
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
   void deselectingAllBody(bool asking);
-  void selectingBodyInRoi();
-  void selectingBodyInRoi(bool appending);
+  void selectingBodyInRoi(int viewId);
+  void selectingBodyInRoi(int viewId, bool appending);
   void runningSplit();
   void runningFullSplit();
   void runningLocalSplit();
@@ -116,6 +126,7 @@ signals:
   void togglingBodyColorMap();
   void refreshingData();
   void tipDetectRequested(ZIntPoint point, uint64_t bodyID);
+  void copyingLink(const QString &option);
 
 public slots:
   void deleteSelectedSynapse();
@@ -151,6 +162,7 @@ public slots:
   void zoomInRectRoi();
   void refreshSegmentation();
   void refreshData();
+  void trace();
 
   void tryAddTodoItem(const ZIntPoint &pt);
   void tryAddDoneItem(const ZIntPoint &pt);
@@ -162,12 +174,26 @@ public slots:
   void tryAddDiagnosticItem(const ZIntPoint &pt);
   void tryAddSegmentationDiagnosticItem(const ZIntPoint &pt);
   void runTipDetection();
+  void setBodyColor();
+  void resetBodyColor();
+
+  void setCutPlaneAlongX();
+  void setCutPlaneAlongY();
+  void setCutPlaneAlongZ();
+  //for testing
+  void setCutPlaneArb();
+
+  void setViewLayout3();
+  void setViewLayout2();
+  void setViewLayout1();
 
   void showSupervoxelList();
 
   void allowBlinkingSegmentation(bool on);
   void toggleSupervoxelView(bool on);
   void takeScreenshot();
+
+  void updateActions();
 
 protected:
   virtual void tryAddTodoItem(
@@ -184,19 +210,19 @@ protected:
 private:
 //  void connectAction();
   void tryAddBookmarkMode();
-  void tryAddBookmarkMode(double x, double y);
-  void tryAddTodoItemMode(double x, double y);
-  void addActiveStrokeAsBookmark();
+//  void tryAddBookmarkMode(double x, double y);
+//  void tryAddTodoItemMode(double x, double y);
+  void addActiveDecorationAsBookmark();
   void init();
   void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
                      bool tryingLink);
   void tryAddSynapse(const ZIntPoint &pt, bool tryingLink);
   void tryMoveSynapse(const ZIntPoint &pt);
-  void tryTodoItemMode();
-  bool updateActiveObjectForSynapseMove();
-  bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
-  void updateActiveObjectForSynapseAdd();
-  void updateActiveObjectForSynapseAdd(const ZPoint &currentPos);
+//  void tryTodoItemMode();
+//  bool updateActiveObjectForSynapseMove();
+//  bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
+//  void updateActiveObjectForSynapseAdd();
+//  void updateActiveObjectForSynapseAdd(const ZPoint &currentDataPos);
 
   ZPoint getLastMouseReleasePosition(Qt::MouseButtons buttons) const;
 
@@ -208,6 +234,7 @@ private:
   bool m_smoothTransform;
   bool m_showingData;
   bool m_blinkingSegmenationAllowed = true;
+  bool m_isBodyHittable = true;
 
   std::unique_ptr<ZFlyEmToDoDelegate> m_todoDelegate;
 

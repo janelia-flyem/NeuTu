@@ -49,6 +49,11 @@ QSpacerItem *ZWidgetFactory::MakeHSpacerItem()
   return new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 }
 
+QSpacerItem *ZWidgetFactory::MakeVSpacerItem()
+{
+  return new QSpacerItem(40, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+}
+
 QFrame* ZWidgetFactory::MakeHorizontalLine(QWidget *parentWidget)
 {
   QFrame *frame = new QFrame(parentWidget);

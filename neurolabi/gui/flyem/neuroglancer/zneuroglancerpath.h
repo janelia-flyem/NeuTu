@@ -20,6 +20,7 @@ public:
   void addLayer(
       const std::shared_ptr<ZNeuroglancerLayerSpec> &layer, bool selected = false);
   void setNavigation(const ZNeuroglancerNavigation &nav);
+  ZJsonObject toJsonObject() const;
 
 private:
 //  QString getLayerString() const;
@@ -32,7 +33,7 @@ private:
   std::vector<std::shared_ptr<ZNeuroglancerLayerSpec>> m_layerList;
   std::shared_ptr<ZNeuroglancerLayerSpec> m_selectedLayer;
   ZNeuroglancerNavigation m_navigation;
-  double m_perspectiveZoom = 128;
+//  double m_perspectiveScale = 0;
   std::string m_layout = "4panel";
 };
 

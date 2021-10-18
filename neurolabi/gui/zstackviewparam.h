@@ -4,12 +4,15 @@
 #include <QRect>
 #include "common/neutudefs.h"
 
-#include "zviewproj.h"
+//#include "zviewproj.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
+#include "data3d/zsliceviewtransform.h"
 
-class ZArbSliceViewParam;
 class ZJsonObject;
+class ZArbSliceViewParam;
+//class ZAffinePlane;
+//class ZAffineRect;
 
 /*!
  * \brief The class of stack view parameter
@@ -18,53 +21,71 @@ class ZStackViewParam
 {
 public:
   ZStackViewParam();
-  ZStackViewParam(neutu::ECoordinateSystem coordSys);
+  ZStackViewParam(const ZSliceViewTransform &t, int width, int height,
+                  neutu::data3d::ESpace sizeSpace);
 
-  inline neutu::ECoordinateSystem getCoordinateSystem() const {
-    return m_coordSys;
-  }
+  void set(const ZSliceViewTransform &t, int width, int height,
+           neutu::data3d::ESpace sizeSpace);
+  void setTransform(const ZSliceViewTransform &t);
+  void setViewport(int width, int height, neutu::data3d::ESpace sizeSpace);
 
-  inline int getZ() const {
-    return m_z;
-  }
+  ZAffineRect getCutRect() const;
 
+  /*!
+   * \brief Get a rectangle adjusted for the integer space
+   *
+   * The result uses the right integer center.
+   */
+  ZAffineRect getIntCutRect() const;
+
+  /*!
+   * \brief Get a rectangle adjusted for the integer space
+   *
+   * The result will be cropped by \a modelRange. But if \a modeRange is not
+   * valid, it is the same is \a getIntCutRect().
+   */
+  ZAffineRect getIntCutRect(
+      const ZIntCuboid &modelRange,
+      int centerCutWidth, int centerCutHeight, bool centerCut) const;
+
+  double getWidth(neutu::data3d::ESpace space) const;
+  double getHeight(neutu::data3d::ESpace space) const;
+
+  int getIntWidth(neutu::data3d::ESpace space) const;
+  int getIntHeight(neutu::data3d::ESpace space) const;
+
+  /*!
+   * \brief Convert the values in the model space into integer values
+   *
+   * The values that become integers including the cut center and the size in
+   * the model space.
+   */
+//  void discretizeModel();
+
+//  ZStackViewParam getDiscretized() const;
+  ZArbSliceViewParam toArbSliceViewParam() const;
+
+  /*!
+   * \brief Test if the viewport is valid (non-empty)
+   */
   bool isValid() const;
   void invalidate();
 
-  size_t getArea() const;
-
-  QRect getViewPort() const;
-  QRectF getProjRect() const;
-
-  inline neutu::View::EExploreAction getExploreAction() const {
-    return m_action;
-  }
-
-  void setZOffset(int z0) {
-    m_z0 = z0;
-  }
-  int getSliceIndex() const;
-  void setSliceIndex(int index);
-
-
-  void setZ(int z);
-  void setViewProj(const ZViewProj &vp);
-
-
-//  void setProjRect(const QRectF &rect);
+  double getArea(neutu::data3d::ESpace space) const;
 
   double getZoomRatio() const;
+  int getZoomLevel(int maxLevel) const;
+  int getZoomLevel() const;
 
-  void setWidgetRect(const QRect &rect);
-  void setCanvasRect(const QRect &rect);
+  /*!
+   * \brief Test if the viewport is empty
+   */
+  bool isViewportEmpty() const;
 
-  void setViewPort(double x0, double y0, double x1, double y1);
-  void setViewPort(const QRect &rect);
-  void setViewPort(const QRect &rect, int z);
   void closeViewPort();
   void openViewPort();
 
-  void setExploreAction(neutu::View::EExploreAction action);
+//  void setExploreAction(neutu::View::EExploreAction action);
   void setSliceAxis(neutu::EAxis sliceAxis);
   neutu::EAxis getSliceAxis() const;
 
@@ -72,57 +93,60 @@ public:
   bool operator !=(const ZStackViewParam &param) const;
 
   bool contains(const ZStackViewParam &param) const;
-  bool containsViewport(const ZStackViewParam &param) const;
-
-  bool contains(int x, int y, int z);
+  bool contains(double x, double y, double z) const;
+  bool contains(const ZPoint &pt) const;
 
   /*!
    * \brief Resize the parameter by keeping the center relatively constant
    */
-  void resize(int width, int height);
+  void setSize(int width, int height, neutu::data3d::ESpace sizeSpace);
 
-  void fixZ(bool state) {
-    m_fixingZ = state;
-  }
+  ZPoint getCutCenter() const;
 
-  bool fixingZ() const {
-    return m_fixingZ;
-  }
+  void setCutCenter(const ZIntPoint &pt);
+  void setCutDepth(const ZPoint &startPlane, double d);
+  void moveCutDepth(double d);
 
-  int getZoomLevel(int maxLevel) const;
-  int getZoomLevel() const;
-
-  const ZViewProj& getViewProj() const {
-    return m_viewProj;
-  }
-
-  ZArbSliceViewParam getSliceViewParam() const;
-  void setArbSliceCenter(const ZIntPoint &pt);
-  void setArbSlicePlane(const ZPoint &v1, const ZPoint &v2);
-  void setArbSliceView(const ZArbSliceViewParam &param);
-  void moveSlice(int step);
+  double getCutDepth(const ZPoint &startPlane) const;
 
   bool onSamePlane(const ZStackViewParam &param) const;
 
-  std::string toString() const;
+//  std::string toString() const;
   ZJsonObject toJsonObject() const;
 
-private:
-  void init(neutu::ECoordinateSystem coordSys);
+  ZSliceViewTransform getSliceViewTransform() const;
+
+  void setViewId(int id);
+  int getViewId() const;
 
 private:
-  int m_z;
-  ZViewProj m_viewProj;
-  int m_z0 = 0;
-  neutu::ECoordinateSystem m_coordSys;
-  neutu::View::EExploreAction m_action;
-  neutu::EAxis m_sliceAxis;
-  bool m_fixingZ;
+//  void init(neutu::ECoordinateSystem coordSys);
 
-  //For arb slice (m_sliceAxis is neutube::A_AXIS)
-  ZIntPoint m_center;
-  ZPoint m_v1;
-  ZPoint m_v2;
+  struct ViewportSize {
+    void set(int width, int height) {
+      m_width = width;
+      m_height = height;
+    }
+
+    void set(int width, int height, neutu::data3d::ESpace space) {
+      set(width, height);
+      m_space = space;
+    }
+
+    int m_width = 0;
+    int m_height = 0;
+    neutu::data3d::ESpace m_space = neutu::data3d::ESpace::CANVAS;
+  };
+
+private:
+  ZSliceViewTransform m_transform;
+  int m_viewId = 0;
+//  neutu::View::EExploreAction m_action =
+//      neutu::View::EExploreAction::EXPLORE_UNKNOWN;
+
+  ViewportSize m_viewportSize;
+//  ViewportSize m_backupViewportSize;
+  bool m_isViewportOpen = true;
 };
 
 #endif // ZSTACKVIEWPARAM_H

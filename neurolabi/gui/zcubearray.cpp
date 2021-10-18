@@ -1,6 +1,6 @@
 #include "zcubearray.h"
 #include "zmesh.h"
-
+#include "geometry/zcuboid.h"
 //
 Mesh::Mesh()
 {
@@ -364,18 +364,12 @@ const std::vector<bool>& Z3DCube::getFaceVisiblity() const
 ZCubeArray::ZCubeArray()
 {
     m_type = ZCubeArray::GetType();
-    m_target = ZStackObject::ETarget::ONLY_3D;
+    m_target = neutu::data3d::ETarget::ONLY_3D;
 }
 
 ZCubeArray::~ZCubeArray()
 {
 
-}
-
-void ZCubeArray::display(
-    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
-    neutu::EAxis /*sliceAxis*/) const
-{
 }
 
 void ZCubeArray::setMesh(ZMesh *mesh)
@@ -418,6 +412,11 @@ bool ZCubeArray::isEmpty() const
   }
 
   return false;
+}
+
+ZCuboid ZCubeArray::getBoundBox() const
+{
+  return m_mesh->getBoundBox();
 }
 
 #if 0
@@ -499,6 +498,7 @@ void ZCubeArray::clear()
 {
   m_cubeArray.clear();
 }
+
 #endif
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)

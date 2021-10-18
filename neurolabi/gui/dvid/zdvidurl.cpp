@@ -1,6 +1,7 @@
 #include "zdvidurl.h"
 #include <sstream>
 #include <iostream>
+#include <cassert>
 
 #include "dvid/zdviddata.h"
 #if defined(_QT_GUI_USED_)
@@ -20,6 +21,7 @@ const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
 const std::string ZDvidUrl::m_keyRangeCommand = "keyrange";
 const std::string ZDvidUrl::m_keyValuesCommand = "keyvalues";
+const std::string ZDvidUrl::m_keyRangeValuesCommand = "keyrangevalues";
 const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
 //const std::string ZDvidUrl::m_supervoxelCommand = "sparsevol-supervoxel";
@@ -53,14 +55,16 @@ ZDvidUrl::ZDvidUrl(
   m_dvidTarget.set(serverAddress, uuid, port);
 }
 
-ZDvidUrl::ZDvidUrl(const ZDvidTarget &target)
+ZDvidUrl::ZDvidUrl(const ZDvidTarget &target, bool admin)
 {
   m_dvidTarget = target;
+  m_admin = admin;
 }
 
-ZDvidUrl::ZDvidUrl(const ZDvidTarget &target, const std::string &uuid)
+ZDvidUrl::ZDvidUrl(
+    const ZDvidTarget &target, const std::string &uuid, bool replacing)
 {
-  setDvidTarget(target, uuid);
+  setDvidTarget(target, uuid, replacing);
 }
 
 void ZDvidUrl::setDvidTarget(const ZDvidTarget &target)
@@ -68,10 +72,18 @@ void ZDvidUrl::setDvidTarget(const ZDvidTarget &target)
   m_dvidTarget = target;
 }
 
-void ZDvidUrl::setDvidTarget(const ZDvidTarget &target, const std::string &uuid)
+void ZDvidUrl::setDvidTarget(
+    const ZDvidTarget &target, const std::string &uuid, bool replacing)
 {
   m_dvidTarget = target;
-  m_dvidTarget.setUuid(uuid);
+  if (m_dvidTarget.getUuid().empty() || replacing) {
+    m_dvidTarget.setUuid(uuid);
+  }
+}
+
+void ZDvidUrl::setAdmin(bool admin)
+{
+  m_admin = admin;
 }
 
 std::string ZDvidUrl::GetFullUrl(
@@ -125,7 +137,11 @@ std::string ZDvidUrl::getInfoUrl(const std::string &dataName) const
 std::string ZDvidUrl::getApiUrl() const
 {
   if (!m_dvidTarget.getAddress().empty()) {
-    return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+    if (m_dvidTarget.getScheme().empty()) {
+      return  "http://" + m_dvidTarget.getAddressWithPort() + "/api";
+    } else {
+      return m_dvidTarget.getRootUrl() + "/api";
+    }
   }
 
   return "";
@@ -141,9 +157,7 @@ std::string ZDvidUrl::getServerInfoUrl() const
   return GetFullUrl(getApiUrl(), "server/info");
 }
 
-namespace {
-
-std::string AppendQuery(const std::string &url, const std::string query)
+std::string ZDvidUrl::AppendQuery(const std::string &url, const std::string query)
 {
   std::string newUrl = url;
 
@@ -169,38 +183,18 @@ std::string AppendQuery(const std::string &url, const std::string query)
   return newUrl;
 }
 
-
-template<typename T>
-std::string AppendQuery(
-      const std::string &url, const std::pair<std::string,T> &query)
-{
-  if (!query.first.empty()) {
-    std::string qstr = query.first + "=" + std::to_string(query.second);
-    return AppendQuery(url, qstr);
-  }
-
-  return url;
-}
-
-template<typename T>
-std::string AppendQuery(
-      const std::string &url, const std::string &name, const T &value)
-{
-  return AppendQuery(url, std::pair<std::string,T>(name, value));
-}
-
-std::string AppendQuery(
+std::string ZDvidUrl::AppendQuery(
       const std::string &url, const std::pair<std::string,std::string> &query)
 {
   if (!query.first.empty()) {
     std::string qstr = query.first + "=" + query.second;
-    return AppendQuery(url, qstr);
+    return ZDvidUrl::AppendQuery(url, qstr);
   }
 
   return url;
 }
 
-std::string AppendQuery(
+std::string ZDvidUrl::AppendQuery(
     const std::string &url, const std::pair<std::string, bool> &query)
 {
   if (!query.first.empty()) {
@@ -211,25 +205,40 @@ std::string AppendQuery(
       qstr += "false";
     }
 
-    return AppendQuery(url, qstr);
+    return ZDvidUrl::AppendQuery(url, qstr);
   }
 
   return url;
 }
 
-}
 
-
-std::string ZDvidUrl::getMeshUrl()
+std::string ZDvidUrl::getMeshUrl() const
 {
   return getDataUrl(m_dvidTarget.getMeshName());
 }
 
+std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, EMeshType type) const
+{
+  return applyAdminToken(GetFullUrl(
+        GetKeyCommandUrl(getMeshUrl()),
+        GetMeshKey(bodyId, type)));
+}
+
+std::string ZDvidUrl::getMergedMeshUrl(uint64_t bodyId) const
+{
+  return getMeshUrl(bodyId, EMeshType::MERGED);
+}
+
+std::string ZDvidUrl::getNgMeshUrl(uint64_t bodyId) const
+{
+  return getMeshUrl(bodyId, EMeshType::NG);
+}
+
 std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 {
-  return GetFullUrl(
-        GetKeyCommandUrl(getDataUrl(m_dvidTarget.getMeshName(zoom))),
-        GetMeshKey(bodyId));
+  return applyAdminToken(GetFullUrl(
+        GetKeyCommandUrl(getDataUrl(m_dvidTarget.getMeshName())),
+        GetMeshKey(bodyId, zoom)));
 #if 0
   std::string url;
 
@@ -246,10 +255,12 @@ std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 #endif
 }
 
+/*
 std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
 {
   return GetMeshInfoUrl(getMeshUrl(bodyId, zoom));
 }
+*/
 
 std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
 {
@@ -257,11 +268,12 @@ std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
   return meshUrl + MESH_INFO_SUFFIX;
 }
 
+
 std::string ZDvidUrl::getMeshesTarsUrl()
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_dvidTarget.getBodyLabelName()));
 }
 
@@ -269,13 +281,13 @@ std::string ZDvidUrl::getMeshesTarsUrl(uint64_t bodyId)
 {
   ZString dataUrl = getMeshesTarsUrl();
   ZString key = GetBodyKey(bodyId) + ".tar";
-  return GetFullUrl(GetKeyCommandUrl(dataUrl), key);
+  return applyAdminToken(GetFullUrl(GetKeyCommandUrl(dataUrl), key));
 }
 
 std::string ZDvidUrl::getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId2)
 {
   ZString dataUrl = ZDvidData::GetName(ZDvidData::ERole::MESHES_TARS,
-                                       ZDvidData::ERole::BODY_LABEL,
+                                       ZDvidData::ERole::SPARSEVOL,
                                        m_dvidTarget.getBodyLabelName());
   ZString key1 = GetBodyKey(bodyId1) + ".tar";
   ZString key2 = GetBodyKey(bodyId2) + ".tar";
@@ -286,7 +298,7 @@ std::string ZDvidUrl::getTarSupervoxelsUrl()
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::TAR_SUPERVOXELS,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            m_dvidTarget.getBodyLabelName()));
 }
 
@@ -294,13 +306,13 @@ std::string ZDvidUrl::getTarSupervoxelsUrl(uint64_t bodyId)
 {
   ZString dataUrl = getTarSupervoxelsUrl();
   ZString key = GetBodyKey(bodyId);
-  return GetFullUrl(GetTarfileCommandUrl(dataUrl), key);
+  return applyAdminToken(GetFullUrl(GetTarfileCommandUrl(dataUrl), key));
 }
 
 std::string ZDvidUrl::getSupervoxelMeshUrl(uint64_t bodyId)
 {
-  return GetFullUrl(GetFullUrl(getTarSupervoxelsUrl(), "supervoxel"),
-                    GetBodyKey(bodyId));
+  return applyAdminToken(
+        GetFullUrl(getTarSupervoxelsUrl(), "supervoxel", GetBodyKey(bodyId)));
 }
 
 std::string ZDvidUrl::getSupervoxelMapUrl(uint64_t bodyId)
@@ -313,11 +325,15 @@ std::string ZDvidUrl::getSupervoxelMapUrl(uint64_t bodyId)
     }
   }
 
-  return url;
+  return applyAdminToken(url);
 }
 
 std::string ZDvidUrl::getSkeletonUrl() const
 {
+  if (m_dvidTarget.getBodyLabelName().empty()) {
+    return getSkeletonUrl(m_dvidTarget.getSegmentationName());
+  }
+
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());
 }
 
@@ -325,25 +341,30 @@ std::string ZDvidUrl::getSkeletonUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::SKELETON,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            bodyLabelName));
 }
 
 std::string
 ZDvidUrl::getSkeletonUrl(uint64_t bodyId, const std::string &bodyLabelName) const
 {
-  return GetFullUrl(GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)),
-                    GetSkeletonKey(bodyId));
+  return applyAdminToken(
+        GetFullUrl(GetKeyCommandUrl(getSkeletonUrl(bodyLabelName)),
+                   GetSkeletonKey(bodyId)));
 }
 
 std::string ZDvidUrl::getSkeletonUrl(uint64_t bodyId) const
 {
-  return getSkeletonUrl(bodyId, m_dvidTarget.getBodyLabelName());
+  std::string segmentationName = m_dvidTarget.getBodyLabelName().empty() ?
+        m_dvidTarget.getSegmentationName() : m_dvidTarget.getBodyLabelName();
+
+  return getSkeletonUrl(bodyId, segmentationName);
 }
 
 std::string ZDvidUrl::getSkeletonConfigUrl(const std::string &bodyLabelName)
 {
-  return GetFullUrl(getSkeletonUrl(bodyLabelName), "key/config.json");
+  return  applyAdminToken(
+        GetFullUrl(getSkeletonUrl(bodyLabelName), "key/config.json"));
 }
 
 std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
@@ -353,7 +374,12 @@ std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
 
 std::string ZDvidUrl::GetKeyValuesCommandUrl(const std::string &dataUrl)
 {
-    return GetFullUrl(dataUrl, m_keyValuesCommand);
+  return GetFullUrl(dataUrl, m_keyValuesCommand);
+}
+
+std::string ZDvidUrl::GetKeyRangeValuesCommandUrl(const std::string &dataUrl)
+{
+  return GetFullUrl(dataUrl, m_keyRangeValuesCommand);
 }
 
 std::string ZDvidUrl::GetTarfileCommandUrl(const std::string &dataUrl)
@@ -456,7 +482,7 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const
   return url;
 }
 
-std::string ZDvidUrl::getSparsevolUrl(const SparsevolConfig &config)
+std::string ZDvidUrl::getSparsevolUrl(const dvid::SparsevolConfig &config)
 {
   std::string url = getMultiscaleSparsevolUrl(config.bodyId, config.zoom);
 
@@ -671,14 +697,15 @@ std::string ZDvidUrl::getSparsevolUrl(
 std::string ZDvidUrl::getSparsevolSizeUrl(
     uint64_t bodyId, neutu::EBodyLabelType labelType) const
 {
-  ZString url;
+  std::string url;
 
   if (m_dvidTarget.hasSparsevolSizeApi()) {
     url = getDataUrl(m_dvidTarget.getBodyLabelName());
     if (!url.empty()) {
       url += "/" + ZDvidData::GetName(ZDvidData::ERole::SPARSEVOL_SIZE);
       url += "/";
-      url.appendNumber(bodyId);
+      url += std::to_string(bodyId);
+//      url.appendNumber(bodyId);
       if (labelType == neutu::EBodyLabelType::SUPERVOXEL) {
         url = AppendQuery(url, std::make_pair(SUPERVOXEL_FLAG, true));
       }
@@ -687,7 +714,6 @@ std::string ZDvidUrl::getSparsevolSizeUrl(
 
   return url;
 }
-
 
 std::string ZDvidUrl::AppendQueryM(
     const std::string &url, const std::vector<std::pair<std::string, int>> &query)
@@ -707,6 +733,47 @@ std::string ZDvidUrl::AppendQueryM(
   return AppendQuery(url, qstr);
 }
 
+namespace {
+
+void append_range_query(
+    std::string &query, const std::string &name, int minv, int maxv)
+{
+  if (minv <= maxv) {
+    query = ZDvidUrl::AppendQuery(query, "min" + name, minv);
+    query = ZDvidUrl::AppendQuery(query, "max" + name, maxv);
+  }
+}
+
+}
+
+std::string ZDvidUrl::AppendRangeQuery(
+    const std::string &url, const ZIntCuboid &box)
+{
+  std::string newUrl = url;
+  if (!url.empty()) {
+    append_range_query(newUrl, "x", box.getMinX(), box.getMaxX());
+    append_range_query(newUrl, "y", box.getMinY(), box.getMaxY());
+    append_range_query(newUrl, "z", box.getMinZ(), box.getMaxZ());
+  }
+
+  return newUrl;
+}
+
+std::string ZDvidUrl::AppendRangeQuery(
+    const std::string &url, const ZIntCuboid &box, bool exact)
+{
+  std::string newUrl = url;
+  if (!url.empty()) {
+    append_range_query(newUrl, "x", box.getMinX(), box.getMaxX());
+    append_range_query(newUrl, "y", box.getMinY(), box.getMaxY());
+    append_range_query(newUrl, "z", box.getMinZ(), box.getMaxZ());
+  }
+
+  newUrl = AppendQuery(newUrl, std::make_pair("exact", exact));
+
+  return newUrl;
+}
+
 std::string ZDvidUrl::AppendRangeQuery(
     const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact)
 {
@@ -718,19 +785,22 @@ std::string ZDvidUrl::AppendRangeQuery(
 
   switch (axis) {
   case neutu::EAxis::Z:
-    newUrl = AppendQueryM(
-          url, {std::make_pair("minz", minZ),
-                std::make_pair("maxz", maxZ)});
+    append_range_query(newUrl, "z", minZ, maxZ);
+//    newUrl = AppendQueryM(
+//          url, {std::make_pair("minz", minZ),
+//                std::make_pair("maxz", maxZ)});
     break;
   case neutu::EAxis::X:
-    newUrl = AppendQueryM(
-          url, {std::make_pair("minx", minZ),
-                std::make_pair("maxx", maxZ)});
+    append_range_query(newUrl, "x", minZ, maxZ);
+//    newUrl = AppendQueryM(
+//          url, {std::make_pair("minx", minZ),
+//                std::make_pair("maxx", maxZ)});
     break;
   case neutu::EAxis::Y:
-    newUrl = AppendQueryM(
-          url, {std::make_pair("miny", minZ),
-                std::make_pair("maxy", maxZ)});
+    append_range_query(newUrl, "y", minZ, maxZ);
+//    newUrl = AppendQueryM(
+//          url, {std::make_pair("miny", minZ),
+//                std::make_pair("maxy", maxZ)});
     break;
   case neutu::EAxis::ARB:
     break;
@@ -743,28 +813,15 @@ std::string ZDvidUrl::AppendRangeQuery(
 
 }
 
-std::string ZDvidUrl::AppendRangeQuery(
-    const std::string &url, const ZIntCuboid &box)
+std::string ZDvidUrl::AppendSourceQuery(const std::string &url)
 {
-  ZString query;
-  if (!url.empty() && !box.isEmpty()) {
-    query += "minx=";
-    query.appendNumber(box.getFirstCorner().getX());
-    query += "&maxx=";
-    query.appendNumber(box.getLastCorner().getX());
-
-    query += "&miny=";
-    query.appendNumber(box.getFirstCorner().getY());
-    query += "&maxy=";
-    query.appendNumber(box.getLastCorner().getY());
-
-    query += "&minz=";
-    query.appendNumber(box.getFirstCorner().getZ());
-    query += "&maxz=";
-    query.appendNumber(box.getLastCorner().getZ());
-  }
-
-  return AppendQuery(url, query);
+#ifdef _DEBUG_
+  assert(!(ZString(url).contains("?app=") || ZString(url).contains("?u=") ||
+           ZString(url).contains("&app=") || ZString(url).contains("&u=")));
+#endif
+  return AppendQuery(
+        AppendQuery(url, "u", NeutubeConfig::GetUserName()),
+        "app", NeutubeConfig::GetSoftwareName());
 }
 
 std::string ZDvidUrl::getSupervoxelUrl
@@ -909,7 +966,7 @@ std::string ZDvidUrl::getThumbnailUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(
         ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL,
-                           ZDvidData::ERole::BODY_LABEL, bodyLabelName));
+                           ZDvidData::ERole::SPARSEVOL, bodyLabelName));
 }
 
 std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const
@@ -923,9 +980,10 @@ std::string ZDvidUrl::getThumbnailUrl(uint64_t bodyId, const std::string &bodyLa
   ZString str;
   str.appendNumber(bodyId);
 
-  return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL,
-                                      ZDvidData::ERole::BODY_LABEL, bodyLabelName),
-                   str + "_mraw");
+  return applyAdminToken(
+        getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::THUMBNAIL,
+                                     ZDvidData::ERole::SPARSEVOL, bodyLabelName),
+                   str + "_mraw"));
 //  return getThumbnailUrl(bodyLabelName) + "/" + str + ".mraw";
 }
 
@@ -955,7 +1013,17 @@ std::string ZDvidUrl::getOldMasterUrl() const
 
 std::string ZDvidUrl::getMasterUrl() const
 {
-  return GetFullUrl(GetFullUrl(getRepoUrl(), "branch-versions"), "master");
+  return GetFullUrl(getRepoUrl(), "branch-versions", "master");
+}
+
+std::string ZDvidUrl::getAliasBranchUrl(
+    const std::string &alias, const std::string &user) const
+{
+  if (alias.empty()) {
+    return "";
+  }
+
+  return getKeyUrl("branches", alias + (user.empty() ? "" : ("_" + user)));
 }
 
 std::string ZDvidUrl::getMirrorInfoUrl() const
@@ -1075,7 +1143,7 @@ std::string ZDvidUrl::getKeyUrl(const std::string &name, const std::string &key)
   //new dvid api
 //  return GetKeyCommandUrl(getDataUrl(name)) + "/" + key;
 
-  return GetFullUrl(GetKeyCommandUrl(getDataUrl(name)), key);
+  return applyAdminToken(GetFullUrl(GetKeyCommandUrl(getDataUrl(name)), key));
 }
 
 std::string ZDvidUrl::getAllKeyUrl(const std::string &name) const
@@ -1109,18 +1177,34 @@ std::string ZDvidUrl::getKeyValuesUrl(const std::string &name) const
     return url;
 }
 
+std::string ZDvidUrl::getKeyValuesUrl(
+    const std::string &name, const std::string &key1, const std::string &key2) const
+{
+  std::string url = GetKeyRangeValuesCommandUrl(getDataUrl(name));
+  url += "/" + key1 + "/" + key2 + "?tar=true";
+  return url;
+}
+
 std::string ZDvidUrl::getBodyAnnotationName() const
 {
   return ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                            ZDvidData::ERole::BODY_LABEL,
+                            ZDvidData::ERole::SPARSEVOL,
                             m_dvidTarget.getBodyLabelName());
 }
 
 std::string ZDvidUrl::getBodyAnnotationUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_ANNOTATION,
-                                       ZDvidData::ERole::BODY_LABEL,
+                                       ZDvidData::ERole::SPARSEVOL,
                                        bodyLabelName));
+}
+
+std::string ZDvidUrl::getBodyAnnotationSchemaUrl(
+    const std::string &bodyLabelName) const
+{
+  return applyAdminToken(
+        GetFullUrl(
+          GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)), "schema"));
 }
 
 std::string ZDvidUrl::getBodyAnnotationUrl(
@@ -1129,8 +1213,9 @@ std::string ZDvidUrl::getBodyAnnotationUrl(
 //  return GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)) + "/" +
 //      ZString::num2str(bodyId);
 
-  return GetFullUrl(GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)),
-                    ZString::num2str(bodyId));
+  return applyAdminToken(
+        GetFullUrl(GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)),
+                   ZString::num2str(bodyId)));
 }
 
 std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
@@ -1138,17 +1223,22 @@ std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
   return getBodyAnnotationUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
+std::string ZDvidUrl::getBodyAnnotationSchemaUrl() const
+{
+  return getBodyAnnotationSchemaUrl(m_dvidTarget.getBodyLabelName());
+}
+
 std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const
 {
   return getDataUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
-                                       ZDvidData::ERole::BODY_LABEL,
+                                       ZDvidData::ERole::SPARSEVOL,
                                        bodyLabelName));
 }
 
 std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId, const std::string &bodyName) const
 {
   return getKeyUrl(ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
-                                      ZDvidData::ERole::BODY_LABEL,
+                                      ZDvidData::ERole::SPARSEVOL,
                                       bodyName), ZString::num2str(bodyId));
 }
 
@@ -1195,8 +1285,8 @@ std::string ZDvidUrl::getBoundBoxUrl(int z) const
 {
 //  return GetKeyCommandUrl(getBoundBoxUrl()) + "/" + ZString::num2str(z);
 
-  return GetFullUrl(GetKeyCommandUrl(getBoundBoxUrl()),
-                    ZString::num2str(z));
+  return applyAdminToken(GetFullUrl(GetKeyCommandUrl(getBoundBoxUrl()),
+                                    ZString::num2str(z)));
 }
 
 std::string ZDvidUrl::getBodyLabelUrl(const std::string &dataName) const
@@ -1270,7 +1360,7 @@ std::string ZDvidUrl::getSynapseAnnotationUrl() const
 
 std::string ZDvidUrl::getMergeUrl(const std::string &dataName) const
 {
-  return GetFullUrl(getDataUrl(dataName), "merge");
+  return applyAdminToken(GetFullUrl(getDataUrl(dataName), "merge"));
 }
 
 /*
@@ -1291,13 +1381,24 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
     key += "_" + userName;
   }
 
-  return GetFullUrl(GetKeyCommandUrl(
-        getDataUrl(ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION))), key);
+  return applyAdminToken(GetFullUrl(GetKeyCommandUrl(
+        getDataUrl(ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION))), key));
 }
 
 std::string ZDvidUrl::getDataConfigUrl(const std::string &userName) const
 {
   return getKeyUrl("neutu_config", "user_" + userName);
+}
+
+std::string ZDvidUrl::applyAdminToken(const std::string &url) const
+{
+  if (m_admin) {
+    if (!m_dvidTarget.getAdminToken().empty()) {
+      return AppendQuery(url, "admintoken", m_dvidTarget.getAdminToken());
+    }
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getSplitUrl(
@@ -1333,7 +1434,7 @@ std::string ZDvidUrl::getSplitUrl(
   std::ostringstream stream;
   stream << newLabel;
 
-  return url + "?splitlabel=" + stream.str();
+  return applyAdminToken(url + "?splitlabel=" + stream.str());
 }
 
 std::string ZDvidUrl::getSplitSupervoxelUrl(
@@ -1387,7 +1488,7 @@ std::string ZDvidUrl::getBookmarkKeyUrl(int x, int y, int z) const
   stream << m_keyCommand << "/" << x << "_" << y << "_" << z;
 
 //  return stream.str();
-  return GetFullUrl(getBookmarkKeyUrl(), stream.str());
+  return applyAdminToken(GetFullUrl(getBookmarkKeyUrl(), stream.str()));
 }
 
 std::string ZDvidUrl::getBookmarkKeyUrl(const ZIntPoint &pt) const
@@ -1416,7 +1517,7 @@ std::string ZDvidUrl::getBookmarkUrl(
 
 //  return stream.str();
 
-  return GetFullUrl(getBookmarkUrl(), stream.str());
+  return applyAdminToken(GetFullUrl(getBookmarkUrl(), stream.str()));
 }
 
 std::string ZDvidUrl::getBookmarkUrl(
@@ -1427,7 +1528,7 @@ std::string ZDvidUrl::getBookmarkUrl(
 
 std::string ZDvidUrl::getBookmarkUrl(const ZIntCuboid &box) const
 {
-  return getBookmarkUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+  return getBookmarkUrl(box.getMinCorner(), box.getWidth(), box.getHeight(),
                         box.getDepth());
 }
 
@@ -1446,7 +1547,7 @@ std::string ZDvidUrl::getTileUrl(
     url.appendNumber(resLevel);
   }
 
-  return url;
+  return std::move(url);
 }
 
 std::string ZDvidUrl::getTileUrl(
@@ -1463,12 +1564,17 @@ std::string ZDvidUrl::getTileUrl(
     url.appendNumber(z0);
   }
 
-  return url;
+  return std::move(url);
+}
+
+std::string ZDvidUrl::getReposInfoUrl() const
+{
+  return GetFullUrl(getApiUrl(), "/repos/info");
 }
 
 std::string ZDvidUrl::getRepoInfoUrl() const
 {
-  return GetFullUrl(getApiUrl(), "/repos/info");
+  return GetFullUrl(getRepoUrl(), "info");
 }
 
 std::string ZDvidUrl::getLockUrl() const
@@ -1490,7 +1596,9 @@ std::string ZDvidUrl::GetPath(const std::string &url)
   if (markerPos != std::string::npos) {
     markerPos += marker.size();
     std::string::size_type uuidPos = url.find('/', markerPos);
-    return url.substr(uuidPos);
+    if (uuidPos != std::string::npos) {
+      return url.substr(uuidPos);
+    }
   }
 
   return url;
@@ -1509,7 +1617,7 @@ std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
     url.appendNumber(z);
   }
 
-  return url;
+  return std::move(url);
 }
 
 std::string ZDvidUrl::getLocalSupervoxelIdUrl(int x, int y, int z) const
@@ -1529,7 +1637,7 @@ std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 
 std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
 {
-  return GetFullUrl(getDataUrl(dataName), m_roiCommand);
+  return applyAdminToken(GetFullUrl(getDataUrl(dataName), m_roiCommand));
 }
 
 std::string ZDvidUrl::getManagedRoiUrl(const std::string &key) const
@@ -1561,7 +1669,7 @@ std::string ZDvidUrl::getAnnotationSyncUrl(
    url = GetFullUrl(url, "?" + queryString);
   }
 
-  return url;
+  return applyAdminToken(url);
 }
 
 std::string ZDvidUrl::getDataSyncUrl(
@@ -1573,12 +1681,12 @@ std::string ZDvidUrl::getDataSyncUrl(
    url = GetFullUrl(url, "?" + queryString);
   }
 
-  return url;
+  return applyAdminToken(url);
 }
 
 std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
 {
-  return GetFullUrl(getDataUrl(dataName), "sync");
+  return applyAdminToken(GetFullUrl(getDataUrl(dataName), "sync"));
 }
 
 std::string ZDvidUrl::getLabelMappingUrl() const
@@ -1617,7 +1725,7 @@ std::string ZDvidUrl::getAnnotationUrl(
     }
   }
 
-  return url;
+  return applyAdminToken(url);
 }
 
 
@@ -1633,7 +1741,7 @@ std::string ZDvidUrl::getAnnotationUrl(
     url += stream.str();
   }
 
-  return url;
+  return applyAdminToken(url);
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
@@ -1651,15 +1759,15 @@ std::string ZDvidUrl::getAnnotationUrl(
     url += stream.str();
   }
 
-  return url;
+  return applyAdminToken(url);
 }
 
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const ZIntCuboid &box) const
 {
   return getAnnotationUrl(
-        dataName, box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+        dataName, box.getMinCorner().getX(), box.getMinCorner().getY(),
+        box.getMinCorner().getZ(), box.getWidth(), box.getHeight(),
         box.getDepth());
 }
 
@@ -1687,7 +1795,7 @@ std::string ZDvidUrl::getAnnotationDeleteUrl(
   std::ostringstream stream;
   stream << x << "_" << y << "_" << z;
 
-  return GetFullUrl(getAnnotationDeleteUrl(dataName), stream.str());
+  return applyAdminToken(GetFullUrl(getAnnotationDeleteUrl(dataName), stream.str()));
 }
 
 std::string ZDvidUrl::getSynapseUrl() const
@@ -1702,7 +1810,7 @@ std::string ZDvidUrl::getSynapseUrl(int x, int y, int z) const
   stream << m_annotationElementCommand << "/" << x
          << "_" << y << "_" << z;
 
-  return GetFullUrl(getSynapseUrl(), stream.str());
+  return applyAdminToken(GetFullUrl(getSynapseUrl(), stream.str()));
 }
 
 std::string ZDvidUrl::getSynapseUrl(const ZIntPoint &pos) const
@@ -1719,7 +1827,7 @@ std::string ZDvidUrl::getSynapseUrl(
          << width << "_" << height << "_" << depth << "/"
          << x << "_" << y << "_" << z;
 
-  return GetFullUrl(getSynapseUrl(), stream.str());
+  return applyAdminToken(GetFullUrl(getSynapseUrl(), stream.str()));
 }
 
 std::string ZDvidUrl::getSynapseElementsUrl() const
@@ -1746,12 +1854,12 @@ std::string ZDvidUrl::getSynapseMoveUrl(
 
 
 
-  return GetFullUrl(getSynapseUrl(), stream.str());
+  return applyAdminToken(GetFullUrl(getSynapseUrl(), stream.str()));
 }
 
 std::string ZDvidUrl::getSynapseUrl(const ZIntCuboid &box) const
 {
-  return getSynapseUrl(box.getFirstCorner(), box.getWidth(), box.getHeight(),
+  return getSynapseUrl(box.getMinCorner(), box.getWidth(), box.getHeight(),
                        box.getDepth());
 }
 
@@ -1809,9 +1917,9 @@ std::string ZDvidUrl::getContrastUrl() const
 
 std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
 {
-  return getTodoListUrl(cuboid.getFirstCorner().getX(),
-                        cuboid.getFirstCorner().getY(),
-                        cuboid.getFirstCorner().getZ(),
+  return getTodoListUrl(cuboid.getMinCorner().getX(),
+                        cuboid.getMinCorner().getY(),
+                        cuboid.getMinCorner().getZ(),
                         cuboid.getWidth(), cuboid.getHeight(),
                         cuboid.getDepth());
 }
@@ -1837,15 +1945,25 @@ std::string ZDvidUrl::getSynapseLabelszBodiesUrl() const
     return url;
 }
 
+std::string ZDvidUrl::getSynapseLabelszUrl() const
+{
+  return getDataUrl(m_dvidTarget.getSynapseLabelszName());
+}
+
 std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
 {
-  std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
+  std::string url = getSynapseLabelszUrl();
 
   if (!url.empty()) {
     url += "/top/" + ZString::num2str(n);
   }
 
   return url;
+}
+
+std::string ZDvidUrl::getSynapseLabelszReloadUrl() const
+{
+  return applyAdminToken(GetFullUrl(getSynapseLabelszUrl(), "reload"));
 }
 
 std::string ZDvidUrl::GetLabelszIndexTypeStr(dvid::ELabelIndexType type)
@@ -1928,10 +2046,7 @@ void ZDvidUrl::setUuid(const std::string &uuid)
 
 std::string ZDvidUrl::GetBodyKey(uint64_t bodyId)
 {
-  std::ostringstream stream;
-  stream << bodyId;
-
-  return stream.str();
+  return std::to_string(bodyId);
 }
 
 std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
@@ -1942,9 +2057,68 @@ std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
   return stream.str();
 }
 
-std::string ZDvidUrl::GetMeshKey(uint64_t bodyId)
+std::string ZDvidUrl::GetBodyKey(uint64_t bodyId, int zoom)
 {
-  return GetBodyKey(bodyId);
+  std::string key = std::to_string(bodyId);
+  if (zoom > 0) {
+    key += "_" + std::to_string(zoom);
+  }
+  return key;
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, int zoom)
+{
+  return GetBodyKey(bodyId, zoom) + ".obj";
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, EMeshType type)
+{
+  std::string key = GetBodyKey(bodyId);
+
+  switch (type) {
+  case EMeshType::MERGED:
+    key += ".merge";
+    break;
+  case EMeshType::NG:
+    key += ".ngmesh";
+    break;
+  case EMeshType::DEFAULT:
+    key += ".obj";
+    break;
+  case EMeshType::DRACO:
+    key += ".drc";
+    break;
+  }
+
+  return key;
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId, int zoom, EMeshType type)
+{
+  std::string key;
+
+  if (zoom == 0 || type != EMeshType::MERGED) {
+    key = GetBodyKey(bodyId, zoom);
+  }
+
+  if (!key.empty()) {
+    switch (type) {
+    case EMeshType::MERGED:
+      key += ".merge";
+      break;
+    case EMeshType::NG:
+      key += ".ngmesh";
+      break;
+    case EMeshType::DEFAULT:
+      key += ".obj";
+      break;
+    case EMeshType::DRACO:
+      key += ".drc";
+      break;
+    }
+  }
+
+  return key;
 }
 
 std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
@@ -1972,7 +2146,7 @@ std::string ZDvidUrl::GetResultKeyFromTaskKey(const std::string &key)
     newKey = "";
   }
 
-  return newKey;
+  return std::move(newKey);
 }
 
 std::string ZDvidUrl::ExtractSplitTaskKey(const std::string &url)

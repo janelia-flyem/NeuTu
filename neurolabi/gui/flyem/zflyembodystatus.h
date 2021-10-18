@@ -5,7 +5,7 @@
 
 class ZJsonObject;
 
-class   ZFlyEmBodyStatus
+class ZFlyEmBodyStatus
 {
 public:
   ZFlyEmBodyStatus(const std::string &status = "");
@@ -20,6 +20,7 @@ public:
   bool presevingId() const;
   int getProtectionLevel() const;
   int getPriority() const;
+  std::string getColorCode() const;
 
   void setProtectionLevel(int level);
   void setPriority(int p);
@@ -48,6 +49,7 @@ public:
   static const char *KEY_MERGABLE;
   static const char *KEY_ADMIN_LEVEL;
   static const char *KEY_PRESERVING_ID;
+  static const char *KEY_COLOR;
 
 private:
   std::string m_status;
@@ -58,6 +60,7 @@ private:
   bool m_isMergable = true;
   bool m_preservingId = false;
   int m_adminLevel = 0;
+  std::string m_colorCode;
 };
 
 #endif // ZFLYEMBODYSTATUS_H

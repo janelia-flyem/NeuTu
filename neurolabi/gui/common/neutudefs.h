@@ -8,6 +8,12 @@
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : (uint64_t(1)) << ((n) - 1))
 
+#if defined(__APPLE__)
+#  define CTRL_KEY_NAME "Cmd"
+#else
+#  define CTRL_KEY_NAME "Ctrl"
+#endif
+
 namespace neutu {
 
 static constexpr uint64_t ONEGIGA = 1073741824;
@@ -46,8 +52,16 @@ enum class EImageBackground {
   BRIGHT, DARK
 };
 
+enum class EDataType {
+  UNKNOWN, EM, LIGHT_DARK, LIGHT_BRIGHT
+};
+
 enum class ESizeHintOption {
   DEFAULT, CURRENT_BEST, TAKING_SPACE
+};
+
+enum class ERangeReference {
+  RANGE_MIN, RANGE_MAX, RANGE_CENTER
 };
 
 //Must have value X=0, Y=1, Z=2 for indexing
@@ -55,12 +69,6 @@ enum class EAxis : int {
   X = 0, Y = 1, Z = 2
   , ARB //arbitrary axis
 };
-
-template <typename T>
-constexpr typename std::underlying_type<T>::type EnumValue(T val)
-{
-    return static_cast<typename std::underlying_type<T>::type>(val);
-}
 
 template <typename...>
 struct voider { using type = void; };
@@ -112,10 +120,6 @@ enum class EBodyLabelType {
 std::string ToString(EBodyLabelType type);
 std::string ToString(EAxis axis);
 
-enum class EBodySplitMode {
-  NONE, ONLINE, OFFLINE
-};
-
 enum class EDataSliceUpdatePolicy {
   DIRECT, HIDDEN, LOWEST_RES, LOWRES, SMALL
 };
@@ -129,8 +133,8 @@ enum class ECardinalDirection {
 };
 
 enum class EReadStatus {
-  NONE, OK, FAILED, TIMEOUT, CANCELED,
-  BAD_RESPONSE
+  NONE, OK, FAILED, TIMEOUT, CANCELED, BAD_RESPONSE, NO_CONTENT, INPROGRESS,
+  FINISHED, //finished with unknown status
 };
 
 enum class EToDoAction {
@@ -150,6 +154,17 @@ enum class EConfigSource {
   UNKNOWN, CONFILG_FILE, QSETTINGS, ENV_VAR, RUNTIME
 };
 
+enum class EBodySplitMode {
+  NONE, ONLINE, OFFLINE
+};
+
+enum class ECacheOption {
+  CACHE_FIRST, // Always use cached value first.
+  SOURCE_ONLY, // Always get annotation from source and refresh the cache.
+  SOURCE_FIRST, // Similar to SOURCE_ONLY, but keep using the cached when
+                // source retrieval fails.
+};
+
 namespace display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
@@ -167,7 +182,7 @@ static const TVisualEffect VE_HIGHLIGHT_SELECTED = 1;
 namespace Sphere {
 static const TVisualEffect VE_DASH_PATTERN = BIT_FLAG(1);
 static const TVisualEffect VE_BOUND_BOX = BIT_FLAG(2);
-static const TVisualEffect VE_NO_CIRCLE = BIT_FLAG(3);
+static const TVisualEffect VE_NO_BORDER = BIT_FLAG(3);
 static const TVisualEffect VE_NO_FILL = BIT_FLAG(4);
 static const TVisualEffect VE_GRADIENT_FILL = BIT_FLAG(5);
 static const TVisualEffect VE_OUT_FOCUS_DIM = BIT_FLAG(6);
@@ -202,6 +217,7 @@ static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
 //static const int DIM_INVALID_INDEX = -2147483647;
 //#endif
 
+//static const int MAX_INT32 = std::numeric_limits<int32_t>::max();
 static const int DIM_INVALID_INDEX = std::numeric_limits<int32_t>::min();
 
 static const uint64_t LABEL_ID_SELECTION =
@@ -210,6 +226,7 @@ static const uint64_t LABEL_ID_SELECTION =
 static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
 static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
 static const size_t BIG_STACK_VOLUME_HINT = 923741823;
+
 }
 
 

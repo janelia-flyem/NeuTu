@@ -29,7 +29,17 @@ std::string neutu::FileExtension(const std::string &path)
   return ext;
 }
 
-std::string neutu::Join(const std::vector<std::string> &pathList)
+std::string neutu::Absolute(const std::string &p, const std::string &base)
+{
+  return boost::filesystem::absolute(p, base).string();
+}
+
+std::string neutu::ParentPath(const std::string &p)
+{
+  return boost::filesystem::path(p).parent_path().string();
+}
+
+std::string neutu::JoinPath(const std::vector<std::string> &pathList)
 {
   boost::filesystem::path result;
   for (const std::string &path : pathList) {
@@ -37,4 +47,9 @@ std::string neutu::Join(const std::vector<std::string> &pathList)
   }
 
   return result.string();
+}
+
+std::string neutu::JoinPath(const std::string &p1, const std::string &p2)
+{
+  return JoinPath({p1, p2});
 }

@@ -4,6 +4,8 @@
 #include <QTableView>
 #include <QString>
 
+#include "geometry/zintpoint.h"
+
 class ZFlyEmBookmarkListModel;
 class ZFlyEmBookmark;
 class QSortFilterProxyModel;
@@ -36,11 +38,14 @@ signals:
   void removingBookmark(ZFlyEmBookmark*);
   void removingBookmark(QList<ZFlyEmBookmark*> bookmarkList);
   void copyingBookmarkUrl(int x, int y, int z);
+  void selectingBodyAt(QList<ZIntPoint> posList, bool appending);
+  void togglingBodiesAt(QList<ZIntPoint> posList);
 
 public slots:
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
   void deleteSelectedBookmark();
+  void selectBodyUnderSelectedBookmark();
 
 private slots:
   void processDouleClick(const QModelIndex &index);

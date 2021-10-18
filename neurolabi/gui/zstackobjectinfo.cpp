@@ -1,5 +1,6 @@
 #include "zstackobjectinfo.h"
 #include <sstream>
+#include "common/utilities.h"
 
 uint qHash(const ZStackObjectInfo &info)
 {
@@ -27,6 +28,13 @@ void ZStackObjectInfo::set(const ZStackObject &obj)
   setRole(obj.getRole());
 }
 
+void ZStackObjectInfo::clear()
+{
+  setTarget(neutu::data3d::ETarget::TARGET_NONE);
+  setType(ZStackObject::EType::UNIDENTIFIED);
+  setRole(ZStackObjectRole::ROLE_NONE);
+}
+
 void ZStackObjectInfo::print() const
 {
   std::cout << toString()  << std::endl;
@@ -48,7 +56,7 @@ ZStackObjectInfoSet::ZStackObjectInfoSet()
 
 }
 
-bool ZStackObjectInfoSet::contains(ZStackObject::ETarget target) const
+bool ZStackObjectInfoSet::contains(neutu::data3d::ETarget target) const
 {
   QHashIterator<ZStackObjectInfo, ZStackObjectInfo::TState> iter(*this);
   while (iter.hasNext()) {
@@ -78,6 +86,18 @@ bool ZStackObjectInfoSet::hasObjectModified(ZStackObject::EType type) const
   return contains(type);
 }
 
+namespace {
+
+bool has_overlapping_flag(ZStackObjectInfo::TState state, ZStackObjectInfo::TState flag)
+{
+  return state & flag;
+}
+
+static const ZStackObjectInfo::TState DATA_MODIFIED_FLAG =
+    ZStackObjectInfo::STATE_REMOVED | ZStackObjectInfo::STATE_ADDED |
+    ZStackObjectInfo::STATE_MODIFIED;
+}
+
 bool ZStackObjectInfoSet::hasObjectModified(
     ZStackObject::EType type, ZStackObjectInfo::TState flag) const
 {
@@ -103,6 +123,20 @@ bool ZStackObjectInfoSet::hasObjectModified(
   return false;
 }
 
+/*
+bool ZStackObjectInfoSet::hasObjectDataModified(ZStackObject::EType type) const
+{
+  return hasObjectModified(
+        type, ZStackObjectInfo::STATE_ADDED | ZStackObjectInfo::STATE_REMOVED |
+        ZStackObjectInfo::STATE_MODIFIED);
+}
+*/
+
+bool ZStackObjectInfoSet::hasDataModified(ZStackObject::EType type) const
+{
+  return hasObjectModified(type, DATA_MODIFIED_FLAG);
+}
+
 bool ZStackObjectInfoSet::onlyVisibilityChanged(ZStackObject::EType type) const
 {
   bool changed = false;
@@ -124,10 +158,34 @@ bool ZStackObjectInfoSet::onlyVisibilityChanged(ZStackObject::EType type) const
   return changed;
 }
 
+bool ZStackObjectInfoSet::hasObjectAddedOrRemoved() const
+{
+  for (const auto &entry : *this) {
+    if ((entry == ZStackObjectInfo::STATE_UNKNOWN) ||
+        (entry & (ZStackObjectInfo::STATE_ADDED | ZStackObjectInfo::STATE_REMOVED))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
 {
   foreach (const ZStackObjectInfo &info, keys()) {
     if (info.getRole().hasRole(role)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZStackObjectInfoSet::hasDataModified(ZStackObjectRole::TRole role) const
+{
+  foreach (const ZStackObjectInfo &info, keys()) {
+    if (info.getRole().hasRole(role) &&
+        has_overlapping_flag((*this)[info], DATA_MODIFIED_FLAG)) {
       return true;
     }
   }
@@ -161,16 +219,16 @@ void ZStackObjectInfoSet::add(const ZStackObject &obj)
   add(info);
 }
 
-void ZStackObjectInfoSet::add(ZStackObject::ETarget target)
+void ZStackObjectInfoSet::add(neutu::data3d::ETarget target)
 {
   ZStackObjectInfo info;
   info.setTarget(target);
   add(info);
 }
 
-void ZStackObjectInfoSet::add(const QSet<ZStackObject::ETarget> &targetSet)
+void ZStackObjectInfoSet::add(const QSet<neutu::data3d::ETarget> &targetSet)
 {
-  foreach (ZStackObject::ETarget target, targetSet) {
+  foreach (neutu::data3d::ETarget target, targetSet) {
     add(target);
   }
 }
@@ -207,11 +265,11 @@ std::set<ZStackObject::EType> ZStackObjectInfoSet::getType() const
   return typeSet;
 }
 
-std::set<ZStackObject::ETarget> ZStackObjectInfoSet::getTarget() const
+std::set<neutu::data3d::ETarget> ZStackObjectInfoSet::getTarget() const
 {
-  std::set<ZStackObject::ETarget> targetSet;
+  std::set<neutu::data3d::ETarget> targetSet;
   foreach (const ZStackObjectInfo &info, keys()) {
-    if (info.getTarget() != ZStackObject::ETarget::NONE) {
+    if (info.getTarget() != neutu::data3d::ETarget::TARGET_NONE) {
       targetSet.insert(info.getTarget());
     }
   }

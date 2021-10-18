@@ -1,6 +1,7 @@
 #ifndef ZSTACKOPERATOR_H
 #define ZSTACKOPERATOR_H
 
+#include <iostream>
 #include <Qt>
 #include "swctreenode.h"
 #include "zmouseevent.h"
@@ -30,6 +31,7 @@ public:
     OP_SHOW_PUNCTA_MENU, OP_SHOW_BODY_CONTEXT_MENU,
     OP_SHOW_CONTEXT_MENU,
     OP_EXIT_EDIT_MODE, OP_CUSTOM_MOUSE_RELEASE,
+    OP_VIEW_DISABLE_SCROLL, OP_VIEW_ENABLE_SCROLL, OP_VIEW_PAUSE_SCROLL,
 
     OP_IMAGE_MOVE_UP, OP_IMAGE_MOVE_DOWN, OP_IMAGE_MOVE_LEFT,
     OP_IMAGE_MOVE_RIGHT, OP_IMAGE_MOVE_UP_FAST, OP_IMAGE_MOVE_DOWN_FAST,
@@ -37,6 +39,7 @@ public:
     OP_STACK_TOGGLE_PROJECTION, OP_STACK_INC_SLICE,
     OP_STACK_DEC_SLICE, OP_STACK_INC_SLICE_FAST,
     OP_STACK_DEC_SLICE_FAST, OP_EXIT_ZOOM_MODE,
+    OP_START_ROTATE_VIEW, OP_ROTATE_VIEW,
 
     OP_SWC_SELECT, OP_SWC_SELECT_SINGLE_NODE, OP_SWC_SELECT_MULTIPLE_NODE,
     OP_SWC_DESELECT_SINGLE_NODE, OP_SWC_DESELECT_ALL_NODE,
@@ -58,6 +61,7 @@ public:
     OP_SWC_CONNECT_TO,
     OP_SWC_LOCATE_FOCUS, OP_SWC_ENTER_ADD_NODE, OP_SWC_ENTER_EXTEND_NODE,
     OP_SWC_SET_AS_ROOT,
+    OP_SWC_DELETE_SELECTED_HOST,
 
     OP_PUNCTA_SELECT_SINGLE, OP_PUNCTA_SELECT_MULTIPLE,
     OP_STROKE_ADD_NEW, OP_STROKE_START_PAINT,
@@ -78,7 +82,7 @@ public:
     OP_OBJECT3D_SCAN_SELECT_SINGLE, OP_OBJECT3D_SCAN_SELECT_MULTIPLE,
     OP_DVID_SPARSE_STACK_LOCATE_FOCUS,
 
-    OP_OBJECT_SELECT_SINGLE, OP_OBJECT_SELECT_MULTIPLE,
+    OP_OBJECT_SELECT_SINGLE, OP_OBJECT_SELECT_MULTIPLE, OP_OBJECT_SELECT_TOGGLE,
     OP_OBJECT_TOGGLE_VISIBILITY,
     OP_OBJECT_TOGGLE_TMP_RESULT_VISIBILITY,
     OP_OBJECT_SELECT_IN_ROI, OP_OBJECT_DELETE_SELECTED,
@@ -88,6 +92,7 @@ public:
 
     OP_BOOKMARK_ENTER_ADD_MODE, OP_BOOKMARK_DELETE, OP_BOOKMARK_ADD_NEW,
     OP_BOOKMARK_ANNOTATE, OP_BOOKMARK_SELECT_SIGNLE,
+    OP_BOOKMARK_SELECT_BODY_SINGLE,
 
     OP_DVID_LABEL_SLICE_SELECT_SINGLE, OP_DVID_LABEL_SLICE_SELECT_MULTIPLE,
     OP_DVID_LABEL_SLICE_TOGGLE_SELECT, OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE,
@@ -145,9 +150,11 @@ public:
     m_hitObject = obj;
   }
 
+  /*
   inline int getPunctaIndex() const {
     return m_punctaIndex;
   }
+  */
 
   bool isNull() const;
 
@@ -180,6 +187,9 @@ public:
     return m_shift;
   }
 
+  void setViewId(int viewId);
+  int getViewId() const;
+
   inline Qt::MouseButtons getPressedButtons() const {
     return m_buttonPressed;
   }
@@ -188,16 +198,20 @@ public:
 
   static bool IsOperable(EOperation op, const ZStackDoc *doc);
 
+  friend std::ostream& operator<< (
+      std::ostream &stream, const ZStackOperator &op);
+
 private:
   EOperation m_op = OP_NULL;
   //Swc_Tree_Node *m_hitNode;
   ZStackObject *m_hitObject = nullptr;
 //  ZStroke2d *m_hitStroke;
 //  ZObject3d *m_hitObj3d;
-  int m_punctaIndex = -1;
+//  int m_punctaIndex = -1;
   bool m_togglingStrokeLabel = false;
   int m_label = 0;
   bool m_shift = false;
+  int m_viewId = -1;
   Qt::MouseButtons m_buttonPressed = Qt::NoButton;
   const ZMouseEventRecorder *m_mouseEventRecorder = nullptr;
 };

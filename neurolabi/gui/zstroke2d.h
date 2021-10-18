@@ -31,7 +31,7 @@ class ZStroke2d : public ZStackObject {
 public:
   ZStroke2d();
 //  ZStroke2d(const ZStroke2d &stroke);
-  virtual ~ZStroke2d();
+  virtual ~ZStroke2d() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::STROKE;
@@ -49,10 +49,15 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
-  bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
+  bool display(
+      QPainter *painter, const DisplayConfig &config) const override;
+
+  /*
+  void display(ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+               neutu::EAxis sliceAxis) const override;
+  bool display(QPainter *rawPainter, int z, zstackobject::EDisplayStyle option,
+               zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const override;
+*/
 
   void labelBinary(Stack *stack) const;
 
@@ -78,7 +83,21 @@ public:
   void set(const QPoint &pt);
   void set(double x, double y);
   void setLast(double x, double y);
-  void setLabel(uint64_t label);
+  void set(double x, double y, double z);
+  void set(const ZPoint &pt);
+  void updateWithLast(double x, double y, double z);
+  void updateWithLast(const ZPoint &pt);
+
+  /*!
+   * \brief Append a point and update the depth too
+   *
+   * Add a point (\a x, \a y, \a z) from the model space and update the depth
+   * to contain this point.
+   */
+  void append(double x, double y, double z);
+  void append(const ZPoint &pt);
+
+  void setLabel(uint64_t label) override;
 
   /*!
    * \brief Toggle the label.
@@ -89,7 +108,7 @@ public:
 
   bool isEmpty() const;
 
-  ZStroke2d* clone();
+  ZStroke2d* clone() const override;
 
   void addWidth(double dw);
 
@@ -98,14 +117,17 @@ public:
   inline void setFilled(bool isFilled) {
     m_isFilled = isFilled;
   }
-  inline void setZ(int z) { m_z = z; }
-  inline int getZ() const { return m_z; }
+  inline void setZ(double z) { m_z = z; }
+  inline double getZ() const { return m_z; }
 
   double inline getWidth() const { return m_width; }
 
   bool getLastPoint(int *x, int *y) const;
   bool getLastPoint(double *x, double *y) const;
   bool getPoint(double *x, double *y, size_t index) const;
+  ZPoint getPoint(size_t index) const;
+  ZPoint getFirstPoint() const;
+  ZPoint getLastPoint() const;
 
   inline size_t getPointNumber() const { return m_pointArray.size(); }
 
@@ -129,7 +151,7 @@ public:
 
   ZStack *toBinaryStack() const;
 
-  ZCuboid getBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
   ZObject3d* toObject3d() const;
 
@@ -142,7 +164,7 @@ public:
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
 
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
@@ -159,10 +181,10 @@ public:
   bool hitTest(double x, double y, double z) const;
 
 //  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
-  void boundBox(ZIntCuboid *box) const;
+  void boundBox(ZIntCuboid *box) const override;
 
   static QColor GetLabelColor(int label);
 
@@ -185,7 +207,7 @@ private:
 
 //  int m_label; //Label = 0 is reserved for eraser
   uint64_t m_originalLabel; //for label toggling
-  int m_z;
+  double m_z;
 
   //bool m_isEraser;
   //Customized styles

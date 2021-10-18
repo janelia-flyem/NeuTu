@@ -18,6 +18,7 @@ clean:
 	@make -f Makefile.ctc clean
 	@make -f Makefile.bin clean OBJDIR=$(DEBUG_DIR)
 	@make -f Makefile.bin clean OBJDIR=$(RELEASE_DIR)
+	@make -f Makefile.bin clean OBJDIR=$(SANITIZE_DIR)
 
 .PHONY: lib
 

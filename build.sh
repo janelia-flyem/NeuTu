@@ -33,7 +33,7 @@ else
   if [ `uname` = 'Darwin' ]; then
     if [ -n "$edition" ]
     then
-      if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+      if [ "$edition" = "flyem" ] || [ "$edition" = "neu3"] || [ "$edition" = "neutube" ]
       then
         QMAKE_SPEC=$1/mkspecs/macx-clang
       else

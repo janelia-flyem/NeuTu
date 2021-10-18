@@ -36,7 +36,7 @@ public:
    *
    * The old settings will be cleared after the call.
    *
-   * \param sourceString Format: http:host:port:node:segmentation_name.
+   * \param sourceString Format: http:host:port:node:segmentation_name:grayscale.
    */
   void setFromSourceString(const std::string &sourceString);
 
@@ -51,11 +51,14 @@ public:
   void setFromSourceString(
       const std::string &sourceString, dvid::EDataType dataType);
 
-  void setFromUrl(const std::string &url);
+  void setFromUrl_deprecated(const std::string &url);
 
-  inline const std::string& getAddress() const {
-    return m_node.getAddress();
+  std::string getAddress() const {
+    return m_node.getHost();
   }
+
+  std::string getHostWithScheme() const;
+  std::string getRootUrl() const;
 
   /*!
    * \brief Get the address with port
@@ -119,13 +122,13 @@ public:
   std::string getGrayscaleSourceString() const;
 
   /*!
-   * \brief getBodyPath
+   * \brief Get the API path of a given body
    *
    * The functions does not check if a body exists.
    *
    * \return The path of a certain body.
    */
-  std::string getBodyPath(uint64_t bodyId) const;
+//  std::string getBodyPath(uint64_t bodyId) const;
 
   /*!
    * \brief Test if the target is valid
@@ -150,13 +153,33 @@ public:
    * \brief Load json object
    */
   void loadJsonObject(const ZJsonObject &obj);
-  ZJsonObject toJsonObject() const;
+  ZJsonObject toJsonObject(bool usingOriginalUuid = false) const;
+
+  void setFromJson(const std::string &jsonSpec);
+
   void updateData(const ZJsonObject &obj);
 
+  /*!
+   * \brief Load settings in DVID config format
+   *
+   * It expects an object that may have the following fields:
+   *   "segmentation": segmentation data name
+   *   "bodies": sparsevol name (obsolete)
+   *   "synapses": synapse data name
+   *   "grayscale": grayscale data name
+   *   "todos": todo annotation data name
+   *
+   * Other fields will be ignored. It only changes any data name related to an
+   * existing field.
+   */
   void loadDvidDataSetting(const ZJsonObject &obj);
+
   ZJsonObject toDvidDataSetting() const;
 
   void print() const;
+
+  void setScheme(const std::string &scheme);
+  std::string getScheme() const;
 
   void setMock(bool on);
   bool isMock() const;
@@ -170,10 +193,12 @@ public:
     m_localFolder = folder;
   }
 
+  /*
   std::string getLocalLowResGrayScalePath(
       int xintv, int yintv, int zintv) const;
   std::string getLocalLowResGrayScalePath(
       int xintv, int yintv, int zintv, int z) const;
+*/
 
   inline int getBgValue() const {
     return m_bgValue;
@@ -260,9 +285,10 @@ public:
 
   std::string getBookmarkName() const;
   std::string getBookmarkKeyName() const;
+  bool hasBookmark() const;
   std::string getSkeletonName() const;
   std::string getMeshName() const;
-  std::string getMeshName(int zoom) const;
+//  std::string getMeshName(int zoom) const;
   std::string getThumbnailName() const;
 
   std::string getTodoListName() const;
@@ -278,7 +304,7 @@ public:
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
 
-  static bool IsDvidTarget(const std::string &source);
+//  static bool IsDvidTarget(const std::string &source);
 
   inline bool isSupervised() const { return m_isSupervised; }
   void enableSupervisor(bool on) {
@@ -321,6 +347,10 @@ public:
   }
 
   bool usingMulitresBodylabel() const;
+
+  void setAdminToken(const std::string &token);
+  std::string getAdminToken() const;
+  bool hasAdminToken() const;
 
   bool isInferred() const;
   void setInferred(bool status);
@@ -409,6 +439,7 @@ public:
   const static char* m_todoListNameKey;
   const static char* m_sourceConfigKey;
   const static char* m_proofreadingKey;
+  const static char* m_adminTokenKey;
 
 private:
   ZDvidNode m_node;
@@ -419,13 +450,14 @@ private:
   std::string m_bodyLabelName;
   std::string m_segmentationName;
   std::string m_multiscale2dName; //default lossless tile name
-  std::string m_grayScaleName;
+  std::string m_grayscaleName;
   bool m_hasSynapseLabelsz = true;
   std::string m_synapseLabelszName;
   std::string m_roiName;
   std::string m_todoListName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
+  std::string m_adminToken;
 
   std::map<std::string, TileConfig> m_tileConfig; //used when m_multiscale2dName is empty
 //  ZJsonObject m_tileConfig;

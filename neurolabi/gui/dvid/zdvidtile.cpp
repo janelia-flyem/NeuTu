@@ -6,6 +6,7 @@
 
 //#include "widgets/zimagewidget.h"
 #include "neutubeconfig.h"
+#include "geometry/zcuboid.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
 #include "zdvidreader.h"
@@ -21,7 +22,7 @@
 
 ZDvidTile::ZDvidTile()
 {
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 //  m_pixmap.fill();
 //  m_pixmap = NULL;
@@ -179,6 +180,7 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstras
 //  m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 }
 
+#if 0
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -229,6 +231,9 @@ void ZDvidTile::display(
 
 //    LDEBUG() << "Painting tile:" << m_pixmap.size();
     painter.drawPixmap(getX(), getY(), m_pixmap);
+#ifdef _DEBUG_0
+    m_pixmap.save((GET_TEST_DATA_DIR + "/_test.png").c_str());
+#endif
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
 //    std::cout << "Draw image time: " << timer.elapsed() << std::endl;
@@ -250,6 +255,7 @@ void ZDvidTile::display(
     //}
   }
 }
+#endif
 
 void ZDvidTile::setTileIndex(int ix, int iy)
 {
@@ -379,12 +385,20 @@ int ZDvidTile::getZ() const
   return m_z;
 }
 
+ZCuboid ZDvidTile::getBoundBox() const
+{
+  return ZCuboid::FromIntCuboid(
+        ZIntCuboid(getX(), getY(), getZ(),
+                   getX() + getWidth(), getY() + getHeight(), getZ()));
+}
+
 /*
 void ZDvidTile::attachView(ZStackView *view)
 {
   m_view = view;
 }
 */
+/*
 ZRect2d ZDvidTile::getBoundBox() const
 {
   ZRect2d rect;
@@ -392,5 +406,5 @@ ZRect2d ZDvidTile::getBoundBox() const
 
   return rect;
 }
-
+*/
 

@@ -5,6 +5,7 @@
 #include <QMap>
 #include "qnamespace.h"
 #include "zmouseevent.h"
+#include "data3d/defs.h"
 
 class QMouseEvent;
 
@@ -13,7 +14,8 @@ class ZMouseEventRecorder
 public:
   ZMouseEventRecorder();
 
-  ZMouseEvent& record(QMouseEvent *event, ZMouseEvent::EAction, int z = 0);
+  ZMouseEvent& record(
+      QMouseEvent *event, ZMouseEvent::EAction, const ZSliceViewTransform &t);
   ZMouseEvent &record(const ZMouseEvent &event);
   const ZMouseEvent &getLatestMouseEvent() const;
   const ZMouseEvent& getMouseEvent(
@@ -49,6 +51,9 @@ public:
 
   ZPoint getPosition(Qt::MouseButtons buttons, ZMouseEvent::EAction action,
                      neutu::ECoordinateSystem cs) const;
+
+  ZPoint getPosition(Qt::MouseButtons buttons, ZMouseEvent::EAction action,
+                     neutu::data3d::ESpace space) const;
 
   /*
   bool hasPosition(const Qt::MouseButtons &button,

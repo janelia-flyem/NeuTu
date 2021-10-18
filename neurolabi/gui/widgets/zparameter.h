@@ -130,6 +130,7 @@ protected:
   //std::set<QWidget*> m_widgets;
   bool m_isWidgetsEnabled = true;
   bool m_isWidgetsVisible = true;
+
 //  bool m_nameLabelNeeded = true;
 
 //  QMutex *m_syncMutex = nullptr;

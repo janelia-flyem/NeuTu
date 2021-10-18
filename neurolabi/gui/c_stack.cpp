@@ -22,7 +22,6 @@
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_math.h"
 #include "tz_int_histogram.h"
-#include "tz_iarray.h"
 #include "common/math.h"
 
 
@@ -178,6 +177,16 @@ int* C_Stack::hist(const Stack* stack)
   }
 
   return Stack_Hist(stack);
+}
+
+bool C_Stack::HasSameSize(const Stack *stack1, const Stack *stack2)
+{
+  if (stack1 && stack2) {
+    return (width(stack1) == width(stack2) && height(stack1) == height(stack2)
+            && depth(stack1) == depth(stack2));
+  }
+
+  return false;
 }
 
 ZIntHistogram* C_Stack::hist(const Stack *stack, ZIntHistogram *out)
@@ -759,6 +768,19 @@ Mc_Stack* C_Stack::make(int kind, int width, int height, int depth, int channelN
     return NULL;
   }
 
+  /*
+  Mc_Stack *stack = new Mc_Stack;
+
+  stack->width = width;
+  stack->height = height;
+  stack->depth = depth;
+  stack->kind = kind;
+  stack->nchannel = channelNumber;
+  stack->array = new uint8[allByteNumber(stack)];
+
+  return stack;
+  */
+
   return Make_Mc_Stack(kind, width,height, depth, channelNumber);
 }
 
@@ -797,6 +819,8 @@ void C_Stack::kill(Mc_Stack *stack)
   if (stack != NULL) {
     STACK_MUTEX_GUARD
 
+//    delete []stack->array;
+//    delete stack;
     Kill_Mc_Stack(stack);
   }
 }
@@ -1687,6 +1711,7 @@ void C_Stack::drawInteger(Stack *canvas, int n, int dx, int dy, int dz,
 Stack C_Stack::sliceView(const Mc_Stack *stack, int slice, int channel)
 {
   Stack scStack;
+  scStack.text = NULL;
   C_Stack::view(stack, &scStack, channel);
 
   return sliceView(&scStack, slice);

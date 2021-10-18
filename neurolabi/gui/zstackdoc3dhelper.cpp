@@ -56,7 +56,7 @@ void ZStackDoc3dHelper::processObjectModified(
     }
   }
 
-  if (objInfo.contains(ZStackObject::ETarget::CANVAS_3D)) {
+  if (objInfo.contains(neutu::data3d::ETarget::CANVAS_3D)) {
     updateCustomCanvas(view);
   } else {
 //    view->updateCanvas();
@@ -340,12 +340,14 @@ void ZStackDoc3dHelper::updateCustomCanvas(Z3DView *view)
 void ZStackDoc3dHelper::updateCustomCanvas(Z3DView *view, ZFlyEmBody3dDoc *doc)
 {
   if (doc != NULL) {
+    /*
     ZDvidGraySlice *slice = doc->getArbGraySlice();
     if (slice != NULL) {
       if (slice->isVisible()) {
         view->updateCustomCanvas(slice->getImage());
       }
     }
+    */
   }
 }
 

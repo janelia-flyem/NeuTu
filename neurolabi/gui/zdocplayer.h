@@ -85,6 +85,9 @@ public:
 
   virtual ZTask* getFutureTask() const;
   virtual ZTask* getFutureTask(ZStackDoc *doc) const;
+  virtual ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
+
+  virtual void trackView(const ZStackViewParam &param) {};
 
   inline ZStackObject* getData() const {
     return m_data;
@@ -341,10 +344,11 @@ public:
   ZDvidGraySlicePlayer(ZStackObject* data = NULL);
 
 public:
-  QString getTypeName() const { return "DvidGraySlice"; }
-  bool updateData(const ZStackViewParam &viewParam) const;
+  QString getTypeName() const override { return "DvidGraySlice"; }
+  bool updateData(const ZStackViewParam &viewParam) const override;
   ZDvidGraySlice *getCompleteData() const;
-  ZTask* getFutureTask(ZStackDoc *doc) const;
+  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const override;
+  void trackView(const ZStackViewParam &param) override;
 };
 
 /**************************************************/
@@ -357,7 +361,7 @@ public:
   QString getTypeName() const { return "DvidGraySliceEnsemble"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidGraySliceEnsemble *getCompleteData() const;
-  ZTask* getFutureTask(ZStackDoc *doc) const;
+  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
 };
 
 /**************************************************/
@@ -367,10 +371,11 @@ public:
   ZDvidLabelSlicePlayer(ZStackObject* data = NULL);
 
 public:
-  QString getTypeName() const { return "DvidLabelSlice"; }
-  bool updateData(const ZStackViewParam &viewParam) const;
+  QString getTypeName() const override { return "DvidLabelSlice"; }
+  bool updateData(const ZStackViewParam &viewParam) const override;
   ZDvidLabelSlice *getCompleteData() const;
-  ZTask* getFutureTask(ZStackDoc *doc) const;
+  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const override;
+  void trackView(const ZStackViewParam &param) override;
 };
 
 /**************************************************/

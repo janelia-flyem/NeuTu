@@ -2,10 +2,12 @@
 
 #include "zstack.hxx"
 #include "zpainter.h"
+#include "geometry/zcuboid.h"
+#include "geometry/zintcuboid.h"
 
 ZStackPatch::ZStackPatch(ZStack *stack) : m_stack(stack), m_sx(1.0), m_sy(1.0)
 {
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
 }
 
 ZStackPatch::~ZStackPatch()
@@ -26,6 +28,7 @@ ZPoint ZStackPatch::getFinalOffset() const
   return pt;
 }
 
+#if 0
 void ZStackPatch::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutu::EAxis sliceAxis) const
@@ -54,6 +57,7 @@ void ZStackPatch::display(
     painter.restore();
   }
 }
+#endif
 
 int ZStackPatch::getZOffset() const
 {
@@ -72,7 +76,7 @@ ZImage ZStackPatch::getImage(int z) const
       ZImage image(m_stack->width(), m_stack->height());
       switch (m_stack->kind()) {
       case GREY:
-        image.setData((uint8_t*) m_stack->getDataPointer(0, slice), -1);
+        image.setData((uint8_t*) (m_stack->getDataPointer(0, slice)), -1);
         break;
       case GREY16:
       {
@@ -104,6 +108,14 @@ void ZStackPatch::setFinalOffset(double dx, double dy)
 {
   m_stack->setOffset(0, 0, 0);
   m_offset.set(dx, dy, m_offset.z());
+}
+
+ZCuboid ZStackPatch::getBoundBox() const
+{
+  ZCuboid box = ZCuboid::FromIntCuboid(getStack()->getBoundBox());
+  box.scale(m_sx, m_sy, 1.0);
+  box.translate(m_offset);
+  return box;
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackPatch)

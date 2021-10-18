@@ -102,4 +102,9 @@ void LogProfileInfo(int64_t duration, const std::string &info)
        << ZLog::Description(info);
 }
 
+void LogError(const std::string &msg)
+{
+  ZLOG << ZLog::Error() << ZLog::Description(msg);
+}
+
 }

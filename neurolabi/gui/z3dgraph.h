@@ -56,6 +56,8 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
 
+  ZCuboid getBoundBox() const;
+
   void print();
 
 private:
@@ -158,8 +160,14 @@ public:
 
   void clear();
 
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
+               */
 //  const std::string& className() const;
 
   void addNode(const Z3DGraphNode &node);
@@ -191,6 +199,8 @@ public:
   void save(const std::string &filePath);
 
   ZJsonObject toJsonObject() const;
+
+  ZCuboid getBoundBox() const override;
 
   void print();
 

@@ -7,6 +7,7 @@
 #include "filesystem/utilities.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zjsonobjectparser.h"
 
 /////////////////////ZNeuronTracerConfig///////////////////////////
 
@@ -24,7 +25,7 @@ const char *ZNeuronTracerConfig::m_seedMethodKey = "seedMethod";
 const char *ZNeuronTracerConfig::m_recoverKey = "recover";
 const char *ZNeuronTracerConfig::m_enhanceLineKey = "enhanceMask";
 const char *ZNeuronTracerConfig::m_maxEucDistKey = "maxEucDist";
-
+const char *ZNeuronTracerConfig::m_chainScreenCountKey = "chainScreenCount";
 
 ZNeuronTracerConfig::ZNeuronTracerConfig()
 {
@@ -64,6 +65,7 @@ void ZNeuronTracerConfig::print() const
   std::cout << "Seeding method: " << m_seedMethod << std::endl;
   std::cout << "Recovering: " << m_recover << std::endl;
   std::cout << "Maximal gap: " << m_maxEucDist << std::endl;
+  std::cout << "Chain screen count: " << m_chainScreenCount << std::endl;
 
   std::cout << "Levels: " << std::endl;
   for (std::map<int, ZJsonObject>::const_iterator iter = m_levelMap.begin();
@@ -74,14 +76,16 @@ void ZNeuronTracerConfig::print() const
   }
 }
 
-void ZNeuronTracerConfig::load(const std::string &configPath)
+bool ZNeuronTracerConfig::load(const std::string &configPath)
 {
   if (neutu::FileExists(configPath.c_str())) {
     ZJsonObject obj;
     obj.load(configPath);
 
-    loadJsonObject(obj);
+    return loadJsonObject(obj);
   }
+
+  return false;
 }
 
 ZJsonObject ZNeuronTracerConfig::getLevelJson(int level) const
@@ -116,98 +120,112 @@ ZJsonObject ZNeuronTracerConfig::getLevelJson(int level) const
   return obj;
 }
 
-void ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
+bool ZNeuronTracerConfig::loadJsonObject(const ZJsonObject &jsonObj)
 {
 #ifdef _DEBUG_2
   std::cout << jsonObj.dumpString() << std::endl;
 #endif
-  if (jsonObj.hasKey("tag")) {
-    if (ZJsonParser::stringValue(jsonObj["tag"]) == "trace configuration") {
-      if (jsonObj.hasKey("default")) {
-        ZJsonObject defaultObj(const_cast<json_t*>(jsonObj["default"]),
-            ZJsonValue::SET_INCREASE_REF_COUNT);
-        if (defaultObj.hasKey(m_minimalAutoScoreKey)) {
-          m_minAutoScore =
-              ZJsonParser::numberValue(defaultObj[m_minimalAutoScoreKey]);
-        }
+  ZJsonObject config = jsonObj;
 
-        if (defaultObj.hasKey(m_minimalManualScoreKey)) {
-          m_minManualScore =
-              ZJsonParser::numberValue(defaultObj[m_minimalManualScoreKey]);
-        }
+  if (jsonObj.hasKey("trace")) {
+    config = ZJsonObject(jsonObj.value("trace"));
+  }
 
-        if (defaultObj.hasKey(m_minimalSeedScoreKey)) {
-          m_seedScore =
-              ZJsonParser::numberValue(defaultObj[m_minimalSeedScoreKey]);
-        }
+  std::string tag = ZJsonObjectParser::GetValue(config, "tag", "");
 
-        if (defaultObj.hasKey(m_minimal2dScoreKey)) {
-          m_2dScore = ZJsonParser::numberValue(defaultObj[m_minimal2dScoreKey]);
-        }
-
-        if (defaultObj.hasKey(m_maxEucDistKey)) {
-          m_maxEucDist = ZJsonParser::numberValue(defaultObj[m_maxEucDistKey]);
-        }
-
-        if (defaultObj.hasKey(m_refitKey)) {
-          m_refit = ZJsonParser::booleanValue(defaultObj[m_refitKey]);
-        }
-
-        if (defaultObj.hasKey(m_spTestKey)) {
-          m_spTest = ZJsonParser::booleanValue(defaultObj[m_spTestKey]);
-        }
-
-        if (defaultObj.hasKey(m_crossoverTestKey)) {
-          m_crossoverTest =
-              ZJsonParser::booleanValue(defaultObj[m_crossoverTestKey]);
-        }
-
-        if (defaultObj.hasKey(m_tuneEndKey)) {
-          m_tuneEnd =
-              ZJsonParser::booleanValue(defaultObj[m_tuneEndKey]);
-        }
-
-        if (defaultObj.hasKey(m_edgePathKey)) {
-          m_edgePath =
-              ZJsonParser::booleanValue(defaultObj[m_edgePathKey]);
-        }
-
-        if (defaultObj.hasKey(m_seedMethodKey)) {
-          m_seedMethod =
-              ZJsonParser::integerValue(defaultObj[m_seedMethodKey]);
-        }
-
-        if (defaultObj.hasKey(m_recoverKey)) {
-          m_recover =
-              ZJsonParser::integerValue(defaultObj[m_recoverKey]);
-        }
-
-        if (defaultObj.hasKey(m_enhanceLineKey)) {
-          m_enhanceMask =
-              ZJsonParser::booleanValue(defaultObj[m_enhanceLineKey]);
-        }
+  if (tag == "trace configuration" || tag == "trace_configuration" ||
+      tag == "trace config" || tag == "trace_config") {
+    if (config.hasKey("default")) {
+      ZJsonObject defaultObj(config.value("default"));
+      if (defaultObj.hasKey(m_minimalAutoScoreKey)) {
+        m_minAutoScore =
+            ZJsonParser::numberValue(defaultObj[m_minimalAutoScoreKey]);
       }
 
-      if (jsonObj.hasKey("level")) {
-        const char *key;
-        json_t *value;
-        json_t *obj = const_cast<json_t*>(jsonObj["level"]);
-        json_object_foreach(obj, key, value) {
-          if (strlen(key) == 1) {
-            if (key[0] >= '1' && key[0] <= '9') {
-              int level = key[0] - '0';
-              ZJsonObject levelObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
-              m_levelMap[level] = levelObj;
+      if (defaultObj.hasKey(m_minimalManualScoreKey)) {
+        m_minManualScore =
+            ZJsonParser::numberValue(defaultObj[m_minimalManualScoreKey]);
+      }
+
+      if (defaultObj.hasKey(m_minimalSeedScoreKey)) {
+        m_seedScore =
+            ZJsonParser::numberValue(defaultObj[m_minimalSeedScoreKey]);
+      }
+
+      if (defaultObj.hasKey(m_minimal2dScoreKey)) {
+        m_2dScore = ZJsonParser::numberValue(defaultObj[m_minimal2dScoreKey]);
+      }
+
+      if (defaultObj.hasKey(m_maxEucDistKey)) {
+        m_maxEucDist = ZJsonParser::numberValue(defaultObj[m_maxEucDistKey]);
+      }
+
+      if (defaultObj.hasKey(m_refitKey)) {
+        m_refit = ZJsonParser::booleanValue(defaultObj[m_refitKey]);
+      }
+
+      if (defaultObj.hasKey(m_spTestKey)) {
+        m_spTest = ZJsonParser::booleanValue(defaultObj[m_spTestKey]);
+      }
+
+      if (defaultObj.hasKey(m_crossoverTestKey)) {
+        m_crossoverTest =
+            ZJsonParser::booleanValue(defaultObj[m_crossoverTestKey]);
+      }
+
+      if (defaultObj.hasKey(m_tuneEndKey)) {
+        m_tuneEnd =
+            ZJsonParser::booleanValue(defaultObj[m_tuneEndKey]);
+      }
+
+      if (defaultObj.hasKey(m_edgePathKey)) {
+        m_edgePath =
+            ZJsonParser::booleanValue(defaultObj[m_edgePathKey]);
+      }
+
+      if (defaultObj.hasKey(m_seedMethodKey)) {
+        m_seedMethod =
+            ZJsonParser::integerValue(defaultObj[m_seedMethodKey]);
+      }
+
+      if (defaultObj.hasKey(m_recoverKey)) {
+        m_recover =
+            ZJsonParser::integerValue(defaultObj[m_recoverKey]);
+      }
+
+      if (defaultObj.hasKey(m_enhanceLineKey)) {
+        m_enhanceMask =
+            ZJsonParser::booleanValue(defaultObj[m_enhanceLineKey]);
+      }
+
+      if (defaultObj.hasKey(m_chainScreenCountKey)) {
+        m_chainScreenCount =
+            ZJsonParser::integerValue(defaultObj[m_chainScreenCountKey]);
+      }
+    }
+
+    if (config.hasKey("level")) {
+      const char *key;
+      json_t *value;
+      json_t *obj = const_cast<json_t*>(config["level"]);
+      json_object_foreach(obj, key, value) {
+        if (strlen(key) == 1) {
+          if (key[0] >= '1' && key[0] <= '9') {
+            int level = key[0] - '0';
+            ZJsonObject levelObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+            m_levelMap[level] = levelObj;
 #ifdef _DEBUG_
-              std::cout << "Tracing leve config: " << key[0] << std::endl;
-              levelObj.print();
+            std::cout << "Tracing level config: " << key[0] << std::endl;
+            levelObj.print();
 #endif
-            }
           }
         }
       }
     }
+    return true;
   }
+
+  return false;
 }
 /////////////////////////////////////////////
 

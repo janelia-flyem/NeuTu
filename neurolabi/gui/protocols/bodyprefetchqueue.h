@@ -16,8 +16,9 @@ class BodyPrefetchQueue : public QObject
     Q_OBJECT
 public:
     explicit BodyPrefetchQueue(QObject *parent = nullptr);
+    ~BodyPrefetchQueue() override;
 
-    uint64_t get();
+//    uint64_t get();
     bool isEmpty();
 
     void setDocument(ZFlyEmBody3dDoc *doc);
@@ -28,6 +29,7 @@ signals:
 public slots:    
     void add(uint64_t bodyID);
     void add(QSet<uint64_t> bodyIDs);
+    void remove(uint64_t bodyID);
     void remove(QSet<uint64_t> bodyIDs);
     void clear();
     void finish();
@@ -35,7 +37,7 @@ public slots:
 private:
     QQueue<uint64_t> m_queue;
     QMutex m_queueLock;
-    QWaitCondition m_queueHasItems;
+//    QWaitCondition m_queueHasItems;
 
     ZFlyEmBody3dDoc *m_doc = NULL;
     ZDvidReader m_reader;

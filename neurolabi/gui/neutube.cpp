@@ -1,11 +1,11 @@
 #include "neutube.h"
 
 #include <string>
-
+#include <iostream>
+#include <memory>
 #include <QtGlobal>
 #include <QByteArray>
 #include <QMetaType>
-#include <iostream>
 #include <QProcess>
 #include <QSet>
 
@@ -19,18 +19,23 @@
 #include "zstackobjectinfo.h"
 #include "zstackviewparam.h"
 #include "zarbsliceviewparam.h"
+#include "data3d/zsliceviewtransform.h"
+#include "vis2d/zslicecanvas.h"
 
 void neutu::RegisterMetaType()
 {
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<std::string>("std::string");
   qRegisterMetaType<ZJsonValue>("ZJsonValue");
+  qRegisterMetaType<ZJsonObject>("ZJsonObject");
   qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
   qRegisterMetaType<ZStackDocPtr>("ZStackDocPtr");
-  qRegisterMetaType<QSet<ZStackObject::ETarget> >("QSet<ZStackObject::ETarget>");
+  qRegisterMetaType<neutu::data3d::ETarget>("neutu::data3d::ETarget");
+  qRegisterMetaType<QSet<neutu::data3d::ETarget> >("QSet<neutu::data3d::ETarget>");
   qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
+  qRegisterMetaType<std::vector<int>>("std::vector<int>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
   qRegisterMetaType<neutu::EBodySplitMode>("neutu::EBodySplitMode");
   qRegisterMetaType<ZStackObjectInfo>("ZStackObjectInfo");
@@ -38,6 +43,8 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<ZStackViewParam>("ZStackViewParam");
   qRegisterMetaType<ZArbSliceViewParam>("ZArbSliceViewParam");
   qRegisterMetaType<ZIntPoint>("ZIntPoint");
+  qRegisterMetaType<ZSliceViewTransform>("ZSliceViewTransform");
+  qRegisterMetaType<std::shared_ptr<ZSliceCanvas>>("std::shared_ptr<ZSliceCanvas>");
 }
 
 ZMessageReporter* neutu::getMessageReporter()
@@ -93,15 +100,7 @@ std::string neutu::GetCurrentUserName()
 
 bool neutu::IsAdminUser()
 {
-#if defined(_FLYEM_)
-  if (neutu::GetCurrentUserName() == "takemuras" ||
-      neutu::GetCurrentUserName() == "shinomiyak" ||
-      neutu::GetCurrentUserName() == "jah") {
-    return true;
-  }
-#endif
-
-  return neutu::GetCurrentUserName() == "zhaot";
+  return false;
 }
 
 QFileDialog::Options neutu::GetFileDialogOption()

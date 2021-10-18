@@ -108,6 +108,7 @@
 #include "dialogs/zflyemtodoannotationdialog.h"
 #include "dialogs/zflyemtodofilterdialog.h"
 #include "zstackdocaccessor.h"
+#include "zrandomgenerator.h"
 
 /*
 class Sleeper : public QThread
@@ -250,11 +251,11 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
-  }
 
-#if defined(_DEBUG_) && defined(_NEU3_)
-  m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
+#if defined(_DEBUG_)
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
 #endif
+  }
 }
 
 void Z3DWindow::configureMenuForNeu3()
@@ -269,6 +270,11 @@ void Z3DWindow::configureMenuForNeu3()
   connect(neutuAction, SIGNAL(triggered()), this, SIGNAL(neutuTriggered()));
 
   m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
+}
+
+void Z3DWindow::zoomToSelected()
+{
+  gotoPosition(m_doc->getSelectedBoundBox());
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -306,6 +312,7 @@ void Z3DWindow::init()
           this, SLOT(extendSwcTreeNode(double, double, double, double)));
   connect(getSwcFilter(), SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
+  ZWidgetMessage::ConnectMessagePipe(m_view, this);
 
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
@@ -526,6 +533,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
+    break;
+  case ZActionFactory::ACTION_FLYEM_SYNC_BODY_COLOR:
+    action = m_actionLibrary->getAction(item, this, SLOT(syncBodyColor()));
     break;
   case ZActionFactory::ACTION_FLYEM_COMPARE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(compareBody()));
@@ -1283,7 +1293,7 @@ void Z3DWindow::pasteView()
   std::string config = ZGlobal::GetInstance().get3DCamera();
   if (!config.empty()) {
     ZJsonObject cameraJson;
-    cameraJson.decode(config);
+    cameraJson.decode(config, false);
     if (!cameraJson.isEmpty()) {
       getCamera()->set(cameraJson);
     }
@@ -1296,6 +1306,21 @@ void Z3DWindow::saveAllVisibleMesh()
 
   if (!fileName.isEmpty()) {
     ZStackDocProxy::SaveVisibleMesh(getDocument(), fileName);
+  }
+}
+
+void Z3DWindow::zoomToRoiMesh(const QString &name)
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc) {
+    ZBBox<glm::dvec3> boundingBox;
+    ZMesh *mesh = doc->getRoiMesh(name);
+    if (mesh) {
+      boundingBox.expand(getMeshFilter()->meshBound(mesh));
+    }
+    if (!boundingBox.empty()) {
+      m_view->gotoPosition(boundingBox, 0);
+    }
   }
 }
 
@@ -2244,7 +2269,7 @@ static void AddTodoMarker(
     if (tree != NULL) {
       bodyId = tree->getLabel();
     }
-    ZIntPoint pt = SwcTreeNode::center(tn).toIntPoint();
+    ZIntPoint pt = SwcTreeNode::center(tn).roundToIntPoint();
     if (checked && (action != neutu::EToDoAction::NO_SOMA)) {
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
@@ -2296,10 +2321,12 @@ void Z3DWindow::removeAllTodo()
 }
 */
 
+/*
 void Z3DWindow::updateTodoVisibility()
 {
   getDocument()->notifyTodoModified();
 }
+*/
 
 void Z3DWindow::addTodoMarker()
 {
@@ -2384,6 +2411,16 @@ void Z3DWindow::updateBody()
   }
 }
 
+void Z3DWindow::syncBodyColor()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->addEvent(
+          ZFlyEmBodyEvent::EAction::UPDATE, 0, ZFlyEmBodyEvent::SYNC_BODY_COLOR);
+//    doc->syncBodyColor();
+  }
+}
+
 void Z3DWindow::copyPosition()
 {
   ZStackDoc *doc = getDocument();
@@ -2459,8 +2496,10 @@ void Z3DWindow::changeSelectedPunctaName()
          iter != punctumSet.end(); ++iter) {
       ZPunctum *punctum = *iter;
       punctum->setName(text);
+      m_doc->bufferObjectModified(punctum);
     }
-    m_doc->notifyPunctumModified();
+    m_doc->processObjectModified();
+//    m_doc->notifyPunctumModified();
   }
 }
 
@@ -2609,12 +2648,15 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
-    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
+    notifyUser("Left click to extend. Path calculation is off when '"
+               CTRL_KEY_NAME "' is pressed."
                "Right click to exit extending mode.");
     if (getDocument()->hasStackData()) {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::SmartExtendSwcNode);
+      getSwcFilter()->setInteractionMode(
+            Z3DSwcFilter::EInteractionMode::SmartExtendSwcNode);
     } else {
-      getSwcFilter()->setInteractionMode(Z3DSwcFilter::EInteractionMode::PlainExtendSwcNode);
+      getSwcFilter()->setInteractionMode(
+            Z3DSwcFilter::EInteractionMode::PlainExtendSwcNode);
     }
     getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
@@ -2804,7 +2846,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_F:
     if (event->modifiers() == Qt::ShiftModifier) {
-      zoomToSelectedSwcNodes();
+//      zoomToSelectedSwcNodes();
+      zoomToSelected();
     }
     break;
   case Qt::Key_Period:
@@ -3200,7 +3243,7 @@ void Z3DWindow::locateSwcNodeIn2DView()
       const std::set<Swc_Tree_Node*> &nodeSet = m_doc->getSelectedSwcNodeSet();
 
       ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
-      ZPoint center = cuboid.center();
+      ZPoint center = cuboid.getCenter();
       int cx, cy, cz;
 
       //-= document()->getStackOffset();
@@ -3453,6 +3496,7 @@ void Z3DWindow::transformSelectedPuncta()
              iter != punctaSet.end(); ++iter) {
           (*iter)->setCenter(
                 (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
 
@@ -3462,6 +3506,7 @@ void Z3DWindow::transformSelectedPuncta()
               (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
               (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
               (*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
+        m_doc->bufferObjectModified(*iter);
       }
 
       if (!dlg.isTranslateFirst()) {
@@ -3469,10 +3514,11 @@ void Z3DWindow::transformSelectedPuncta()
              iter != punctaSet.end(); ++iter) {
           (*iter)->setCenter(
                 (*iter)->x() + dx, (*iter)->y() + dy, (*iter)->z() + dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
     }
-    m_doc->notifyPunctumModified();
+    m_doc->processObjectModified();
   }
 }
 
@@ -3600,6 +3646,7 @@ void Z3DWindow::transformAllPuncta()
              iter != punctaSet.end(); ++iter) {
           ZPunctum *punctum = *iter;
           punctum->translate(dx, dy, dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
 
@@ -3609,6 +3656,7 @@ void Z3DWindow::transformAllPuncta()
               (*iter)->x() * dlg.getScaleValue(SwcSkeletonTransformDialog::X),
               (*iter)->y() * dlg.getScaleValue(SwcSkeletonTransformDialog::Y),
               (*iter)->z() * dlg.getScaleValue(SwcSkeletonTransformDialog::Z));
+        m_doc->bufferObjectModified(*iter);
       }
 
       if (!dlg.isTranslateFirst()) {
@@ -3616,9 +3664,10 @@ void Z3DWindow::transformAllPuncta()
              iter != punctaSet.end(); ++iter) {
           ZPunctum *punctum = *iter;
           punctum->translate(dx, dy, dz);
+          m_doc->bufferObjectModified(*iter);
         }
       }
-      m_doc->notifyPunctumModified();
+      m_doc->processObjectModified();
     }
   }
 }
@@ -3883,6 +3932,12 @@ void Z3DWindow::test()
   ZMovieMaker director;
   ZMovieScript script;
 #endif
+
+  static ZRandomGenerator rand;
+  if (rand.rndint(10) % 2 == 0) {
+    throw std::runtime_error("exception test");
+  }
+
 
   emit testing();
 
@@ -4201,13 +4256,13 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 #endif
       const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
       ZCuboid rbox;
-      rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
-      rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+      rbox.setMinCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+      rbox.setMaxCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
 
       if (getVolumeFilter()->isSubvolume()) {
         const auto& zoomInBound = getVolumeFilter()->zoomInBound();
-        rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
-        rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
+        rbox.setMinCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+        rbox.setMaxCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
       }
 
       ZLineSegment stackSeg;
@@ -4350,7 +4405,7 @@ void Z3DWindow::showDetail(int x, int y)
         center *= 0.5;
       }
 
-      ZIntCuboid range = zgeom::MakeSphereBox(center.toIntPoint(), 256);
+      ZIntCuboid range = zgeom::MakeSphereBox(center.roundToIntPoint(), 256);
       doc->showMoreDetail(bodyId, range);
     }
   }
@@ -4459,9 +4514,9 @@ std::vector<ZPoint> Z3DWindow::shootMesh(const ZMesh *mesh, int x, int y)
 #endif
     const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
     ZCuboid rbox;
-    rbox.setFirstCorner(
+    rbox.setMinCorner(
           boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
-    rbox.setLastCorner(
+    rbox.setMaxCorner(
           boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
 
     ZLineSegment seg(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
@@ -4546,9 +4601,9 @@ ZCuboid cut_box(const ZCuboid &box1, const ZIntCuboid &box2)
 {
   ZCuboid result;
 
-  result.setFirstCorner(box1.firstCorner().x() - box2.getFirstCorner().getX(),
-                        box1.firstCorner().y() - box2.getFirstCorner().getY(),
-                        box1.firstCorner().z() - box2.getFirstCorner().getZ());
+  result.setMinCorner(box1.getMinCorner().x() - box2.getMinCorner().getX(),
+                        box1.getMinCorner().y() - box2.getMinCorner().getY(),
+                        box1.getMinCorner().z() - box2.getMinCorner().getZ());
 
   result.setSize(box2.getWidth(), box2.getHeight(), box2.getDepth());
 
@@ -4563,13 +4618,13 @@ ZCuboid Z3DWindow::getRayBoundbox() const
   if (m_doc->hasStack()) {
     const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
 
-    rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
-    rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+    rbox.setMinCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+    rbox.setMaxCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
 
     if (getVolumeFilter()->isSubvolume()) {
       const auto& zoomInBound = getVolumeFilter()->zoomInBound();
-      rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
-      rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
+      rbox.setMinCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+      rbox.setMaxCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
     } else {
       ZIntCuboid cutBox = getVolumeFilter()->cutBox();
       //      cutBox.translate(m_doc->getStackOffset());
@@ -4577,9 +4632,9 @@ ZCuboid Z3DWindow::getRayBoundbox() const
     }
   } else {
     const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
-    rbox.setFirstCorner(
+    rbox.setMinCorner(
           boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
-    rbox.setLastCorner(
+    rbox.setMaxCorner(
           boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
   }
 
@@ -4656,8 +4711,8 @@ std::string Z3DWindow::updatePolyLinePairList(
         polyline2 = ZIntPointArray::MakePointer();
         polylinePairList.emplace_back(polyline1, polyline2);
       }
-      polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
-      polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+      polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().roundToIntPoint()));
+      polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().roundToIntPoint()));
     } else {
       polyline1.reset();
       polyline2.reset();
@@ -4966,13 +5021,15 @@ void Z3DWindow::setColorMode(
 
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
-  ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),
-                                  bound.firstCorner().y(),
-                                  bound.firstCorner().z()),
-                       glm::dvec3(bound.lastCorner().x(),
-                                  bound.lastCorner().y(),
-                                  bound.lastCorner().z()));
-  m_view->gotoPosition(bd);
+  if (bound.isValid()) {
+    ZBBox<glm::dvec3> bd(glm::dvec3(bound.getMinCorner().x(),
+                                    bound.getMinCorner().y(),
+                                    bound.getMinCorner().z()),
+                         glm::dvec3(bound.getMaxCorner().x(),
+                                    bound.getMaxCorner().y(),
+                                    bound.getMaxCorner().z()));
+    m_view->gotoPosition(bd);
+  }
 }
 
 void Z3DWindow::gotoPosition(const ZPoint &position, double radius)
@@ -4986,6 +5043,36 @@ bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
         pt.getX(), pt.getY(), pt.getZ(), neutu3d::ERendererLayer::SWC);
 
   return getRectRoi().contains(screenPos.x(), screenPos.y());
+}
+
+/*
+void Z3DWindow::initRois(const std::vector<std::shared_ptr<ZRoiMesh> > &roiList)
+{
+  getROIsDockWidget()->loadROIs(this, roiList);
+}
+*/
+
+void Z3DWindow::registerRoiWidget(ZROIWidget *widget)
+{
+  if (widget) {
+    ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+    if (doc) {
+      connect(widget, &ZROIWidget::roiUpdated,
+              doc, &ZFlyEmBody3dDoc::updateRoiMesh);
+      connect(widget, &ZROIWidget::roiListUpdated,
+              doc, &ZFlyEmBody3dDoc::updateRoiMeshList);
+      connect(widget, &ZROIWidget::locatingRoiMesh,
+              this, &Z3DWindow::zoomToRoiMesh);
+    }
+  }
+}
+
+void Z3DWindow::initRoiView(const std::shared_ptr<ZRoiProvider> &roiProvider)
+{
+  if (roiProvider) {
+    getROIsDockWidget()->initRoiView(this, roiProvider);
+    registerRoiWidget(getROIsDockWidget());
+  }
 }
 
 void Z3DWindow::deleteSelected()

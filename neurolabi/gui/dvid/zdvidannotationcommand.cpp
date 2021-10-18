@@ -54,8 +54,8 @@ ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::~RemoveItem()
 
 void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::redo()
 {
-  ZDvidReader reader;
-  if (reader.open(m_doc->getDvidTarget())) {
+  const ZDvidReader &reader = m_doc->getDvidReader();
+  if (reader.isReady()) {
     m_backup = reader.readToDoItemJson(m_item);
     m_doc->removeTodoItem(m_item, ZFlyEmToDoList::DATA_GLOBAL);
     m_doc->notifyTodoEdited(m_item);
@@ -70,7 +70,7 @@ void ZStackDocCommand::FlyEmToDoItemEdit::RemoveItem::undo()
   if (m_backup.hasKey("Pos")) {
     ZFlyEmToDoItem item;
     item.loadJsonObject(m_backup, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
-    m_doc->addTodoItem(item, ZFlyEmToDoList::DATA_GLOBAL);
+    m_doc->addTodoItem(item);
     m_doc->notifyTodoEdited(item.getPosition());
     QString msg = QString("Todo removal undone at (%1, %2, %3)").
         arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
@@ -92,11 +92,11 @@ ZStackDocCommand::FlyEmToDoItemEdit::AddItem::~AddItem()
 
 void ZStackDocCommand::FlyEmToDoItemEdit::AddItem::redo()
 {
-  m_doc->addTodoItem(m_item, ZFlyEmToDoList::DATA_GLOBAL);
-  m_doc->notifyTodoEdited(m_item.getPosition());
-  QString msg = QString("Todo item added at (%1, %2, %3)").
-      arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
-  m_doc->notify(msg);
+  m_doc->addTodoItem(m_item/*, ZFlyEmToDoList::DATA_GLOBAL*/);
+//  m_doc->notifyTodoEdited(m_item.getPosition());
+//  QString msg = QString("Todo item added at (%1, %2, %3)").
+//      arg(m_item.getX()).arg(m_item.getY()).arg(m_item.getZ());
+//  m_doc->notify(msg);
 }
 
 void ZStackDocCommand::FlyEmToDoItemEdit::AddItem::undo()

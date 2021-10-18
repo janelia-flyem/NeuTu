@@ -22,8 +22,14 @@ public:
 //  virtual const std::string& className() const;
 
 public:
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+  /*
   virtual void display(ZPainter &painter, int slice,
                        EDisplayStyle option, neutu::EAxis sliceAxis) const;
+                       */
 
   ZPoint getCenter() const {
     return m_center;
@@ -37,7 +43,7 @@ public:
   void setY(double y);
   void setZ(double z);
 
-  bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis);
+  bool hitWidgetPos(const ZIntPoint &widgetPos, neutu::EAxis axis) override;
 
 
 private:

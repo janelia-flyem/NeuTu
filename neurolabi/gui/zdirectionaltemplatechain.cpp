@@ -5,6 +5,7 @@
 #include "zlocsegchain.h"
 #include "zstack.hxx"
 #include "geometry/zpoint.h"
+#include "geometry/zcuboid.h"
 
 ZDirectionalTemplateChain::ZDirectionalTemplateChain()
 {
@@ -16,6 +17,7 @@ ZDirectionalTemplateChain::~ZDirectionalTemplateChain()
   m_chain.clear();
 }
 
+/*
 void ZDirectionalTemplateChain::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
@@ -23,6 +25,7 @@ void ZDirectionalTemplateChain::display(
     m_chain.at(i)->display(painter, slice, option, sliceAxis);
   }
 }
+*/
 
 void ZDirectionalTemplateChain::append(ZDirectionalTemplate *dt)
 {
@@ -121,6 +124,17 @@ int ZDirectionalTemplateChain::hitTest(double x, double y, double z)
   }
 
   return 0;
+}
+
+ZCuboid ZDirectionalTemplateChain::getBoundBox() const
+{
+  ZCuboid box;
+
+  for (ZDirectionalTemplate *t : m_chain) {
+    box.join(t->getBoundBox());
+  }
+
+  return box;
 }
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDirectionalTemplateChain)

@@ -20,7 +20,7 @@
 #include "zcurve.h"
 #include "z3dwindow.h"
 #include "zstackfile.h"
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 #include "zfiletype.h"
 #include "zobjsmanagerwidget.h"
 #include "neutubeconfig.h"
@@ -304,7 +304,7 @@ void ZStackFrame::addDocData(ZStackDocReader &reader)
     if (m_doc->getStack()->kind() != GREY) {
       m_presenter->optimizeStackBc();
     }
-    m_view->reset();
+//    m_view->reset();
   }
 
   setWindowTitle(m_doc->stackSourcePath().c_str());
@@ -351,38 +351,43 @@ void ZStackFrame::updateDocSignalSlot(T connectAction)
 //  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
 //          m_view, SLOT(redraw()));
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-//          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(neutu::data3d::ETarget)),
+//          m_view, SLOT(paintObject(neutu::data3d::ETarget)), Qt::AutoConnection);
 //  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-//          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(objectModified(QSet<neutu::data3d::ETarget>)),
+//          m_view, SLOT(paintObject(QSet<neutu::data3d::ETarget>)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
           this, SLOT(changeWindowTitle(bool)), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(),
-                SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,
-                                             QList<ZLocsegChain*>)),
-                m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
+//                m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(),
+//                SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,
+//                                             QList<ZLocsegChain*>)),
+//                m_view, SLOT(paintObject()), Qt::AutoConnection);
+  /*
   connectAction(m_doc.get(), SIGNAL(
             swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,
                                         QList<Swc_Tree_Node*>)),
           this, SLOT(updateSwcExtensionHint()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
-                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(objectSelectionChanged(
-                                QList<ZStackObject*>,QList<ZStackObject*>)),
-          m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)),
+          */
+//  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
+//                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
+//          m_view, SLOT(paintObject()), Qt::AutoConnection);
+  connectAction(m_doc.get(),
+                SIGNAL(objectSelectionChanged(
+                         const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
+                m_view,
+                SLOT(paintObject(
+                       const ZStackObjectInfoSet&,const ZStackObjectInfoSet&)),
                 Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
-  connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
-          m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
+//          m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
+//          m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
+//          m_view, SLOT(paintObject()), Qt::AutoConnection);
+//  connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
+//          m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
           this, SLOT(notifyUser(QString)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
@@ -410,6 +415,9 @@ void ZStackFrame::updateSignalSlot(T connectAction)
   updateDocSignalSlot(connectAction);
   connectAction(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()),
                 Qt::AutoConnection);
+//  connectAction(m_view, SIGNAL(viewChanged(ZSliceViewTransform)),
+//                m_presenter, SLOT(setSliceViewTransform(ZSliceViewTransform)),
+//                Qt::AutoConnection);
 //  connectAction(this, SIGNAL(closed(ZStackFrame*)), this, SLOT(closeAllChildFrame()));
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //          m_presenter, SLOT(processSliceChangeEvent(int)));
@@ -464,11 +472,13 @@ void ZStackFrame::updateDocument()
     }
   }
 
+  /*
   if (m_doc->hasStack()) {
     if (m_view != NULL) {
       m_view->reset();
     }
   }
+  */
 
   setWindowTitle(m_doc->stackSourcePath().c_str());
 
@@ -490,12 +500,14 @@ void ZStackFrame::takeScreenshot(const QString &filename)
     m_view->takeScreenshot(filename);
 }
 
+/*
 void ZStackFrame::updateSwcExtensionHint()
 {
   if (m_presenter != NULL) {
     m_presenter->updateSwcExtensionHint();
   }
 }
+*/
 
 void ZStackFrame::clearData()
 {
@@ -659,7 +671,7 @@ void ZStackFrame::importImageSequence(const char *filePath)
   if (m_doc->getStack()->kind() != GREY) {
     m_presenter->optimizeStackBc();
   }
-  m_view->reset();
+//  m_view->reset();
 }
 
 Z3DWindow* ZStackFrame::viewSegmentationMesh()
@@ -813,6 +825,19 @@ void ZStackFrame::dragEnterEvent(QDragEnterEvent *event)
   }
 }
 
+void ZStackFrame::exportSlice()
+{
+  ZStack *stack = document()->getStack();
+  if (stack->hasData()) {
+    QString savePath = ZDialogFactory::GetSaveFileName("Save Slice", "", this);
+    if (!savePath.isEmpty()) {
+      Stack slice = C_Stack::sliceView(
+            stack->data(), view()->getCurrentDepth() - stack->getOffset().getZ(), 0);
+      C_Stack::write(savePath.toStdString(), &slice);
+    }
+  }
+}
+
 void ZStackFrame::dropEvent(QDropEvent *event)
 {
   QList<QUrl> urls = event->mimeData()->urls();
@@ -822,7 +847,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(neutu::GetFilePath(url).toStdString())) {
+    if (ZFileType::IsImageFile(neutu::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -1039,7 +1064,7 @@ void ZStackFrame::changeWindowTitle(bool clean)
 void ZStackFrame::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
-    if (!m_presenter->processKeyPressEvent(event)) {
+    if (!m_presenter->processKeyPressEvent(event, -1)) {
       emit keyEventEmitted(event);
     }
   }
@@ -1300,6 +1325,7 @@ ZStack* ZStackFrame::getStrokeMask(neutu::EColor color)
   return view()->getStrokeMask(color);
 }
 
+/*
 void ZStackFrame::exportObjectMask(const QString &filePath)
 {
   view()->exportObjectMask(filePath.toStdString());
@@ -1310,6 +1336,7 @@ void ZStackFrame::exportObjectMask(
 {
   view()->exportObjectMask(color, filePath.toStdString());
 }
+*/
 
 
 void ZStackFrame::saveStack(const QString &filePath)
@@ -1369,6 +1396,9 @@ void ZStackFrame::setViewPortCenter(int x, int y, int z)
 
 void ZStackFrame::viewRoi(int x, int y, int z, int radius)
 {
+  view()->zoomTo(x, y, z, radius + radius);
+
+  /*
 //  x -= document()->getStackOffset().getX();
 //  y -= document()->getStackOffset().getY();
 //  z -= document()->getStackOffset().getZ();
@@ -1382,6 +1412,7 @@ void ZStackFrame::viewRoi(int x, int y, int z, int radius)
         locator.getZoomRatio(viewPort.width(), viewPort.height()));
 
   view()->setViewPortCenter(x, y, z, neutu::EAxisSystem::SHIFTED);
+  */
 
 //  presenter()->setViewPortCenter(x, y, z);
 }
@@ -1469,6 +1500,13 @@ void ZStackFrame::load(const std::string &filePath)
   m_doc->loadFile(filePath.c_str());
 }
 
+void ZStackFrame::load(std::function<void(ZStackDoc*)> loadFunc)
+{
+  if (loadFunc) {
+    loadFunc(m_doc.get());
+  }
+}
+
 QAction* ZStackFrame::getBodySplitAction()
 {
   QAction *action = NULL;
@@ -1534,7 +1572,7 @@ ZStackFrame* ZStackFrame::spinoffStackSelection(
     ZStack *substack = m_doc->getStack()->createSubstack(selected);
 
     frame->document()->loadStack(substack);
-    frame->view()->reset();
+//    frame->view()->reset();
   }
 
   return frame;
@@ -1552,6 +1590,11 @@ void ZStackFrame::subtractBackground()
   if (m_doc->hasStackData()) {
     m_doc->subtractBackground();
   }
+}
+
+void ZStackFrame::subtractBackgroundAdaptive()
+{
+  m_doc->subtractBackgroundAdaptive();
 }
 
 void ZStackFrame::detachParentFrame()
@@ -1780,7 +1823,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
 
     obj->setColor(16, 16, 16, 64);
 
-    obj->setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+    obj->setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
     if (isExclusive) {
       clearDecoration();
     }
@@ -1799,7 +1842,7 @@ void ZStackFrame::zoomToSelectedSwcNodes()
   if (document()->hasSelectedSwcNode()) {
     std::set<Swc_Tree_Node*> nodeSet = document()->getSelectedSwcNodeSet();
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
-    ZPoint center = cuboid.center();
+    ZPoint center = cuboid.getCenter();
 
     //check which stack the selected points belong to.
     //If needed, load the corresponding stack.
@@ -1904,11 +1947,13 @@ void ZStackFrame::notifyViewChanged(const ZStackViewParam &param)
   emit viewChanged(param);
 }
 
+/*
 void ZStackFrame::setView(const ZStackViewParam &param)
 {
   view()->setView(param);
 //  raise();
 }
+*/
 
 void ZStackFrame::customizeWidget()
 {

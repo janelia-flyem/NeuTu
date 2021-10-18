@@ -10,43 +10,63 @@
 
 TEST(ZFlyEmBodyMerger, Basic)
 {
-  ZFlyEmBodyMerger merger;
-  merger.pushMap(1, 2);
+  {
+    ZFlyEmBodyMerger merger;
+    merger.pushMap(1, 2);
 
-  ASSERT_EQ(2, (int) merger.getFinalLabel(1));
-  ASSERT_NE(3, (int) merger.getFinalLabel(1));
-  ASSERT_EQ(5, (int) merger.getFinalLabel(5));
+    ASSERT_EQ(2, (int) merger.getFinalLabel(1));
+    ASSERT_NE(3, (int) merger.getFinalLabel(1));
+    ASSERT_EQ(5, (int) merger.getFinalLabel(5));
 
-  merger.pushMap(2, 3);
-  ASSERT_EQ(3, (int) merger.getFinalLabel(1));
-  ASSERT_EQ(3, (int) merger.getFinalLabel(2));
-  ASSERT_EQ(5, (int) merger.getFinalLabel(5));
+    merger.pushMap(2, 3);
+    ASSERT_EQ(3, (int) merger.getFinalLabel(1));
+    ASSERT_EQ(3, (int) merger.getFinalLabel(2));
+    ASSERT_EQ(5, (int) merger.getFinalLabel(5));
 
-  //merger.print();
+    //merger.print();
 
-  merger.undo();
-  ASSERT_EQ(2, (int) merger.getFinalLabel(1));
-  ASSERT_NE(3, (int) merger.getFinalLabel(1));
-  ASSERT_EQ(5, (int) merger.getFinalLabel(5));
+    merger.undo();
+    ASSERT_EQ(2, (int) merger.getFinalLabel(1));
+    ASSERT_NE(3, (int) merger.getFinalLabel(1));
+    ASSERT_EQ(5, (int) merger.getFinalLabel(5));
 
-  //merger.print();
+    //merger.print();
 
-  merger.redo();
-  ASSERT_EQ(3, (int) merger.getFinalLabel(1));
-  ASSERT_EQ(3, (int) merger.getFinalLabel(2));
-  ASSERT_EQ(5, (int) merger.getFinalLabel(5));
+    merger.redo();
+    ASSERT_EQ(3, (int) merger.getFinalLabel(1));
+    ASSERT_EQ(3, (int) merger.getFinalLabel(2));
+    ASSERT_EQ(5, (int) merger.getFinalLabel(5));
 
-  //merger.print();
+    //merger.print();
 
-  ZFlyEmBodyMerger::TLabelMap newMap;
-  newMap[3] = 4;
-  newMap[5] = 6;
+    ZFlyEmBodyMerger::TLabelMap newMap;
+    newMap[3] = 4;
+    newMap[5] = 6;
 
-  merger.pushMap(newMap);
-  //merger.print();
-  ASSERT_EQ(4, (int) merger.getFinalLabel(1));
-  ASSERT_EQ(4, (int) merger.getFinalLabel(2));
-  ASSERT_EQ(6, (int) merger.getFinalLabel(5));
+    merger.pushMap(newMap);
+    //merger.print();
+    ASSERT_EQ(4, (int) merger.getFinalLabel(1));
+    ASSERT_EQ(4, (int) merger.getFinalLabel(2));
+    ASSERT_EQ(6, (int) merger.getFinalLabel(5));
+  }
+
+  {
+    ZFlyEmBodyMerger bodyMerger;
+    bodyMerger.pushMap(1, 2);
+    bodyMerger.pushMap(3, 2);
+    auto labelSet = bodyMerger.getOriginalLabelSet(2);
+    ASSERT_EQ(3, labelSet.size());
+    ASSERT_TRUE(labelSet.contains(1));
+    ASSERT_TRUE(labelSet.contains(2));
+    ASSERT_TRUE(labelSet.contains(3));
+
+    labelSet = bodyMerger.getOriginalLabelSet(1);
+    ASSERT_TRUE(labelSet.empty());
+
+    labelSet = bodyMerger.getOriginalLabelSet(4);
+    ASSERT_EQ(1, labelSet.size());
+    ASSERT_TRUE(labelSet.contains(4));
+  }
 }
 
 TEST(ZFlyEmBodyMerger, Json)

@@ -25,6 +25,7 @@
 #include "zstackball.h"
 #include "zactionfactory.h"
 #include "zjsonobject.h"
+#include "zstackdocselector.h"
 
 class ZStackView;
 class ZStackDoc;
@@ -40,6 +41,7 @@ class ZKeyOperationConfig;
 class ZStackDocMenuFactory;
 class ZStackObjectInfoSet;
 class ZMenuConfig;
+class ZMouseCursorGlyph;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -53,7 +55,13 @@ public:
   static ZStackPresenter* Make(QWidget *parent);
 
   ZStackDoc* buddyDocument() const;
-  ZStackView* buddyView() const;
+  ZStackView* getDefaultView() const;
+  ZStackView* getMainView() const;
+  ZStackView* getContextView() const;
+  std::vector<ZStackView*> getViewList() const;
+  ZStackView* getView(int viewId) const;
+  ZStackView* getMouseHoveredView() const;
+  void forEachView(std::function<void(ZStackView*)> f) const;
   ZSharedPointer<ZStackDoc> getSharedBuddyDocument() const;
 
   void updateView() const;
@@ -68,9 +76,11 @@ public:
     MOUSE_COMMAND_EXECUTED, MOUSE_EVENT_CAPTURED
   };
 
+  /*
   enum EObjectRole {
     ROLE_STROKE, ROLE_SWC, ROLE_SYNAPSE, ROLE_BOOKMARK, ROLE_TODO_ITEM
   };
+  */
 
   /*
   enum EActionItem {
@@ -104,9 +114,14 @@ public:
   //inline int zoomRatio() const { return m_zoomRatio; }
   //int zoomRatio() const;
   inline QList<ZStackObject*>* decorations() { return &m_decorationList; }
-  inline const QList<ZStackObject*>& getActiveDecorationList() const {
-    return m_activeDecorationList;
-  }
+  QList<ZStackObject*> getActiveDecorationList() const;
+
+  /*
+  QList<ZStackObject*> getActiveDecorationList(
+      std::function<bool(const ZStackObject*)> pred) const;
+      */
+
+  void updateMouseCursorGlyphPos();
 
   inline const QList<ZStackObject*>& getHighlightDecorationList() const {
     return m_highlightDecorationList;
@@ -117,23 +132,29 @@ public:
   }
 
   void clearData();
+  void updateViewLayout();
 
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
   void toggleObjectVisible();
   void suppressObjectVisible(bool v);
   bool isObjectVisible();
-  void setObjectStyle(ZStackObject::EDisplayStyle style);
+  void setObjectStyle(neutu::data3d::EDisplayStyle style);
+  void setSliceMode(int viewId, neutu::data3d::EDisplaySliceMode mode);
+  neutu::data3d::EDisplaySliceMode getSliceMode(int viewId) const;
 
-  bool hasDrawable(ZStackObject::ETarget target) const;
+  bool hasDrawable(neutu::data3d::ETarget target) const;
 
   void initInteractiveContext();
 
   bool hightlightOn() const { return m_highlight; }
   void setHighlight(bool state) { m_highlight = state; }
   void highlight(int x, int y, int z);
+  void flashHighlight(int x, int y, int z);
 
-  void setSliceAxis(neutu::EAxis axis);
+  void setSliceAxis(int viewId, neutu::EAxis axis);
+  void setMainSliceAxis(neutu::EAxis axis);
+  void setViewCount(int n);
 
   bool paintingRoi() const {
     return m_paintingRoi;
@@ -148,12 +169,13 @@ public:
   void updateZoomOffset(int cx, int cy, int wx, int wy);
   void setZoomOffset(int x, int y);
 */
-  void processMouseReleaseEvent(QMouseEvent *event);
-  virtual bool processKeyPressEvent(QKeyEvent *event);
-  bool processKeyPressEventOther(QKeyEvent *event);
-  void processMouseMoveEvent(QMouseEvent *event);
-  void processMousePressEvent(QMouseEvent *event);
-  void processMouseDoubleClickEvent(QMouseEvent *eventint);
+  void processMouseReleaseEvent(QMouseEvent *event, int viewId);
+  void processMouseMoveEvent(QMouseEvent *event, int viewId);
+  void processMousePressEvent(QMouseEvent *event, int viewId);
+  void processMouseDoubleClickEvent(QMouseEvent *event, int viewId);
+
+  virtual bool processKeyPressEvent(QKeyEvent *event, int viewId);
+  bool processKeyPressEventOther(QKeyEvent *event, int viewId);
 
   virtual bool customKeyProcess(QKeyEvent *event);
   virtual bool processCustomOperator(const ZStackOperator &op,
@@ -211,18 +233,21 @@ public:
 
   void prepareView();
 
-  void updateLeftMenu(QAction *action, bool clear = true);
-  void updateRightMenu(QAction *action, bool clear = true);
-  void updateRightMenu(QMenu *submenu, bool clear = true);
-  void updateLeftMenu();
+  void updateLeftMenu(ZStackView *view, QAction *action, bool clear = true);
+  void updateRightMenu(ZStackView *view, QAction *action, bool clear = true);
+  void updateRightMenu(ZStackView *view, QMenu *submenu, bool clear = true);
+  void updateLeftMenu(ZStackView *view);
 
   //void addTubeEditFunctionToRightMenu();
-  void addPunctaEditFunctionToRightMenu();
+  void addPunctaEditFunctionToRightMenu(ZStackView *view);
   //void addSwcEditFunctionToRightMenu();
 
 //  void setViewPortCenter(int x, int y, int z);
 
-  const QPointF stackPositionFromMouse(MouseButtonAction mba);
+//  const QPointF stackPositionFromMouse(MouseButtonAction mba);
+
+  ZPoint getModelPositionFromMouse(MouseButtonAction mba) const;
+//  ZPoint getModelPositionFromGlobalCursor(const QPoint &pos) const;
 
   ZPoint getLastMousePosInStack();
 
@@ -232,13 +257,16 @@ public:
 
   void updateCursor();
 
-  ZStackObject* getFirstOnActiveObject() const;
+//  ZStackObject* getFirstOnActiveObject() const;
+  /*
   ZStackObject* getActiveObject(EObjectRole role) const;
   template<typename T>
   T* getActiveObject(EObjectRole role) const;
+  */
 //  inline const ZStroke2d* getStroke() const { return m_stroke; }
 
-  void setZoomRatio(double ratio);
+  void setZoomRatio(ZStackView *view, double ratio);
+//  void setZoomRatio(double ratio);
 
   neutu::EAxis getSliceAxis() const;
 
@@ -251,14 +279,15 @@ public:
   //void updateInteractiveContext();
 
   //void moveImage(int mouseX, int mouseY);
-  void moveViewPort(int dx, int dy);
+  void moveViewPort(ZStackView *view, int dx, int dy);
+  void moveViewPort(ZStackView *view, const ZPoint &src, int a, int b);
 
   /*!
    * \brief Move the viewport to a certain position.
    *
    * Move the viewport to (\a x, \a y) if possible.
    */
-  void moveViewPortTo(int x, int y);
+//  void moveViewPortTo(int x, int y);
 
   /*!
    * \brief Move a data point to the specified mouse position.
@@ -266,20 +295,20 @@ public:
    * Move the point at the canvas coordinates (\a srcX, \a srcY) under
    * the mouse point at (\a mouseX, \a mouseY), which are widget coordinates.
    */
-  void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
+//  void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
 
   void moveCrossHairToMouse(int mouseX, int mouseY);
 
-  void increaseZoomRatio();
-  void decreaseZoomRatio();
+  void increaseZoomRatio(ZStackView *view);
+  void decreaseZoomRatio(ZStackView *view);
 
   /*!
    * \brief Zoom at a certain point.
    *
    * (\a x, \a y) is the reference point.
    */
-  void increaseZoomRatio(int x, int y);
-  void decreaseZoomRatio(int x, int y);
+  void increaseZoomRatio(ZStackView *view, int x, int y);
+  void decreaseZoomRatio(ZStackView *view, int x, int y);
 
   /*!
    * \brief Get the current slice index.
@@ -287,7 +316,7 @@ public:
    * It returns the index of the current active slice. When no slice is active,
    * such as in the senario of the projection mode, the index is set to -1.
    */
-  int getSliceIndex() const;
+//  int getSliceIndex() const;
 
 //  ZStackOperator makeOperator(ZStackOperator::EOperation op);
 
@@ -307,6 +336,9 @@ public:
   ZJsonObject getHighContrastProtocal() const;
 
   void setHighContrastProtocal(const ZJsonObject &obj);
+
+  void enterSwcAddNodeMode(double x, double y, ZStackObjectRole::TRole role);
+  void enterSwcAddNodeMode(ZStackObjectRole::TRole role);
 
 public: //test functions
   void testBiocytinProjectionMask();
@@ -337,7 +369,6 @@ public slots:
   void exitSwcExtendMode();
   //void enterSwcSmartExtendMode();
   void enterSwcMoveMode();
-  void enterSwcAddNodeMode(double x, double y);
   void enterSwcSelectMode();
   void enterDrawStrokeMode(double x, double y);
   void enterEraseStrokeMode(double x, double y);
@@ -354,15 +385,15 @@ public slots:
   void selectAllSwcTreeNode();
   void toggleSwcSkeleton(bool state);
 
-  void trySwcAddNodeMode(double x, double y);
+//  void trySwcAddNodeMode(double x, double y);
   void trySwcAddNodeMode();
   void tryPaintStrokeMode();
   void tryEraseStrokeMode();
   void tryDrawStrokeMode(double x, double y, bool isEraser);
 
-  void tryDrawRectMode(double x, double y);
-  void enterDrawRectMode(double x, double y);
   void tryDrawRectMode();
+  void enterDrawRectMode();
+//  void tryDrawRectMode();
   void cancelRectRoi();
   void exitRectEdit();
   void exitBookmarkEdit();
@@ -377,6 +408,7 @@ public slots:
   void selectConnectedNode();
 
   void notifyBodySplitTriggered();
+  void notifyActivateMergeLinkTriggered();
   void notifyBodyDecomposeTriggered();
   void notifyBodyCropTriggered();
   void notifyBodyChopTriggered();
@@ -399,27 +431,33 @@ public slots:
   void copyLabelId();
   void copySupervoxelId();
   void copyNeuroglancerLink();
+  void copyNeuroglancerLinkAtRectRoi();
 
   void notifyUser(const QString &msg);
 
+#if 0
   /*!
    * \brief Turn on the active stroke
    */
 //  void turnOnStroke();
-  void turnOnActiveObject(EObjectRole role, bool refreshing = true);
+  void turnOnActiveObject(EObjectRole role);
+  void turnOnActiveObject(
+      EObjectRole role, std::function<void(ZStackObject*)> prepare);
+  void turnOnActiveObject(
+      EObjectRole role, std::function<void(ZStackObject*, EObjectRole)> prepare);
 
   void setActiveObjectSize(EObjectRole role, double radius);
   void setDefaultActiveObjectSize(EObjectRole role);
-
+#endif
   /*!
    * \brief Turn off the active stroke
    */
 //  void turnOffStroke();
   void turnOffActiveObject();
-  void turnOffActiveObject(EObjectRole role);
+//  void turnOffActiveObject(EObjectRole role);
 
-  bool isActiveObjectOn(EObjectRole role) const;
-  bool isActiveObjectOn() const;
+//  bool isActiveObjectOn(EObjectRole role) const;
+//  bool isActiveObjectOn() const;
 
   /*
   inline bool isStrokeOn() const; { return m_stroke.isVisible(); }
@@ -428,13 +466,18 @@ public slots:
 
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
-  void updateSwcExtensionHint();
+//  void updateSwcExtensionHint();
 
   void processObjectModified(const ZStackObjectInfoSet &objSet);
+
+  void setSliceViewTransform(int viewId, const ZSliceViewTransform &transform);
+//  ZSliceViewTransform getSliceViewTransform() const;
+  void notifyActionTriggered();
 
 signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
+  void activateMergeLinkTriggered();
   void bodyAnnotationTriggered();
   void bodyExpertStatusTriggered();
   void bodyConnectionTriggered();
@@ -442,7 +485,7 @@ signals:
   void bodyCheckinTriggered(neutu::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
   void bodyCheckoutTriggered(neutu::EBodySplitMode mode);
-  void labelSliceSelectionChanged();
+//  void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
 //  void exitingRectEdit();
 //  void acceptingRectRoi();
@@ -458,10 +501,15 @@ signals:
   void uncheckingBookmark();
   void savingStack();
   void movingCrossHairTo(int x, int y);
+  void updatingViewLayout(std::vector<int> viewLayoutIndices);
+  void updatingViewData();
+  void actionTriggered(ZActionFactory::EAction action);
 
 protected:
   void init();
-  void initActiveObject();
+//  void initActiveObject();
+//  void prepareActiveDecoration(ZStackObject *obj, EObjectRole role);
+  void prepareSwcGlyph(ZStackObject *obj);
 
   EMouseEventProcessStatus processMouseReleaseForPuncta(
       QMouseEvent *event, const ZPoint &positionInStack);
@@ -481,30 +529,47 @@ protected:
   bool processKeyPressEventForObject(QKeyEvent *event);
 
   bool isPointInStack(double x, double y);
-  QPointF mapFromWidgetToStack(const QPoint &pos);
-  QPointF mapFromGlobalToStack(const QPoint &pos);
+//  QPointF mapFromWidgetToStack(const QPoint &pos);
+//  QPointF mapFromGlobalToStack(const QPoint &pos);
 
-  bool estimateActiveStrokeWidth();
+//  bool estimateActiveStrokeWidth();
 
   bool process(ZStackOperator &op);
   bool process(ZStackOperator::EOperation op);
 
+  bool paintingStroke() const;
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
   virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
 
-  void addActiveObject(EObjectRole role, ZStackObject *obj);
+//  void addActiveObject(EObjectRole role, ZStackObject *obj);
 
   ZPoint getMousePositionInStack(
       Qt::MouseButtons buttons, ZMouseEvent::EAction action) const;
 
   virtual void copyLink(const QString &option) const;
 
+  bool addActiveDecorationAsSwc();
+  ZStackBall getActiveDecorationForSwc() const;
+  void addActiveMouseGlyphSize(double dr);
+
+  void moveSwcNode(ZStackView *view, double du, double dv);
+
+  template<typename T>
+  void startSwcEdit(T option, std::function<void(ZStackObject*)> prepare = nullptr);
+
+  ZPoint getCurrentMousePosition(neutu::data3d::ESpace space);
+
+  void setViewCursor(const QCursor &cursor);
+  void updateCutPlane(neutu::EAxis a1, neutu::EAxis a2, neutu::EAxis a3);
+
 protected:
   //ZStackFrame *m_parent;
   QList<ZStackObject*> m_decorationList;
-  QList<ZStackObject*> m_activeDecorationList;
+//  QList<ZStackObject*> m_activeDecorationList;
   QList<ZStackObject*> m_highlightDecorationList;
+
+  std::shared_ptr<ZMouseCursorGlyph> m_mouseCursorGlyph;
 
   bool m_showObject;
   bool m_oldShowObject;
@@ -512,12 +577,16 @@ protected:
   std::vector<double> m_grayScale;
   std::vector<double> m_grayOffset;
   int m_threshold;
-  ZStackObject::EDisplayStyle m_objStyle;
+  neutu::data3d::EDisplayStyle m_objStyle;
+
   //MouseState m_mouseState;
   bool m_mouseLeftButtonPressed;
   bool m_mouseRightButtonPressed;
   ZInteractiveContext m_interactiveContext;
   int m_cursorRadius;
+  int m_contextViewId = -1;
+  int m_viewCount = 1;
+  neutu::EAxis m_mainViewAxis = neutu::EAxis::Z;
 
   //  Action map
   QMap<ZActionFactory::EAction, QAction*> m_actionMap;
@@ -530,7 +599,7 @@ protected:
 
   //recorded information
   int m_mouseMovePosition[3];
-  int m_mouseLeftReleasePosition[3];
+//  int m_mouseLeftReleasePosition[3];
   int m_mouseRightReleasePosition[3];
   int m_mouseLeftPressPosition[3];
   int m_mouseRightPressPosition[3];
@@ -538,13 +607,16 @@ protected:
 //  QPointF m_grabPosition;
 //  ZPoint m_lastMouseDataCoord;
 
-  QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
+//  QMap<EObjectRole, ZStackObject*> m_activeObjectMap;
+//  QMap<EObjectRole, double> m_defaultDecorationSize;
 //  ZStroke2d m_stroke;
 //  ZStroke2d m_swcStroke;
 //  bool m_isStrokeOn;
 
   ZStackBall m_highlightDecoration;
   bool m_highlight;
+  uint64_t m_highlightTimestamp = 0;
+  int m_highlightInterval = 5000;
 
   bool m_usingHighContrast;
   ZJsonObject m_highContrastProtocal;
@@ -563,6 +635,7 @@ protected:
   //ZMouseEventMoveMapper m_moveMapper;
 
   ZMouseEventProcessor m_mouseEventProcessor;
+  ZStackDocSelector m_docSelector;
 
   ZActionFactory *m_actionFactory;
   std::unique_ptr<ZStackDocMenuFactory> m_menuFactory;
@@ -575,11 +648,12 @@ signals:
   void viewModeChanged();
 };
 
-
+/*
 template<typename T>
 T* ZStackPresenter::getActiveObject(EObjectRole role) const
 {
   return dynamic_cast<T*>(getActiveObject(role));
 }
+*/
 
 #endif

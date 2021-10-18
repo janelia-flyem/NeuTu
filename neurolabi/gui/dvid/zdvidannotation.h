@@ -30,6 +30,7 @@ class ZDvidAnnotation : public ZStackObject
 {
 public:
   ZDvidAnnotation();
+  ZDvidAnnotation(const ZDvidAnnotation &annotation);
 
   enum class EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
                KIND_INVALID };
@@ -40,8 +41,23 @@ public:
     return ZStackObject::EType::DVID_ANNOTATION;
   }
 
+  ZDvidAnnotation* clone() const override;
+
+
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+  /*
+  bool display(QPainter *painter, const DisplayConfig &config) const override {
+    return false;
+  }
+  */
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
+               */
+
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
 
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
@@ -82,9 +98,10 @@ public:
   int getY() const;
   int getZ() const;
 
-  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+//  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+//  bool hit(double x, double y, neutu::EAxis axis) override;
+//  bool hit(double x, double y, double z) override;
+  void setDefaultHit();
 
   void loadJsonObject(
       const ZJsonObject &obj,
@@ -93,6 +110,7 @@ public:
 
   void clearPartner();
   void addPartner(int x, int y, int z);
+  void addPartner(const ZIntPoint &pos);
   bool hasPartner(const ZIntPoint &pos);
 
   void addTag(const std::string &tag);
@@ -113,6 +131,7 @@ public:
   void clear();
 
   bool isValid() const;
+  void invalidate();
 
   static QColor GetDefaultColor(EKind kind);
   static double GetDefaultRadius(EKind kind);
@@ -142,7 +161,7 @@ public:
     return m_partnerHint;
   }
 
-  ZCuboid getBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
 //  void setProperty(ZJsonObject propJson);
 
@@ -195,6 +214,8 @@ public: //Json APIs
   static bool RemoveRelation(ZJsonArray &json, const std::string &rel);
   static bool RemoveRelation(ZJsonObject &json, const std::string &rel);
 
+  static std::string GetProperty(ZJsonObject &json, const std::string &key);
+
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           const std::string &value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
@@ -203,6 +224,7 @@ public: //Json APIs
                           bool value);
   static void AddProperty(ZJsonObject &json, const std::string &key,
                           int value);
+  static void RemoveProperty(ZJsonObject &json, const std::string &key);
 
   static void Annotate(ZJsonObject &json, const std::string &annot);
 
@@ -221,9 +243,12 @@ public: //Json APIs
   static std::string GetMatchingRelation(const std::string &relType);
 
   static EKind GetKind(const ZJsonObject &json);
+  static bool IsChecked(const ZJsonObject &json);
+
+  static bool HasSameSubProp(const ZJsonObject &json1, const ZJsonObject &json2);
+  static void UpdateTime(ZJsonObject &json ,const ZJsonObject &oldJson);
 
 protected:
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
   double getRadius(int z, neutu::EAxis sliceAxis) const;
 
 private:
@@ -231,6 +256,12 @@ private:
 
 public:
   static const char* KEY_COMMENT;
+  static const char* KEY_CREATED_TIME;
+  static const char* KEY_MODIFIED_TIME;
+  static const char* KEY_CHECKED_TIME;
+
+  static double DEFAULT_POST_SYN_RADIUS;
+  static double DEFAULT_PRE_SYN_RADIUS;
 
 protected:
   ZIntPoint m_position;

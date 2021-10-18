@@ -1,12 +1,22 @@
 #ifndef ZINTCUBOID_H
 #define ZINTCUBOID_H
 
+#include <iostream>
+
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
 #include "common/neutudefs.h"
 
 class ZJsonArray;
+class ZPoint;
 
+/*!
+ * \brief The class of cuboid with integer coordinates
+ *
+ * Note: Any operation on an empty cuboid is undefined, except those that may
+ * turn the object into a non-empty one.
+ *
+ */
 class ZIntCuboid
 {
 public:
@@ -21,27 +31,48 @@ public:
   ZIntCuboid(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   ZIntCuboid(const Cuboid_I &cuboid);
 
-  //ZIntCuboid(const ZIntCuboid &cuboid);
+  /*!
+   * \brief Check if a cuboid is empty.
+   *
+   * A cuboid is empty if any of its dimension <= 0.
+   */
+  bool isEmpty() const;
 
-  inline const ZIntPoint& getFirstCorner() const { return m_firstCorner; }
-  inline const ZIntPoint& getLastCorner() const { return m_lastCorner; }
-
-  inline void setFirstCorner(const ZIntPoint &corner) {
-    m_firstCorner = corner;
-  }
-
-  inline void setFirstCorner(int x, int y, int z) {
-    m_firstCorner.set(x, y, z);
-  }
-
+  inline const ZIntPoint& getMinCorner() const { return m_minCorner; }
+  inline const ZIntPoint& getMaxCorner() const { return m_maxCorner; }
   ZIntPoint getCorner(int index) const;
 
-  inline void setLastCorner(const ZIntPoint &corner) {
-    m_lastCorner = corner;
+  int getWidth() const;
+  int getHeight() const;
+  int getDepth() const;
+  ZIntPoint getSize() const;
+
+  double getDiagonalLength() const;
+  double getMinSideLength() const;
+
+  /*!
+   * \brief Get the volume of the cuboid.
+   *
+   * It returns 0 if the cuboid is invalid.
+   */
+  size_t getVolume() const;
+  size_t getDsMaxVolume(int xIntv, int yIntv, int zIntv) const;
+
+
+  inline void setMinCorner(const ZIntPoint &corner) {
+    m_minCorner = corner;
   }
 
-  inline void setLastCorner(int x, int y, int z) {
-    m_lastCorner.set(x, y, z);
+  inline void setMinCorner(int x, int y, int z) {
+    m_minCorner.set(x, y, z);
+  }
+
+  inline void setMaxCorner(const ZIntPoint &corner) {
+    m_maxCorner = corner;
+  }
+
+  inline void setMaxCorner(int x, int y, int z) {
+    m_maxCorner.set(x, y, z);
   }
 
   /*!
@@ -53,23 +84,33 @@ public:
   void set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   //void set(const int *corner);
 
-  void setFirstX(int x);
-  void setLastX(int x);
-  void setFirstY(int y);
-  void setLastY(int y);
-  void setFirstZ(int z);
-  void setLastZ(int z);
+  int getMinX() const;
+  int getMaxX() const;
+  int getMinY() const;
+  int getMaxY() const;
+  int getMinZ() const;
+  int getMaxZ() const;
+
+  void setMinX(int x);
+  void setMaxX(int x);
+  void setMinY(int y);
+  void setMaxY(int y);
+  void setMinZ(int z);
+  void setMaxZ(int z);
 
   void translateX(int dx);
 
   void translate(const ZIntPoint &offset);
+  void translate(int dx, int dy, int dz);
+
   /*!
    * \brief Scale the box
    *
-   * The size of the box will be scaled by \a s.
+   * The min corner and the size of the box will be scaled by \a s. This is
+   * useful for upsampling a downsampled object.
    */
-  void scale(const ZIntPoint &s);
-  void scale(int s);
+  void scaleUp(const ZIntPoint &s);
+  void scaleUp(int s);
 
   /*!
    * \brief Downsize the box
@@ -81,7 +122,10 @@ public:
   void scaleDown(int s);
 
   /*!
-   * \brief Downsize the box in a way of filling blocks
+   * \brief Downsize the box in a way of filling blocks.
+   *
+   * When the box is scaled back up in the same ratio after being scaled down,
+   * it should cover the original box.
    */
   void scaleDownBlock(int s);
   void scaleDownBlock(const ZIntPoint &s);
@@ -95,21 +139,16 @@ public:
   void setWidth(int width);
   void setHeight(int height);
 
-  int getWidth() const;
-  int getHeight() const;
-  int getDepth() const;
-  ZIntPoint getSize() const;
-
-  double getDiagonalLength() const;
-
   /*!
    * \brief Set the depth
    *
-   * It change the depth of the cuboid with the first corner fixed.
+   * It change the depth of the cuboid with the min corner fixed.
    *
    * \param depth New depth of the cuboid.
    */
   void setDepth(int depth);
+
+  void setDepth(int depth, neutu::ERangeReference ref);
 
 
   /*!
@@ -123,11 +162,22 @@ public:
   ZIntCuboid& join(const ZIntCuboid &cuboid);
 
   void join(int x, int y, int z);
+  void join(const ZIntPoint &pt);
 
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);
 
+  /*!
+   * \brief Expand the cuboid to make sure it includes a point in float coordinates
+   */
+  void join(const ZPoint &pt);
+
+  /*!
+   * \brief Expand a box with a given margin.
+   *
+   * It expands both sides.
+   */
   void expandX(int dx);
   void expandY(int dy);
   void expandZ(int dz);
@@ -137,28 +187,14 @@ public:
   ZIntCuboid& intersect(const ZIntCuboid &cuboid);
 
   /*!
-   * \brief Get the volume of the cuboid.
-   *
-   * It returns 0 if the cuboid is invalid.
-   */
-  size_t getVolume() const;
-  size_t getDsMaxVolume(int xIntv, int yIntv, int zIntv) const;
-
-  /*!
    * \brief Check if a point is in the cuboid.
    */
   bool contains(int x, int y, int z) const;
   bool contains(const ZIntPoint &pt) const;
   bool contains(const ZIntCuboid &box) const;
 
-  bool containYZ(int y, int z) const;
+  bool containsYZ(int y, int z) const;
 
-  /*!
-   * \brief Check if a cuboid is empty.
-   *
-   * A cuboid is empty if any of its dimension <= 0.
-   */
-  bool isEmpty() const;
 
   bool equals(const ZIntCuboid &cuboid) const;
 
@@ -176,6 +212,16 @@ public:
   ZIntPoint getCenter() const;
   void setCenter(const ZIntPoint &center);
 
+  ZPoint getExactCenter() const;
+
+  /*!
+   * \brief Downscale the cuboid.
+   *
+   * The coordinates of the corners are divided by (sx, sy, sz).
+   * The cuboid stays the same if any scale is less than 1.
+   */
+  void downScale(int sx, int sy, int sz);
+  void downScale(int s);
 
   /*!
    * \brief Turn the cuboid into a JSON array
@@ -197,9 +243,15 @@ public:
   bool operator == (const ZIntCuboid &box) const;
   bool operator != (const ZIntCuboid &box) const;
 
+  friend ZIntCuboid operator + (const ZIntCuboid &box, const ZIntPoint &pt);
+  friend ZIntCuboid operator - (const ZIntCuboid &box, const ZIntPoint &pt);
+  friend ZIntCuboid operator * (const ZIntCuboid &box, const ZIntPoint &pt);
+
+  friend std::ostream& operator<< (std::ostream &stream, const ZIntCuboid &box);
+
 private:
-  ZIntPoint m_firstCorner;
-  ZIntPoint m_lastCorner;
+  ZIntPoint m_minCorner;
+  ZIntPoint m_maxCorner;
 };
 
 #endif // ZINTCUBOID_H

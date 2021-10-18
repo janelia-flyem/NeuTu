@@ -7,7 +7,7 @@
 #include <QRectF>
 
 #include "neutubeconfig.h"
-#include "zsttransform.h"
+#include "vis2d/zsttransform.h"
 
 #ifdef _USE_GTEST_
 

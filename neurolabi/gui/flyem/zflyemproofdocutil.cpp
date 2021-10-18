@@ -21,33 +21,34 @@ ZFlyEmProofDocUtil::ZFlyEmProofDocUtil()
 }
 
 ZDvidLabelSlice* ZFlyEmProofDocUtil::GetActiveLabelSlice(
-    ZFlyEmProofDoc *doc, neutu::EAxis axis)
+    ZFlyEmProofDoc *doc)
 {
   if (doc) {
-    return doc->getActiveLabelSlice(axis);
+    return doc->getActiveLabelSlice();
   }
 
   return nullptr;
 }
 
+/*
 ZDvidLabelSlice* ZFlyEmProofDocUtil::GetActiveLabelSlice(ZFlyEmProofDoc *doc)
 {
   return GetActiveLabelSlice(doc, neutu::EAxis::Z);
 }
+*/
 
-ZDvidGraySlice* ZFlyEmProofDocUtil::GetActiveGraySlice(
-    ZFlyEmProofDoc *doc, neutu::EAxis axis)
+ZDvidGraySlice* ZFlyEmProofDocUtil::GetActiveGraySlice(ZFlyEmProofDoc *doc)
 {
-  return doc->getDvidGraySlice(axis);
+  return doc->getDvidGraySlice();
 }
 
 std::set<uint64_t> ZFlyEmProofDocUtil::GetSelectedBodyId(
-    ZFlyEmProofDoc *doc, neutu::EAxis axis, neutu::ELabelSource type)
+    ZFlyEmProofDoc *doc, neutu::ELabelSource type)
 {
   std::set<uint64_t> bodySet;
 
   if (doc) {
-    ZDvidLabelSlice *slice = GetActiveLabelSlice(doc, axis);
+    ZDvidLabelSlice *slice = GetActiveLabelSlice(doc);
     if (slice != NULL) {
       bodySet = slice->getSelected(type);
       if (slice->isSupervoxel()) {
@@ -69,7 +70,7 @@ void ZFlyEmProofDocUtil::ExportSelectedBodyStack(
     const ZIntCuboid &box, const QString &filePath)
 {
   if (doc && !filePath.isEmpty()) {
-    ZDvidLabelSlice *slice = doc->getActiveLabelSlice(neutu::EAxis::Z);
+    ZDvidLabelSlice *slice = doc->getActiveLabelSlice();
     if (slice != NULL) {
       std::set<uint64_t> idSet =
           slice->getSelected(neutu::ELabelSource::ORIGINAL);
@@ -130,7 +131,7 @@ void ZFlyEmProofDocUtil::ExportSelectedBody(
     ZFlyEmProofDoc *doc, const QString &filePath)
 {
   if (doc && !filePath.isEmpty()) {
-    ZDvidLabelSlice *slice = doc->getActiveLabelSlice(neutu::EAxis::Z);
+    ZDvidLabelSlice *slice = doc->getActiveLabelSlice();
     if (slice != NULL) {
       neutu::EBodyLabelType labelType = doc->isSupervoxelMode() ?
                   neutu::EBodyLabelType::SUPERVOXEL : neutu::EBodyLabelType::BODY;
@@ -159,7 +160,7 @@ void ZFlyEmProofDocUtil::ExportSelecteBodyLevel(
     const QString &filePath)
 {
   if (doc && !filePath.isEmpty()) {
-    ZDvidLabelSlice *slice = doc->getActiveLabelSlice(neutu::EAxis::Z);
+    ZDvidLabelSlice *slice = doc->getActiveLabelSlice();
     if (slice != NULL) {
       neutu::EBodyLabelType labelType = doc->isSupervoxelMode() ?
                   neutu::EBodyLabelType::SUPERVOXEL : neutu::EBodyLabelType::BODY;

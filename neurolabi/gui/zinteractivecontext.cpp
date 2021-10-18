@@ -41,13 +41,22 @@ ZInteractiveContext::ZInteractiveContext()
 
   m_exitingEdit = false;
   m_blockingContextMenu = false;
-  m_sliceAxis = neutu::EAxis::Z;
+//  m_sliceAxis = neutu::EAxis::Z;
   m_acceptingRect = false;
   m_rectSpan = false;
   m_keyIndex = 1;
   m_uniqueMode = INTERACT_FREE;
 }
 
+int ZInteractiveContext::getViewId() const
+{
+  return m_viewId;
+}
+
+void ZInteractiveContext::setViewId(int viewId)
+{
+  m_viewId = viewId;
+}
 
 bool ZInteractiveContext::isTraceModeOff() const
 {
@@ -107,6 +116,9 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
     break;
   case EXPLORE_DETAIL:
     mode = INTERACT_EXPLORE_DETAIL;
+    break;
+  case EXPLORE_ROTATE_IMAGE:
+    mode = INTERACT_IMAGE_ROTATE;
     break;
   default:
     break;
@@ -239,5 +251,51 @@ bool ZInteractiveContext::turnOffEditMode()
   change_edit_mode(m_swcEditMode, SWC_EDIT_OFF, toggled);
 
   return toggled;
+}
+
+void ZInteractiveContext::setSliceMode(
+    int viewId, neutu::data3d::EDisplaySliceMode mode)
+{
+  m_displayConfigMap[viewId].setSliceMode(mode);
+}
+
+const neutu::data3d::DisplayConfig&
+ZInteractiveContext::getDisplayConfig(int viewId) const
+{
+  if (m_displayConfigMap.count(viewId) > 0) {
+    return m_displayConfigMap.at(viewId);
+  }
+
+  return m_nullDispalyConfig;
+}
+
+neutu::data3d::EDisplaySliceMode ZInteractiveContext::getSliceMode(int viewId) const
+{
+  return getDisplayConfig(viewId).getSliceMode();
+}
+
+void ZInteractiveContext::setSliceViewTransform(
+    int viewId, const ZSliceViewTransform &transform)
+{
+  m_displayConfigMap[viewId].setTransform(transform);
+//  m_transform = transform;
+}
+
+ZSliceViewTransform ZInteractiveContext::getSliceViewTransform(int viewId) const
+{
+  return getDisplayConfig(viewId).getTransform();
+//  return m_transform;
+}
+
+neutu::EAxis ZInteractiveContext::getSliceAxis(int viewId) const
+{
+  return getSliceViewTransform(viewId).getSliceAxis();
+}
+
+void ZInteractiveContext::setSliceAxis(int viewId, neutu::EAxis axis)
+{
+  if (m_displayConfigMap.count(viewId) > 0) {
+    m_displayConfigMap[viewId].setSliceAxis(axis);
+  }
 }
 

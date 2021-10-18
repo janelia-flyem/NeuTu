@@ -1,4 +1,7 @@
 #include "zflyemarbmvc.h"
+
+#include <QPushButton>
+
 #include "zflyemarbdoc.h"
 #include "zflyemarbpresenter.h"
 #include "mvc/zstackview.h"
@@ -19,11 +22,13 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(QWidget *parent, ZSharedPointer<ZFlyEmArbDoc> d
   ZFlyEmArbMvc *frame = new ZFlyEmArbMvc(parent);
 
   BaseConstruct(frame, doc, neutu::EAxis::ARB);
-  frame->getView()->setHoverFocus(true);
-  ZArbSliceScrollStrategy *strategy = new ZArbSliceScrollStrategy(frame->getView());
-  frame->getView()->setScrollStrategy(strategy);
-  frame->getView()->configure(ZStackView::EMode::PLAIN_IMAGE);
-  frame->getView()->setMaxViewPort(1600 * 1600);
+  frame->getMainView()->setHoverFocus(true);
+  ZArbSliceScrollStrategy *strategy = new ZArbSliceScrollStrategy(
+        frame->getMainView());
+  frame->getMainView()->setScrollStrategy(strategy);
+  frame->getMainView()->configure(ZStackView::EMode::PLAIN_IMAGE);
+  frame->getMainView()->setMaxViewPort(1600 * 1600);
+  frame->initViewButton();
 
   return frame;
 }
@@ -37,6 +42,11 @@ ZFlyEmArbMvc* ZFlyEmArbMvc::Make(const ZDvidEnv &env)
   mvc->setDvid(env);
 
   return mvc;
+}
+
+void ZFlyEmArbMvc::makeViewButtons()
+{
+  makeViewButton(EViewButton::GOTO_POSITION);
 }
 
 /*
@@ -57,8 +67,14 @@ void ZFlyEmArbMvc::setDvid(const ZDvidEnv &env)
 {
   clear();
   if (getCompleteDocument()->setDvid(env)) {
-    getView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
-                                    SLOT(allowBlinkingSegmentation(bool)));
+    if (getDvidTarget().usingMulitresBodylabel()) {
+      getMainView()->enableCustomCheckBox(0, "Blinking", getCompletePresenter(),
+                                      SLOT(allowBlinkingSegmentation(bool)));
+    }
+
+    if (getRole() == ERole::ROLE_WIDGET) {
+      getViewButton(EViewButton::GOTO_POSITION)->show();
+    }
   }
 }
 
@@ -73,29 +89,44 @@ ZFlyEmArbPresenter* ZFlyEmArbMvc::getCompletePresenter() const
   return qobject_cast<ZFlyEmArbPresenter*>(getPresenter());
 }
 
+/*
 void ZFlyEmArbMvc::updateViewParam(const ZArbSliceViewParam &param)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating arb slice view: " << "Z=" << param.getZ() << std::endl;
 #endif
   getCompletePresenter()->setViewParam(param);
   getView()->updateViewParam(param);
 }
+*/
+
+//void ZFlyEmArbMvc::updateViewParam(const ZStackViewParam &param)
+//{
+//  getCompletePresenter()->setViewParam(param.getSliceViewParam());
+//}
 
 void ZFlyEmArbMvc::resetViewParam(const ZArbSliceViewParam &param)
 {
-  getCompletePresenter()->setViewParam(param);
-  getView()->resetViewParam(param);
+//  getCompletePresenter()->setViewParam(param);
+  getMainView()->resetViewParam(param);
 }
 
+/*
 void ZFlyEmArbMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
 {
+//  getCompletePresenter()->setViewParam(viewParam.getSliceViewParam());
   emit sliceViewChanged(viewParam.getSliceViewParam());
 }
+*/
 
 void ZFlyEmArbMvc::createPresenter()
 {
   if (m_doc.get() != NULL) {
     m_presenter = ZFlyEmArbPresenter::Make(this);
   }
+}
+
+void ZFlyEmArbMvc::zoomTo(const ZIntPoint &pt)
+{
+  emit locating(pt.getX(), pt.getY(), pt.getZ());
 }

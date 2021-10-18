@@ -43,10 +43,10 @@ ZMouseEvent& ZMouseEventRecorder::record(const ZMouseEvent &event)
 }
 
 ZMouseEvent& ZMouseEventRecorder::record(
-    QMouseEvent *event, ZMouseEvent::EAction action, int z)
+    QMouseEvent *event, ZMouseEvent::EAction action, const ZSliceViewTransform &t)
 {
   ZMouseEvent eventSnapshot;
-  eventSnapshot.set(event, action, z);
+  eventSnapshot.set(event, action, t);
 
   return record(eventSnapshot);
 }
@@ -123,6 +123,20 @@ ZPoint ZMouseEventRecorder::getPosition(
   const ZMouseEvent &event = getMouseEvent(buttons, action);
   if (!event.isNull()) {
     pt = event.getPosition(cs);
+  }
+
+  return pt;
+}
+
+ZPoint ZMouseEventRecorder::getPosition(
+    Qt::MouseButtons buttons, ZMouseEvent::EAction action,
+    neutu::data3d::ESpace space) const
+{
+  ZPoint pt(0, 0, 0);
+
+  const ZMouseEvent &event = getMouseEvent(buttons, action);
+  if (!event.isNull()) {
+    pt = event.getPosition(space);
   }
 
   return pt;

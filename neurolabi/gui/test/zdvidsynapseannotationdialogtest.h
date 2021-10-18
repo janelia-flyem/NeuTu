@@ -19,26 +19,26 @@ TEST(ZFlyEmSynapseAnnotationDialog, Basic)
   ZJsonObjectParser parser;
 
   ZJsonObject obj = dlg.getPropJson();
-  ASSERT_EQ("0.1", parser.getValue(obj, "conf", ""));
+  ASSERT_EQ("0.1", parser.GetValue(obj, "conf", ""));
 
   dlg.setConfidence("0.2");
   obj = dlg.getPropJson();
-  ASSERT_EQ("0.2", parser.getValue(obj, "conf", ""));
+  ASSERT_EQ("0.2", parser.GetValue(obj, "conf", ""));
 
   ZDvidSynapse synapse;
   synapse.setConfidence("0.6");
   dlg.set(synapse);
   obj = dlg.getPropJson();
-  ASSERT_EQ("0.6", parser.getValue(obj, "conf", ""));
+  ASSERT_EQ("0.6", parser.GetValue(obj, "conf", ""));
 
   synapse.setConfidence("0.1");
   dlg.set(synapse);
   obj = dlg.getPropJson();
-  ASSERT_EQ("0.1", parser.getValue(obj, "conf", ""));
+  ASSERT_EQ("0.1", parser.GetValue(obj, "conf", ""));
 
   dlg.setConfidence("");
   obj = dlg.getPropJson();
-  ASSERT_EQ("", parser.getValue(obj, "conf", ""));
+  ASSERT_EQ("", parser.GetValue(obj, "conf", ""));
   ASSERT_FALSE(dlg.hasConfidence());
 
 }

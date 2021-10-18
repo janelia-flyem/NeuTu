@@ -2,12 +2,41 @@
 #define DATA3D_UTILITIES_H
 
 #include <string>
+#include <vector>
+#include <set>
+#include <functional>
 
-#include "zstackobject.h"
+#include "defs.h"
 
-namespace zstackobject
-{
-std::string ToString(ZStackObject::ETarget target);
+namespace neutu {
+
+std::string ToString(neutu::data3d::ETarget target);
+
+namespace data3d {
+
+std::vector<ETarget> GetTargetList();
+
+std::vector<ETarget> GetTargetList(
+    std::function<std::vector<ETarget>()> getFullList,
+    std::function<bool(ETarget)> pred);
+
+std::vector<ETarget> GetTargetList(
+    std::function<std::vector<ETarget>()> getFullList,
+    const std::set<ETarget> & excluded);
+
+std::vector<ETarget> GetTarget2dList();
+std::vector<ETarget> GetTarget2dList(const std::set<ETarget> & excluded);
+
+std::vector<ETarget> GetTarget2dObjectCanvasList();
+std::vector<ETarget> GetTarget2dObjectCanvasList(
+    const std::set<ETarget> & excluded);
+
+std::vector<ETarget> GetTargetSettled2dObjectCanvasList();
+
+bool IsSettled2dObjectCanvas(ETarget target);
+bool IsNonblocking(ETarget target);
+
+}
 }
 
 #endif // UTILITIES_H

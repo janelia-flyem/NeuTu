@@ -7,7 +7,6 @@
 #include "zdviddialog.h"
 #include "mainwindow.h"
 #include "zqtbarprogressreporter.h"
-#include "flyem/zflyembodymergeframe.h"
 #include "mvc/zstackview.h"
 #include "dvid/zdvidversionmodel.h"
 #include "dvid/zdvidreader.h"
@@ -15,6 +14,9 @@
 #include "zmessage.h"
 #include "zmessagemanager.h"
 #include "zobject3dscan.h"
+
+#include "flyem/zflyembodymergeframe.h"
+#include "flyem/flyemdatareader.h"
 
 FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
   FlyEmProjectDialog(parent),
@@ -227,7 +229,7 @@ void FlyEmBodyMergeProjectDialog::updateVersionTree()
   reader.open(getDvidTarget());
 
 
-  model->setDag(reader.readVersionDag());
+  model->setDag(FlyEmDataReader::Memo::ReadVersionDag(getDvidTarget()));
 
 //  model->setRoot("root");
 //  model->setRoot(getDvidTarget().getUuid());

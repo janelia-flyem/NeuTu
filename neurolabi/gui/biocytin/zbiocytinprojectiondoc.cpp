@@ -1,6 +1,7 @@
 #include "zbiocytinprojectiondoc.h"
 #include "mvc/zstackframe.h"
 #include "zswctree.h"
+#include "zrect2d.h"
 
 ZBiocytinProjectionDoc::ZBiocytinProjectionDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -76,11 +77,7 @@ bool ZBiocytinProjectionDoc::executeConnectSwcNodeCommand()
 
 void ZBiocytinProjectionDoc::processRectRoiUpdate()
 {
-  ZRect2d roi = getRect2dRoi();
-  if (roi.isValid()) {
-    selectSwcNode(roi);
-    removeRect2dRoi();
-  }
+  processRectRoiUpdate(getRect2dRoi());
 }
 
 void ZBiocytinProjectionDoc::processRectRoiUpdate(ZRect2d *rect)

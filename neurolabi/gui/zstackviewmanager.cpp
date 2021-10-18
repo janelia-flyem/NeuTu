@@ -41,7 +41,8 @@ void ZStackViewManager::registerWindowPair(
   registerWindow(sender);
   registerWindow(receiver);
 
-  receiver->view()->setView(sender->view()->getViewParameter());
+  receiver->view()->setSliceViewTransform(
+        sender->view()->getSliceViewTransform());
 
   registerWidgetPair(sender, receiver);
 }
@@ -94,7 +95,7 @@ void ZStackViewManager::updateView(const ZStackViewParam &param)
        iter != receiverList.end(); ++iter) {
     ZStackFrame *frame = qobject_cast<ZStackFrame*>(*iter);
     if (frame != NULL) {
-      frame->view()->setView(param);
+      frame->view()->setSliceViewTransform(param.getSliceViewTransform());
     }
   }
 }

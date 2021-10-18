@@ -38,9 +38,9 @@ ZFlyEmProofMvc* ZFlyEmGrayscaleDialog::getFlyEmProofMvc() const
   return qobject_cast<ZFlyEmProofMvc*>(parentWidget());
 }
 
-ZIntPoint ZFlyEmGrayscaleDialog::getOffset() const
+ZIntPoint ZFlyEmGrayscaleDialog::getCenter() const
 {
-  return ZIntPoint(getOffsetX(), getOffsetY(), getOffsetZ());
+  return ZIntPoint(getCenterX(), getCenterY(), getCenterZ());
 }
 
 ZIntPoint ZFlyEmGrayscaleDialog::getSize() const
@@ -50,20 +50,20 @@ ZIntPoint ZFlyEmGrayscaleDialog::getSize() const
 
 ZIntPoint ZFlyEmGrayscaleDialog::getFirstCorner() const
 {
-  return getOffset();
+  return getCenter();
 }
 
 ZIntPoint ZFlyEmGrayscaleDialog::getLastCorner() const
 {
-  return getOffset() + getSize() - 1;
+  return getCenter() + getSize() - 1;
 }
 
 ZIntCuboid ZFlyEmGrayscaleDialog::getBoundBox() const
 {
   ZIntCuboid box;
 
-  box.setFirstCorner(getFirstCorner());
-  box.setLastCorner(getLastCorner());
+  box.setMinCorner(getFirstCorner());
+  box.setMaxCorner(getLastCorner());
 
   return box;
 }
@@ -78,17 +78,17 @@ ZIntCuboid ZFlyEmGrayscaleDialog::getRange() const
   return box;
 }
 
-int ZFlyEmGrayscaleDialog::getOffsetX() const
+int ZFlyEmGrayscaleDialog::getCenterX() const
 {
   return ui->xSpinBox->value();
 }
 
-int ZFlyEmGrayscaleDialog::getOffsetY() const
+int ZFlyEmGrayscaleDialog::getCenterY() const
 {
   return ui->ySpinBox->value();
 }
 
-int ZFlyEmGrayscaleDialog::getOffsetZ() const
+int ZFlyEmGrayscaleDialog::getCenterZ() const
 {
   return ui->zSpinBox->value();
 }
@@ -113,11 +113,16 @@ int ZFlyEmGrayscaleDialog::getDsIntv() const
   return ui->downsampleSpinBox->value() - 1;
 }
 
-void ZFlyEmGrayscaleDialog::setOffset(int x, int y, int z)
+void ZFlyEmGrayscaleDialog::setCenter(int x, int y, int z)
 {
   ui->xSpinBox->setValue(x);
   ui->ySpinBox->setValue(y);
   ui->zSpinBox->setValue(z);
+}
+
+void ZFlyEmGrayscaleDialog::setCenter(const ZIntPoint &pt)
+{
+  setCenter(pt.getX(), pt.getY(), pt.getZ());
 }
 
 void ZFlyEmGrayscaleDialog::setWidth(int width)
@@ -140,7 +145,7 @@ ZStackViewParam ZFlyEmGrayscaleDialog::getViewParam() const
   ZFlyEmProofMvc *mvc = getFlyEmProofMvc();
   ZStackViewParam viewParam;
   if (mvc != NULL) {
-    viewParam = mvc->getView()->getViewParameter();
+    viewParam = mvc->getMainView()->getViewParameter();
   }
 
   return viewParam;
@@ -149,22 +154,26 @@ ZStackViewParam ZFlyEmGrayscaleDialog::getViewParam() const
 void ZFlyEmGrayscaleDialog::useViewCenter()
 {
   ZStackViewParam viewParam = getViewParam();
+  setCenter(viewParam.getCutCenter().roundToIntPoint() - getSize() / 2);
+  /*
   QRect viewPort = viewParam.getViewPort();
   if (viewPort.isValid()) {
     QPoint center = viewPort.center();
     setOffset(center.x() - getWidth() / 2, center.y() - getHeight() / 2,
               viewParam.getZ() - getDepth() / 2);
   }
+  */
 }
 
 void ZFlyEmGrayscaleDialog::useViewPort()
 {
   ZStackViewParam viewParam = getViewParam();
-  QRect viewPort = viewParam.getViewPort();
-  if (viewPort.isValid()) {
-    setOffset(viewPort.left(), viewPort.top(), viewParam.getZ());
-    setWidth(viewPort.width());
-    setHeight(viewPort.height());
+//  QRect viewPort = viewParam.getViewPort();
+  if (viewParam.isValid()) {
+    setCenter(viewParam.getCutCenter().roundToIntPoint());
+//    setOffset(viewPort.left(), viewPort.top(), viewParam.getZ());
+    setWidth(viewParam.getIntWidth(neutu::data3d::ESpace::MODEL));
+    setHeight(viewParam.getIntHeight(neutu::data3d::ESpace::MODEL));
     setDepth(1);
   }
 }
@@ -172,9 +181,9 @@ void ZFlyEmGrayscaleDialog::useViewPort()
 void ZFlyEmGrayscaleDialog::useCurrentOffset()
 {
   ZStackViewParam viewParam = getViewParam();
-  QRect viewPort = viewParam.getViewPort();
-  if (viewPort.isValid()) {
-    setOffset(viewPort.left(), viewPort.top(), viewParam.getZ());
+//  QRect viewPort = viewParam.getViewPort();
+  if (viewParam.isValid()) {
+    setCenter(viewParam.getCutCenter().roundToIntPoint());
   }
 }
 

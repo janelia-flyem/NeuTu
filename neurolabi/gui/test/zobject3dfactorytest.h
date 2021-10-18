@@ -7,6 +7,7 @@
 #include "zobject3dscan.h"
 #include "zobject3d.h"
 #include "zobject3darray.h"
+#include "geometry/zintcuboid.h"
 
 #ifdef _USE_GTEST_
 
@@ -44,12 +45,12 @@ TEST(ZObject3dFactory, CuboidObject) {
   ZObject3dScan obj = ZObject3dFactory::MakeObject3dScan(cuboid);
   ASSERT_EQ(2, (int) obj.getVoxelNumber());
 
-  cuboid.setLastCorner(1, 1, 0);
+  cuboid.setMaxCorner(1, 1, 0);
   obj = ZObject3dFactory::MakeObject3dScan(cuboid);
   ASSERT_EQ(4, (int) obj.getVoxelNumber());
 
-  cuboid.setFirstCorner(1, 2, 3);
-  cuboid.setLastCorner(6, 5, 4);
+  cuboid.setMinCorner(1, 2, 3);
+  cuboid.setMaxCorner(6, 5, 4);
   obj = ZObject3dFactory::MakeObject3dScan(cuboid);
   ASSERT_EQ(48, (int) obj.getVoxelNumber());
   ASSERT_TRUE(obj.contains(1, 2, 3));

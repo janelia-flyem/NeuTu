@@ -149,7 +149,7 @@ int ZObject3dScan::scanArray(
     return 0;
   }
 
-  zgeom::shiftSliceAxis(x, y, z, axis);
+  zgeom::ShiftSliceAxis(x, y, z, axis);
 
   if (x < 0 || x >= dim) {
     return 0;
@@ -286,8 +286,8 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
   size_t strideY = width;
   size_t strideZ = width * height;
 
-  zgeom::shiftSliceAxis(sw, sh, sd, axis);
-  zgeom::shiftSliceAxis(strideX, strideY, strideZ, axis);
+  zgeom::ShiftSliceAxis(sw, sh, sd, axis);
+  zgeom::ShiftSliceAxis(strideX, strideY, strideZ, axis);
 
   const T *arrayOrigin = array;
 
@@ -333,8 +333,8 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllForegroundObject(
   size_t strideY = width;
   size_t strideZ = width * height;
 
-  zgeom::shiftSliceAxis(sw, sh, sd, axis);
-  zgeom::shiftSliceAxis(strideX, strideY, strideZ, axis);
+  zgeom::ShiftSliceAxis(sw, sh, sd, axis);
+  zgeom::ShiftSliceAxis(strideX, strideY, strideZ, axis);
 
   const T *arrayOrigin = array;
 
@@ -423,14 +423,14 @@ Stack* ZObject3dScan::makeStack(InputIterator startObject,
 {
   if (startObject != endObject) {
     Cuboid_I boundBox;
-    (*startObject)->getBoundBox(&boundBox);
+    (*startObject)->getIntBoundBox(&boundBox);
 
     InputIterator iter = startObject;
     ++iter;
     //Get Bound box
     for (; iter != endObject; ++iter) {
       Cuboid_I subBoundBox;
-      (*iter)->getBoundBox(&subBoundBox);
+      (*iter)->getIntBoundBox(&subBoundBox);
       Cuboid_I_Union(&boundBox, &subBoundBox, &boundBox);
     }
 

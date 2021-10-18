@@ -6,7 +6,7 @@
 
 #include "common/neutudefs.h"
 #include "neurolabi_config.h"
-#include "tz_json.h"
+//#include "tz_json.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonvalue.h"
@@ -48,17 +48,6 @@ public:
     }
   };
 
-//  T getValue<T,
-//  void_t<typename std::enable_if<std::is_integral<T>::value, T>::type>>(const json_t *value) const
-//  {
-//    if (value == NULL) {
-//      return m_defaultIntValue;
-//    }
-
-//    return integerValue(value);
-//  }
-
-
   template<typename T>
   T getValue(const json_t *value) const {
     return GetValueHelper<T>::GetValue(value);
@@ -79,12 +68,12 @@ public:
   static bool IsBoolean(const json_t *value);
 
   //It returns 0 if <array> is not an array
-  static size_t arraySize(const json_t *array);
+  static size_t ArraySize(const json_t *array);
 
-  static json_t* arrayValue(const json_t *array, size_t index);
-  static json_type type(const json_t *value);
-  static void incref(json_t *value);
-  static void decref(json_t *value);
+  static json_t* ArrayValue(const json_t *array, size_t index);
+  static json_type Type(const json_t *value);
+  static void Incref(json_t *value);
+  static void Decref(json_t *value);
 
   static std::string stringValue(const json_t *value);
   static double numberValue(const json_t *value);
@@ -122,6 +111,13 @@ template<>
 struct ZJsonParser::GetValueHelper<std::string> {
   static std::string GetValue(const json_t *value) {
     return stringValue(value);
+  }
+};
+
+template<>
+struct ZJsonParser::GetValueHelper<double> {
+  static double GetValue(const json_t *value) {
+    return numberValue(value);
   }
 };
 

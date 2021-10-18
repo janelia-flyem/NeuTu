@@ -1,7 +1,7 @@
 #ifndef ZGEO3DSCALARFIELD_H
 #define ZGEO3DSCALARFIELD_H
 
-#include "zdoublevector.h"
+#include "neurolabi/zdoublevector.h"
 
 class ZGeo3dScalarField
 {

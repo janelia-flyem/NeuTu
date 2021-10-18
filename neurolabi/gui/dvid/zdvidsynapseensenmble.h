@@ -59,6 +59,7 @@ public:
   public:
     SynapseMap(EDataStatus status = EDataStatus::NORMAL);
     bool isValid() const { return m_status != EDataStatus::NONE; }
+    void updateRadius();
 
   private:
     EDataStatus m_status;
@@ -85,6 +86,7 @@ public:
     void setDataRect(const QRect &rect);
 
     bool contains(int x, int y) const;
+    void updateRadius();
 
     friend std::ostream& operator<< (
         std::ostream &stream, const SynapseSlice &se);
@@ -98,8 +100,15 @@ public:
 
   void setRange(const ZIntCuboid &dataRange);
 
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const {
+    return false;
+  }
+
+#if 0
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+#endif
 
   void clearCache();
 
@@ -227,6 +236,9 @@ public:
   void updatePartner(const ZIntPoint &pt);
 
   void updatePartner(ZDvidSynapse &synapse);
+
+  void updateRadiusUnsync();
+  void updateRadius();
 
   void attachView(ZStackView *view);
 

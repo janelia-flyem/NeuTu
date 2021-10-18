@@ -66,10 +66,13 @@ public:
   static std::string MakeDvidSynapseEnsembleSource(neutu::EAxis axis);
   static std::string MakeTodoListEnsembleSource();
   static std::string MakeTodoListEnsembleSource(neutu::EAxis axis);
+  static std::string MakeTodoEnsembleSource();
+  static std::string MakeSynapseEnsembleSource();
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
   static std::string MakeCrossHairSource();
   static std::string MakeProtocolRangeSource();
+  static std::string MakePositionHintSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

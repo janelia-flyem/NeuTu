@@ -11,16 +11,6 @@ ZPlane::ZPlane(const ZPoint &v1, const ZPoint &v2)
   set(v1, v2);
 }
 
-ZPoint ZPlane::getV1() const
-{
-  return m_v1;
-}
-
-ZPoint ZPlane::getV2() const
-{
-  return m_v2;
-}
-
 void ZPlane::set(const ZPoint &v1, const ZPoint &v2)
 {
   m_v1 = v1;
@@ -74,6 +64,12 @@ ZPoint ZPlane::getNormal() const
   return getV1().cross(getV2());
 }
 
+void ZPlane::invalidate()
+{
+  m_v1.set(0, 0, 0);
+  m_v2.set(0, 0, 0);
+}
+
 bool ZPlane::isValid() const
 {
   return m_v1.isUnitVector() && m_v2.isUnitVector() && m_v1.isPendicularTo(m_v2);
@@ -91,6 +87,16 @@ bool ZPlane::onSamePlane(const ZPlane &p) const
   return false;
 }
 
+ZPoint ZPlane::align(const ZPoint &pt) const
+{
+  return ZPoint(pt.dot(m_v1), pt.dot(m_v2), pt.dot(getNormal()));
+}
+
+ZPoint ZPlane::mapAligned(double u, double v) const
+{
+  return m_v1 * u + m_v2 * v;
+}
+
 bool ZPlane::contains(const ZPoint &pt) const
 {
   if (pt.isApproxOrigin()) {
@@ -98,4 +104,42 @@ bool ZPlane::contains(const ZPoint &pt) const
   }
 
   return getNormal().isPendicularTo(pt);
+}
+
+double ZPlane::computeSignedDistance(double x, double y, double z) const
+{
+  return computeSignedDistance(ZPoint(x, y, z));
+}
+
+double ZPlane::computeSignedDistance(const ZPoint &pt) const
+{
+  ZPoint normal = getNormal();
+  return pt.dot(normal);
+}
+
+bool ZPlane::isAxisAligned() const
+{
+  return m_v1.onAxis() && m_v2.onAxis();
+}
+
+bool ZPlane::approxEquals(const ZPlane &plane) const
+{
+  return m_v1.approxEquals(plane.m_v1) && m_v2.approxEquals(plane.m_v2);
+}
+
+bool ZPlane::operator== (const ZPlane &p) const
+{
+  return m_v1 == p.m_v1 && m_v2 == p.m_v2;
+}
+
+bool ZPlane::operator!= (const ZPlane &p) const
+{
+  return m_v1 != p.m_v1 || m_v2 != p.m_v2;
+}
+
+std::ostream& operator<<(std::ostream& stream, const ZPlane &p)
+{
+  stream << p.getV1() << " x " << p.getV2();
+
+  return stream;
 }

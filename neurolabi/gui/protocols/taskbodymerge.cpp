@@ -1,5 +1,6 @@
 #include "taskbodymerge.h"
 
+#include "neutubeconfig.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidurl.h"
 
@@ -462,8 +463,8 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
   QSet<uint64_t> visible;
   if (state) {
     unsigned int level = 0;
-    visible.insert(ZFlyEmBodyManager::encode(m_bodyId1, level));
-    visible.insert(ZFlyEmBodyManager::encode(m_bodyId2, level));
+    visible.insert(ZFlyEmBodyManager::Encode(m_bodyId1, level));
+    visible.insert(ZFlyEmBodyManager::Encode(m_bodyId2, level));
 
     // Going back to low resolution is not working for some reason, so disable it for now.
 
@@ -958,7 +959,7 @@ void TaskBodyMerge::configureShowHiRes()
   std::vector<uint64_t> ids({ m_bodyId1, m_bodyId2 });
   for (uint64_t id : ids) {
     unsigned int level = 0;
-    id = ZFlyEmBodyManager::encode(id, level);
+    id = ZFlyEmBodyManager::Encode(id, level);
     // TODO: Check for id in the tarsupervoxels instance, which is the default now.
     std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
     qDebug() << "Mesh tar:" << url;
@@ -977,8 +978,8 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
         window->addDockWidget(Qt::NoDockWidgetArea, s_birdsEyeDockWidget);
 
         s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::EInitMode::NORMAL, false, s_birdsEyeDockWidget);
-        s_birdsEyeView->canvas().setMinimumWidth(512);
-        s_birdsEyeView->canvas().setMinimumHeight(512);
+        s_birdsEyeView->canvas().setMinimumWidth(300);
+        s_birdsEyeView->canvas().setMinimumHeight(300);
         s_birdsEyeDockWidget->setWidget(&s_birdsEyeView->canvas());
 
         s_birdsEyeDockWidget->setFeatures(
@@ -1122,33 +1123,27 @@ void TaskBodyMerge::writeResult()
 
 void TaskBodyMerge::writeResult(const QString &result)
 {
-  ZDvidReader reader;
-  reader.setVerbose(false);
-  if (!reader.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for reading";
-    return;
-  }
-
-  ZDvidWriter writer;
-  if (!writer.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for writing";
+  ZDvidWriter &writer = m_bodyDoc->getMainDvidWriter();
+  if (!writer.good()) {
+    LERROR() << "No valid DVID writer found.";
     return;
   }
 
   std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
 
-  if (!reader.hasData(instance)) {
+  if (!writer.getDvidReader().hasData(instance)) {
     writer.createKeyvalue(instance);
   }
-  if (!reader.hasData(instance)) {
+  if (!writer.getDvidReader().hasData(instance)) {
     LERROR() << "TaskBodyCleave::writeResult() could not create DVID instance \"" << instance << "\"";
     return;
   }
 
   QJsonObject json;
   json[KEY_RESULT] = result;
-  if (const char* user = std::getenv("USER")) {
-    json[KEY_USER] = user;
+  std::string user = NeutubeConfig::GetUserName();
+  if (!user.empty()) {
+    json[KEY_USER] = user.c_str();
   }
   json[KEY_SUPERVOXEL_ID1] = QJsonValue(qint64(m_supervoxelId1));
   json[KEY_SUPERVOXEL_ID2] = QJsonValue(qint64(m_supervoxelId2));
@@ -1213,9 +1208,9 @@ QString TaskBodyMerge::readResult()
       std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
       ZJsonObject valueObj = reader.readJsonObjectFromKey(instance.c_str(), key.c_str());
       if (valueObj.isObject()){
-        const char *resultKey = KEY_RESULT.toLatin1().data();
-        if (valueObj.hasKey(resultKey)) {
-          ZJsonValue resultValue = valueObj.value(resultKey);
+//        const char *resultKey = KEY_RESULT.toLatin1().data();
+        if (valueObj.hasKey(KEY_RESULT.toStdString())) {
+          ZJsonValue resultValue = valueObj.value(KEY_RESULT.toStdString());
           if (resultValue.isString()) {
             return QString(resultValue.toString().c_str());
           }

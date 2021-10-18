@@ -93,6 +93,7 @@ public:
   static const TUpdateFlag UPDATE_ADD_TODO_ITEM;
   static const TUpdateFlag UPDATE_MULTIRES;
   static const TUpdateFlag UPDATE_SEGMENTATION;
+  static const TUpdateFlag SYNC_BODY_COLOR;
 
 private:
   EAction m_action = EAction::NONE;

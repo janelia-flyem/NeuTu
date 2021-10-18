@@ -19,32 +19,23 @@ int main(int argc, char *argv[])
 
 #include <cstring>
 
-#include <QProcess>
 #include <QDir>
 #include <QSplashScreen>
 #include <QElapsedTimer>
 
 #include "main.h"
 
+#include "neuapp.h"
 #include "mainwindow.h"
 #include "neu3window.h"
 
 #include "ztest.h"
 #include "qfonticon.h"
-#include "common/utilities.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
 #include "zglobal.h"
 #include "logging/zlog.h"
-
-namespace {
-std::string get_machine_info()
-{
-  return GET_SOFTWARE_NAME + " " + neutu::GetVersionString() +
-      " @{" + QSysInfo::prettyProductName().toStdString() + "}";
-}
-}
 
 int main(int argc, char *argv[])
 {
@@ -69,15 +60,20 @@ int main(int argc, char *argv[])
 
   NeutubeConfig::getInstance().init(mainConfig.userName);
 
+  if (neutu::GetEnv("NEUTU_LOG") == "nofile") {
+    NeutubeConfig::getInstance().useFileLog(false);
+  }
   // init the logging mechanism
-  init_log();
+//  init_log();
 
   if (mainConfig.runCommandLine) {
     NeutubeConfig::getInstance().setCliSoftwareName("cli");
 //    ZGlobal::InitKafkaTracer();
 //    KLog::SetOperationName("cli");
-    LINFO() << "BEGIN " + get_machine_info();
+//    LINFO() << "BEGIN " + get_machine_info();
     return run_command_line(argc, argv);
+  } else {
+    init_log();
   }
 
   if (mainConfig.isGuiEnabled()) {
@@ -86,7 +82,7 @@ int main(int argc, char *argv[])
 
   // call first otherwise it will cause runtime warning:
   //   Please instantiate the QApplication object first
-  QApplication app(argc, argv, mainConfig.isGuiEnabled());
+  NeuApp app(argc, argv/*, mainConfig.isGuiEnabled()*/);
 
   neutu::RegisterMetaType();
 
@@ -160,7 +156,7 @@ int main(int argc, char *argv[])
     splash.close();
 #endif
 
-    if (!mainWin->loadDvidTarget()) {
+    if (!mainWin->loadDvidTarget(mainConfig.databaseName)) {
       mainWin->close();
 //      delete mainWin;
       mainWin = NULL;
@@ -201,8 +197,27 @@ int main(int argc, char *argv[])
 #  endif
 #endif
       } else {
+#if !defined(_NEU3_)
+        ZProofreadWindow *proofreadWindow = nullptr;
+#  if defined(_DEBUG_)
+        if (!mainConfig.databaseName.isEmpty()) {
+          proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+        }
+#  else
+        proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+#  endif
+#endif
+
+#if 0
+        ZProofreadWindow *proofreadWindow = nullptr;
 #if !defined(_DEBUG_) && !defined(_NEU3_)
-        mainWin->startProofread();
+        proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+#endif
+#if defined(_DEBUG_) && !defined(_NEU3_)
+        if (!mainConfig.databaseName.isEmpty()) {
+          proofreadWindow = mainWin->startProofread(mainConfig.databaseName);
+        }
+#endif
 #endif
       }
 
@@ -246,7 +261,7 @@ int main(int argc, char *argv[])
       return ZTest::RunUnitTest(argc, argv);
     } else {
       std::cout << "Running test function" << std::endl;
-      ZTest::test(NULL);
+      ZTest::Test(NULL);
 
       return 0;
     }

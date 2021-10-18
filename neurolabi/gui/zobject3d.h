@@ -35,7 +35,7 @@ public:
   ZObject3d(Object_3d *obj = NULL);
   ZObject3d(const std::vector<size_t> &indexArray, int width, int height,
             int dx, int dy, int dz);
-  virtual ~ZObject3d();
+  virtual ~ZObject3d() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::OBJ3D;
@@ -45,9 +45,12 @@ public:
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option,
-      neutu::EAxis sliceAxis) const;
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+      neutu::EAxis sliceAxis) const override;
+      */
 
 public:
   /*!
@@ -141,7 +144,7 @@ public:
   void exportSwcFile(std::string filePath);
   void exportCsvFile(std::string filePath);
 
-  ZObject3d *clone() const;
+  ZObject3d* clone() const override;
 
   double averageIntensity(const Stack *stack) const;
 
@@ -214,13 +217,14 @@ public:
 
   using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   bool hit(double x, double y);
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, double z) override;
 
   bool hasHitVoxel() const;
   ZIntPoint getHitVoxel() const;
 
-  void boundBox(ZIntCuboid *box) const;
-  ZIntCuboid getBoundBox() const;
+  void boundBox(ZIntCuboid *box) const override;
+  ZIntCuboid getIntBoundBox() const;
+  ZCuboid getBoundBox() const override;
 
 private:
   int m_conn;

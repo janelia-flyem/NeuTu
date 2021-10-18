@@ -1,6 +1,7 @@
 #include "zflyemtodoannotationdialog.h"
 #include "ui_zflyemtodoannotationdialog.h"
 
+#include "common/utilities.h"
 #include "flyem/zflyemtodoitem.h"
 
 ZFlyEmTodoAnnotationDialog::ZFlyEmTodoAnnotationDialog(QWidget *parent) :

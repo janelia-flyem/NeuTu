@@ -29,6 +29,7 @@ class ZStackViewParam;
 class ZWidgetMessage;
 class ZFlyEmSplitUploadOptionDialog;
 class ZFlyEmBookmarkArray;
+class FlyEmBodyAnnotationManager;
 
 class ZFlyEmBodySplitProject : public QObject
 {
@@ -112,36 +113,21 @@ public:
   std::string getSeedKey(uint64_t bodyId) const;
   std::string getBackupSeedKey(uint64_t bodyId) const;
 
-  /*
-  class ThreadManager {
-  public:
-    enum EThreadName {
-      THREAD_SPLIT, THREAD_PROCESS_ALL_SEED
-    };
-
-    void updateThread(EThreadName name, QFuture<void> future);
-    bool isAlive(EThreadName);
-
-  private:
-    ZThreadFutureMap m_futureMap;
-  };
-  */
-
-//  void closeBodyWindow();
-
   bool isReadyForSplit(const ZDvidTarget &target);
 
   void emitMessage(const QString &msg, bool appending = true);
   void emitPopoupMessage(const QString &msg);
   void emitError(const QString &msg, bool appending = true);
+  void emitWarn(const QString &msg, bool appending = true);
 
   ZProgressSignal* getProgressSignal() const;
 
 //  void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
 
-  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocal &protocol);
+  void setBodyStatusProtocol(const ZFlyEmBodyAnnotationProtocol &protocol);
 
   bool hasFinalSplitResult() const;
+  void invalidateResult();
 
 public: //Obsolete functions
   ZFlyEmNeuron getFlyEmNeuron() const;
@@ -180,6 +166,7 @@ public: //Obsolete functions
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
 
   void waitSplitVis3d();
+  void processSegmentationUpdate(bool invalidatingResult);
 //  void downloadBodyMask();
 
 signals:
@@ -312,13 +299,15 @@ private:
   ZDvidWriter& getCommitWriter();
   ZDvidWriter& getMainWriter();
 
-  void updateBodyDep(uint64_t bodyId);
-  void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2);
+  void updateBodyDep(uint64_t bodyId, ZDvidWriter &writer);
+  void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2, ZDvidWriter &writer);
 //  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
 //  void updateBodyDep(const QVector<uint64_t> &bodyArray);
   template<template<class...> class C>
-  void updateBodyDep(const C<uint64_t> &bodyArray);
+  void updateBodyDep(
+      uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer);
 
+  FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
 
 private:
   ZDvidReader m_reader;
@@ -326,7 +315,7 @@ private:
   ZDvidReader m_commitReader;
   ZDvidWriter m_commitWriter;
 
-  ZFlyEmBodyAnnotationProtocal m_bodyStatusProtocol;
+  ZFlyEmBodyAnnotationProtocol m_bodyStatusProtocol;
 
 //  ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;

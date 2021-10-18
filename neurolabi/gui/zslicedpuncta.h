@@ -24,8 +24,14 @@ public:
   void clear();
   void addPunctum(ZStackBall *p, bool ignoreNull = true);
 
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+               */
 
   bool load(const std::string &filePath, double radius = 3.0);
   bool load(const ZJsonObject &obj, double radius = 3.0);

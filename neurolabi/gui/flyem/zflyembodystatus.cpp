@@ -14,6 +14,7 @@ const char *ZFlyEmBodyStatus::KEY_FINAL = "final";
 const char *ZFlyEmBodyStatus::KEY_MERGABLE = "mergable";
 const char *ZFlyEmBodyStatus::KEY_ADMIN_LEVEL = "admin_level";
 const char *ZFlyEmBodyStatus::KEY_PRESERVING_ID = "preserving_id";
+const char *ZFlyEmBodyStatus::KEY_COLOR = "color";
 
 /** Implementation details
  *
@@ -77,14 +78,15 @@ void ZFlyEmBodyStatus::loadJsonObject(const ZJsonObject &obj)
   reset();
 
   ZJsonObjectParser parser;
-  m_status = parser.getValue(obj, KEY_NAME, "");
-  m_priority = parser.getValue(obj, KEY_PRIORITY, 999);
-  m_protection = parser.getValue<int>(obj, KEY_PROTECTION, 0);
-  m_isExpertStatus = parser.getValue(obj, KEY_EXPERT, false);
-  m_isFinal = parser.getValue(obj, KEY_FINAL, false);
-  m_isMergable = parser.getValue(obj, KEY_MERGABLE, true);
-  m_adminLevel = parser.getValue<int>(obj, KEY_ADMIN_LEVEL, 0);
-  m_preservingId = parser.getValue(obj, KEY_PRESERVING_ID, false);
+  m_status = parser.GetValue(obj, KEY_NAME, "");
+  m_priority = parser.GetValue(obj, KEY_PRIORITY, 999);
+  m_protection = parser.GetValue<int>(obj, KEY_PROTECTION, 0);
+  m_isExpertStatus = parser.GetValue(obj, KEY_EXPERT, false);
+  m_isFinal = parser.GetValue(obj, KEY_FINAL, false);
+  m_isMergable = parser.GetValue(obj, KEY_MERGABLE, true);
+  m_adminLevel = parser.GetValue<int>(obj, KEY_ADMIN_LEVEL, 0);
+  m_preservingId = parser.GetValue(obj, KEY_PRESERVING_ID, false);
+  m_colorCode = parser.GetValue(obj, KEY_COLOR, "");
 }
 
 ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
@@ -100,6 +102,7 @@ ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
      obj.setEntry(KEY_ADMIN_LEVEL, m_adminLevel);
    }
    obj.setEntry(KEY_PRESERVING_ID, m_preservingId);
+   obj.setNonEmptyEntry(KEY_COLOR, m_colorCode);
 
    return obj;
 }
@@ -107,6 +110,11 @@ ZJsonObject ZFlyEmBodyStatus::toJsonObject() const
 std::string ZFlyEmBodyStatus::getName() const
 {
   return m_status;
+}
+
+std::string ZFlyEmBodyStatus::getColorCode() const
+{
+  return m_colorCode;
 }
 
 bool ZFlyEmBodyStatus::isAdminAccessible() const

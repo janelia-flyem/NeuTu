@@ -1,3 +1,4 @@
+additional_qflag='CONFIG+=NO_CONDA_LIB_CHECK'
 if [ $(uname) == 'Darwin' ]; then
     CC=/usr/bin/cc
     CXX=/usr/bin/clang
@@ -8,7 +9,7 @@ else
     cd $(dirname ${CC}) && ln -s $(basename ${CC}) gcc && cd -
     cd $(dirname ${CXX}) && ln -s $(basename ${CXX}) g++ && cd -
     cd $(dirname ${LD}) && ln -s $(basename ${LD}) ld && cd -
-    additional_qflag='LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include'
+    additional_qflag="$additional_qflag LIBS+=-Wl,-rpath-link,/usr/lib64 LIBS+=-Wl,-rpath-link,/lib64 LIBS+=-L/usr/lib64 INCLUDEPATH+=/usr/include"
 fi
 
 if [ $(uname) == 'Darwin' ]; then
@@ -54,6 +55,16 @@ do
 done
 echo "app name: $app_name"
 
+for x in neutube-develop neutube-alpha neutube-beta neutube neutube-di
+do
+  if [ ${NEUTU_TARGET} == "$x" ]
+  then
+    app_base_name=neuTube
+    app_name=$app_base_name
+    break
+  fi
+done
+
 build_dir=neurolabi/build
 if [ "$app_name" == 'neutu_d' ] || [ "$app_name" == 'neu3_d' ]
 then
@@ -74,6 +85,9 @@ edition=flyem
 if [ "$app_base_name" == 'neu3' ]
 then
   edition=neu3
+elif [ "$app_base_name" == 'neuTube' ]
+then
+  edition=neutube
 fi
 
 #if [ ! -z "$additional_qflag" ]

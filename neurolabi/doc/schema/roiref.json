@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "title": "The root schema",
+  "description": "The schema for ROI reference.",
+  "default": {},
+  "examples": [
+    {
+      "->": {
+        "type": "roi",
+        "key": "roi_name"
+      }
+    }
+  ],
+  "required": [
+    "->"
+  ],
+  "properties": {
+    "->": {
+      "$id": "#/properties/-%3E",
+      "type": "object",
+      "title": "The -> schema",
+      "description": "Configuration of roi data.",
+      "default": {},
+      "examples": [
+        {
+          "type": "roi",
+          "key": "roi_name"
+        }
+      ],
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "type": {
+          "$id": "#/properties/-%3E/properties/type",
+          "type": "string",
+          "title": "ROI type",
+          "description": "Type of the referred ROI data.",
+          "default": "mesh",
+          "enum": ["roi", "mesh"]
+        },
+        "key": {
+          "$id": "#/properties/-%3E/properties/key",
+          "type": "string",
+          "title": "The key schema",
+          "description": "Name of the ROI data.",
+          "default": "",
+          "examples": [
+            "roi_name"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

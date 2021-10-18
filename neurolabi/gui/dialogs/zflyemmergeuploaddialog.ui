@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>430</width>
-    <height>177</height>
+    <height>222</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,9 +40,38 @@ p, li { white-space: pre-wrap; }
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QCheckBox" name="mergeCheckBox">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Merge to the largest</string>
+        <string>Merge to: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="statusCheckBox">
+       <property name="toolTip">
+        <string>Primary rule: keep the ID with the highest status.</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>higher status</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="mergeCheckBox">
+       <property name="toolTip">
+        <string>Seconary rule: Keep the ID of the largest body.</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>larger body</string>
        </property>
        <property name="checked">
         <bool>true</bool>

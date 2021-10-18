@@ -18,6 +18,9 @@ ZFlyEmBodyEvent::UPDATE_MULTIRES = 8;
 const ZFlyEmBodyEvent::TUpdateFlag
 ZFlyEmBodyEvent::UPDATE_SEGMENTATION = 16;
 
+const ZFlyEmBodyEvent::TUpdateFlag
+ZFlyEmBodyEvent::SYNC_BODY_COLOR = 32;
+
 ZFlyEmBodyEvent::ZFlyEmBodyEvent()
 {
 
@@ -165,7 +168,7 @@ bool ZFlyEmBodyEvent::isNull() const
 
 bool ZFlyEmBodyEvent::isValid() const
 {
-  return hasValidBody() && !isNull();
+  return (hasValidBody() || updating(SYNC_BODY_COLOR)) && !isNull();
 }
 
 ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(
@@ -191,7 +194,7 @@ ZFlyEmBodyEvent ZFlyEmBodyEvent::MakeHighResEvent(
 {
   ZFlyEmBodyEvent event(EAction::UPDATE, config);
 
-  if (event.getDsLevel() > minDsLevel) {
+  if (config.hasNextDsLevel(minDsLevel)) {
     event.decDsLevel();
     event.addUpdateFlag(UPDATE_MULTIRES);
   } else {

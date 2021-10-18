@@ -35,6 +35,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   ui->meshPushButton->setIcon(FLYEM_FINE_MESH_ICON);
   ui->skeletonViewPushButton->setIcon(FLYEM_SKELETON_ICON);
 
+  ui->bookmarkWidget->setEnabled(false);
+
 //  neutu::SetHtmlIcon(ui->coarseBodyPushButton, flyem::COARSE_BODY_ICON);
 //  ui->coarseBodyPushButton->setIcon(QFontIcon::icon(0x25cf, Qt::red));
 //  ui->coarseBodyPushButton->setText(
@@ -108,14 +110,13 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   connect(ui->coarseMeshPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseMeshViewTriggered()));
 
+  connect(ui->bookmarkWidget, &ZFlyEmBookmarkWidget::importingUserBookmark,
+          this, &FlyEmProofControlForm::importingUserBookmark);
+  connect(ui->bookmarkWidget, &ZFlyEmBookmarkWidget::exportingUserBookmark,
+          this, &FlyEmProofControlForm::exportingUserBookmark);
+
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateAssignedBookmark(const ZFlyEmBookmark*)));
-//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-//          this, SIGNAL(bookmarkChecked(QString, bool)));
-//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
-//  connect(getAssignedBookmarkView(), SIGNAL(removingBookmark(ZFlyEmBookmark*)),
-//          this, SIGNAL(removingBookmark(ZFlyEmBookmark*)));
 
   connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
@@ -163,19 +164,19 @@ FlyEmProofControlForm::createSortingProxy(ZFlyEmBookmarkListModel *model)
 ZFlyEmBookmarkView* FlyEmProofControlForm::getUserBookmarkView() const
 {
   return ui->bookmarkWidget->getBookmarkView(
-        ZFlyEmBookmarkWidget::SOURCE_USER);
+        ZFlyEmBookmarkWidget::EBookmarkSource::USER);
 //  return ui->userBookmarkView;
 }
 
 ZFlyEmBookmarkView* FlyEmProofControlForm::getAssignedBookmarkView() const
 {
   return ui->bookmarkWidget->getBookmarkView(
-        ZFlyEmBookmarkWidget::SOURCE_ASSIGNED);
+        ZFlyEmBookmarkWidget::EBookmarkSource::ASSIGNED);
 //  return ui->bookmarkView;
 }
 
 static QAction* CreateColorAction(ZFlyEmBodyColorOption::EColorOption option,
-                                  QWidget *parent)
+                                  QObject *parent)
 {
   QAction *action =
       new QAction(ZFlyEmBodyColorOption::GetColorMapName(option), parent);
@@ -188,23 +189,29 @@ void FlyEmProofControlForm::createColorMenu()
 {
   QMenu *colorMenu = m_mainMenu->addMenu("Color Map");
   QActionGroup *colorActionGroup = new QActionGroup(this);
-  QAction *normalColorAction = CreateColorAction(
-          ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, this);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_NORMAL, colorActionGroup);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_RANDOM, colorActionGroup);
 
   m_nameColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_NAME, this);
+        ZFlyEmBodyColorOption::BODY_COLOR_NAME, colorActionGroup);
   m_nameColorAction->setEnabled(false);
 
-  QAction *sequencerColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, this);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, colorActionGroup);
 
-  QAction *protocolColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, this);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER_NORMAL, colorActionGroup);
 
-  colorActionGroup->addAction(normalColorAction);
-  colorActionGroup->addAction(m_nameColorAction);
-  colorActionGroup->addAction(sequencerColorAction);
-  colorActionGroup->addAction(protocolColorAction);
+  CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, colorActionGroup);
+
+//  colorActionGroup->addAction(normalColorAction);
+//  colorActionGroup->addAction(m_nameColorAction);
+//  colorActionGroup->addAction(sequencerColorAction);
+//  colorActionGroup->addAction(sequencerNormalColorAction);
+//  colorActionGroup->addAction(protocolColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addActions(colorActionGroup->actions());
@@ -448,6 +455,8 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
   ui->dvidPushButton->setFont(font);
 //  ui->dvidPushButton->setStyleSheet("QPushButton: {font-weight: normal}");
 
+  ui->bookmarkWidget->setEnabled(target.isValid());
+
   if (target.readOnly()) {
     ui->mergeSegmentPushButton->setEnabled(false);
 //    ui->menuPushButton->setEnabled(false);
@@ -479,6 +488,7 @@ void FlyEmProofControlForm::updateWidget(ZFlyEmProofMvc *mvc)
   ui->bodyViewPushButton->setEnabled(mvc->is3DEnabled());
   ui->skeletonViewPushButton->setEnabled(mvc->is3DEnabled());
   ui->meshPushButton->setEnabled(mvc->is3DEnabled());
+  ui->splitPushButton->setEnabled(mvc->allowingBodySplit());
 }
 
 void FlyEmProofControlForm::setInfo(const QString &info)

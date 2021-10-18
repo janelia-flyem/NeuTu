@@ -32,24 +32,41 @@ public:
     return ZStackObject::EType::FLYEM_BOOKMARK;
   }
 
+  ZFlyEmBookmark* clone() const override;
+
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+               neutu::EAxis sliceAxis) const override;
+               */
 
   inline uint64_t getBodyId() const { return m_bodyId; }
-  inline const QString& getTime() const { return m_time; }
+//  inline const QString& getTime() const { return m_time; }
   inline const QString& getUserName() const { return m_userName; }
   inline const QString& getStatus() const { return m_status; }
   inline const QString& getComment() const { return m_comment; }
   inline const QStringList& getTags() const { return m_tags; }
-  inline ZIntPoint getLocation() const { return getCenter().toIntPoint(); }
+  inline ZIntPoint getLocation() const { return getCenter().roundToIntPoint(); }
   inline EBookmarkType getBookmarkType() const { return m_bookmarkType; }
   QString getTypeString() const;
 
+  QString getTime() const;
+
   inline void setBookmarkType(EBookmarkType type) { m_bookmarkType = type; }
+  void setBookmarkType(const std::string &type);
 
   inline void setComment(const QString &comment) { m_comment = comment; }
-  inline void setUser(const QString &user) { m_userName = user; }
+  void setUser(const QString &user);
   inline void setStatus(const QString &status) { m_status = status; }
+
+  /*!
+   * \brief Update user.
+   *
+   * It's similar to setUser except that nothing will be done if \a user is
+   * empty.
+   */
+  void updateUser(const QString &user);
 
   inline void setComment(const std::string &comment) {
     setComment(QString::fromStdString(comment)); }
@@ -58,6 +75,8 @@ public:
   inline void setStatus(const std::string &status) {
     setStatus(QString::fromStdString(status)); }
 
+  void setUser(const char *user);
+
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setLocation(int x, int y, int z) {
 //    m_location.set(x, y, z);
@@ -65,6 +84,12 @@ public:
   }
   void setLocation(const ZIntPoint &pt);
 
+  bool isChecked() const;
+  void setChecked(bool checked);
+
+  bool isCustom() const;
+
+  /*
   bool isChecked() const {
     return m_isChecked;
   }
@@ -77,18 +102,19 @@ public:
   void setChecked(bool checked) {
     m_isChecked = checked;
   }
+  */
 
   QString getDvidKey() const;
 
-  ZJsonObject toJsonObject(bool ignoringComment = false) const;
   bool loadJsonObject(const ZJsonObject &jsonObj);
 
   //For the new annotation API
   ZJsonObject toDvidAnnotationJson() const;
-  void loadDvidAnnotation(const ZJsonObject &jsonObj);
+  bool loadDvidAnnotation(const ZJsonObject &jsonObj);
 
   void print() const;
   std::string toLogString() const;
+  std::string toString(bool ignoringComment = false) const;
 
   void setCustom(bool state);
 
@@ -108,33 +134,43 @@ public:
 
   void clear();
 
-  ZFlyEmBookmark* clone() const;
+//  ZFlyEmBookmark* clone() const;
 
-  ZJsonObject& getPropertyJson() {
-    return m_propertyJson;
+  ZJsonObject& getPropJson() {
+    return m_propJson;
   }
 
-  const ZJsonObject& getPropertyJson() const {
-    return m_propertyJson;
+  const ZJsonObject& getPropJson() const {
+    return m_propJson;
   }
+
+  std::string getProp(const std::string &key);
+
+  std::string getPrevUser() const;
+
 
 private:
   void init();
+  bool loadClioAnnotation(const ZJsonObject &jsonObj);
+  void setTimestampS(const std::string &t);
+  void updatePrevUser(const std::string &user);
+  void normalizePrevUser();
+  ZJsonObject toJsonObject(bool ignoringComment = false) const;
 
 private:
   uint64_t m_bodyId;
   QString m_userName;
-  QString m_time;
+//  QString m_time;
   QString m_status;
   QString m_comment;
   QStringList m_tags;
 //  ZIntPoint m_location;
   EBookmarkType m_bookmarkType;
 //  EBookmarkRole m_bookmarkRole;
-  bool m_isChecked;
-  bool m_isCustom;
+//  bool m_isChecked;
+//  bool m_isCustom;
   bool m_isInTable;
-  ZJsonObject m_propertyJson;
+  ZJsonObject m_propJson;
 //  QString m_decorationText;
 };
 

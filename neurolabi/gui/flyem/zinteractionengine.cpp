@@ -3,6 +3,7 @@
 #include "z3dinteractionhandler.h"
 #include "zstackoperator.h"
 #include "zstackdockeyprocessor.h"
+#include "data3d/displayconfig.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_objStyle(ZStackObject::EDisplayStyle::NORMAL),
@@ -21,6 +22,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
 
   m_exploreMarker.setRadius(5.0);
   m_exploreMarker.setZ(0);
+  m_exploreMarker.SetDefaultPenWidth(2.0);
   m_exploreMarker.useCosmeticPen(true);
   m_exploreMarker.addVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER);
   m_exploreMarker.setColor(Qt::red);
@@ -75,7 +77,7 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
   }else if (m_interactiveContext.rectEditMode() ==
             ZInteractiveContext::RECT_DRAW) {
     if (m_mouseLeftButtonPressed == true) {
-      m_rect.setLastCorner(event->x(), event->y());
+      m_rect.setMaxCorner(event->x(), event->y());
 //      m_rect.makeValid();
     }
 
@@ -178,7 +180,7 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
   if (event->button() == Qt::LeftButton) {
     m_mouseLeftButtonPressed = true;
     if (isStateOn(STATE_DRAW_RECT)) {
-      m_rect.setFirstCorner(event->x(), event->y());
+      m_rect.setMinCorner(event->x(), event->y());
       m_rect.setSize(0, 0);
     }
   } else if (event->button() == Qt::RightButton) {

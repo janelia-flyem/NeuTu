@@ -3,12 +3,14 @@
 #include <QElapsedTimer>
 
 #include "logging/zqslog.h"
+#include "zstackfactory.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "zstackobjectsourcefactory.h"
 #include "zcrosshair.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidsynapseensenmble.h"
 #include "dvid/zdvidurl.h"
+#include "ztask.h"
 
 ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
   ZFlyEmProofDoc(parent)
@@ -113,16 +115,29 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
   if (reader) {
     if (reader->isReady()) {
       ZIntCuboid box;
-      box.setFirstCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
+      box.setMinCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
       box.setSize(m_width, m_height, m_depth);
-      //    m_dvidReader.readGrayScale(box);
-      ZStack *stack = reader->readGrayScale(box);
+      ZStack *stack = ZStackFactory::MakeVirtualStack(box);
       loadStack(stack);
+      //    m_dvidReader.readGrayScale(box);
+      ZTask *task = new ZFunctionTask([this, box]() {
+        ZDvidReader *reader = this->getCurrentGrayscaleReader();
+        if (reader) {
+          ZStack *stack = reader->readGrayScale(box);
+          this->requestStackUpdate(stack);
+        }
+      });
+      task->setName("ZFlyEmOrthoDoc::updateStack");
+      task->skipUponNameDuplicate(true);
+      addTask(task);
+//      ZStack *stack = reader->readGrayScale(box);
+//      loadStack(stack);
 
       ZDvidUrl dvidUrl(getDvidTarget());
       QElapsedTimer timer;
       timer.start();
-      ZJsonArray obj = getDvidReader().readJsonArray(dvidUrl.getSynapseUrl(box));
+      ZJsonArray obj = getDvidReader().readJsonArray(
+            ZDvidUrl::AppendSourceQuery(dvidUrl.getSynapseUrl(box)));
       LINFO() << "Synapse reading time: " << timer.elapsed();
 
       QList<ZDvidSynapseEnsemble*> seList = getObjectList<ZDvidSynapseEnsemble>();

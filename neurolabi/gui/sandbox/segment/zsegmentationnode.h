@@ -10,7 +10,7 @@
 
 using std::shared_ptr;
 using std::map;
-using std::string;
+//using std::string;
 
 
 class ZSegmentationNode{
@@ -24,7 +24,7 @@ protected:
 public:
   inline int getLabel()const{return  m_label;}
   void setLabel(int label){m_label = label;}
-  string getID()const{return m_id;}
+  std::string getID()const{return m_id;}
   void setColor(const QColor& color){m_color = color;}
   QColor getColor()const{return m_color;}
 
@@ -43,7 +43,7 @@ public:
 
   virtual void removeChildByLabel(int label) = 0;
 
-  virtual ZSegmentationNode* find(const string& id) = 0;
+  virtual ZSegmentationNode* find(const std::string& id) = 0;
 
   virtual ZIntCuboid getBoundBox()const = 0;
 
@@ -75,7 +75,8 @@ public:
 
   virtual vector<ZSegmentationNode*> getLeaves() = 0;
 
-  virtual vector<string> getAllIDs()const=0;
+  virtual vector<std::string> getAllIDs()const=0;
+  virtual bool hasId(const std::string &id) const = 0;
 
   virtual void group(const map<int,vector<int>>& groups)=0;
 
@@ -84,11 +85,11 @@ public:
   //virtual int getVoxelNumber()const=0;
 
 protected:
-  string getNextID()const;
+  std::string getNextID()const;
 
 protected:
   int m_label;//segmentation label
-  string m_id;//universal id
+  std::string m_id;//universal id
   ZSegmentationNode* m_parent;
   QColor m_color;
 };
@@ -103,32 +104,43 @@ private:
   ZSegmentationLeaf(){}
 
 public:
-  virtual void add(int x, int y, int z);
+  void add(int x, int y, int z) override;
 
-  virtual bool isLeaf()const {return true;}
+  bool isLeaf() const override {return true;}
 
-  virtual ZSegmentationNode* find(const string& id){if (id == getID()) return this;return nullptr;}
+  ZSegmentationNode* find(const std::string& id) override {
+    if (id == getID()) return this;
+    return nullptr;
+  }
 
-  virtual ZIntCuboid getBoundBox()const {return m_encoder->getBoundBox();}
+  ZIntCuboid getBoundBox() const override {return m_encoder->getBoundBox();}
   //virtual void unify(const ZSegmentationNode& node);
 
-  virtual double memUsage()const{return m_encoder->memUsage();}
+  double memUsage() const override {return m_encoder->memUsage();}
 
-  virtual void labelStack(ZStack& stack, int v = 0) const;
+  void labelStack(ZStack& stack, int v = 0) const override;
 
-  virtual void consume(const ZStack&);
+  void consume(const ZStack&) override;
 
-  virtual void clear(){}
+  void clear() override {}
 
-  shared_ptr<ZSegmentationEncoder> getEncoder(){return m_encoder;}
+  shared_ptr<ZSegmentationEncoder> getEncoder() override {return m_encoder;}
 
-  virtual bool contains(int x, int y, int z) const;
+  bool contains(int x, int y, int z) const override;
 
-  virtual void merge(ZSegmentationNode* node);
+  void merge(ZSegmentationNode* node) override;
 
-  virtual vector<ZSegmentationNode*> getLeaves(){vector<ZSegmentationNode*>rv{this};return rv;}
+  vector<ZSegmentationNode*> getLeaves() override {
+    vector<ZSegmentationNode*>rv{this};return rv;
+  }
 
-  virtual vector<string> getAllIDs()const{vector<string> rv{this->getID()}; return rv;}
+  vector<std::string> getAllIDs() const override {
+    vector<std::string> rv{this->getID()}; return rv;
+  }
+
+  bool hasId(const std::string &id) const override {
+    return this->getID() == id;
+  }
 
   //virtual map<string,map<string,int>> getAdjMatrix()const;
 
@@ -136,11 +148,15 @@ public:
 
 public://should never be called
 
-  virtual shared_ptr<ZSegmentationNode> getChildByLabel(int){return nullptr;}
-  virtual vector<int> getChildrenLabels()const{return vector<int>();}
-  virtual void removeChildByLabel(int){}
-  virtual void replace(ZSegmentationNode*, ZSegmentationNode*){}
-  virtual void group(const map<int,vector<int>>&){}
+  shared_ptr<ZSegmentationNode> getChildByLabel(int) override {
+    return nullptr;
+  }
+  vector<int> getChildrenLabels()const override{
+    return vector<int>();
+  }
+  void removeChildByLabel(int) override {}
+  void replace(ZSegmentationNode*, ZSegmentationNode*) override {}
+  void group(const map<int,vector<int>>&) override {}
 
 private:
   shared_ptr<ZSegmentationEncoder> m_encoder;
@@ -156,45 +172,46 @@ private:
   ZSegmentationComposite(){}
 
 public:
-  virtual void consume(const ZStack& stack);
+  void consume(const ZStack& stack) override;
 
-  virtual shared_ptr<ZSegmentationNode> getChildByLabel(int label);
+  shared_ptr<ZSegmentationNode> getChildByLabel(int label) override;
 
-  virtual bool isLeaf()const {return false;}
+  bool isLeaf() const override {return false;}
 
-  virtual vector<int> getChildrenLabels()const;
+  vector<int> getChildrenLabels() const override;
 
-  virtual ZSegmentationNode* find(const string& id);
+  ZSegmentationNode* find(const std::string& id) override;
 
-  virtual ZIntCuboid getBoundBox()const;
+  ZIntCuboid getBoundBox()const override;
 
-  virtual double memUsage()const;
+  double memUsage()const override;
 
-  virtual void labelStack(ZStack& stack, int v = 0) const;
+  void labelStack(ZStack& stack, int v = 0) const override;
 
-  virtual void removeChildByLabel(int label);
+  void removeChildByLabel(int label) override;
 
-  virtual void replace(ZSegmentationNode* target, ZSegmentationNode* source);
+  void replace(ZSegmentationNode* target, ZSegmentationNode* source) override;
 
-  virtual void clear(){m_children.clear();}
+  void clear() override {m_children.clear();}
 
-  virtual bool contains(int x, int y, int z)const;
+  bool contains(int x, int y, int z)const override;
 
-  virtual void merge(ZSegmentationNode* node);
+  void merge(ZSegmentationNode* node) override;
 
-  virtual vector<ZSegmentationNode*> getLeaves();
+  vector<ZSegmentationNode*> getLeaves() override;
 
-  virtual vector<string> getAllIDs()const;
+  vector<std::string> getAllIDs() const override;
+  bool hasId(const std::string &id) const override;
 
-  virtual shared_ptr<ZSegmentationEncoder> getEncoder();
+  shared_ptr<ZSegmentationEncoder> getEncoder() override;
 
-  virtual void group(const map<int,vector<int>>& groups);
+  void group(const map<int,vector<int>>& groups) override;
   //virtual map<string,map<string,int>> getAdjMatrix()const;
 
   //virtual int getVoxelNumber()const;
 
 public://should never be called
-  virtual void add(int, int, int){}
+  void add(int, int, int) override {}
 
 private:
   template<typename T>

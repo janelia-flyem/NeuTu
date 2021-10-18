@@ -30,7 +30,7 @@ public:
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
     WORKING_DIR, LOG_DIR, LOG_DEST_DIR,
     LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE,
-    NEUPRINT_AUTH
+    NEUPRINT_AUTH, FLYEM_SERVICES_AUTH
   };
 
 
@@ -66,6 +66,8 @@ public:
   static void UseDefaultTaskServer(bool on);
   static bool UsingDefaultTaskServer();
 
+  static QString GetCleaveServer();
+  static void SetCleaveServer(const QString &server);
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
   static QString GetTaskServer();
@@ -102,6 +104,18 @@ public:
 
   static void Set3DCrossWidth(int w);
   static int Get3DCrossWidth();
+
+  void setScrollCooldown(int t);
+  int getScrollCooldown() const;
+
+  void useAdaptiveScrollCooldown(bool on);
+  bool adatpiveScrollCooldown() const;
+
+  static void SetScrollCooldown(int t);
+  static int GetScrollCooldown();
+
+  static void UseAdaptiveScrollCooldown(bool on);
+  static bool AdatpiveScrollCooldown();
 
   void setMeshSplitThreshold(size_t thre);
   size_t getMeshSplitThreshold() const;
@@ -203,6 +217,12 @@ public:
   void updateUserInfo();
   static void UpdateUserInfo();
 
+  std::string getPointPosFormat() const;
+  void setPointPosFormat(const std::string &format);
+
+  static std::string GetPointPosFormat();
+  static void SetPointPosFormat(const std::string &format);
+
 //  static void SetUserName(const std::string &name);
 
   inline bool isStereoEnabled() {
@@ -212,8 +232,21 @@ public:
   void updateAutoSaveDir();
   static void UpdateAutoSaveDir();
 
+  inline void useFileLog(bool on) {
+    m_usingFileLog = on;
+  }
+
+  inline bool usingFileLog() const {
+    return m_usingFileLog;
+  }
+
+
 #ifdef _QT_GUI_USED_
   inline QSettings& getSettings() {
+    return m_settings;
+  }
+
+  inline const QSettings& getSettings() const {
     return m_settings;
   }
 #if 0
@@ -470,7 +503,7 @@ private:
   std::vector<std::string> m_bodyConnectionFeature;
   //////////////////////
 
-  std::string m_dataPath;
+//  std::string m_dataPath;
   std::string m_developPath;
 //  std::string m_userName;
   neutu::UserInfo m_userInfo;
@@ -492,10 +525,17 @@ private:
   bool m_loggingProfile;
   int m_verboseLevel;
   bool m_advancedMode = false;
-  size_t m_meshSplitThreshold = 5000000;
-  int m_3dcrossWidth = 5;
+  bool m_usingFileLog = true;
+//  size_t m_meshSplitThreshold = 5000000;
+//  int m_scrollCooldown = 100;
+//  int m_3dcrossWidth = 5;
 
   ZMessageReporter *m_messageReporter; //Obsolete
+
+  static const char *KEY_3D_CROSS_WIDTH;
+  static const char *KEY_MESH_SPLIT_THRE;
+  static const char *KEY_SCROLL_COOLDOWN;
+  static const char *KEY_SCROLL_COOLDOWN_ADAPTIVE;
 
 #ifdef _QT_GUI_USED_
 //  QDebug *m_traceStream;
@@ -504,9 +544,9 @@ private:
 };
 
 #define GET_DATA_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::EConfigItem::DATA))
-#if defined(PROJECT_PATH)
-#  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
-#endif
+//#if defined(PROJECT_PATH)
+//#  define GET_TEST_DATA_DIR (std::string(PROJECT_PATH) + "/../data")
+//#endif
 
 #ifndef GET_TEST_DATA_DIR
 #  define GET_TEST_DATA_DIR GET_DATA_DIR

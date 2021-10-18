@@ -9,7 +9,7 @@
 
 #include "geometry/zintpoint.h"
 #include "zstackdvidgrayscalefactory.h"
-
+#include "zjsonobjectparser.h"
 #include "zflyemproofdoc.h"
 #include "mvc/zstackframe.h"
 #include "mvc/zstackdoc.h"
@@ -56,6 +56,9 @@
 #include "zstring.h"
 #include "zpunctum.h"
 #include "flyemdatareader.h"
+#include "flyemdatawriter.h"
+#include "zflyemproofutil.h"
+#include "flyembodyannotationmanager.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -465,6 +468,7 @@ void ZFlyEmBodyMergeProject::clearBodyMerger()
 //  m_annotationCache.clear();
 }
 
+/*
 QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
     std::function<bool(const ZFlyEmBodyStatus&)> pred) const
 {
@@ -480,7 +484,9 @@ QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList(
 
   return statusList;
 }
+*/
 
+#if 0
 QList<QString> ZFlyEmBodyMergeProject::getBodyStatusList() const
 {
   const std::vector<ZFlyEmBodyStatus> &bodyStatusList =
@@ -547,19 +553,33 @@ bool ZFlyEmBodyMergeProject::preservingId(const std::string &status) const
 {
   return m_bodyStatusProtocol.preservingId(status);
 }
+#endif
 
 namespace {
 
+template<typename T>
+QMap<uint64_t, std::string> body_map_to_status_map(
+    const QMap<uint64_t, T> &annotMap)
+{
+  QMap<uint64_t, std::string> statusMap;
+  for (auto iter = annotMap.constBegin(); iter != annotMap.constEnd(); ++iter) {
+    statusMap[iter.key()] = ZFlyEmBodyAnnotation::GetStatus(iter.value());
+  }
+
+  return statusMap;
+}
+
+/*
 QString compose_body_status_message(
     const std::vector<uint64_t> &bodyArray,
-    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap, int &itemCount)
+    const QMap<uint64_t, std::string> &statusMap, int &itemCount)
 {
   QString msg;
   if (!bodyArray.empty()) {
     msg += "<ul>";
     for (uint64_t bodyId : bodyArray) {
       msg += QString("<li>%1: %2</li>").
-          arg(bodyId).arg(annotMap[bodyId].getStatus().c_str());
+          arg(bodyId).arg(statusMap[bodyId].c_str());
       ++itemCount;
       if (itemCount >= 5) {
         msg += "<li>...</li>";
@@ -573,14 +593,32 @@ QString compose_body_status_message(
   return msg;
 }
 
+QString compose_body_status_message(
+    const std::vector<uint64_t> &bodyArray,
+    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap, int &itemCount)
+{
+  return compose_body_status_message(
+        bodyArray, body_map_to_status_map(annotMap), itemCount);
 }
 
+QString compose_body_status_message(
+    const std::vector<uint64_t> &bodyArray,
+    const QMap<uint64_t, ZJsonObject> &annotMap, int &itemCount)
+{
+  return compose_body_status_message(
+        bodyArray, body_map_to_status_map(annotMap), itemCount);
+}
+*/
+}
+
+#if 0
+template<typename T>
 QString ZFlyEmBodyMergeProject::composeFinalStatusMessage(
-    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
+    const QMap<uint64_t, T> &annotMap) const
 {
   std::vector<uint64_t> bodyArray;
   for (auto iter = annotMap.constBegin(); iter != annotMap.constEnd(); ++iter) {
-    if (isFinalStatus(iter.value().getStatus())) {
+    if (isFinalStatus(ZFlyEmBodyAnnotation::GetStatus(iter.value()))) {
       bodyArray.push_back(iter.key());
     }
   }
@@ -597,62 +635,197 @@ QString ZFlyEmBodyMergeProject::composeFinalStatusMessage(
   return msg;
 }
 
+QString ZFlyEmBodyMergeProject::composeFinalStatusMessage(
+    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
+{
+  return composeFinalStatusMessage<ZFlyEmBodyAnnotation>(annotMap);
+}
+
+QString ZFlyEmBodyMergeProject::composeFinalStatusMessage(
+    const QMap<uint64_t, ZJsonObject> &annotMap) const
+{
+  return composeFinalStatusMessage<ZJsonObject>(annotMap);
+}
+
+QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
+    const QMap<uint64_t, std::string> &statusMap) const
+{
+  QString msg;
+  if (getBodyAnnotationManager()) {
+    const std::vector<std::vector<uint64_t>> &conflictSet =
+        getBodyAnnotationManager()->getBodyStatusProtocol().getConflictBody(
+          statusMap);
+    int itemCount = 0;
+    for (const std::vector<uint64_t> &bodyArray : conflictSet) {
+      msg += compose_body_status_message(bodyArray, statusMap, itemCount);
+      if (itemCount >= 5) {
+        break;
+      }
+    }
+
+    if (!msg.isEmpty()) {
+      msg = "The following bodies have conflicting statuses: " + msg +
+          "<font color=\"#FF0000\">You should NOT merge them "
+        "unless you want to be resposible for any side effects.</font>";
+    }
+  }
+
+  return msg;
+}
+
 QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
     const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
 {
+  return composeStatusConflictMessage(body_map_to_status_map(annotMap));
+}
+
+QString ZFlyEmBodyMergeProject::composeStatusConflictMessage(
+    const QMap<uint64_t, ZJsonObject> &annotMap) const
+{
+  return composeStatusConflictMessage(body_map_to_status_map(annotMap));
+}
+
+QString ZFlyEmBodyMergeProject::composeStatusExclusionMessage(
+    const QMap<uint64_t, std::string> &statusMap) const
+{
   QString msg;
   const std::vector<std::vector<uint64_t>> &conflictSet =
-      m_bodyStatusProtocol.getConflictBody(annotMap);
+      m_bodyStatusProtocol.getExclusionBody(statusMap);
   int itemCount = 0;
   for (const std::vector<uint64_t> &bodyArray : conflictSet) {
-    msg += compose_body_status_message(bodyArray, annotMap, itemCount);
+    msg += compose_body_status_message(bodyArray, statusMap, itemCount);
     if (itemCount >= 5) {
       break;
     }
   }
 
   if (!msg.isEmpty()) {
-    msg = "The following bodies have conflicting statuses: " + msg +
-        "<font color=\"#FF0000\">You should NOT merge them "
-        "unless you want to be resposible for any side effects.</font>";
+    msg = "The following bodies have statuses that cannot be merged: " + msg +
+        "<font color=\"#FF0000\">No merge will be done.</font>";
   }
 
   return msg;
 }
 
+QString ZFlyEmBodyMergeProject::composeStatusExclusionMessage(
+    const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotMap) const
+{
+  return composeStatusExclusionMessage(body_map_to_status_map(annotMap));
+}
+
+QString ZFlyEmBodyMergeProject::composeStatusExclusionMessage(
+    const QMap<uint64_t, ZJsonObject> &annotMap) const
+{
+  return composeStatusExclusionMessage(body_map_to_status_map(annotMap));
+}
+#endif
+
+void ZFlyEmBodyMergeProject::uploadMeshMerge(
+    uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
+{
+  FlyEmDataWriter::WriteMeshMerge(m_writer, targetId, bodyIdArray);
+}
+
+size_t ZFlyEmBodyMergeProject::getCachedSize(uint64_t bodyId) const
+{
+  return m_bodySizeCache[bodyId];
+}
+
+bool ZFlyEmBodyMergeProject::usingGenericBodyAnnotation() const
+{
+  return !m_bodyAnnotationSchema.isEmpty();
+}
+
+int ZFlyEmBodyMergeProject::getCachedStatusRank(uint64_t bodyId) const
+{
+  int rank = 0;
+  if (getBodyAnnotationManager()) {
+    return getBodyAnnotationManager()->getStatusRank(
+          getBodyAnnotationManager()->getBodyStatus(bodyId));
+  }
+
+  return rank;
+  /*
+  std::string status;
+  if (usingGenericBodyAnnotation()) {
+    status = ZFlyEmBodyAnnotation::GetStatus(
+          m_genericAnnotationCache.value(bodyId));
+  } else {
+    status = ZFlyEmBodyAnnotation::GetStatus(m_annotationCache.value(bodyId));
+  }
+
+  if (m_bodyStatusProtocol.isEmpty()) {
+    return ZFlyEmBodyAnnotation::GetStatusRank(status);
+  }
+
+  return m_bodyStatusProtocol.getStatusRank(status);
+  */
+}
+
 void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
     uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
 {
+  if (getBodyAnnotationManager()) {
+    getBodyAnnotationManager()->mergeAnnotation(targetId, bodyIdArray);
+  }
+#if 0
   const ZDvidReader &reader = m_writer.getDvidReader();
   if (reader.isReady()) {
-    ZFlyEmBodyAnnotation annotation = m_annotationCache[targetId];
-    for (uint64_t bodyId : bodyIdArray) {
-      if (bodyId != targetId) {
-        if (m_annotationCache.contains(bodyId)) {
-          ZFlyEmBodyAnnotation subann = m_annotationCache[bodyId];
-          if (m_bodyStatusProtocol.isEmpty()) {
-            annotation.mergeAnnotation(
-                  subann, &ZFlyEmBodyAnnotation::GetStatusRank);
-          } else {
-            annotation.mergeAnnotation(
-                  subann, [=](const std::string &status) {
-              return m_bodyStatusProtocol.getStatusRank(status);
-            });
+    if (!usingGenericBodyAnnotation()) {
+      ZFlyEmBodyAnnotation annotation = m_annotationCache[targetId];
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId != targetId) {
+          if (m_annotationCache.contains(bodyId)) {
+            ZFlyEmBodyAnnotation subann = m_annotationCache[bodyId];
+            if (m_bodyStatusProtocol.isEmpty()) {
+              annotation.mergeAnnotation(
+                    subann, &ZFlyEmBodyAnnotation::GetStatusRank);
+            } else {
+              annotation.mergeAnnotation(
+                    subann, [=](const std::string &status) {
+                return m_bodyStatusProtocol.getStatusRank(status);
+              });
+            }
           }
         }
       }
-    }
 
-    if (annotation.getStatus().empty()) {
-//      annotation.setStatus("Not examined");
-    }
+      if (annotation.getStatus().empty()) {
+        //      annotation.setStatus("Not examined");
+      }
 
-    if (!annotation.isEmpty()) {
-      if (m_writer.good()) {
-        m_writer.writeBodyAnntation(annotation);
+      if (!annotation.isEmpty()) {
+        if (m_writer.good()) {
+          m_writer.writeBodyAnnotation(annotation);
+        }
+      }
+    } else {
+      ZJsonObject annotation = m_genericAnnotationCache[targetId];
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId != targetId) {
+          if (m_genericAnnotationCache.contains(bodyId)) {
+            auto subann = m_genericAnnotationCache[bodyId];
+            if (m_bodyStatusProtocol.isEmpty()) {
+              annotation = ZFlyEmBodyAnnotation::MergeAnnotation(
+                    annotation, subann, &ZFlyEmBodyAnnotation::GetStatusRank);
+            } else {
+              annotation = ZFlyEmBodyAnnotation::MergeAnnotation(
+                    annotation, subann, [=](const std::string &status) {
+                return m_bodyStatusProtocol.getStatusRank(status);
+              });
+            }
+          }
+        }
+      }
+      if (!annotation.isEmpty()) {
+        if (m_writer.good()) {
+          m_writer.writeAnnotation(targetId, annotation);
+        }
       }
     }
   }
+#endif
+
 }
 
 void ZFlyEmBodyMergeProject::updateMergeMap()
@@ -675,58 +848,85 @@ void ZFlyEmBodyMergeProject::updateMergeMap()
   }
 }
 
-void ZFlyEmBodyMergeProject::refreshBodyAnnotationCache()
+void ZFlyEmBodyMergeProject::refreshBodySizeCache()
 {
-  m_annotationCache.clear();
+  m_bodySizeCache.clear();
   const ZDvidReader &reader = m_writer.getDvidReader();
   if (reader.isReady()) {
     foreach (uint64_t targetId, m_mergeMap.keys()) {
       std::vector<uint64_t> idArray = m_mergeMap[targetId];
       idArray.push_back(targetId);
       for (uint64_t bodyId : idArray) {
-        if (!m_annotationCache.contains(bodyId)) {
-          m_annotationCache[bodyId] =
-              FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+        if (!m_bodySizeCache.contains(bodyId)) {
+          size_t bodySize = reader.readBodySize(bodyId);
+          if (bodySize == 0) {
+            bodySize = reader.readBodyBlockCount(
+                  bodyId, neutu::EBodyLabelType::BODY);
+          }
+          m_bodySizeCache[bodyId] = bodySize;
         }
       }
     }
   }
 }
 
+void ZFlyEmBodyMergeProject::setBodyAnnotationSchema(const ZJsonObject &schema)
+{
+  m_bodyAnnotationSchema = schema;
+}
+
+void ZFlyEmBodyMergeProject::refreshBodyAnnotationCache()
+{
+  if (getBodyAnnotationManager()) {
+    foreach (uint64_t targetId, m_mergeMap.keys()) {
+      std::vector<uint64_t> idArray = m_mergeMap[targetId];
+      idArray.push_back(targetId);
+      for (uint64_t bodyId : idArray) {
+        getBodyAnnotationManager()->invalidateCache(bodyId);
+      }
+    }
+  }
+  /*
+  m_annotationCache.clear();
+  m_genericAnnotationCache.clear();
+  const ZDvidReader &reader = m_writer.getDvidReader();
+  if (reader.isReady()) {
+    if (!usingGenericBodyAnnotation()) {
+      foreach (uint64_t targetId, m_mergeMap.keys()) {
+        std::vector<uint64_t> idArray = m_mergeMap[targetId];
+        idArray.push_back(targetId);
+        for (uint64_t bodyId : idArray) {
+          if (!m_annotationCache.contains(bodyId)) {
+            m_annotationCache[bodyId] =
+                FlyEmDataReader::ReadBodyAnnotation(reader, bodyId);
+          }
+        }
+      }
+    } else {
+      foreach (uint64_t targetId, m_mergeMap.keys()) {
+        std::vector<uint64_t> idArray = m_mergeMap[targetId];
+        idArray.push_back(targetId);
+        for (uint64_t bodyId : idArray) {
+          if (!m_genericAnnotationCache.contains(bodyId)) {
+            m_genericAnnotationCache[bodyId] =
+                FlyEmDataReader::ReadGenericBodyAnnotation(reader, bodyId);
+          }
+        }
+      }
+    }
+  }
+  */
+}
+
 void ZFlyEmBodyMergeProject::updateAffliatedData(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray,
     ZWidgetMessage &warnMsg)
 {
-  /*
-  if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
-    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-          getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
-        ZNeutuService::REQUEST_FAILED) {
-      warnMsg.setMessage("Computing service failed");
-    }
-
-    if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-          getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
-        ZNeutuService::REQUEST_FAILED) {
-      warnMsg.setMessage("Computing service failed");
-    }
-  } else {
-    for (uint64_t bodyId : bodyArray) {
-      m_writer.deleteBodyAnnotation(bodyId);
-      m_writer.deleteSkeleton(bodyId);
-    }
-
-    if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
-      neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
-            "skeletonize", getDvidTarget(), targetId, true);
-      task.setPriority(5);
-      GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
-    }
-  }
-  */
-
   for (uint64_t bodyId : bodyArray) {
-    m_writer.deleteBodyAnnotation(bodyId);
+    if (getBodyAnnotationManager()) {
+      getBodyAnnotationManager()->removeAnnotation(bodyId);
+    }
+//    m_writer.deleteBodyAnnotation(bodyId);
     m_writer.deleteSkeleton(bodyId);
   }
 
@@ -742,7 +942,7 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
   }
 
   //Temporary fix for mesh update, which should be moved the remote service
-  m_writer.deleteMesh(targetId);
+//  m_writer.deleteMesh(targetId);
 }
 
 void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySet)
@@ -811,31 +1011,65 @@ void ZFlyEmBodyMergeProject::removeMerge(const std::vector<uint64_t> &bodyArray)
   }
 }
 
-bool ZFlyEmBodyMergeProject::preserved(uint64_t bodyId) const
-{
-  return (preservingId(m_annotationCache.value(bodyId).getStatus()));
-}
-
 namespace {
 
-bool has_name(uint64_t bodyId,
-             const QMap<uint64_t, ZFlyEmBodyAnnotation> &annotationCache)
+template <typename T>
+std::string get_name(
+    uint64_t bodyId, const QMap<uint64_t, T> &annotationCache)
 {
   if (annotationCache.contains(bodyId)) {
-    if (!annotationCache.value(bodyId).getName().empty()) {
-      return true;
-    }
+    return ZFlyEmBodyAnnotation::GetName(annotationCache.value(bodyId));
   }
 
-  return false;
+  return "";
 }
 
+template <typename T>
+bool has_name(
+    uint64_t bodyId, const QMap<uint64_t, T> &annotationCache)
+{
+  return !get_name(bodyId, annotationCache).empty();
+}
+
+template <typename T>
+std::string get_status(
+    uint64_t bodyId, const QMap<uint64_t, T> &annotationCache)
+{
+  if (annotationCache.contains(bodyId)) {
+    return ZFlyEmBodyAnnotation::GetStatus(annotationCache.value(bodyId));
+  }
+
+  return "";
+}
+
+}
+
+/*
+std::string ZFlyEmBodyMergeProject::getBodyStatus(uint64_t bodyId) const
+{
+  std::string status;
+  if (usingGenericBodyAnnotation()) {
+    status = get_status(bodyId, m_genericAnnotationCache);
+  } else {
+    status = get_status(bodyId, m_annotationCache);
+  }
+  return status;
+}
+*/
+
+/*
+bool ZFlyEmBodyMergeProject::preserved(uint64_t bodyId) const
+{
+  return (preservingId(getBodyStatus(bodyId)));
 }
 
 bool ZFlyEmBodyMergeProject::hasName(uint64_t bodyId) const
 {
-  return has_name(bodyId, m_annotationCache);
+  return usingGenericBodyAnnotation() ?
+        has_name(bodyId, m_genericAnnotationCache) :
+        has_name(bodyId, m_annotationCache);
 }
+*/
 
 bool ZFlyEmBodyMergeProject::mergeVerified(
     uint64_t targetId, const std::vector<uint64_t> &bodyArray) const
@@ -844,23 +1078,24 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
 
   QString bodyStatusMsg;
   QString bodyNameMsg;
-  if (!bodyArray.empty()) {
-    if (!hasName(targetId) && hasName(bodyArray.front())) {
+  if (!bodyArray.empty() && getBodyAnnotationManager()) {
+    if (!getBodyAnnotationManager()->hasName(targetId)
+        && getBodyAnnotationManager()->hasName(bodyArray.front())) {
       msg += QString("The name of ID %1 will be transfered to ID %2\n").
           arg(bodyArray.front()).arg(targetId);
     }
 
     for (uint64_t bodyId : bodyArray) {
-      if (preserved(bodyId)) {
+      if (getBodyAnnotationManager()->preserved(bodyId)) {
         bodyStatusMsg += QString("ID: %1, Status: %2;\n").
             arg(bodyId).
-            arg(m_annotationCache.value(bodyId).getStatus().c_str());
+            arg(getBodyAnnotationManager()->getBodyStatus(bodyId).c_str());
       }
 
-      if (hasName(bodyId)) {
+      if (getBodyAnnotationManager()->hasName(bodyId)) {
         bodyNameMsg += QString("ID: %1, Name: %2;\n").
             arg(bodyId).
-            arg(m_annotationCache.value(bodyId).getName().c_str());
+            arg(getBodyAnnotationManager()->getBodyName(bodyId).c_str());
       }
     }
   }
@@ -868,7 +1103,7 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
   bool okToContinue = true;
 
   if (!bodyStatusMsg.isEmpty()) {
-    if (neutu::IsAdminUser()) {
+    if (isAdmin()) {
       okToContinue = ZDialogFactory::Ask(
             "Confirming Merge",
             "The following preserved IDs will be changed after merging\n" +
@@ -909,7 +1144,8 @@ void ZFlyEmBodyMergeProject::logSynapseInfo(uint64_t bodyId)
 }
 
 //Assuming m_annotationCache and m_mergeMap are up to date.
-void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
+void ZFlyEmBodyMergeProject::uploadResultFunc(
+    bool mergingToHighestStatus, bool mergingToLargest)
 {
 //  ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
 //  bool anyMergeUploaded = false;
@@ -929,10 +1165,26 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
     getProgressSignal()->startProgress(0.5);
     int targetUploadedCount = 0;
     uint64_t lastTarget = 0;
+
+    auto lessStable = [&](uint64_t id1, uint64_t id2)->bool {
+      if (mergingToHighestStatus) {
+        if (getCachedStatusRank(id1) > getCachedStatusRank(id2)) {
+          return true;
+        } else if (getCachedStatusRank(id1) < getCachedStatusRank(id2)) {
+          return false;
+        }
+      }
+
+      if (mergingToLargest) {
+        return getCachedSize(id1) < getCachedSize(id2);
+      }
+
+      return false;
+    };
+
     foreach (uint64_t targetId, m_mergeMap.keys()) {
       const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
-      auto mergeConfig = dvid::GetMergeConfig(
-            m_writer.getDvidReader(), targetId, merged, mergingToLargest);
+      auto mergeConfig = dvid::GetMergeConfig(targetId, merged, lessStable);
       const uint64_t &newTargetId = mergeConfig.first;
       const std::vector<uint64_t> &newMerged = mergeConfig.second;
 
@@ -947,6 +1199,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
                   ZWidgetMessage::TARGET_TEXT_APPENDING |
                   ZWidgetMessage::TARGET_KAFKA));
         } else {
+          uploadMeshMerge(newTargetId, newMerged);
           mergeBodyAnnotation(newTargetId, newMerged);
 
           updateAffliatedData(newTargetId, newMerged, warnMsg);
@@ -1007,173 +1260,19 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
   }
 }
 
-#if 0
-void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
-{
-//  ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
-  if (!m_mergeMap.empty() && m_writer.good()) {
-    getProgressSignal()->startProgress("Uploading merge result ...");
-
-    if (m_writer.good()) {
-//      ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
-
-      ZWidgetMessage warnMsg;
-      warnMsg.setType(neutube::EMessageType::WARNING);
-
-      auto oldSelection = getSelection(neutube::EBodyLabelType::ORIGINAL);
-
-      if (!labelMap.isEmpty()) {
-        /*
-        //reorganize the map
-        QMap<uint64_t, std::vector<uint64_t> > mergeMap;
-        foreach (uint64_t sourceId, labelMap.keys()) {
-          uint64_t targetId = labelMap.value(sourceId);
-          if (mergeMap.contains(targetId)) {
-            std::vector<uint64_t> &idArray = mergeMap[targetId];
-            idArray.push_back(sourceId);
-          } else {
-            mergeMap[targetId] = std::vector<uint64_t>();
-            mergeMap[targetId].push_back(sourceId);
-          }
-        }
-        */
-        getProgressSignal()->advanceProgress(0.1);
-
-        std::set<uint64_t> bodySet = getSelection(neutube::EBodyLabelType::ORIGINAL);
-
-        std::set<uint64_t> newBodySet;
-        foreach (uint64_t targetId, mergeMap.keys()) {
-          const std::vector<uint64_t> &merged = mergeMap.value(targetId);
-          auto mergeConfig = ZDvid::GetMergeConfig(
-                m_writer.getDvidReader(), targetId, merged, mergingToLargest);
-          const uint64_t &newTargetId = mergeConfig.first;
-          const std::vector<uint64_t> &newMerged = mergeConfig.second;
-
-          m_writer.mergeBody(
-                getDvidTarget().getBodyLabelName(), newTargetId, newMerged);
-          mergeBodyAnnotation(newTargetId, newMerged);
-
-          if (m_writer.getStatusCode() != 200) {
-            emit messageGenerated(
-                  ZWidgetMessage(
-                    "Failed to upload merging results", neutube::EMessageType::ERROR));
-          } else {
-#if defined(_FLYEM_)
-            std::vector<uint64_t> bodyArray = newMerged;
-            if (GET_FLYEM_CONFIG.getNeutuseWriter().ready()) { //Use new server
-              for (uint64_t bodyId : bodyArray) {
-                m_writer.deleteBodyAnnotation(bodyId);
-                m_writer.deleteSkeleton(bodyId);
-              }
-
-              neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
-                    "skeletonize", getDvidTarget(), newTargetId, true);
-              GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
-            } else {
-              if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
-                if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                      getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
-                    ZNeutuService::REQUEST_FAILED) {
-                  warnMsg.setMessage("Computing service failed");
-                }
-
-                if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                      getDvidTarget(), newTargetId, ZNeutuService::UPDATE_ALL) ==
-                    ZNeutuService::REQUEST_FAILED) {
-                  warnMsg.setMessage("Computing service failed");
-                }
-              }
-            }
-
-            if (oldSelection.count(newTargetId) > 0) {
-              newBodySet.insert(newTargetId);
-            }
-#endif
-          }
-
-          //Temporary fix for mesh update, which should be moved the remote service
-          m_writer.deleteMesh(newTargetId);
-
-          ZOUT(LTRACE(), 5) << "Label slice updated";
-        }
-        getProgressSignal()->advanceProgress(0.1);
-
-        QList<ZDvidLabelSlice*> labelList =
-            getDocument()->getDvidLabelSliceList();
-        foreach (ZDvidLabelSlice *slice, labelList) {
-          slice->setSelection(newBodySet, neutube::EBodyLabelType::ORIGINAL);
-//            slice->mapSelection();
-        }
-
-        m_selectedOriginal.clear();
-        for (std::set<uint64_t>::const_iterator iter = newBodySet.begin();
-             iter != newBodySet.end(); ++iter) {
-          m_selectedOriginal.insert(*iter);
-        }
-
-        ZFlyEmProofDoc *proofDoc = getDocument<ZFlyEmProofDoc>();
-        if (proofDoc != NULL) {
-          proofDoc->clearBodyForSplit();
-          proofDoc->refreshDvidLabelBuffer(2000);
-          ZOUT(LTRACE(), 5) << "Label buffer refreshed";
-        }
-
-        ZOUT(LTRACE(), 5) << "Merge uploaded.";
-
-        emit mergeUploaded();
-
-        for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
-             iter != bodySet.end(); ++iter) {
-          emit checkingInBody(*iter, neutu::EBodySplitMode::NONE);
-        }
-
-        getProgressSignal()->advanceProgress(0.1);
-
-        clearBodyMerger();
-
-        ZOUT(LTRACE(), 5) << "Body merger cleared.";
-
-//        ZSleeper::msleep(10000);
-
-        emit dvidLabelChanged();
-//        bodyMerger->clear();
-        saveMergeOperation();
-
-        ZOUT(LTRACE(), 5) << "Merge operation saved.";
-
-        ZWidgetMessage message("Body merge finalized.");
-        emit messageGenerated(message);
-
-        if (warnMsg.hasMessage()) {
-          emit messageGenerated(warnMsg);
-        }
-        getProgressSignal()->advanceProgress(0.1);
-      }
-    }
-    getProgressSignal()->endProgress();
-  }
-}
-#endif
-
-void ZFlyEmBodyMergeProject::uploadResult(bool mergingToLargest)
+void ZFlyEmBodyMergeProject::uploadResult(
+    bool mergingToHighestStatus, bool mergingToLargest)
 {
 //  QtConcurrent::run(this, &ZFlyEmBodyMergeProject::uploadResultFunc);
   updateMergeMap();
   refreshBodyAnnotationCache();
-  uploadResultFunc(mergingToLargest);
+  if (mergingToLargest) {
+    refreshBodySizeCache();
+  } else {
+    m_bodySizeCache.clear();
+  }
+  uploadResultFunc(mergingToHighestStatus, mergingToLargest);
 }
-
-#if 0
-void ZFlyEmBodyMergeProject::detachBodyWindow()
-{
-  m_bodyWindow = NULL;
-}
-
-void ZFlyEmBodyMergeProject::detachCoarseBodyWindow()
-{
-  m_coarseBodyWindow = NULL;
-}
-#endif
 
 #if 0
 void ZFlyEmBodyMergeProject::presentCoarseBodyView()
@@ -1642,11 +1741,13 @@ void ZFlyEmBodyMergeProject::update3DBodyView(
 }
 #endif
 
+/*
 void ZFlyEmBodyMergeProject::setBodyStatusProtocol(
-    const ZFlyEmBodyAnnotationProtocal &protocol)
+    const ZFlyEmBodyAnnotationProtocol &protocol)
 {
   m_bodyStatusProtocol = protocol;
 }
+*/
 
 uint64_t ZFlyEmBodyMergeProject::getSelectedBodyId() const
 {
@@ -1715,15 +1816,34 @@ ZStackDoc* ZFlyEmBodyMergeProject::getDocument() const
 
 ZFlyEmBodyMerger* ZFlyEmBodyMergeProject::getBodyMerger() const
 {
-  if (getDocument<ZFlyEmBodyMergeDoc>() != NULL) {
+  if (getDocument<ZFlyEmBodyMergeDoc>()) {
     return getDocument<ZFlyEmBodyMergeDoc>()->getBodyMerger();
   }
 
-  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+  if (getDocument<ZFlyEmProofDoc>()) {
     return getDocument<ZFlyEmProofDoc>()->getBodyMerger();
   }
 
-  return NULL;
+  return nullptr;
+}
+
+bool ZFlyEmBodyMergeProject::isAdmin() const
+{
+  auto doc = getDocument<ZFlyEmProofDoc>();
+  if (doc) {
+    return doc->isAdmin();
+  }
+
+  return neutu::IsAdminUser();
+}
+
+FlyEmBodyAnnotationManager* ZFlyEmBodyMergeProject::getBodyAnnotationManager() const
+{
+  if (getDocument<ZFlyEmProofDoc>() != NULL) {
+    return getDocument<ZFlyEmProofDoc>()->getBodyAnnotationManager();
+  }
+
+  return nullptr;
 }
 
 /*
@@ -1908,10 +2028,12 @@ uint64_t ZFlyEmBodyMergeProject::getMappedBodyId(uint64_t label) const
   return label;
 }
 
+/*
 void ZFlyEmBodyMergeProject::setAdmin(bool admin)
 {
   m_isAdmin = admin;
 }
+*/
 
 void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
@@ -1933,8 +2055,9 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
     ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
     if (bodyMerger != NULL) {
       QByteArray buffer = getDvidReader().readBuffer(
-            ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-              neutu::GetCurrentUserName()));
+            ZDvidUrl::AppendSourceQuery(
+              ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
+              neutu::GetCurrentUserName())));
       bodyMerger->decodeJsonString(buffer.data());
 
       /*

@@ -1,6 +1,4 @@
-#if defined(_QT_GUI_USED_)
-#include <QPointF>
-#endif
+#include "zswctree.h"
 
 #include <algorithm>
 #include <sstream>
@@ -13,8 +11,6 @@
 #include <stdexcept>
 #include <cassert>
 
-#include "common/math.h"
-#include "zswctree.h"
 #include "tz_voxel_graphics.h"
 #include "tz_apo.h"
 #include "tz_geo3d_utils.h"
@@ -23,9 +19,13 @@
 #include "zstackball.h"
 #include "zswcforest.h"
 #include "zswcbranch.h"
-#include "zfilelist.h"
 #include "tz_random.h"
 #include "tz_geoangle_utils.h"
+
+#include "common/math.h"
+#include "common/utilities.h"
+
+#include "zfilelist.h"
 #include "zrandomgenerator.h"
 #include "swctreenode.h"
 #include "zswctrunkanalyzer.h"
@@ -45,8 +45,11 @@
 #if defined(_QT_GUI_USED_)
 #include "zrect2d.h"
 #include "QsLog/QsLog.h"
+#include "vis2d/zslicepainter.h"
+#include "vis2d/utilities.h"
 #endif
 #include "zstackfactory.h"
+#include "data3d/displayconfig.h"
 
 using namespace std;
 
@@ -73,6 +76,7 @@ void ZSwcTree::init()
   setColorScheme(COLOR_NORMAL);
   m_type = GetType();
   addVisualEffect(neutu::display::SwcTree::VE_FULL_SKELETON);
+  m_usingCosmeticPen = true;
   setTarget(GetDefaultTarget());
 
   m_label = 0;
@@ -176,6 +180,16 @@ bool ZSwcTree::hasRegularNode() const
   return false;
 }
 
+void ZSwcTree::addRoot(Swc_Tree_Node *tn, bool updatingComponent)
+{
+  forceVirtualRoot();
+  SwcTreeNode::setParent(
+        tn, root(), SwcTreeNode::EChildPosition::CHILD_POS_FIRST);
+  if (updatingComponent) {
+    deprecate(ALL_COMPONENT);
+  }
+}
+
 void ZSwcTree::setDataFromNode(Swc_Tree_Node *node, ESetDataOption option)
 {
   if (node != NULL) {
@@ -226,6 +240,11 @@ void ZSwcTree::setDataFromNodeRoot(Swc_Tree_Node *node, ESetDataOption option)
   setDataFromNode(node, option);
 }
 
+void ZSwcTree::addJsonComment(const ZJsonObject &json)
+{
+  addComment("$" + json.dumpString(0));
+}
+
 void ZSwcTree::clearComment()
 {
   m_comment.clear();
@@ -234,10 +253,6 @@ void ZSwcTree::clearComment()
 void ZSwcTree::writeSwc(FILE *fp)
 {
   if (fp != NULL) {
-    for (const std::string &comment : m_comment) {
-      fprintf(fp, "#%s", comment.c_str());
-    }
-
     ZSwcTree::DepthFirstIterator iter(this);
     while (iter.hasNext()) {
       Swc_Tree_Node *tn = iter.next();
@@ -331,7 +346,7 @@ void ZSwcTree::parseComment(istream &stream)
     json_t *value = jsonObj["color"];
     if (value != NULL) {
       int alpha = 255;
-      if (ZJsonParser::arraySize(value) == 4) {
+      if (ZJsonParser::ArraySize(value) == 4) {
         alpha = neutu::iround(ZJsonParser::numberValue(value, 3) * 255.0);
       }
 
@@ -344,7 +359,7 @@ void ZSwcTree::parseComment(istream &stream)
     value = jsonObj["resolution"];
     if (value != NULL) {
       double res[3] = {1, 1, 1};
-      if (ZJsonParser::arraySize(value) == 3) {
+      if (ZJsonParser::ArraySize(value) == 3) {
         for (int i = 0; i < 3; ++i) {
           res[i] = ZJsonParser::numberValue(value, i);
         }
@@ -362,7 +377,7 @@ void ZSwcTree::parseComment(istream &stream)
       ZJsonObject transformObj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
       const json_t *transformField = transformObj["scale"];
       if (transformField != NULL) {
-        if (ZJsonParser::arraySize(transformField) == 3) {
+        if (ZJsonParser::ArraySize(transformField) == 3) {
           for (int i = 0; i < 3; ++i) {
             scaleFactor[i] = ZJsonParser::numberValue(transformField, i);
           }
@@ -371,7 +386,7 @@ void ZSwcTree::parseComment(istream &stream)
 
       transformField = transformObj["translate"];
       if (transformField != NULL) {
-        if (ZJsonParser::arraySize(transformField) == 3) {
+        if (ZJsonParser::ArraySize(transformField) == 3) {
           for (int i = 0; i < 3; ++i) {
             offset[i] = ZJsonParser::numberValue(transformField, i);
           }
@@ -566,6 +581,7 @@ ZSwcTree::extractCurveTerminal() const
   return nodePair;
 }
 
+#if 0
 void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
                                   const Swc_Tree_Node *upperTn,
                                   QPointF &lineStart, QPointF &lineEnd,
@@ -620,6 +636,7 @@ void ZSwcTree::computeLineSegment(const Swc_Tree_Node *lowerTn,
   UNUSED_PARAMETER(dataFocus);
 #endif
 }
+#endif
 
 #ifdef _QT_GUI_USED_
 const QColor& ZSwcTree::getNodeColor(const Swc_Tree_Node *tn, bool focused) const
@@ -654,7 +671,7 @@ const QColor& ZSwcTree::getNodeColor(const Swc_Tree_Node *tn, bool focused) cons
 }
 #endif
 
-#if defined(_QT_GUI_USED_)
+#if 0
 void ZSwcTree::displaySkeleton(
     ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const
 {
@@ -852,6 +869,7 @@ void ZSwcTree::displaySelectedNode(
 }
 #endif
 
+#if 0
 void ZSwcTree::display(ZPainter &painter, int slice,
                        ZStackObject::EDisplayStyle style,
                        neutu::EAxis axis) const
@@ -900,6 +918,60 @@ void ZSwcTree::display(ZPainter &painter, int slice,
   displaySelectedNode(painter, slice, axis);
 
 #endif
+}
+#endif
+
+bool ZSwcTree::display_inner(QPainter *painter, const DisplayConfig &config) const
+{
+#ifdef _QT_GUI_USED_
+  if (!isEmpty()) {
+    ZSlice3dPainter s3Painter = neutu::vis2d::Get3dSlicePainter(config);
+
+    const double depthScale = 1.0;
+    const double fadingFactor = 1.0;
+
+    QPen pen;
+    pen.setCosmetic(m_usingCosmeticPen);
+    pen.setWidthF(getPenWidth());
+
+#ifdef _DEBUG_
+    std::cout << "ZSwcTree::displayFunc" << std::endl;
+    print();
+#endif
+
+    const std::vector<Swc_Tree_Node *> &nodeArray = getSwcTreeNodeArray();
+    for (const Swc_Tree_Node *tn : nodeArray) {
+      if (SwcTreeNode::isRegular(tn)) {
+        pen.setColor(getNodeColor(tn, true));
+        painter->setPen(pen);
+
+        ZPoint center = SwcTreeNode::center(tn);
+        double radius = SwcTreeNode::radius(tn);
+
+        if (config.getStyle() != EDisplayStyle::SKELETON) {
+          s3Painter.drawBall(painter, center, radius, depthScale, fadingFactor);
+        }
+
+        const Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+        if (SwcTreeNode::isRegular(parent)) {
+          ZLineSegment line(SwcTreeNode::center(parent), center);
+          s3Painter.drawLine(
+                painter, line,
+                SwcTreeNode::radius(parent), SwcTreeNode::radius(tn));
+        }
+
+        if (isNodeSelected(tn)) {
+          neutu::SetPenColor(painter, Qt::yellow);
+          s3Painter.drawBoundBox(painter, center, radius, depthScale);
+        }
+      }
+    }
+
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 int ZSwcTree::size()
@@ -1373,7 +1445,7 @@ void ZSwcTree::labelBranchLevelFromLeaf()
   }
 }
 
-void ZSwcTree::getBoundBox(double *corner) const
+void ZSwcTree::getBoundBoxC(double *corner) const
 {
   Swc_Tree_Bound_Box(m_tree, corner);
 }
@@ -1403,7 +1475,7 @@ ZCuboid ZSwcTree::getBoundBox() const
 {
   if (isDeprecated(BOUND_BOX)) {
     double corner[6];
-    getBoundBox(corner);
+    getBoundBoxC(corner);
     m_boundBox.set(corner);
   }
 
@@ -1426,12 +1498,12 @@ ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 
   for (int i = 0; i < 4; ++i) {
     Swc_Tree_Node *tn =
-        SwcTreeNode::MakePointer(box.corner(indexArray[index++]), radius);
+        SwcTreeNode::MakePointer(box.getCorner(indexArray[index++]), radius);
     SwcTreeNode::setParent(tn, tree->root());
     parent = tn;
 
     for (int j = 0; j < 3; ++j) {
-      tn = SwcTreeNode::MakePointer(box.corner(indexArray[index++]), radius);
+      tn = SwcTreeNode::MakePointer(box.getCorner(indexArray[index++]), radius);
       SwcTreeNode::setParent(tn, parent);
     }
   }
@@ -1444,7 +1516,7 @@ ZSwcTree* ZSwcTree::CreateCuboidSwc(const ZCuboid &box, double radius)
 ZSwcTree* ZSwcTree::createBoundBoxSwc(double margin)
 {
   double corner[6];
-  getBoundBox(corner);
+  getBoundBoxC(corner);
 
   ZCuboid boundingBox;
   boundingBox.set(corner);
@@ -1655,10 +1727,10 @@ void ZSwcTree::reduceNodeNumber(double lengthThre)
   deprecate(ALL_COMPONENT);
 }
 
-ZSwcTree& ZSwcTree::operator=(const ZSwcTree &other)
+ZSwcTree& ZSwcTree::operator=(const ZSwcTree &rhs)
 {
-  //swap(*this, other);
-  setData(other.cloneData());
+  ZStackObject::operator=(rhs);
+  setData(rhs.cloneData());
 
   return *this;
 }
@@ -2087,7 +2159,18 @@ ZSwcBranch* ZSwcTree::extractBranch(int label)
   return (new ZSwcBranch(upperEnd, lowerEnd));
 }
 
-vector<Swc_Tree_Node*> ZSwcTree::getTerminalArray()
+std::vector<Swc_Tree_Node*> ZSwcTree::getRegularRootArray()
+{
+  std::vector<Swc_Tree_Node*> nodeArray;
+  ZSwcTree::RegularRootIterator iter(this);
+  while (iter.hasNext()) {
+    nodeArray.push_back(iter.next());
+  }
+
+  return nodeArray;
+}
+
+std::vector<Swc_Tree_Node*> ZSwcTree::getTerminalArray()
 {
   updateIterator(SWC_TREE_ITERATOR_LEAF, _FALSE_);
 
@@ -2725,22 +2808,34 @@ void ZSwcTree::merge(Swc_Tree *tree, bool freeInput)
       m_tree = New_Swc_Tree();
     }
 
-    Swc_Tree_Merge(data(), tree);
+    ZSwcTree wrapper;
+    wrapper.setData(tree, LEAVE_ALONE);
+    merge(&wrapper, false);
+
+//    Swc_Tree_Merge(data(), tree);
 
     if (freeInput) {
       free(tree);
     }
 
-    deprecate(ALL_COMPONENT);
+//    deprecate(ALL_COMPONENT);
   }
 }
 
 void ZSwcTree::merge(ZSwcTree *tree, bool freeInput)
 {
   if (tree != NULL) {
-    Swc_Tree *data = tree->data();
+//    Swc_Tree *data = tree->data();
+
+    auto nodeArray = tree->getRegularRootArray();
+    for (Swc_Tree_Node *tn : nodeArray) {
+      addRoot(tn, false);
+    }
+
+    deprecate(ALL_COMPONENT);
+
+//    merge(data, true);
     tree->setData(NULL, ZSwcTree::LEAVE_ALONE);
-    merge(data, true);
     if (freeInput) {
       delete tree;
     }
@@ -3782,6 +3877,15 @@ void ZSwcTree::inverseSelection()
   }
 }
 
+ZCuboid ZSwcTree::getSelectedNodeBoundBox() const
+{
+  ZCuboid box;
+  for (Swc_Tree_Node *tn : m_selectedNode) {
+    box.join(SwcTreeNode::boundBox(tn));
+  }
+  return box;
+}
+
 void ZSwcTree::deselectAllNode()
 {
   m_selectedNode.clear();
@@ -4333,7 +4437,7 @@ Swc_Tree_Node* ZSwcTree::DownstreamIterator::next()
 
 
 ////////////////////////////////////////////////
-ZStackObject::ETarget ZSwcTree::GetDefaultTarget()
+neutu::data3d::ETarget ZSwcTree::GetDefaultTarget()
 {
-  return ZStackObject::ETarget::WIDGET;
+  return neutu::data3d::ETarget::HD_OBJECT_CANVAS;
 }

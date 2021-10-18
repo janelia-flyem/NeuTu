@@ -61,6 +61,8 @@ public:
    */
   double getVoxelSize(neutu::EAxis axis, EUnit unit) const;
 
+  ZPoint getVoxelDims(EUnit unit) const;
+
   /*!
    * \brief Get the unit voxel size after unit conversion
    *

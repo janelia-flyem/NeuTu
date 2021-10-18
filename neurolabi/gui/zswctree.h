@@ -3,8 +3,8 @@
  * @author Ting Zhao
  */
 
-#ifndef _ZSWCTREE_H_
-#define _ZSWCTREE_H_
+#ifndef ZSWCTREE_H_
+#define ZSWCTREE_H_
 
 #include "zqtheader.h"
 
@@ -97,24 +97,9 @@ public:
     OPERATION_SELECT_FLOOD
   };
 
-//  typedef uint32_t TVisualEffect;
-
-//  const static TVisualEffect VE_NONE;
-//  const static TVisualEffect VE_FULL_SKELETON;
-
   /** @name Constructors
    */
   ///@{
-
-  /*!
-   * \brief Copy constructor.
-   *
-   * It performs deep copy of a tree, i.e. there is no memory sharing between
-   * the constructed object and \src . Intermediate results will not be copied.
-   *
-   * \param src Original object.
-   */
-  //ZSwcTree(const ZSwcTree &src);
 
   /*!
    * \brief Default constructor.
@@ -125,7 +110,7 @@ public:
   /*!
    * \brief Deconstructor.
    */
-  ~ZSwcTree();
+  ~ZSwcTree() override;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::SWC;
@@ -171,10 +156,12 @@ public:
                            ESetDataOption option = CLEAN_ALL);
   ///@}
 
+  void addRoot(Swc_Tree_Node *tn, bool updatingComponent = true);
+
   /*!
    * \brief Clone an SWC tree
    */
-  ZSwcTree *clone() const;
+  ZSwcTree *clone() const override;
 
   /*!
    * \brief Clone a raw SWC tree
@@ -217,8 +204,11 @@ public:
 //  uint64_t getLabel() const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis axis) const;
+#if 0
+  virtual void display(
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+      neutu::EAxis axis) const override;
+#endif
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -280,6 +270,7 @@ public:
   inline void addComment(const std::string &comment) {
     m_comment.push_back(comment);
   }
+  void addJsonComment(const ZJsonObject &json);
   void clearComment();
 
 public:
@@ -385,7 +376,7 @@ public:
    *        (\a corner[0], \a corner[1], corner[2]) and the last corner is
    *        (\a corner[3], \a corner[4], corner[5]).
    */
-  void getBoundBox(double *corner) const;
+  void getBoundBoxC(double *corner) const;
 
 
   /*!
@@ -393,10 +384,12 @@ public:
    *
    * \return The bound box.
    */
-   ZCuboid getBoundBox() const;
+   ZCuboid getBoundBox() const override;
 //   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
 
-   void boundBox(ZIntCuboid *box) const;
+   void boundBox(ZIntCuboid *box) const override;
+
+   ZCuboid getSelectedNodeBoundBox() const;
 
   static ZSwcTree* CreateCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -431,8 +424,8 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
   /*!
    * \brief Selecte a node
@@ -554,6 +547,7 @@ public:
   Swc_Tree_Node *firstLeaf();
 
   std::vector<Swc_Tree_Node*> getTerminalArray();
+  std::vector<Swc_Tree_Node*> getRegularRootArray();
 
   ZSwcBranch *extractBranch(int beginId, int endId);
   ZSwcBranch *extractBranch(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
@@ -841,8 +835,11 @@ public: //static functions
 
 //  static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
 
-  static ETarget GetDefaultTarget();
+  static neutu::data3d::ETarget GetDefaultTarget();
 
+protected:
+  bool display_inner(
+        QPainter *painter, const DisplayConfig &config) const override;
 
 private:
   void init();
@@ -850,14 +847,14 @@ private:
   void displaySkeleton(
       ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const;
   void displayNode(ZPainter &painter, double dataFocus, int slice, bool isProj,
-      ZStackObject::EDisplayStyle style, neutu::EAxis axis) const;
+      neutu::data3d::EDisplayStyle style, neutu::EAxis axis) const;
   void displaySelectedNode(ZPainter &painter, int slice, neutu::EAxis axis)
   const;
 #endif
-  static void computeLineSegment(const Swc_Tree_Node *lowerTn,
-                                 const Swc_Tree_Node *upperTn,
-                                 QPointF &lineStart, QPointF &lineEnd,
-                                 bool &visible, int dataFocus, bool isProj);
+//  static void computeLineSegment(const Swc_Tree_Node *lowerTn,
+//                                 const Swc_Tree_Node *upperTn,
+//                                 QPointF &lineStart, QPointF &lineEnd,
+//                                 bool &visible, int dataFocus, bool isProj);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
@@ -933,4 +930,4 @@ void ZSwcTree::selectNode(
     selectNode(tn, true);
   }
 }
-#endif /* _ZSWCTREE_H_ */
+#endif /* ZSWCTREE_H_ */

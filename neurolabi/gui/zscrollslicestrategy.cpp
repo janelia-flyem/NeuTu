@@ -7,6 +7,15 @@ ZScrollSliceStrategy::ZScrollSliceStrategy(ZStackView *view) : m_view(view)
   setRange(0, 0);
 }
 
+int ZScrollSliceStrategy::getViewId() const
+{
+  if (m_view) {
+    return m_view->getViewId();
+  }
+
+  return -1;
+}
+
 void ZScrollSliceStrategy::setRange(int minSlice, int maxSlice)
 {
   m_minSlice = minSlice;
@@ -37,7 +46,7 @@ ZStackViewParam ZScrollSliceStrategy::scroll(
     const ZStackViewParam &param, int step) const
 {
   ZStackViewParam newParam = param;
-  newParam.setSliceIndex(scroll(param.getSliceIndex(), step));
+//  newParam.setSliceIndex(scroll(param.getSliceIndex(), step));
 
   return newParam;
 }
@@ -45,5 +54,5 @@ ZStackViewParam ZScrollSliceStrategy::scroll(
 void ZScrollSliceStrategy::scroll(int step)
 {
   ZStackViewParam param = scroll(m_view->getViewParameter(), step);
-  m_view->updateViewParam(param);
+//  m_view->updateViewParam(param);
 }

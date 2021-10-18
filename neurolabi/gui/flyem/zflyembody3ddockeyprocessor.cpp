@@ -141,5 +141,7 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(
     break;
   }
 
+  m_operator.setViewId(context.getViewId());
+
   return processed;
 }

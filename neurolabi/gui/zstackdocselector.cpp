@@ -2,27 +2,42 @@
 
 #include "mvc/zstackdoc.h"
 
-ZStackDocSelector::ZStackDocSelector(const ZSharedPointer<ZStackDoc> &doc)
+ZStackDocSelector::ZStackDocSelector()
 {
-  m_doc = doc;
+
+}
+
+ZStackDocSelector::ZStackDocSelector(const std::shared_ptr<ZStackDoc> &doc)
+{
+  setDocument(doc);
+}
+
+void ZStackDocSelector::setDocument(const std::shared_ptr<ZStackDoc> &doc)
+{
+  if (m_doc.get() != doc.get()) {
+    m_doc = doc;
+  }
 }
 
 void ZStackDocSelector::deselectAll()
 {
-  m_doc->deselectAllObject(false);
-
-  for (std::map<ZStackObject::EType, ESelectOption>::const_iterator
-       iter = m_option.begin(); iter != m_option.end(); ++iter) {
-    ZStackObject::EType type = iter->first;
-    ESelectOption option = iter->second;
-    if (option == SELECT_RECURSIVE) {
-      QList<ZStackObject*> objList = m_doc->getObjectList(type);
-      for (QList<ZStackObject*>::iterator iter = objList.begin();
-           iter != objList.end(); ++iter) {
-        ZStackObject *obj = *iter;
-        obj->deselect(true);
+  if (m_doc) {
+    for (std::map<ZStackObject::EType, ESelectOption>::const_iterator
+         iter = m_option.begin(); iter != m_option.end(); ++iter) {
+      ZStackObject::EType type = iter->first;
+      ESelectOption option = iter->second;
+      if (option == SELECT_RECURSIVE) {
+        QList<ZStackObject*> objList = m_doc->getObjectList(type);
+        for (QList<ZStackObject*>::iterator iter = objList.begin();
+             iter != objList.end(); ++iter) {
+          ZStackObject *obj = *iter;
+          obj->deselectSub();
+          m_doc->bufferObjectModified(
+                obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+        }
       }
     }
+    m_doc->deselectAllObject(false);
   }
 }
 

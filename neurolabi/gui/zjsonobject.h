@@ -6,8 +6,11 @@
 #include <vector>
 #include <map>
 #include <initializer_list>
+#include <functional>
 
 #include "zjsonvalue.h"
+
+class ZJsonArray;
 
 #define ZJsonObject_foreach(jsonObject, key, value) \
   json_object_foreach(jsonObject.getValue(), key, value)
@@ -49,7 +52,7 @@ public:
    * \param str Source string.
    * \return true iff the decoding succeeds.
    */
-  bool decode(const std::string &str);
+  bool decode(const std::string &str, bool reportingError);
 
   std::string summary();
   std::map<std::string, json_t*> toEntryMap(bool recursive) const;
@@ -66,7 +69,8 @@ public:
    *
    * The reference count of \a obj will be increased after the function call.
    */
-  void setEntry(const char *key, json_t *obj);
+  ZJsonObject& setEntry(const char *key, json_t *obj);
+  ZJsonObject& setEntry(const std::string &key, json_t *obj);
 
   /*!
    * \brief Set an entry without increasing the reference count
@@ -78,9 +82,10 @@ public:
    *
    * The function does nothing if the key is empty.
    */
-  void setEntry(const char *key, const std::string &value);
-  void setEntry(const char *key, const char *value);
-  void setEntry(const std::string &key, const std::string &value);
+  ZJsonObject& setEntry(const char *key, const std::string &value);
+  ZJsonObject& setEntry(const char *key, const char *value);
+  ZJsonObject& setEntry(const std::string &key, const std::string &value);
+  ZJsonObject& setEntry(const std::string &key, const char *value);
 
   /*!
    * \brief Set an entry to a string array
@@ -91,7 +96,7 @@ public:
    * \param key Key of the entry
    * \param value String array of the entry
    */
-  void setEntry(const char *key, const std::vector<std::string> &value);
+  ZJsonObject& setEntry(const char *key, const std::vector<std::string> &value);
 
   /*!
    * \brief Set the entry if the value is not empty
@@ -100,6 +105,9 @@ public:
    */
   void setNonEmptyEntry(const char *key, const std::string &value);
 
+  void setNonEmptyEntry(const char *key, const ZJsonObject &obj);
+  void setNonEmptyEntry(const char *key, const ZJsonArray &obj);
+
   /*!
    * \brief Set an entry of the object with an array
    *
@@ -107,7 +115,8 @@ public:
    * \param array Array buffer.
    * \param n Number of elements of the array.
    */
-  void setEntry(const char *key, const double *array, size_t n);
+  ZJsonObject&  setEntry(const char *key, const double *array, size_t n);
+  ZJsonObject&  setEntry(const char *key, const std::vector<double> &value);
 
   /*!
    * \brief Set an entry of the object with an integer array
@@ -116,12 +125,13 @@ public:
    * \param array Array buffer.
    * \param n Number of elements of the array.
    */
-  void setEntry(const char *key, const int *array, size_t n);
+  ZJsonObject& setEntry(const char *key, const int *array, size_t n);
 
   /*!
    * \brief setEntry Set an entry of the object with a boolean
    */
-  void setEntry(const char *key, bool v);
+  ZJsonObject& setEntry(const char *key, bool v);
+  ZJsonObject& setEntry(const std::string &key, bool v);
 
   /*!
    * \brief Set the entry if the value is true.
@@ -133,24 +143,26 @@ public:
   /*!
    * \brief setEntry Set an entry of the object with an integer
    */
-  void setEntry(const char *key, int64_t v);
-  void setEntry(const char *key, uint64_t v);
-  void setEntry(const char *key, int v);
-
-  void setEntry(const std::string &key, int64_t v);
-  void setEntry(const std::string &key, uint64_t v);
-  void setEntry(const std::string &key, int v);
+  ZJsonObject& setEntry(const char *key, int64_t v);
+  ZJsonObject& setEntry(const char *key, uint64_t v);
+  ZJsonObject& setEntry(const char *key, int v);
+  ZJsonObject& setEntry(const std::string &key, int64_t v);
+  ZJsonObject& setEntry(const std::string &key, uint64_t v);
+  ZJsonObject& setEntry(const std::string &key, int v);
 
   /*!
    * \brief setEntry Set an entry of the object with a double
    */
-  void setEntry(const char *key, double v);
+  ZJsonObject& setEntry(const char *key, double v);
 
   /*!
    * \brief setEntry Set an entry of the object
    */
-  void setEntry(const char *key, ZJsonValue &value);
-  void setEntry(const std::string &key, ZJsonValue &value);
+  ZJsonObject& setEntry(const char *key, ZJsonValue &value);
+  ZJsonObject& setEntry(const std::string &key, ZJsonValue &value);
+
+  void setEntry(const char *key, const ZJsonValue &value);
+  void setEntry(const std::string &key, const ZJsonValue &value);
 
   /*!
    * \brief Add an entry
@@ -194,6 +206,12 @@ public:
 
   std::vector<std::string> getAllKey() const;
 
+  /*!
+   * \brief Remove a key from the object.
+   *
+   * It removes \a key from the object. It does nothing if \a key does not exist
+   * in the object.
+   */
   void removeKey(const char *key);
 
 //  std::string dumpString(int indent = 2) const;
@@ -202,6 +220,15 @@ public:
    * \brief Using flags in libjansson to produce a json string.
    */
   virtual std::string dumpJanssonString(size_t flags) const;
+
+  void forEachValue(
+      std::function<void(const std::string &key, ZJsonValue)> f) const;
+  void forEachValue(std::function<void(ZJsonValue)> f) const;
+  bool all(std::function<bool(const std::string &key, ZJsonValue)> f) const;
+  bool all(std::function<bool(const std::string &key)> f) const;
+
+  static ZJsonObject MakeNull();
+  static ZJsonObject MakeEmpty();
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

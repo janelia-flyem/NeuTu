@@ -125,7 +125,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
   ZSwcTree *tree = NULL;
   if (!obj.isEmpty()) {
     ZObject3dScan newObj = obj;
-    ZIntCuboid box = obj.getBoundBox();
+    ZIntCuboid box = obj.getIntBoundBox();
     ZIntPoint originalDsIntv = newObj.getDsIntv();
 
     downsampleToSizeLimit(&newObj, box);
@@ -139,7 +139,7 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
 
     if (tree != NULL) {
       addSwcComment(tree, finalDsIntv);
-      const ZIntPoint pt = box.getFirstCorner();
+      const ZIntPoint pt = box.getMinCorner();
       tree->translate(pt * (originalDsIntv + 1));
     }
   }

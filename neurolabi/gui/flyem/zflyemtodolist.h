@@ -65,14 +65,14 @@ public:
     ItemMap& getMap(int y, EAdjustment adjust);
 
     bool isValid() const { return m_status != STATUS_NULL; }
-    bool isReady() const { return m_status == STATUS_READY; }
-    bool isReady(const QRect &rect, const QRect &range) const;
+//    bool isReady() const { return m_status == STATUS_READY; }
+//    bool isReady(const QRect &rect, const QRect &range) const;
 
     void setStatus(EDataStatus status) {
       m_status = status;
     }
 
-    void setDataRect(const QRect &rect);
+    void setDataRect(const ZAffineRect &rect);
 
     bool contains(int x, int y) const;
 
@@ -81,7 +81,7 @@ public:
   private:
     int m_startY;
     EDataStatus m_status;
-    QRect m_dataRect;
+    ZAffineRect m_dataRect;
     static ItemMap m_emptyMap;
   };
 
@@ -89,8 +89,14 @@ public:
   void setReady(bool ready);
   bool isReady() const;
 
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+#if 0
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+#endif
 
   bool removeItem(const ZIntPoint &pt, EDataScope scope);
   bool removeItem(int x, int y, int z, EDataScope scope);
@@ -118,11 +124,12 @@ public:
   void selectHit(bool appending);
   void deselectAll();
 
-  void deselect(bool recursive);
+  void deselectSub() override;
+//  void deselect(bool recursive);
 
 //  const std::string& className() const;
 
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, double z) override;
 
 //  void downloadForLabel(uint64_t label);
   void download(int z);
@@ -169,7 +176,7 @@ public:
 private:
   void init();
   void updateFromCache(int z);
-  void deselectSub();
+//  void deselectSub();
 
 private:
   QVector<ItemSlice> m_itemList;

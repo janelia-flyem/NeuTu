@@ -36,7 +36,7 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
-  m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+  m_startZ = m_dvidInfo.getStartCoordinates().getCoord(m_sliceAxis);
 }
 
 void ZDvidSynapseEnsemble::init()
@@ -69,7 +69,8 @@ ZIntCuboid ZDvidSynapseEnsemble::updateUnsync(const ZIntCuboid &box)
     ZDvidUrl dvidUrl(m_dvidTarget);
     QElapsedTimer timer;
     timer.start();
-    ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(dataBox));
+    ZJsonArray obj = m_reader.readJsonArray(
+          ZDvidUrl::AppendSourceQuery(dvidUrl.getSynapseUrl(dataBox)));
     LINFO() << "Synapse reading time: " << timer.elapsed();
 
     for (size_t i = 0; i < obj.size(); ++i) {
@@ -146,7 +147,7 @@ void ZDvidSynapseEnsemble::syncedFetch(
       slice.setStatus(EDataStatus::READY);
     } else {
       slice.setDataRect(
-            QRect(dataBox.getFirstCorner().getX(), dataBox.getFirstCorner().getY(),
+            QRect(dataBox.getMinCorner().getX(), dataBox.getMinCorner().getY(),
                   dataBox.getWidth(), box.getHeight()));
       slice.setStatus(EDataStatus::PARTIAL_READY);
     }
@@ -161,21 +162,26 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
 
   int currentArea = 0;
   if (m_view != NULL) {
-    currentArea = m_view->getViewParameter().getArea();
+    currentArea = neutu::iround(
+          m_view->getViewParameter().getArea(neutu::data3d::ESpace::MODEL));
   }
 
   int blockIndex = m_dvidInfo.getBlockIndexZ(z);
   ZIntCuboid blockBox =
       m_dvidInfo.getBlockBox(blockIndex, blockIndex, blockIndex);
   blockBox.shiftSliceAxis(m_sliceAxis);
-  int startZ = blockBox.getFirstCorner().getZ();
-  int endZ = blockBox.getLastCorner().getZ();
+  int startZ = blockBox.getMinCorner().getZ();
+  int endZ = blockBox.getMaxCorner().getZ();
 
   if (currentArea > 0 && currentArea <= m_maxPartialArea) {
-    QRect viewPort = m_view->getViewParameter().getViewPort();
-    ZIntCuboid box(
-          viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
-          viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
+    ZIntCuboid box =
+        zgeom::GetIntBoundBox(m_view->getViewParameter().getCutRect());
+    box.setMinZ(blockBox.getMinZ());
+    box.setMaxZ(blockBox.getMaxZ());
+//    QRect viewPort = m_view->getViewParameter().getViewPort();
+//    ZIntCuboid box(
+//          viewPort.left(), viewPort.top(), blockBox.getMinCorner().getZ(),
+//          viewPort.right(), viewPort.bottom(), blockBox.getMaxCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
     if (m_dataFetcher == NULL /*|| getSliceAxis() == neutube::Z_AXIS*/) {
       syncedFetch(box, startZ, endZ, false);
@@ -201,8 +207,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
     int height = lastCorner.getY() - firstCorner.getY() + 1;
     ZIntCuboid box;
 
-    box.setFirstCorner(firstCorner.getX(), firstCorner.getY(),
-                       blockBox.getFirstCorner().getZ());
+    box.setMinCorner(firstCorner.getX(), firstCorner.getY(),
+                       blockBox.getMinCorner().getZ());
     box.setSize(width, height, blockBox.getDepth());
 
     box.shiftSliceAxisInverse(m_sliceAxis);
@@ -238,7 +244,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(const QVector<int> &zs)
 
   int currentArea = 0;
   if (m_view != NULL) {
-    currentArea = m_view->getViewParameter().getArea();
+    currentArea = neutu::iround(
+          m_view->getViewParameter().getArea(neutu::data3d::ESpace::MODEL));
   }
 
   QSet<int> blockZSet;
@@ -278,8 +285,8 @@ void ZDvidSynapseEnsemble::downloadUnsync(const QVector<int> &zs)
     int height = lastCorner.getY() - firstCorner.getY() + 1;
     ZIntCuboid box;
 
-    box.setFirstCorner(firstCorner.getX(), firstCorner.getY(),
-                       blockBox.getFirstCorner().getZ());
+    box.setMinCorner(firstCorner.getX(), firstCorner.getY(),
+                       blockBox.getMinCorner().getZ());
     box.setSize(width, height, blockBox.getDepth());
 
     box.shiftSliceAxisInverse(m_sliceAxis);
@@ -296,12 +303,12 @@ void ZDvidSynapseEnsemble::setReadyUnsync(const ZIntCuboid &box)
 {
   ZIntCuboid shiftedBox = box;
   shiftedBox.shiftSliceAxis(getSliceAxis());
-  for (int cz = shiftedBox.getFirstCorner().getZ();
-       cz <= shiftedBox.getLastCorner().getZ(); ++cz) {
+  for (int cz = shiftedBox.getMinCorner().getZ();
+       cz <= shiftedBox.getMaxCorner().getZ(); ++cz) {
     SynapseSlice &slice = getSliceUnsync(cz, ADJUST_FULL);
     slice.setDataRect(
-          QRect(shiftedBox.getFirstCorner().getX(),
-                shiftedBox.getFirstCorner().getY(),
+          QRect(shiftedBox.getMinCorner().getX(),
+                shiftedBox.getMinCorner().getY(),
                 shiftedBox.getWidth(), shiftedBox.getHeight()));
     slice.setStatus(EDataStatus::PARTIAL_READY);
   }
@@ -327,7 +334,8 @@ bool ZDvidSynapseEnsemble::isReady() const
 void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
-  ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getSynapseUrl(label, false));
+  ZJsonArray obj = m_reader.readJsonArray(
+        ZDvidUrl::AppendSourceQuery(dvidUrl.getSynapseUrl(label, false)));
 
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -443,7 +451,7 @@ int ZDvidSynapseEnsemble::getMaxZUnsync() const
 
 bool ZDvidSynapseEnsemble::hasLocalSynapseUnsync(int x, int y, int z) const
 {
-  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::ShiftSliceAxis(x, y, z, m_sliceAxis);
 
   int zIndex = z - m_startZ;
 
@@ -486,7 +494,7 @@ bool ZDvidSynapseEnsemble::removeSynapseUnsync(int x, int y, int z, EDataScope s
       int sx = x;
       int sy = y;
       int sz = z;
-      zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+      zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
       getSynapseMapUnsync(sy, sz).remove(sx);
       getSelector().deselectObject(ZIntPoint(x, y, z));
 
@@ -695,6 +703,7 @@ void ZDvidSynapseEnsemble::updateFromCacheUnsync(int z)
   }
 }
 
+#if 0
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -715,8 +724,8 @@ void ZDvidSynapseEnsemble::display(
       ZIntCuboid range = m_dataRange;
       range.shiftSliceAxis(getSliceAxis());
 
-      rangeRect.setTopLeft(QPoint(range.getFirstCorner().getX(),
-                                  range.getFirstCorner().getY()));
+      rangeRect.setTopLeft(QPoint(range.getMinCorner().getX(),
+                                  range.getMinCorner().getY()));
       rangeRect.setSize(QSize(range.getWidth(), range.getHeight()));
     }
 
@@ -792,6 +801,7 @@ void ZDvidSynapseEnsemble::display(
     }
   }
 }
+#endif
 
 void ZDvidSynapseEnsemble::clearCache()
 {
@@ -880,7 +890,7 @@ ZDvidSynapse& ZDvidSynapseEnsemble::getSynapseUnsync(
     int sx = x;
     int sy = y;
     int sz = z;
-    zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+    zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
 
     return getSliceUnsync(sz).getMap(sy)[sx];
   } else {
@@ -987,30 +997,29 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     ZDvidUrl dvidUrl(m_dvidTarget);
     ZJsonArray objArray = m_reader.readJsonArray(
-          dvidUrl.getSynapseUrl(synapse.getPosition(), 1, 1, 1));
+          ZDvidUrl::AppendSourceQuery(
+            dvidUrl.getSynapseUrl(synapse.getPosition(), 1, 1, 1)));
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));
       synapse.loadJsonObject(obj, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
       synapse.updatePartner();
       synapse.updatePartnerProperty(m_reader);
-#if 0
-      if (obj.hasKey("Rels")) {
-        ZJsonArray jsonArray(obj.value("Rels"));
-        if (jsonArray.size() > 0) {
-          for (size_t i = 0; i < jsonArray.size(); ++i) {
-            ZJsonObject partnerJson(jsonArray.value(i));
-            if (partnerJson.hasKey("To")) {
-              ZJsonArray posJson(partnerJson.value("To"));
-              std::vector<int> coords = posJson.toIntegerArray();
-              synapse.addPartner(coords[0], coords[1], coords[2]);
-            }
-          }
-        }
-      }
-#endif
     }
   }
+}
+
+void ZDvidSynapseEnsemble::updateRadiusUnsync()
+{
+  for (auto &s : m_synapseEnsemble) {
+    s.updateRadius();
+  }
+}
+
+void ZDvidSynapseEnsemble::updateRadius()
+{
+  QMutexLocker locker(&m_dataMutex);
+  updateRadiusUnsync();
 }
 
 void ZDvidSynapseEnsemble::selectHitWithPartner(bool appending)
@@ -1073,7 +1082,7 @@ bool ZDvidSynapseEnsemble::hit(double x, double y, double z)
 
     while (siter.hasNext()) {
       ZDvidSynapse &synapse = siter.next();
-      if (synapse.hit(x, y, z)) {
+      if (synapse.hit(x, y, z, 0)) {
         m_hitPoint = synapse.getPosition();
         return true;
       }
@@ -1219,6 +1228,13 @@ ZDvidSynapseEnsemble::SynapseMap::SynapseMap(EDataStatus status)
   m_status = status;
 }
 
+void ZDvidSynapseEnsemble::SynapseMap::updateRadius()
+{
+  for (auto &s : *this) {
+    s.setDefaultRadius();
+  }
+}
+
 ///////////////////////////////////////////
 ZDvidSynapseEnsemble::SynapseMap ZDvidSynapseEnsemble::SynapseSlice::m_emptyMap(
     ZDvidSynapseEnsemble::EDataStatus::NONE);
@@ -1273,6 +1289,13 @@ void ZDvidSynapseEnsemble::SynapseSlice::setDataRect(const QRect &rect)
 bool ZDvidSynapseEnsemble::SynapseSlice::isReady(const QRect &rect) const
 {
   return isReady(rect, m_dataRect);
+}
+
+void ZDvidSynapseEnsemble::SynapseSlice::updateRadius()
+{
+  for (auto &s : *this) {
+    s.updateRadius();
+  }
 }
 
 

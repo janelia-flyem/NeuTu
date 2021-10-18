@@ -36,6 +36,8 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           this, SIGNAL(settingSmooth(bool)));
   connect(ui->crosshairCheckBox, SIGNAL(toggled(bool)),
           this, SIGNAL(showingCrosshair(bool)));
+  connect(ui->autoCheckBox, SIGNAL(toggled(bool)),
+          this, SIGNAL(autoReloadChecked(bool)));
 }
 
 void FlyEmOrthoControlForm::toggleShowingSeg()
@@ -66,7 +68,8 @@ ZFlyEmMessageWidget* FlyEmOrthoControlForm::getMessageWidget() const
 void FlyEmOrthoControlForm::dump(const ZWidgetMessage &message)
 {
   neutu::LogMessage(message);
-  if (message.hasTarget(ZWidgetMessage::TARGET_TEXT)) {
+  if (message.hasTargetIn(
+        ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_TEXT_APPENDING)) {
     ui->messageWidget->dump(message.toHtmlString(), message.isAppending());
   }
 }

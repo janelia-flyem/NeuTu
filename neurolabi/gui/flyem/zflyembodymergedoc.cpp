@@ -95,16 +95,18 @@ void ZFlyEmBodyMergeDoc::updateBodyObject()
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
   if (m_originalLabel != NULL) {
     QList<ZObject3dScan*> objList = extractAllObject();
-    blockSignals(true);
+//    blockSignals(true);
     foreach (ZObject3dScan *obj, objList) {
       addObject(obj);
       if (selectedBodySet.count(obj->getLabel()) > 0) {
         obj->setSelected(true);
       }
+      bufferObjectModified(obj);
     }
-    blockSignals(false);
+    processObjectModified();
+//    blockSignals(false);
 
-    notifyObject3dScanModified();
+//    notifyObject3dScanModified();
   }
 }
 
@@ -176,8 +178,10 @@ void ZFlyEmBodyMergeDoc::updateOriginalLabel(
     if (selected->contains(obj->getLabel())) {
       obj->setSelected(true);
     }
+    bufferObjectModified(obj);
   }
-  notifyObject3dScanModified();
+  processObjectModified();
+//  notifyObject3dScanModified();
 }
 
 void ZFlyEmBodyMergeDoc::saveMergeOperation() const

@@ -53,11 +53,11 @@ bool ZDvidSparsevolSlice::updateRequired(const ZStackViewParam &viewParam) const
 {
   bool required = true;
 
-  if (m_currentViewParam.containsViewport(viewParam) || m_isFullView) {
-    if (m_currentViewParam.getZ() == viewParam.getZ()) {
+  if (m_currentViewParam.contains(viewParam)) {
+    required = false;
+  } else if (m_isFullView) {
+    if (m_currentViewParam.onSamePlane(viewParam)) {
       required = false;
-    } else if (viewParam.getZ() >= getMinZ() && viewParam.getZ() <= getMaxZ()) {
-      required  =false;
     }
   }
 
@@ -81,13 +81,17 @@ bool ZDvidSparsevolSlice::updateRequired(int z) const
 
 void ZDvidSparsevolSlice::forceUpdate(int z)
 {
-  m_currentViewParam.setZ(z);
+  m_currentViewParam.setCutDepth(ZPoint(0, 0, 0), z);
   if (m_externalReader != NULL) {
     m_externalReader->readBody(
-          getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
+          getLabel(), m_currentViewParam.getCutCenter().getValue(
+            m_sliceAxis),
+          m_sliceAxis, true, this);
   } else {
     m_reader.readBody(
-          getLabel(), m_currentViewParam.getZ(), m_sliceAxis, true, this);
+          getLabel(), m_currentViewParam.getCutCenter().getValue(
+            m_sliceAxis),
+          m_sliceAxis, true, this);
   }
   m_isFullView = true;
 }
@@ -99,7 +103,7 @@ bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
     return false;
   }
 
-  if (viewParam.getViewPort().isEmpty()) {
+  if (!viewParam.isValid()) {
     return false;
   }
 
@@ -108,11 +112,12 @@ bool ZDvidSparsevolSlice::update(const ZStackViewParam &viewParam)
   ZStackViewParam newViewParam = viewParam;
 
   if (updateRequired(newViewParam)) {
-    if (newViewParam.getArea() < 800 * 600) {
+    if (newViewParam.getArea(neutu::data3d::ESpace::MODEL) < 800 * 600) {
       forceUpdate(newViewParam, true);
       m_isFullView = false;
     } else {
-      forceUpdate(newViewParam.getZ());
+      forceUpdate(newViewParam.getCutCenter().getValue(
+                    newViewParam.getSliceAxis()));
     }
 
 
@@ -138,12 +143,15 @@ void ZDvidSparsevolSlice::forceUpdate(
   }
 
   if ((!ignoringHidden) || isVisible()) {
+    ZIntCuboid box = zgeom::GetIntBoundBox(viewParam.getCutRect());
+    /*
     QRect viewPort = viewParam.getViewPort();
     ZIntCuboid box;
-    box.setFirstCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
+    box.setMinCorner(viewPort.left(), viewPort.top(), viewParam.getZ());
     box.setSize(viewPort.width(), viewPort.height(), 1);
 
     box.shiftSliceAxisInverse(m_sliceAxis);
+    */
 
     if (m_externalReader != NULL) {
       m_externalReader->readBody(getLabel(), box, true, this);
@@ -153,6 +161,7 @@ void ZDvidSparsevolSlice::forceUpdate(
   }
 }
 
+/*
 void ZDvidSparsevolSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -162,3 +171,4 @@ void ZDvidSparsevolSlice::display(
     ZObject3dScan::display(painter, slice, option, sliceAxis);
   }
 }
+*/

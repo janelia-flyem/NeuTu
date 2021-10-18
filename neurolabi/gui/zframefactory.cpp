@@ -1,6 +1,8 @@
 #include "zframefactory.h"
 
 #include "zstackdocreader.h"
+#include "data3d/displayconfig.h"
+
 #include "mvc/zstackframe.h"
 
 #include "flyem/zflyembodymergeframe.h"

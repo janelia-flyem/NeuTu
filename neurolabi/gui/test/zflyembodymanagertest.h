@@ -77,13 +77,13 @@ TEST(ZFlyEmBodyManager, Basic)
   bm.deregisterBody(1);
   ASSERT_EQ(0, (int) bm.getBodyConfig(1).getBodyId());
 
-  bm.registerBody(ZFlyEmBodyManager::encode(1, 1, true));
+  bm.registerBody(ZFlyEmBodyManager::Encode(1, 1, true));
   ASSERT_TRUE(bm.contains(1));
   ASSERT_FALSE(bm.hasMapping(1));
 
-  ZFlyEmBodyConfig config2(ZFlyEmBodyManager::encode(1, 0, true));
+  ZFlyEmBodyConfig config2(ZFlyEmBodyManager::Encode(1, 0, true));
   bm.addBodyConfig(config2);
-  ASSERT_EQ(ZFlyEmBodyManager::encode(1, 0, true),
+  ASSERT_EQ(ZFlyEmBodyManager::Encode(1, 0, true),
             bm.getBodyConfig(1).getBodyId());
 
   bm.deregisterBody(1);
@@ -94,7 +94,7 @@ TEST(ZFlyEmBodyManager, Basic)
 
   bm.registerSupervoxel(1);
   ASSERT_EQ(ZFlyEmBodyManager::EncodeSupervoxel(1), bm.getSingleBodyId());
-  ASSERT_EQ(uint64_t(9900000000001), bm.getSingleBodyId());
+  ASSERT_EQ(uint64_t(9900000000000001), bm.getSingleBodyId());
 
   bm.clear();
 
@@ -106,9 +106,9 @@ TEST(ZFlyEmBodyManager, Basic)
 
   bodySet = bm.getOrphanSupervoxelSet(true);
   ASSERT_EQ(1, bodySet.size());
-  ASSERT_EQ(uint64_t(9900000000001), *bodySet.begin());
+  ASSERT_EQ(uint64_t(9900000000000001), *bodySet.begin());
 
-  bm.deregisterBody(uint64_t(9900000000001));
+  bm.deregisterBody(uint64_t(9900000000000001));
   ASSERT_TRUE(bm.isEmpty());
 
   bm.registerBody(ZFlyEmBodyManager::EncodeSupervoxel(1));
@@ -117,26 +117,26 @@ TEST(ZFlyEmBodyManager, Basic)
 
 TEST(ZFlyEmBodyManager, encode)
 {
-  ASSERT_EQ(uint64_t(1), ZFlyEmBodyManager::encode(1, 0, false));
-  ASSERT_EQ(uint64_t(10000000000003), ZFlyEmBodyManager::encode(3, 0));
-  ASSERT_EQ(uint64_t(10100000000003), ZFlyEmBodyManager::encode(3, 1));
-  ASSERT_EQ(uint64_t(100000000003), ZFlyEmBodyManager::encode(3, 1, false));
-  ASSERT_EQ(uint64_t(200000000003), ZFlyEmBodyManager::encode(3, 2, false));
-  ASSERT_EQ(uint64_t(9900000000003),
+  ASSERT_EQ(uint64_t(1), ZFlyEmBodyManager::Encode(1, 0, false));
+  ASSERT_EQ(uint64_t(10000000000000003), ZFlyEmBodyManager::Encode(3, 0));
+  ASSERT_EQ(uint64_t(10100000000000003), ZFlyEmBodyManager::Encode(3, 1));
+  ASSERT_EQ(uint64_t(100000000000003), ZFlyEmBodyManager::Encode(3, 1, false));
+  ASSERT_EQ(uint64_t(200000000000003), ZFlyEmBodyManager::Encode(3, 2, false));
+  ASSERT_EQ(uint64_t(9900000000000003),
             ZFlyEmBodyManager::EncodeSupervoxel(3));
-  ASSERT_TRUE(ZFlyEmBodyManager::encodingSupervoxel(9900000000003));
-  ASSERT_TRUE(ZFlyEmBodyManager::encodingSupervoxel(19900000000003));
-  ASSERT_FALSE(ZFlyEmBodyManager::encodingSupervoxel(9800000000003));
+  ASSERT_TRUE(ZFlyEmBodyManager::EncodingSupervoxel(9900000000000003));
+  ASSERT_TRUE(ZFlyEmBodyManager::EncodingSupervoxel(19900000000000003));
+  ASSERT_FALSE(ZFlyEmBodyManager::EncodingSupervoxel(9800000000000003));
 
   ASSERT_FALSE(ZFlyEmBodyManager::IsEncoded(1));
-  ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::encode(3, 1)));
-  ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::encode(3, 0)));
-  ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::encode(3, 1, false)));
+  ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::Encode(3, 1)));
+  ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::Encode(3, 0)));
+  ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::Encode(3, 1, false)));
   ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::EncodeSupervoxel(3)));
 
-  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::encode(uint64_t(100000000003), 0));
-  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::encode(uint64_t(19900000000003), 1));
-  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::encode(uint64_t(10000000000003), 1, false));
+  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::Encode(uint64_t(100000000000003), 0));
+  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::Encode(uint64_t(19900000000000003), 1));
+  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::Encode(uint64_t(10000000000000003), 1, false));
 }
 
 #endif

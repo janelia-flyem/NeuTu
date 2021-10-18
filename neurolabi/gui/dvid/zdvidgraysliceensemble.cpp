@@ -8,7 +8,7 @@
 
 ZDvidGraySliceEnsemble::ZDvidGraySliceEnsemble()
 {
-  setTarget(ZStackObject::ETarget::TILE_CANVAS);
+  setTarget(neutu::data3d::ETarget::TILE_CANVAS);
   m_type = GetType();
 }
 
@@ -31,7 +31,11 @@ std::shared_ptr<ZDvidGraySlice> ZDvidGraySliceEnsemble::activateNext()
     std::shared_ptr<ZDvidGraySlice> newSlice =
         ZDvidGraySliceEnsemble::getActiveSlice();
 
-    newSlice->update(currentSlice->getViewParam());
+    currentSlice->forEachViewParam([=](const ZStackViewParam& param) {
+      newSlice->update(param);
+    });
+
+//    newSlice->update(currentSlice->getViewParam());
 
     return newSlice;
   }
@@ -60,6 +64,7 @@ std::shared_ptr<ZDvidGraySlice> ZDvidGraySliceEnsemble::getSlice(
   return std::shared_ptr<ZDvidGraySlice>();
 }
 
+#if 0
 void ZDvidGraySliceEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
@@ -68,6 +73,7 @@ void ZDvidGraySliceEnsemble::display(
     grayslice->display(painter, slice, option, sliceAxis);
   }
 }
+#endif
 
 void ZDvidGraySliceEnsemble::prepare(const ZDvidTarget &target)
 {
@@ -101,6 +107,16 @@ void ZDvidGraySliceEnsemble::prepare(const ZDvidEnv &env)
   prepare(env.getTargetList(ZDvidEnv::ERole::GRAYSCALE));
 }
 
+bool ZDvidGraySliceEnsemble::display(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  std::shared_ptr<ZDvidGraySlice> grayslice = getActiveSlice();
+  if (grayslice) {
+    return grayslice->display(painter, config);
+  }
+
+  return false;
+}
 
 bool ZDvidGraySliceEnsemble::update(const ZStackViewParam &viewParam)
 {
@@ -112,11 +128,11 @@ bool ZDvidGraySliceEnsemble::update(const ZStackViewParam &viewParam)
   return false;
 }
 
-ZTask* ZDvidGraySliceEnsemble::makeFutureTask(ZStackDoc *doc)
+ZTask* ZDvidGraySliceEnsemble::makeFutureTask(ZStackDoc *doc, int viewId)
 {
   std::shared_ptr<ZDvidGraySlice> grayslice = getActiveSlice();
   if (grayslice) {
-    return grayslice->makeFutureTask(doc);
+    return grayslice->makeFutureTask(doc, viewId);
   }
 
   return nullptr;

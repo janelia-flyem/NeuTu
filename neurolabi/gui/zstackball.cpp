@@ -9,9 +9,17 @@
 
 #include <math.h>
 
+#include "data3d/displayconfig.h"
 #include "common/math.h"
+#include "common/utilities.h"
 #include "geometry/zintpoint.h"
-#include "zpainter.h"
+#include "geometry/zcuboid.h"
+//#include "zpainter.h"
+
+#if _QT_GUI_USED_
+#include "vis2d/utilities.h"
+#include "vis2d/zslicepainter.h"
+#endif
 
 ZStackBall::ZStackBall()
 {
@@ -36,7 +44,11 @@ ZStackBall::ZStackBall(const ZPoint &center, double r)
 void ZStackBall::init(double x, double y, double z, double r)
 {
   set(x, y, z, r);
-  m_type = ZStackObject::EType::STACK_BALL;
+  m_type = GetType();
+  _hit = [=](const ZStackObject *obj, double xx, double yy, double zz) {
+    auto s = dynamic_cast<const ZStackBall*>(obj);
+    return s->m_center.distanceSquareTo(xx, yy, zz) <= s->m_r * s->m_r;
+  };
 }
 
 
@@ -71,38 +83,81 @@ void ZStackBall::setCenter(const ZIntPoint &center)
   setCenter(center.getX(), center.getY(), center.getZ());
 }
 
-//void ZCircle::display(QImage *image, int n, Display_Style style) const
-//{
-//#if defined(_QT_GUI_USED_)
-//  QPainter painter(image);
-//  painter.setPen(m_color);
-//  display(&painter, n, style);
-//#endif
-//}
-
-bool ZStackBall::display(
-    QPainter *painter, int z, EDisplayStyle option, EDisplaySliceMode sliceMode,
-    neutu::EAxis sliceAxis) const
+ZCuboid ZStackBall::getBoundBox() const
 {
-  ZPainter zp;
-  zp.attachPainter(painter);
-  int slice = z;
-  if (z < 0) {
-    zp.setZOffset(z);
-    slice = 0;
-  }
+  ZCuboid box;
+  box.set(getCenter() - getRadius(), getCenter() + getRadius());
 
-  if (sliceMode == EDisplaySliceMode::DISPLAY_SLICE_PROJECTION) {
-    slice = -1;
-  }
-
-  display(zp, slice, option, sliceAxis);
-
-  zp.detachPainter();
-
-  return zp.isPainted();
+  return box;
 }
 
+bool ZStackBall::isSliceVisible(
+    int z, neutu::EAxis axis, const ZAffinePlane &plane) const
+{
+  if (axis == neutu::EAxis::ARB) {
+    ZStackBall alignedBall = *this;
+    alignedBall.setCenter(plane.align(getCenter()));
+//    alignedBall.setZScale(m_zScale);
+    return alignedBall.isSliceVisible(0, neutu::EAxis::Z);
+  } else {
+    return isSliceVisible(z, axis);
+  }
+}
+
+bool ZStackBall::display_inner(QPainter *painter, const DisplayConfig &config) const
+{
+#if _QT_GUI_USED_
+  ZSlice3dPainter s3Painter;
+  s3Painter.setModelViewTransform(config.getWorldViewTransform());
+  s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
+  neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+  QPen pen(getColor());
+  pen.setCosmetic(true);
+  pen.setWidthF(GetDefaultPenWidth());
+  painter->setPen(pen);
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_FORCE_FILL)) {
+    painter->setBrush(getColor());
+  }
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_NO_BORDER)) {
+    neutu::SetPenColor(painter, Qt::transparent);
+  }
+
+  double depthScale = 0.5;
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_RECTANGLE_SHAPE)) {
+    s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
+  } else {
+    s3Painter.drawBall(painter, m_center, m_r, 1.0, depthScale);
+  }
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_CROSS_CENTER)) {
+    s3Painter.drawCross(painter, m_center, m_r, 1.0, depthScale);
+  }
+
+  if (isSelected()) {
+    neutu::SetPenColor(painter, Qt::yellow);
+    s3Painter.drawBoundBox(painter, m_center, m_r, depthScale);
+  }
+  return s3Painter.getPaintedHint();
+#else
+  return false;
+
+//    s3Painter.setViewPlaneTransform(config)
+
+    /*
+    ZStackBall alignedBall = *this;
+    alignedBall.setCenter(config.cutPlane.getAffinePlane().align(getCenter()));
+    DisplayConfig newConfig = config;
+    newConfig.sliceAxis = neutu::EAxis::Z;
+    alignedBall.display(painter, newConfig);
+    */
+#endif
+}
+
+#if 0
 void ZStackBall::display(ZPainter &painter, int slice,
                          ZStackObject::EDisplayStyle style,
                          neutu::EAxis sliceAxis) const
@@ -164,7 +219,61 @@ void ZStackBall::display(ZPainter &painter, int slice,
   }
   displayHelper(&painter, slice, style, sliceAxis);
 
-  m_prevDisplaySlice = slice;
+  setPrevZ(painter.getZ(slice));
+//  painter.setPen(oldPen);
+//  painter.setBrush(oldBrush);
+
+//  painter.restore();
+#endif
+}
+
+void ZStackBall::viewSpaceAlignedDisplay(
+    QPainter *painter, const ViewSpaceAlignedDisplayConfig &config) const
+{
+  if (!isVisible()) {
+    return;
+  }
+
+
+#if _QT_GUI_USED_
+  painter->save();
+
+  QPen pen(m_color, getPenWidth());
+  pen.setCosmetic(m_usingCosmeticPen);
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_DASH_PATTERN)) {
+    pen.setStyle(Qt::DotLine);
+  }
+
+  painter->setPen(pen);
+
+
+  if (hasVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL)) {
+    QRadialGradient gradient(50, 50, 50, 50, 50);
+    gradient.setColorAt(0, QColor::fromRgbF(0, 1, 0, 1));
+    gradient.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
+
+    /*
+    QBrush brush(gradient);
+    brush.setColor(m_color);
+    brush.setStyle(Qt::RadialGradientPattern);
+    painter.setBrush(brush);
+    */
+    painter->setBrush(m_color);
+    painter->setBrush(QBrush(m_color, Qt::RadialGradientPattern));
+  } else {
+    if (hasVisualEffect(neutu::display::Sphere::VE_NO_FILL)) {
+      painter->setBrush(Qt::NoBrush);
+    }
+  }
+
+  ZPainter zpainter;
+  zpainter.attachPainter(painter);
+  zpainter.setZOffset(config.z);
+  displayHelper(&zpainter, 0, config.style, neutu::EAxis::Z);
+  zpainter.detachPainter();
+
+  setPrevZ(config.z);
 
 //  painter.setPen(oldPen);
 //  painter.setBrush(oldBrush);
@@ -172,6 +281,8 @@ void ZStackBall::display(ZPainter &painter, int slice,
 //  painter.restore();
 #endif
 }
+#endif
+
 
 bool ZStackBall::isCuttingPlane(double z, double r, double n, double zScale)
 {
@@ -188,7 +299,7 @@ bool ZStackBall::isCuttingPlane(double z, double r, double n, double zScale)
 bool ZStackBall::isCuttingPlane(
     double n, double zScale, neutu::EAxis sliceAxis) const
 {
-  double z = m_center.getSliceCoord(sliceAxis);
+  double z = m_center.getValue(sliceAxis);
 
   return isCuttingPlane(z, m_r, n, zScale);
 }
@@ -214,6 +325,7 @@ double ZStackBall::getAdjustedRadius(double r) const
   return adjustedRadius;
 }
 
+#if 0
 void ZStackBall::displayHelper(
     ZPainter *painter, int slice, EDisplayStyle style,
     neutu::EAxis sliceAxis) const
@@ -320,8 +432,8 @@ void ZStackBall::displayHelper(
     color.setAlphaF(alpha);
     pen.setColor(color);
     pen.setCosmetic(true);
-    if (!visible && slice >= 0 && m_prevDisplaySlice >= 0) {
-      double prevdc = fabs(painter->getZ(m_prevDisplaySlice) - shiftedCenter.z());
+    if (!visible && slice >= 0 && m_displayTrace.isValid) {
+      double prevdc = fabs(m_displayTrace.prevZ - shiftedCenter.z());
       double dc  = fabs(painter->getZ(slice) - shiftedCenter.z());
       if (prevdc > dc) {
         pen.setWidthF(pen.widthF() + 1.0);
@@ -377,6 +489,25 @@ void ZStackBall::displayHelper(
   }
 #endif
 }
+#endif
+
+ZStackBall* ZStackBall::aligned(
+    const ZAffinePlane &plane, neutu::EAxis sliceAxis) const
+{
+  ZStackBall *ball = new ZStackBall(*this);
+
+  if (sliceAxis != neutu::EAxis::Z) {
+    ZPoint newCenter = getCenter();
+    if (sliceAxis == neutu::EAxis::ARB) {
+      newCenter = plane.align(newCenter);
+    } else {
+      newCenter.shiftSliceAxis(sliceAxis);
+    }
+    ball->setCenter(newCenter);
+  }
+
+  return ball;
+}
 
 void ZStackBall::save(const char */*filePath*/)
 {
@@ -411,6 +542,7 @@ void ZStackBall::scale(double sx, double sy, double sz)
   m_r *= sqrt(sx * sy);
 }
 
+/*
 bool ZStackBall::hit(double x, double y, double z)
 {
   return m_center.distanceTo(x, y, z) <= m_r;
@@ -428,6 +560,6 @@ bool ZStackBall::hit(double x, double y, neutu::EAxis axis)
 
   return d2 <= m_r * m_r;
 }
-
+*/
 
 //ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStackBall)

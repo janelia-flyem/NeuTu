@@ -9,7 +9,7 @@
 #include "zstring.h"
 #include "tz_stack_utils.h"
 #include "c_stack.h"
-#include "tz_darray.h"
+#include "neurolabi/numericarray.h"
 #include "zstackfactory.h"
 #include "geometry/zintcuboid.h"
 #include "geometry/zpoint.h"
@@ -132,8 +132,8 @@ ZStack* ZObject3dArray::toStackObject()
   }
 
   ZIntCuboid box;
-  box.setFirstCorner(corner[0], corner[1], corner[2]);
-  box.setLastCorner(corner[3], corner[4], corner[5]);
+  box.setMinCorner(corner[0], corner[1], corner[2]);
+  box.setMaxCorner(corner[3], corner[4], corner[5]);
   ZStack *stack = ZStackFactory::MakeZeroStack(kind, box);
 
   for (size_t i = 0; i < size(); ++i) {
@@ -178,10 +178,10 @@ void ZObject3dArray::setSourceSize(int width, int height, int depth)
 }
 
 void ZObject3dArray::readIndex(string filePath,
-                               int width, int height, int depth,
+                               int width, int height, int /*depth*/,
                                int indexOffset)
 {
-  UNUSED_PARAMETER(depth);
+//  UNUSED_PARAMETER(depth);
 
   clearAll();
 
@@ -194,14 +194,14 @@ void ZObject3dArray::readIndex(string filePath,
     if (str[0] == '{') {
       obj.clear();
     } else if (str[0] == '}') {
-      cout << obj.size() << endl;
+//      cout << obj.size() << endl;
       append(obj);
     } else {
       vector<int> indexArray = str.toIntegerArray();
       for (size_t i = 0; i < indexArray.size(); i++) {
         int x, y, z;
-        Stack_Util_Coord(indexArray[i] + indexOffset,
-                         width, height, &x, &y, &z);
+        Stack_Util_Coord(
+              size_t(indexArray[i] + indexOffset), width, height, &x, &y, &z);
         obj.append(x, y, z);
       }
     }
@@ -250,7 +250,7 @@ double ZObject3dArray::radiusVariance()
     darray_print(&(radius[0]), radius.size());
 #endif
 
-    var = darray_var(&(radius[0]), radius.size());
+    var = neutu::array::Var(&(radius[0]), radius.size());
   }
 
   return var;

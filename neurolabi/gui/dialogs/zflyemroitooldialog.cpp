@@ -11,6 +11,7 @@
 #include "zwidgetmessage.h"
 #include "mvc/zstackdocutil.h"
 #include "zswctree.h"
+#include "zdialogfactory.h"
 
 ZFlyEmRoiToolDialog::ZFlyEmRoiToolDialog(QWidget *parent) :
   QDialog(parent),
@@ -40,6 +41,7 @@ void ZFlyEmRoiToolDialog::init()
   connect(ui->nextPushButton, SIGNAL(clicked()), this, SLOT(nextSlice()));
   connect(ui->estimatePushButton, SIGNAL(clicked()), this, SLOT(estimateRoi()));
   connect(ui->dvidRoiPushButton, SIGNAL(clicked()), this, SLOT(createRoiData()));
+  connect(ui->exportRoiPushButton, SIGNAL(clicked()), this, SLOT(exportRoiData()));
   connect(ui->estimateVolumeButton, SIGNAL(clicked()),
           this, SLOT(estimateRoiVolume()));
 
@@ -453,6 +455,14 @@ void ZFlyEmRoiToolDialog::createRoiData()
     if (!roiName.isEmpty() && ok) {
       project->createRoiData(roiName.toStdString(), this);
     }
+  }
+}
+
+void ZFlyEmRoiToolDialog::exportRoiData()
+{
+  QString filename = ZDialogFactory::GetSaveFileName("Export ROI", "", this);
+  if (!filename.isEmpty()) {
+    m_project->exportRoiData(filename.toStdString());
   }
 }
 

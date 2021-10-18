@@ -118,6 +118,13 @@ void ZDvidAdvancedDialog::updateWidgetForEdit(bool editable)
 void ZDvidAdvancedDialog::UpdateWidget(QLabel *label, QLineEdit *lineEdit,
     const QString &labelText, const QString &dataText, QWidget *hintWidget)
 {
+  lineEdit->setVisible(dataText.isEmpty());
+  label->setText(labelText + (dataText.isEmpty() ? "" : (": " + dataText)));
+  if (hintWidget) {
+    hintWidget->setVisible(dataText.isEmpty());
+  }
+
+  /*
   if (!dataText.isEmpty()) {
     lineEdit->setVisible(false);
     label->setText(labelText + ": " + dataText);
@@ -131,6 +138,7 @@ void ZDvidAdvancedDialog::UpdateWidget(QLabel *label, QLineEdit *lineEdit,
       hintWidget->setVisible(true);
     }
   }
+  */
 }
 
 void ZDvidAdvancedDialog::UpdateWidget(
@@ -150,9 +158,9 @@ void ZDvidAdvancedDialog::UpdateWidget(
 void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(const ZJsonObject &obj)
 {
   UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos",
-               ui->todoHintLabel);
+               nullptr);
   UpdateWidget(ui->bodyLabel, ui->bodyLabelLineEdit, "Body Label", obj, "bodies",
-               ui->bodyLabelHintLabel);
+               nullptr);
 //  ui->todoHintLabel->setVisible(ui->todoLineEdit->isVisible());
 }
 

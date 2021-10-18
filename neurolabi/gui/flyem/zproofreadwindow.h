@@ -23,6 +23,9 @@ class FlyEmSplitControlForm;
 class ZStressTestOptionDialog;
 class ZFlyEmBodyScreenshotDialog;
 class ZFlyEmBodySplitDialog;
+class FlyEmAuthTokenDialog;
+class ProtocolAssignmentDialog;
+class ZActionLibrary;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -31,9 +34,10 @@ class ZProofreadWindow : public QMainWindow
 {
   Q_OBJECT
 public:
-  explicit ZProofreadWindow(QWidget *parent = 0);
+  explicit ZProofreadWindow(QWidget *parent = nullptr);
+  ~ZProofreadWindow();
 
-  static ZProofreadWindow* Make(QWidget *parent = 0);
+  static ZProofreadWindow* Make(QWidget *parent = nullptr);
   static ZProofreadWindow* Make(QWidget *parent, ZDvidDialog *dvidDlg);
 
   QProgressDialog* getProgressDialog();
@@ -86,13 +90,19 @@ public slots:
   void stressTestSlot();
   void diagnose();
   void profile();
+  void testSlot();
 
   void showSettings();
 
   void showAndRaise();
 
+  void loadDatabaseFromName(const QString &name);
   void loadDatabase();
   void loadDatabaseFromUrl();
+
+  void showAuthTokenDialog();
+  void updateAuthTokenIcon();
+  void showProtocolAssignmentDialog();
 
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
@@ -118,6 +128,10 @@ private:
 //  void logMessage(const ZWidgetMessage &msg);
 
   void displayActiveHint(bool on);
+
+private slots:
+  void processFeedback();
+  void postDvidReady();
 
 private:
   ZFlyEmProofMvc *m_mainMvc;
@@ -146,19 +160,24 @@ private:
   QAction *m_neuprintAction = nullptr;
   QAction *m_loadDvidAction = nullptr;
   QAction *m_loadDvidUrlAction = nullptr;
+  QAction *m_openAuthDialogAction = nullptr;
+  QAction *m_openProtocolAssignmentDialogAction = nullptr;
 
   QAction *m_openSkeletonAction;
   QAction *m_openExtNeuronWindowAction;
   QAction *m_openObject3dAction;
   QAction *m_openRoi3dAction;
+
+  ZActionLibrary *m_actionLibrary = nullptr;
+
 //  QAction *m_queryTableAction;
 
   QAction *m_dvidOperateAction;
 
   QSlider *m_segSlider;
 
-  QToolBar *m_toolBar;
-  QToolBar *m_synapseToolbar;
+  QToolBar *m_mainToolBar;
+  QToolBar *m_verticalToolbar;
 
   QProgressDialog *m_progressDlg;
   ZProgressSignal *m_progressSignal;
@@ -174,6 +193,10 @@ private:
   ZStressTestOptionDialog *m_stressTestOptionDlg;
   ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
   ZFlyEmBodySplitDialog *m_bodySplitDlg;
+  FlyEmAuthTokenDialog *m_authTokenDlg;
+  ProtocolAssignmentDialog * m_protocolAssignmentDlg;
+
+
 };
 
 

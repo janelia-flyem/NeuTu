@@ -1,8 +1,10 @@
 #ifndef ZDVIDUTIL_H
 #define ZDVIDUTIL_H
 
+#include <functional>
+
 #include "dvid/libdvidheader.h"
-#include "common/zsharedpointer.h"
+//#include "common/zsharedpointer.h"
 #include "dvid/zdviddef.h"
 
 class ZJsonValue;
@@ -44,22 +46,22 @@ libdvid::BinaryDataPtr MakePostRequest(
 void MakeHeadRequest(const std::string &url, int &statusCode);
 bool HasHead(const std::string &url);
 
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid);
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> MakeDvidNodeService(
     const ZDvidTarget &target);
-ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
+std::shared_ptr<libdvid::DVIDNodeService> MakeDvidNodeService(
     const libdvid::DVIDNodeService *service);
 
-ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> MakeDvidConnection(
     const std::string &address, const std::string &user, const std::string &app);
-ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> MakeDvidConnection(
     const std::string &address);
-ZSharedPointer<libdvid::DVIDConnection> MakeDvidConnection(
+std::shared_ptr<libdvid::DVIDConnection> MakeDvidConnection(
     const libdvid::DVIDConnection *conn);
 
 #if defined(_ENABLE_LOWTIS_)
-ZSharedPointer<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);
+std::shared_ptr<lowtis::ImageService> MakeLowtisService(const ZDvidTarget &target);
 lowtis::ImageService* MakeLowtisServicePtr(const ZDvidTarget &target);
 #endif
 
@@ -85,9 +87,34 @@ ZJsonObject GetDataInstances(const std::string &type);
 dvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
 dvid::EDataType GetDataType(const std::string &typeName);
 
-ZDvidTarget MakeTargetFromUrl(const std::string path);
+/*!
+ * \brief Make target from a url (DEPRECATED)
+ *
+ * This function is kept for compatibility.
+ */
+ZDvidTarget MakeTargetFromUrl_deprecated(const std::string &path);
+
+/*!
+ * \brief Make DVID target from URL specification
+ *
+ * pattern: [http|https|dvid|mock]://<base_address>?uuid=xxx&<field>=<value>
+ *
+ * <field> will be passed to set the properties of the target:
+ *   segmentation: segmentation data
+ *   grayscale: grayscale data
+ *   admintoken: admin token
+ *   readonly: set the target to readonly
+ *
+ * Note it also supports the source string which has pattern like
+ * "http:<address>".
+ *
+ * \param path Input url
+ */
+ZDvidTarget MakeTargetFromUrlSpec(const std::string &path);
 
 bool IsValidDvidUrl(const std::string &url);
+
+bool IsServerReachable(const ZDvidTarget &target);
 
 /*!
  * \brief Test if two UUIDs they point to the same DVID node
@@ -111,8 +138,13 @@ ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
 ZIntCuboid GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo);
 #endif
 
-std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(const ZDvidReader &reader, const std::vector<uint64_t> &bodyIdArray,
+std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
+    const ZDvidReader &reader, const std::vector<uint64_t> &bodyIdArray,
     bool mergingToLargest);
+
+std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
+    uint64_t defaultTargetId, const std::vector<uint64_t> &bodyIdArray,
+    std::function<bool(uint64_t, uint64_t)> lessStable);
 
 std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
     const ZDvidReader &reader, uint64_t defaultTargetId,

@@ -20,6 +20,7 @@
 
 #include "ui_mainwindow.h"
 
+#include "mylib/array.h"
 #include "logging/zlog.h"
 
 #include "mvc/zstackframe.h"
@@ -134,10 +135,10 @@
 #include "dialogs/zflyemroidialog.h"
 #include "dialogs/shapepaperdialog.h"
 #include "zsleeper.h"
-
+#include "data3d/displayconfig.h"
 #include "dialogs/dvidoperatedialog.h"
 #include "dialogs/synapseimportdialog.h"
-#include "dialogs/flyembodymergeprojectdialog.h"
+//#include "dialogs/flyembodymergeprojectdialog.h"
 #include "dialogs/zsegmentationprojectdialog.h"
 #include "dialogs/zsubtractswcsdialog.h"
 #include "dialogs/zautotracedialog.h"
@@ -356,9 +357,11 @@ MainWindow::~MainWindow()
   }
 */
 
+  /*
   if (m_roiDlg != NULL) {
     m_roiDlg->clear();
   }
+  */
 
   /*
   if (m_mergeBodyDlg != NULL) {
@@ -410,7 +413,7 @@ void MainWindow::initDialog()
   connect(m_bcDlg, SIGNAL(autoAdjustTriggered()), this, SLOT(autoBcAdjust()));
 
   m_helpDlg = new HelpDialog(this);
-  m_DiagnosisDlg = new DiagnosisDialog(this);
+//  m_DiagnosisDlg = new DiagnosisDialog(this);
   m_penWidthDialog = new PenWidthDialog(this);
   m_resDlg = new ResolutionDialog(this);
 
@@ -443,7 +446,7 @@ void MainWindow::initDialog()
 
 
   m_dvidSkeletonizeDialog = new DvidSkeletonizeDialog(this);
-  m_roiDlg = new ZFlyEmRoiDialog(this);
+//  m_roiDlg = new ZFlyEmRoiDialog(this);
   m_shapePaperDlg = new ShapePaperDialog(this);
 
   m_segmentationDlg = new ZSegmentationProjectDialog(this);
@@ -476,8 +479,8 @@ void MainWindow::initDialog()
 //        getSettings().value("BodyMergeProjectGeometry").toByteArray());
 //  m_bodySplitProjectDialog->restoreGeometry(
 //          getSettings().value("BodySplitProjectGeometry").toByteArray());
-  m_roiDlg->restoreGeometry(
-        getSettings().value("RoiProjectGeometry").toByteArray());
+//  m_roiDlg->restoreGeometry(
+//        getSettings().value("RoiProjectGeometry").toByteArray());
   m_shapePaperDlg->restoreGeometry(
         getSettings().value("ShapePaperDialogGeometry").toByteArray());
 
@@ -748,6 +751,11 @@ void MainWindow::createActions()
   createEditActions();
   createViewActions();
   createToolActions();
+
+  m_windowActionGroup = new QActionGroup(this);
+  m_windowActionGroup->setExclusive(true);
+  connect(m_windowActionGroup, SIGNAL(triggered(QAction*)),
+          this, SLOT(showChildWindow(QAction*)));
 
   //traceTubeAction->setChecked(true);
 
@@ -1362,11 +1370,13 @@ bool MainWindow::okToContinue()
     }
   }
 
+  /*
   if (m_roiDlg->isVisible()) {
     if (!m_roiDlg->close()) {
       return false;
     }
   }
+  */
 
   return true;
 }
@@ -1540,7 +1550,7 @@ void MainWindow::openFileListFunc(const QStringList fileList)
   foreach (const QString &fileName, fileList){
     emit progressStarted("Opening " + fileName + " ...", 100);
     ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
-    if (ZFileType::isNeutubeOpenable(fileType)) {
+    if (ZFileType::IsNeutubeOpenable(fileType)) {
       neutu::Document::ETag tag = neutu::Document::ETag::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
         tag = neutu::Document::ETag::BIOCYTIN_STACK;
@@ -1569,7 +1579,7 @@ void MainWindow::openFileFunc(const QString &fileName)
 {
   ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
-  if (ZFileType::isNeutubeOpenable(fileType)) {
+  if (ZFileType::IsNeutubeOpenable(fileType)) {
     neutu::Document::ETag tag = neutu::Document::ETag::NORMAL;
     if (GET_APPLICATION_NAME == "Biocytin") {
       tag = neutu::Document::ETag::BIOCYTIN_STACK;
@@ -2009,6 +2019,7 @@ void MainWindow::importImageSequence()
   //QApplication::processEvents();
 }
 
+/*
 void MainWindow::tryToClose()
 {
   --m_proofreadWindowCount;
@@ -2017,6 +2028,7 @@ void MainWindow::tryToClose()
     close();
   }
 }
+*/
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -2164,8 +2176,8 @@ void MainWindow::writeSettings()
 //        "BodyMergeProjectGeometry", m_mergeBodyDlg->saveGeometry());
 //  getSettings().setValue(
 //        "BodySplitProjectGeometry", m_bodySplitProjectDialog->saveGeometry());
-  getSettings().setValue(
-        "RoiProjectGeometry", m_roiDlg->saveGeometry());
+//  getSettings().setValue(
+//        "RoiProjectGeometry", m_roiDlg->saveGeometry());
   getSettings().setValue("ShapePaperDialogGeometry",
                          m_shapePaperDlg->saveGeometry());
 #endif
@@ -2238,7 +2250,7 @@ void MainWindow::updateTraceMode(ZStackFrame *frame, QAction *action)
       traceMode = ZInteractiveContext::TRACE_OFF;
     }
     frame->presenter()->interactiveContext().setTraceMode(traceMode);
-    frame->presenter()->updateLeftMenu();
+    frame->presenter()->updateLeftMenu(frame->view());
   }
 }
 
@@ -2297,11 +2309,11 @@ void MainWindow::activateInteractiveMarkPuncta(QAction *action)
     if (action == noMarkPunctaAction) {
       frame->presenter()->interactiveContext().
           setMarkPunctaMode(ZInteractiveContext::MARK_PUNCTA_OFF);
-      frame->presenter()->updateLeftMenu();
+      frame->presenter()->updateLeftMenu(frame->view());
     } else if (action == markPunctaAction) {
       frame->presenter()->interactiveContext().
           setMarkPunctaMode(ZInteractiveContext::MARK_PUNCTA);
-      frame->presenter()->updateLeftMenu();
+      frame->presenter()->updateLeftMenu(frame->view());
     }
   }
 }
@@ -3063,7 +3075,7 @@ void MainWindow::test(ZTestOptionDialog *dlg)
 {
   switch (dlg->getOption()) {
   case ZTestOptionDialog::OPTION_NORMAL:
-    ZTest::test(this);
+    ZTest::Test(this);
     break;
   case ZTestOptionDialog::OPTION_STRESS:
     ZTest::stressTest(this);
@@ -4386,6 +4398,9 @@ void MainWindow::on_actionAddMask_triggered()
 
 void MainWindow::on_actionMask_triggered()
 {
+  ZDialogFactory::Warn(
+        "Deprecated Function", "This function has been removed.", this);
+#if 0
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     ZString path = frame->document()->stackSourcePath();
@@ -4408,17 +4423,17 @@ void MainWindow::on_actionMask_triggered()
       m_lastOpenedFilePath = fileName;
     }
   }
+#endif
 }
 
 void MainWindow::on_actionShortcut_triggered()
 {
-  if (GET_APPLICATION_NAME == "Biocytin" ||
-      GET_APPLICATION_NAME == "FlyEM") {
-//    m_helpDlg->show();
-//    m_helpDlg->raise();
-
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    m_helpDlg->show();
+    m_helpDlg->raise();
+  } else if (GET_APPLICATION_NAME == "FlyEM") {
     ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
-    bo->open("https://app.gitbook.com/@janelia-flyem/s/neutu/");
+    bo->open("https://janelia-flyem.gitbook.io/neutu/");
   } else if (GET_APPLICATION_NAME == "General") {
     QString title = QString("<h2> %1 Help </h2").
         arg(NeutubeConfig::getInstance().getSoftwareName().c_str());
@@ -4921,6 +4936,10 @@ void MainWindow::on_actionAutosaved_Files_triggered()
 
 void MainWindow::on_actionDiagnosis_triggered()
 {
+  if (m_DiagnosisDlg == nullptr) {
+    m_DiagnosisDlg = new DiagnosisDialog(this);
+  }
+
   m_DiagnosisDlg->show();
   QStringList info;
 
@@ -4928,6 +4947,7 @@ void MainWindow::on_actionDiagnosis_triggered()
   info << "Memory usage: " + flyem::GetMemoryUsage();
   info << QString("Stack usage: %1").arg(C_Stack::stackUsage());
   info << QString("Mc_Stack usage: %1").arg(C_Stack::McStackUsage());
+  info << QString("Array usage %1").arg(mylib::Array_Usage());
 #endif
 
   info.append(Z3DGpuInfo::instance().gpuInfo());
@@ -5679,9 +5699,9 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
   boundBox.expand(10);
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
+  ZStack *stack = reader.readGrayScale(boundBox.getMinCorner().x(),
+                                       boundBox.getMinCorner().y(),
+                                       boundBox.getMinCorner().z(),
                                        boundBox.width() + 1,
                                        boundBox.height() + 1,
                                        boundBox.depth() + 1);
@@ -5820,9 +5840,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   ZCuboid boundBox = hotSpotArray.toPointArray().getBoundBox();
   boundBox.expand(10);
 
-  ZStack *stack = reader.readGrayScale(boundBox.firstCorner().x(),
-                                       boundBox.firstCorner().y(),
-                                       boundBox.firstCorner().z(),
+  ZStack *stack = reader.readGrayScale(boundBox.getMinCorner().x(),
+                                       boundBox.getMinCorner().y(),
+                                       boundBox.getMinCorner().z(),
                                        boundBox.width() + 1,
                                        boundBox.height() + 1,
                                        boundBox.depth() + 1);
@@ -7031,7 +7051,7 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
   report("Evaluation", information.toStdString(), neutu::EMessageType::INFORMATION);
 }
 
-ZProofreadWindow *MainWindow::startProofread()
+ZProofreadWindow *MainWindow::startProofread(const QString &databaseName)
 {
   ZProofreadWindow *window = ZProofreadWindow::Make();
 
@@ -7039,7 +7059,7 @@ ZProofreadWindow *MainWindow::startProofread()
 
   window->showMaximized();
 
-  connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
+//  connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
   connect(window, SIGNAL(showingMainWindow()), this, SLOT(showAndRaise()));
 
 #if 0
@@ -7052,15 +7072,63 @@ ZProofreadWindow *MainWindow::startProofread()
   }
 #endif
 
+  if (!databaseName.isEmpty()) {
+    window->loadDatabaseFromName(databaseName);
+  }
+
+  addChildWindow(window);
+
   return window;
 }
 
-void MainWindow::showAndRaise()
-{
-  show();
-  raise();
+namespace {
+
+void show_and_raise(QMainWindow *window) {
+  if (window->isMinimized()) {
+    window->showNormal();
+  } else {
+    window->show();
+  }
+  window->raise();
 }
 
+}
+void MainWindow::showAndRaise()
+{
+  show_and_raise(this);
+}
+
+void MainWindow::showChildWindow(QMainWindow *window)
+{
+  if (m_childWindowMap.contains(window)) {
+    show_and_raise(window);
+  }
+}
+
+void MainWindow::showChildWindow(QAction *action)
+{
+  for (auto iter = m_childWindowMap.begin(); iter != m_childWindowMap.end(); ++iter) {
+    if (iter.value() == action) {
+      showChildWindow(iter.key());
+      break;
+    }
+  }
+}
+
+void MainWindow::removeChildWindow(QMainWindow *window)
+{
+  if (m_childWindowMap.contains(window)) {
+    QAction *action = m_childWindowMap.value(window);
+    m_ui->menuWindow->removeAction(action);
+    m_windowActionGroup->removeAction(action);
+    m_childWindowMap.remove(window);
+    action->deleteLater();
+
+    if (m_childWindowMap.isEmpty() && !isVisible()) {
+      close();
+    }
+  }
+}
 
 /*
 void MainWindow::launchSplit(const QString &str)
@@ -7068,6 +7136,20 @@ void MainWindow::launchSplit(const QString &str)
   m_bodySplitProjectDialog->startSplit(str);
 }
 */
+
+void MainWindow::addChildWindow(QMainWindow *window)
+{
+  if (window) {
+    QAction *action = new QAction(this);
+    action->setText(QString("Proofread %1").arg(m_childWindowMap.size() + 1));
+    m_childWindowMap[window] = action;
+    m_windowActionGroup->addAction(action);
+    m_ui->menuWindow->addAction(action);
+    connect(window, &QObject::destroyed, this, [=]() {
+      removeChildWindow(window);
+    });
+  }
+}
 
 void MainWindow::on_actionProof_triggered()
 {
@@ -7177,10 +7259,10 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
       obj->setColor(255, 255, 255, 255);
       frame->document()->addObject(obj);
 
-      ZIntCuboid cuboid = obj->getBoundBox();
+      ZIntCuboid cuboid = obj->getIntBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
-      stack->setOffset(cuboid.getFirstCorner());
+      stack->setOffset(cuboid.getMinCorner());
       frame->document()->loadStack(stack);
 
       addStackFrame(frame);
@@ -8161,4 +8243,20 @@ void MainWindow::runNeuTuPaper()
 void MainWindow::on_actionUpdate_Body_Info_triggered()
 {
   runNeuTuPaper();
+}
+
+void MainWindow::on_actionSubtract_Background_Adaptive_triggered()
+{
+  ZStackFrame *frame = activeStackFrame();
+  if (frame) {
+    frame->subtractBackgroundAdaptive();
+  }
+}
+
+void MainWindow::on_actionExportSlice_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    frame->exportSlice();
+  }
 }

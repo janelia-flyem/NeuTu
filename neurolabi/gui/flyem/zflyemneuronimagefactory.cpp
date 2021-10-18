@@ -75,7 +75,7 @@ Stack* ZFlyEmNeuronImageFactory::createImage(const ZObject3dScan &obj) const
     ZObject3dScan objProj = obj.makeYProjection();
     objProj.downsampleMax(m_downsampleInterval[0], m_downsampleInterval[2], 0);
     Cuboid_I boundBox;
-    objProj.getBoundBox(&boundBox);
+    objProj.getIntBoundBox(&boundBox);
 
     int width = 0;
     int height = 0;

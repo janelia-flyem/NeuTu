@@ -3,13 +3,29 @@
 
 #include "ztestheader.h"
 #include "neutubeconfig.h"
-#include "dvid/zdvidannotation.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
-#include "flyem/zflyemtodoitem.h"
+#include "zjsonobjectparser.h"
+#include "dvid/zdvidannotation.h"
 #include "dvid/zdvidsynapse.h"
+#include "flyem/zflyemtodoitem.h"
 
 #ifdef _USE_GTEST_
+
+TEST(ZDvidAnnotation, Basic)
+{
+  ZDvidAnnotation annot;
+  annot.setPosition(1, 2, 3);
+  annot.addProperty("test", "t1");
+  ASSERT_EQ("t1", annot.getProperty<std::string>("test"));
+
+  ZDvidAnnotation annot2 = annot;
+  ASSERT_EQ("t1", annot2.getProperty<std::string>("test"));
+
+  annot.addProperty("test2", "t2");
+  ASSERT_EQ("t2", annot.getProperty<std::string>("test2"));
+  ASSERT_EQ("", annot2.getProperty<std::string>("test2"));
+}
 
 TEST(ZDvidAnnotation, Property)
 {
@@ -63,17 +79,182 @@ TEST(ZDvidAnnotation, Json)
   ZDvidAnnotation annot;
   ZJsonObject jsonObj = annot.toJsonObject();
   ASSERT_FALSE(jsonObj.hasKey("Prop"));
+
   ZDvidAnnotation::AddProperty(jsonObj, "test", true);
   ASSERT_TRUE(jsonObj.hasKey("Prop"));
   ZJsonObject propJson(jsonObj.value("Prop"));
 
 //  std::cout << ZJsonParser::stringValue(propJson.value("test").getData()) << std::endl;
 
-  ASSERT_EQ("1", ZJsonParser::stringValue(propJson.value("test").getData()));
+  ASSERT_EQ("1", ZJsonParser::stringValue(propJson.value("test").getData()))
+      << propJson.dumpString(0);
 
   ZDvidAnnotation::AddProperty(jsonObj, "test2", "true");
   ASSERT_EQ("true", ZJsonParser::stringValue(propJson.value("test2").getData()));
 
+  ASSERT_FALSE(ZDvidAnnotation::IsChecked(jsonObj));
+  ZDvidAnnotation::AddProperty(jsonObj, "checked", true);
+  ASSERT_TRUE(ZDvidAnnotation::IsChecked(jsonObj));
+
+  ZJsonObject jsonObj2;
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+  jsonObj2 = jsonObj.clone();
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  ZDvidAnnotation::AddProperty(jsonObj, "checked", true);
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  ZDvidAnnotation::AddProperty(jsonObj2, "checked", false);
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  ZDvidAnnotation::AddProperty(jsonObj2, "user", "test");
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  ZDvidAnnotation::AddProperty(jsonObj, "p1", 1);
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+  ZDvidAnnotation::AddProperty(jsonObj2, "p1", 1);
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  ZDvidAnnotation::AddProperty(jsonObj2, "p2", 1);
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  jsonObj.removeKey("Prop");
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_FALSE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  jsonObj2.removeKey("Prop");
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  ZDvidAnnotation::AddProperty(jsonObj, "checked", true);
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj, jsonObj2));
+  ASSERT_TRUE(ZDvidAnnotation::HasSameSubProp(jsonObj2, jsonObj));
+
+  propJson = jsonObj.value("Prop");
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_CREATED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+  ASSERT_FALSE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+
+  jsonObj2.clear();
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_FALSE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_CREATED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+  ASSERT_FALSE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+
+
+  ZDvidAnnotation::AddProperty(jsonObj, "checked", false);
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_FALSE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_CREATED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+
+
+  jsonObj.decode("{\"Pos\":[650,875,1023],\"Kind\":\"Note\","
+      "\"Tags\":[\"user:zhaot\"],\"Prop\":{\"body ID\":\"1536878688\","
+      "\"checked\":\"1\",\"comment\":\"\",\"custom\":\"1\",\"status\":\"\","
+      "\"time\":\"\",\"type\":\"Other\",\"user\":\"zhaot\"},\"Rels\":null}", false);
+  propJson = jsonObj.value("Prop");
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_CREATED_TIME, "").empty());
+  jsonObj2 = jsonObj.clone();
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_CREATED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+
+  ZDvidAnnotation::RemoveProperty(jsonObj2, "checked");
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_FALSE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+
+  ZDvidAnnotation::RemoveProperty(jsonObj, "checked");
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+
+  ZDvidAnnotation::RemoveProperty(jsonObj, "comment");
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+
+  ZDvidAnnotation::AddProperty(jsonObj, "comment", "test");
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_FALSE(ZJsonObjectParser::GetValue(
+                propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, "").empty());
+  ASSERT_TRUE(ZJsonObjectParser::GetValue(
+                 propJson, ZDvidAnnotation::KEY_CHECKED_TIME, "").empty());
+
+  jsonObj2 = jsonObj.clone();
+
+  ZDvidAnnotation::AddProperty(
+        jsonObj, ZDvidAnnotation::KEY_CREATED_TIME, "created time");
+  ZDvidAnnotation::AddProperty(
+        jsonObj2, ZDvidAnnotation::KEY_CREATED_TIME, "old created time");
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_EQ("created time", ZJsonObjectParser::GetValue(
+              propJson, ZDvidAnnotation::KEY_CREATED_TIME, ""));
+
+  ZDvidAnnotation::RemoveProperty(jsonObj, ZDvidAnnotation::KEY_CREATED_TIME);
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_EQ("old created time", ZJsonObjectParser::GetValue(
+              propJson, ZDvidAnnotation::KEY_CREATED_TIME, ""));
+
+
+  ZDvidAnnotation::AddProperty(
+        jsonObj, ZDvidAnnotation::KEY_MODIFIED_TIME, "modified time");
+  ZDvidAnnotation::AddProperty(
+        jsonObj2, ZDvidAnnotation::KEY_MODIFIED_TIME, "old modified time");
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_EQ("modified time", ZJsonObjectParser::GetValue(
+              propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, ""));
+  ZDvidAnnotation::RemoveProperty(jsonObj, ZDvidAnnotation::KEY_MODIFIED_TIME);
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_EQ("old modified time", ZJsonObjectParser::GetValue(
+              propJson, ZDvidAnnotation::KEY_MODIFIED_TIME, ""));
+
+  ZDvidAnnotation::AddProperty(jsonObj, "checked", true);
+  ZDvidAnnotation::AddProperty(jsonObj2, "checked", true);
+  ZDvidAnnotation::AddProperty(
+        jsonObj, ZDvidAnnotation::KEY_CHECKED_TIME, "checked time");
+  ZDvidAnnotation::AddProperty(
+        jsonObj2, ZDvidAnnotation::KEY_CHECKED_TIME, "old checked time");
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_EQ("checked time", ZJsonObjectParser::GetValue(
+              propJson, ZDvidAnnotation::KEY_CHECKED_TIME, ""));
+  ZDvidAnnotation::RemoveProperty(jsonObj, ZDvidAnnotation::KEY_CHECKED_TIME);
+  ZDvidAnnotation::UpdateTime(jsonObj, jsonObj2);
+  ASSERT_EQ("old checked time", ZJsonObjectParser::GetValue(
+              propJson, ZDvidAnnotation::KEY_CHECKED_TIME, ""));
 }
 
 TEST(ZDvidAnnotation, ZFlyEmToDoItem)
@@ -87,6 +268,8 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
     //  item.toJsonObject().print();
     ASSERT_EQ(neutu::EToDoAction::TO_MERGE, item.getAction());
 
+    ZFlyEmToDoItem item2(item);
+    ASSERT_EQ(neutu::EToDoAction::TO_MERGE, item2.getAction());
 
     std::string mergeTag = std::string(ZFlyEmToDoItem::KEY_ACTION) + ":"
         + ZFlyEmToDoItem::ACTION_MERGE_TAG;

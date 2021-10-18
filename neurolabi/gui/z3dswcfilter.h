@@ -245,6 +245,7 @@ private:
   void addTreeColorWidget(ZSwcColorParam &param);
 
   void prepareIntrinsicColor();
+  void handleZeroRadius();
 
 private:
   Z3DLineRenderer m_lineRenderer;

@@ -10,11 +10,16 @@ public:
   ZIntCuboidObj();
 
 public:
+  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
+  /*
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       neutu::EAxis sliceAxis) const;
+                       neutu::EAxis sliceAxis) const override;
+                       */
 //  virtual const std::string& className() const;
 
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
   bool isOnSlice(int z, neutu::EAxis sliceAxis) const;
 
   static ZStackObject::EType GetType() {
@@ -38,8 +43,8 @@ public:
   int getHeight() const;
   int getDepth() const;
 
-  bool hit(double x, double y, neutu::EAxis axis);
-  bool hit(double x, double y, double z);
+  bool hit(double x, double y, neutu::EAxis axis) override;
+  bool hit(double x, double y, double z) override;
 
   inline const ZIntCuboid& getCuboid() const { return m_cuboid; }
 
@@ -47,7 +52,8 @@ public:
     m_cuboid = box;
   }
 
-  void boundBox(ZIntCuboid *box) const;
+  void boundBox(ZIntCuboid *box) const override;
+  ZCuboid getBoundBox() const override;
 
   void join(const ZIntCuboid &cuboid);
 

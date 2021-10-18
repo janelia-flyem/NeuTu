@@ -25,8 +25,8 @@ TEST(FlyEmBodyAnnotationDialog, Basic)
         "}");
   dlg.loadBodyAnnotation(annotation);
   ASSERT_EQ(annotation, dlg.getBodyAnnotation())
-      << annotation.toString()
-      << dlg.getBodyAnnotation().toString();
+      << annotation.brief()
+      << dlg.getBodyAnnotation().brief();
   ASSERT_TRUE(annotation.hasSameUserStatus(dlg.getBodyAnnotation()));
 
   annotation.loadJsonString(
@@ -113,6 +113,29 @@ TEST(FlyEmBodyAnnotationDialog, Basic)
         "}");
   dlg.loadBodyAnnotation(annotation);
   ASSERT_EQ("testprop", dlg.getProperty());
+}
+
+TEST(FlyEmBodyAnnotationDialog, manage)
+{
+  FlyEmBodyAnnotationDialog dlg(true, nullptr);
+  dlg.setValue(FlyEmBodyAnnotationDialog::KEY_TYPE, "test type");
+  ASSERT_EQ("test type",
+            dlg.getValue(FlyEmBodyAnnotationDialog::KEY_TYPE).toString());
+
+  dlg.setValue(FlyEmBodyAnnotationDialog::KEY_STATUS, "Roughly Traced");
+  ASSERT_EQ("Roughly Traced",
+            dlg.getValue(FlyEmBodyAnnotationDialog::KEY_STATUS).toString());
+  ASSERT_EQ("Roughly Traced", dlg.getStatus());
+
+  dlg.setValue(FlyEmBodyAnnotationDialog::KEY_INSTANCE, "test instance");
+  ASSERT_EQ("test instance",
+            dlg.getValue(FlyEmBodyAnnotationDialog::KEY_INSTANCE).toString());
+  ASSERT_EQ("test instance", dlg.getInstance());
+
+  dlg.setValue(FlyEmBodyAnnotationDialog::KEY_COMMENT, "test comment");
+  ASSERT_EQ("test comment",
+            dlg.getValue(FlyEmBodyAnnotationDialog::KEY_COMMENT).toString());
+  ASSERT_EQ("test comment", dlg.getComment());
 }
 
 #endif

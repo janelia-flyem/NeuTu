@@ -1,10 +1,15 @@
 #include "zglobal.h"
 
-#include <QUrl>
 #include <map>
+#include <mutex>
+
+#include <QUrl>
 #include <QClipboard>
 #include <QApplication>
 
+#include <neulib/core/sharedresourcepool.h>
+
+#include "common/utilities.h"
 #include "logging/zqslog.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zpoint.h"
@@ -19,6 +24,15 @@
 #include "flyem/zglobaldvidrepo.h"
 #include "service/neuprintreader.h"
 #include "logging/neuopentracing.h"
+#include "logging/zlog.h"
+#include "qt/network/znetbufferreader.h"
+#include "qt/network/znetworkutils.h"
+#include "dvid/zdvidglobal.h"
+#include "dvid/zdvidbufferreader.h"
+
+auto dvidBufferReaderFactory = [](const std::string&) {
+  return new ZDvidBufferReader;
+};
 
 class ZGlobalData {
 public:
@@ -31,11 +45,18 @@ public:
   std::map<std::string, ZDvidWriter*> m_dvidWriterMap;
   NeuPrintReader *m_neuprintReader = nullptr;
   neutu::EServerStatus m_neuprintStatus = neutu::EServerStatus::OFFLINE;
+  neulib::SharedResourcePoolMap<ZDvidBufferReader> *m_bufferReaderResource = nullptr;
+  static const char* KEY_DVID_BUFFER_READER;
 };
+
+const char* ZGlobalData::KEY_DVID_BUFFER_READER  = "ZDvidBufferReader";
 
 ZGlobalData::ZGlobalData()
 {
   m_stackPosition.invalidate();
+  m_bufferReaderResource =
+      new neulib::SharedResourcePoolMap<ZDvidBufferReader>(
+        dvidBufferReaderFactory);
 }
 
 ZGlobalData::~ZGlobalData()
@@ -49,6 +70,7 @@ ZGlobalData::~ZGlobalData()
   }
 
   delete m_neuprintReader;
+  delete m_bufferReaderResource;
 }
 
 
@@ -57,7 +79,6 @@ ZGlobal::ZGlobal()
   m_data = new ZGlobalData;
   m_browserOpener = ZSharedPointer<ZBrowserOpener>(new ZBrowserOpener);
   m_browserOpener->setChromeBrowser();
-//  m_browserOpener->setBrowserPath(ZBrowserOpener::INTERNAL_BROWSER);
 }
 
 ZGlobal::~ZGlobal()
@@ -66,6 +87,15 @@ ZGlobal::~ZGlobal()
   m_data = NULL;
 }
 
+std::shared_ptr<ZDvidBufferReader> ZGlobal::takeDvidBufferReader() const
+{
+  return m_data->m_bufferReaderResource->take(ZGlobalData::KEY_DVID_BUFFER_READER);
+}
+
+void ZGlobal::returnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader)
+{
+  m_data->m_bufferReaderResource->add(ZGlobalData::KEY_DVID_BUFFER_READER, reader);
+}
 
 ZBrowserOpener* ZGlobal::getBrowserOpener() const
 {
@@ -89,7 +119,7 @@ void ZGlobal::setDataPosition(const ZIntPoint &pt)
 
 void ZGlobal::setDataPosition(const ZPoint &pt)
 {
-  setDataPosition(pt.toIntPoint());
+  setDataPosition(pt.roundToIntPoint());
 }
 
 void ZGlobal::clearStackPosition()
@@ -115,6 +145,24 @@ void ZGlobal::setMainWindow(QMainWindow *win)
 QMainWindow* ZGlobal::getMainWindow() const
 {
   return m_mainWin;
+}
+
+ZJsonObject ZGlobal::readJsonObjectFromUrl(const std::string& url)
+{
+  return ZNetworkUtils::ReadJsonObjectMemo(url);
+}
+
+QString ZGlobal::getCleaveServer() const
+{
+  // Disable default server to avoid confusion
+  //QString server = "http://emdata2.int.janelia.org:5551/compute-cleave";
+  QString server;
+  std::string serverOverride = GET_FLYEM_CONFIG.getCleaveServer();
+  if (!serverOverride.empty()) {
+    server = serverOverride.c_str();
+  }
+
+  return server;
 }
 
 QString ZGlobal::getNeuPrintServer() const
@@ -151,7 +199,7 @@ QString ZGlobal::getNeuPrintAuth() const
   return auth;
 }
 
-QString ZGlobal::getNeuPrintToken() const
+QString ZGlobal::getNeuPrintToken(const std::string &key) const
 {
 //  QString auth = qgetenv("NEUPRINT_AUTH");
 //  if (auth.isEmpty()) {
@@ -160,9 +208,18 @@ QString ZGlobal::getNeuPrintToken() const
 //    LINFO() << "NeuPrint auth path:" << auth;
 //  }
 
+  std::string token;
+
   ZJsonObject obj;
-  obj.decode(getNeuPrintAuth().toStdString());
-  std::string token = ZJsonParser::stringValue(obj["token"]);
+  if (obj.decode(getNeuPrintAuth().toStdString(), true)) {
+    if (obj.hasKey(key)) {
+      token = ZJsonParser::stringValue(obj[key.c_str()]);
+    } else {
+      token = ZJsonParser::stringValue(obj["token"]);
+    }
+  } else {
+    LKERROR << "Invalid token: " + key;
+  }
 
   return QString::fromStdString(token);
 }
@@ -182,20 +239,24 @@ NeuPrintReader* ZGlobal::makeNeuPrintReader()
   QString server = qgetenv("NEUPRINT");
   if (!server.isEmpty()) {
     reader = new NeuPrintReader(server);
-    reader->authorize(getNeuPrintToken());
+    reader->authorize(getNeuPrintToken(reader->getServer().toStdString()));
+    if (!reader->isConnected()) {
+      delete reader;
+      reader = nullptr;
+    }
   }
 
   return reader;
 }
 
-NeuPrintReader* ZGlobal::makeNeuPrintReader(const QString &uuid)
+NeuPrintReader* ZGlobal::makeNeuPrintReaderFromUuid(const QString &uuid)
 {
   NeuPrintReader *reader = nullptr;
   QString server = qgetenv("NEUPRINT");
   if (!server.isEmpty()) {
     reader = new NeuPrintReader(server);
-    reader->authorize(getNeuPrintToken());
-    reader->updateCurrentDataset(uuid);
+    reader->authorize(getNeuPrintToken(reader->getServer().toStdString()));
+    reader->updateCurrentDatasetFromUuid(uuid);
     if (!reader->isReady()) {
       delete reader;
       reader = nullptr;
@@ -233,12 +294,17 @@ T* ZGlobal::getIODevice(
 
     if (io == NULL) {
       ZDvidTarget target;
-      target.setFromSourceString(name);
-      if (target.isValid()) {
-        io = new T;
-        if (!io->open(target)) {
-          delete io;
-          io = NULL;
+      ZJsonObject obj;
+      if (obj.decode(name, false)) {
+        target.loadJsonObject(obj);
+      } else {
+        target.setFromSourceString(name);
+        if (target.isValid()) {
+          io = new T;
+          if (!io->open(target)) {
+            delete io;
+            io = NULL;
+          }
         }
       }
     }
@@ -274,7 +340,7 @@ T* ZGlobal::getIODeviceFromUrl(
   QUrl url(path.c_str());
   if (url.scheme() == "http" || url.scheme() == "dvid" ||
       url.scheme() == "mock") {
-    ZDvidTarget target = dvid::MakeTargetFromUrl(path);
+    ZDvidTarget target = dvid::MakeTargetFromUrl_deprecated(path);
     return getIODevice(target, ioMap, key);
 //    device = getIODevice(target.getSourceString(true), ioMap);
   }
@@ -372,6 +438,17 @@ ZDvidWriter* ZGlobal::GetDvidWriterFromUrl(
 {
   return GetInstance().getDvidWriterFromUrl(url, key);
 }
+
+std::shared_ptr<ZDvidBufferReader> ZGlobal::TakeDvidBufferReader()
+{
+  return GetInstance().takeDvidBufferReader();
+}
+
+void ZGlobal::ReturnDvidBufferReader(std::shared_ptr<ZDvidBufferReader> reader)
+{
+  GetInstance().returnDvidBufferReader(reader);
+}
+
 
 void ZGlobal::CopyToClipboard(const std::string &str)
 {

@@ -6,7 +6,8 @@
 #include <iostream>
 
 #include "neurolabi_config.h"
-#include "tz_json.h"
+#include "c_json.h"
+//#include "tz_json.h"
 
 class ZJsonValue
 {
@@ -36,9 +37,9 @@ public:
    *
    * \param data The input integer
    */
-  ZJsonValue(int data);
-  ZJsonValue(double data);
-  ZJsonValue(const char *data);
+  explicit ZJsonValue(int data);
+  explicit ZJsonValue(double data);
+  explicit ZJsonValue(const char *data);
 
   ZJsonValue& operator= (const ZJsonValue &value);
 
@@ -53,12 +54,14 @@ public:
   bool isObject() const;
   bool isArray() const;
   bool isString() const;
-  bool isInteger();
-  bool isReal();
-  bool isNumber();
-  bool isBoolean();
+  bool isInteger() const;
+  bool isReal() const;
+  bool isNumber() const;
+  bool isBoolean() const;
   virtual bool isEmpty() const;
   bool isNull() const;
+
+  std::string getType() const;
 
   /*!
    * \brief Get the integer value of the json value.
@@ -73,6 +76,13 @@ public:
    * \return 0 if the object is not an integer or real type.
    */
   double toReal() const;
+
+  /*!
+   * \brief Get the boolean value of the json value
+   *
+   * \return false if the object is not a bool type.
+   */
+  bool toBoolean() const;
 
   std::string toString() const;
 

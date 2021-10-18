@@ -293,9 +293,9 @@ void ZStackFile::loadJsonObject(json_t *obj, const std::string &source)
       setType(format);
     } else if (isUrlTag(stackKey)) {
       if (m_type == FILE_LIST) {
-        size_t arraySize = ZJsonParser::arraySize(stackValue);
+        size_t arraySize = ZJsonParser::ArraySize(stackValue);
         for (size_t i = 0; i < arraySize; i++) {
-          json_t *obj = ZJsonParser::arrayValue(stackValue, i);
+          json_t *obj = ZJsonParser::ArrayValue(stackValue, i);
           ZString url = ZJsonParser::stringValue(obj);
           m_urlList.push_back(
                 url.absolutePath(ZString(source).dirPath()).c_str());
@@ -750,12 +750,12 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
       }
 
       Cuboid_I boundBox;
-      objArray[0].getBoundBox(&boundBox);
+      objArray[0].getIntBoundBox(&boundBox);
 
       //Get Bound box
       for (size_t i = 1; i < objArray.size(); i++) {
         Cuboid_I subBoundBox;
-        objArray[i].getBoundBox(&subBoundBox);
+        objArray[i].getIntBoundBox(&subBoundBox);
         Cuboid_I_Union(&boundBox, &subBoundBox, &boundBox);
       }
 

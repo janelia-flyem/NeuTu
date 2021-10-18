@@ -16,9 +16,9 @@ public:
   ZDvidData();
 
   enum class ERole {
-    GRAY_SCALE, //Grayscale data
-    BODY_LABEL, //Individual body data (sparsevol)
-    LABEL_BLOCK, //Segmentation data
+    GRAYSCALE, //Grayscale data
+    SEGMENTATION, //Segmentation data
+    SPARSEVOL, //Individual body data (sparsevol)
     ROI_CURVE, //ROI curve
     BODY_ANNOTATION, //Body Annnotation
     BOUND_BOX, //Bounding boxes of bodies
@@ -60,7 +60,7 @@ public:
 
   enum class EType {
     LABEL_GRAPH, ROI, GRAYSCALE8, RGBA8, LABLES64,
-    LABELBLK, LABELARRAY, LABELMAP, MULTISCALE_2D,
+    LABELVOL, LABELBLK, LABELARRAY, LABELMAP, MULTISCALE_2D,
     MULTCHAN16, KEY_VALUE
   };
 
@@ -73,6 +73,7 @@ public:
   static std::string GetName(
       ZDvidData::ERole role, ZDvidData::ERole prefixRole,
       const std::string &prefixName);
+  static std::string GetName(ERole role, const std::string &prefix);
 //  static std::string GetName(ERole role, ERole prefixRole);
 
   static bool IsNullName(const std::string &name);
@@ -88,7 +89,6 @@ public:
 
 
 private:
-  static std::string GetName(ERole role, const std::string &prefix);
   static bool IsDefaultName(ERole role, const std::string &name);
 
 private:

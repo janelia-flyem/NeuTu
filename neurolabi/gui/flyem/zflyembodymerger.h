@@ -18,7 +18,7 @@ class ZJsonArray;
 /*!
  * \brief The ZFlyEmBodyMerger class
  *
- * label 0 is treated as null.
+ * Label 0 is treated as null.
  */
 class ZFlyEmBodyMerger
 {
@@ -30,6 +30,12 @@ public:
   typedef QList<TLabelMap> TLabelMapList;
   typedef QStack<TLabelMap> TLabelMapStack;
 
+  /*!
+   * \brief Get the final mapped label
+   *
+   * If \a label does not exist in the map, it returns \a label because by
+   * default a label is mapped to itself.
+   */
   uint64_t getFinalLabel(uint64_t label) const;
   std::set<uint64_t> getFinalLabel(const std::set<uint64_t> labelSet) const;
   template <typename InputIterator>
@@ -66,6 +72,12 @@ public:
   std::string toJsonString() const;
   void decodeJsonString(const std::string &str);
 
+  /*!
+   * \brief Get labels that are mapped to a certain label.
+   *
+   * For the special case when \a finalLabel is not a final label, i.e. it is
+   * mapped to another label, an empty container will be returned.
+   */
   QList<uint64_t> getOriginalLabelList(uint64_t finalLabel) const;
   QSet<uint64_t> getOriginalLabelSet(uint64_t finalLabel) const;
   template <typename InputIterator>

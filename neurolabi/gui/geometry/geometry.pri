@@ -1,4 +1,7 @@
 HEADERS += \
+    $$PWD/2d/dims.h \
+    $$PWD/2d/point.h \
+    $$PWD/2d/rectangle.h \
     $$PWD/zaffineplane.h \
     $$PWD/zaffinerect.h \
     $$PWD/zgeo3dscalarfield.h \
@@ -15,9 +18,13 @@ HEADERS += \
     $$PWD/zellipsoid.h \
     $$PWD/zintcuboidarray.h \
     $$PWD/zintcuboidface.h \
-    $$PWD/zlinesegmentarray.h
+    $$PWD/zlinesegmentarray.h \
+    $$PWD/zrotator.h
 
 SOURCES += \
+    $$PWD/2d/dims.cpp \
+    $$PWD/2d/point.cpp \
+    $$PWD/2d/rectangle.cpp \
     $$PWD/zaffineplane.cpp \
     $$PWD/zaffinerect.cpp \
     $$PWD/zgeo3dscalarfield.cpp \
@@ -34,4 +41,5 @@ SOURCES += \
     $$PWD/zellipsoid.cpp \
     $$PWD/zintcuboidarray.cpp \
     $$PWD/zintcuboidface.cpp \
-    $$PWD/zlinesegmentarray.cpp
+    $$PWD/zlinesegmentarray.cpp \
+    $$PWD/zrotator.cpp

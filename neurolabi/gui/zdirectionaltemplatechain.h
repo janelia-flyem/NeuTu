@@ -23,13 +23,22 @@ public:
 //    virtual const std::string& className() const;
 
 public:
+    bool display(
+        QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+      return false;
+    }
+    /*
     virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                         neutu::EAxis sliceAxis) const;
+                         neutu::EAxis sliceAxis) const override;
+                         */
     void trace(const ZStack *stack, Trace_Workspace *tws);
     void append(ZDirectionalTemplate* dt);
     void prepend(ZDirectionalTemplate* dt);
     int hitTest(double x, double y, double z);
     ZLocsegChain* toLocsegChain();
+
+    ZCuboid getBoundBox() const override;
+
 private:
     QList<ZDirectionalTemplate*> m_chain;
 };

@@ -19,10 +19,11 @@
 #include "zdvidpatchdatafetcher.h"
 #include "zdviddataslicehelper.h"
 #include "zutils.h"
+#include "geometry/zgeometry.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
-  setTarget(ZStackObject::ETarget::TILE_CANVAS);
+  setTarget(neutu::data3d::ETarget::TILE_CANVAS);
   m_type = GetType();
   m_highContrast = false;
 //  m_view = NULL;
@@ -352,16 +353,17 @@ bool ZDvidTileEnsemble::update(
       updated = true;
 
       if (m_dataFetcher != NULL && getDvidTarget().isTileLowQuality()) {
-        QRect highresViewPort = getHelper()->getViewPort();
-        if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {
+//        QRect highresViewPort = getHelper()->getViewPort();
+        ZAffineRect rect = getHelper()->getViewParamLastUpdate(0).getIntCutRect();
+        if (rect.getWidth() < 1024 || rect.getHeight() < 1024) {
           int z = getHelper()->getZ();
-          QPoint center = highresViewPort.center();
+//          QPoint center = highresViewPort.center();
           int width = 512;
           int height = 512;
-          int x0 = center.x() - width / 2 - 1;
-          int y0 = center.y() - height / 2 - 1;
-          int x1 = x0 + width;
-          int y1 = y0 + height;
+          int x0 = rect.getCenter().x() - width / 2 - 1;
+          int y0 = rect.getCenter().y() - height / 2 - 1;
+          int x1 = x0 + width - 1;
+          int y1 = y0 + height - 1;
 
           ZIntCuboid region(x0, y0, z, x1, y1, z);
           m_dataFetcher->submit(region);
@@ -405,7 +407,12 @@ bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
   bool updated = false;
 
   if (viewParam.isValid()) {
-    QRect fov = viewParam.getViewPort();
+    ZAffineRect rect = viewParam.getCutRect();
+    ZIntCuboid box = zgeom::GetIntBoundBox(rect);
+
+    QRect fov(QPoint(box.getMinX(), box.getMinY()),
+              QSize(box.getWidth(), box.getHeight()));
+//    QRect fov = viewParam.getViewPort();
     int resLevel = viewParam.getZoomLevel(m_tilingInfo.getMaxLevel());
     ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
     if (getHelper()->hasNewView(newViewParam)) {
@@ -418,8 +425,8 @@ bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
           tileIndices = m_tilingInfo.getCoverIndex(resLevel, fov);
         }
       }
-      updated = update(tileIndices, resLevel, viewParam.getZ());
-      getHelper()->setViewParam(viewParam);
+      updated = update(tileIndices, resLevel, rect.getCenter().getZ());
+      getHelper()->setViewParamLastUpdate(viewParam);
     }
   }
 
@@ -428,11 +435,12 @@ bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
 
 void ZDvidTileEnsemble::forceUpdate()
 {
-  ZStackViewParam param = getHelper()->getViewParam();
-  getHelper()->invalidateViewParam();
+  ZStackViewParam param = getHelper()->getViewParamLastUpdate(0);
+  getHelper()->invalidateViewParam(0);
   update(param);
 }
 
+#if 0
 void ZDvidTileEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -535,14 +543,15 @@ void ZDvidTileEnsemble::display(
 #endif
 
   if (m_patch != NULL) {
-    if (m_patchRange.getFirstCorner().getZ() == painter.getZOffset() + slice) {
-      painter.drawImage(m_patchRange.getFirstCorner().getX(),
-                        m_patchRange.getFirstCorner().getY(),
+    if (m_patchRange.getMinCorner().getZ() == painter.getZOffset() + slice) {
+      painter.drawImage(m_patchRange.getMinCorner().getX(),
+                        m_patchRange.getMinCorner().getY(),
                         *m_patch);
     }
   }
 //  std::cout << "Draw image time: " << toc() << std::endl;
 }
+#endif
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 {

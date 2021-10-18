@@ -10,34 +10,43 @@
 #include <cassert>
 #include <cstdint>
 
-#include "zobject3d.h"
-#include "zgraph.h"
-#include "tz_stack_objlabel.h"
-#include "zerror.h"
 #include "tz_constant.h"
-#include "neutubeconfig.h"
-#include "tz_stack_bwmorph.h"
-#include "c_stack.h"
+#include "tz_stack_objlabel.h"
 #include "tz_stack_stat.h"
 #include "tz_stack_math.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_bwmorph.h"
+
+#include "common/utilities.h"
+#include "common/memorystream.h"
+#include "geometry/zgeometry.h"
+#include "geometry/zintcuboid.h"
+#include "geometry/zcuboid.h"
+
+#include "neurolabi/zdoublevector.h"
+#include "zobject3d.h"
+#include "zgraph.h"
+#include "neutubeconfig.h"
+
+#include "c_stack.h"
 #include "zfiletype.h"
 #include "zeigensolver.h"
-#include "zdoublevector.h"
 #include "zstack.hxx"
 #include "zstring.h"
 #include "zhdf5reader.h"
 #include "zhdf5writer.h"
 #include "zstringarray.h"
-#include "tz_stack_bwmorph.h"
 #include "zstackfactory.h"
-#include "tz_stack_bwmorph.h"
 #include "zpainter.h"
-#include "tz_stack_bwmorph.h"
-#include "geometry/zgeometry.h"
-#include "geometry/zintcuboid.h"
 #include "zstackwriter.h"
 #include "zobject3dfactory.h"
-#include "common/memorystream.h"
+#include "zstackfactory.h"
+#include "data3d/displayconfig.h"
+
+#if _QT_GUI_USED_
+#include "vis2d/utilities.h"
+#include "vis2d/zslicepainter.h"
+#endif
 
 ///////////////////////////////////////////////////
 
@@ -57,17 +66,17 @@ ZObject3dScan::ZObject3dScan()
   init();
 }
 
-ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj),
-  m_zProjection(NULL)
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj)
 {
   *this = obj;
 }
 
-ZObject3dScan::ZObject3dScan(const ZObject3dScan &&obj) : ZStackObject(obj),
-  m_zProjection(NULL)
+/*
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &&obj)
 {
   *this = obj;
 }
+*/
 
 ZObject3dScan::~ZObject3dScan()
 {
@@ -76,7 +85,7 @@ ZObject3dScan::~ZObject3dScan()
 
 void ZObject3dScan::init()
 {
-  setTarget(ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
 
   m_isCanonized = true;
@@ -90,6 +99,7 @@ void ZObject3dScan::init()
 
 ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
 {
+  ZStackObject::operator=(obj);
   deprecate(COMPONENT_ALL);
 
   dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
@@ -108,8 +118,10 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   return *this;
 }
 
+/*
 ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
 {
+  ZStackObject::operator=(obj);
   deprecate(COMPONENT_ALL);
 
   dynamic_cast<ZStackObject&>(*this) = obj;
@@ -121,12 +133,14 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
   m_blockingEvent = false;
   m_sliceAxis = obj.m_sliceAxis;
   m_dsIntv = obj.m_dsIntv;
+  m_zProjection = obj.m_zProjection;
 //  uint64_t m_label;
 
 //  this->m_zProjection = NULL;
 
   return *this;
 }
+*/
 
 void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 {
@@ -186,6 +200,8 @@ bool ZObject3dScan::isDeprecated(EComponent comp) const
     return m_slicewiseVoxelNumber.empty();
   case COMPONENT_Z_PROJECTION:
     return m_zProjection == NULL;
+  case COMPONENT_BOUND_BOX:
+    return m_boundBox.isEmpty();
   default:
     break;
   }
@@ -214,12 +230,16 @@ void ZObject3dScan::deprecate(EComponent comp)
     delete m_zProjection;
     m_zProjection = NULL;
     break;
+  case COMPONENT_BOUND_BOX:
+    m_boundBox.reset();
+    break;
   case COMPONENT_ALL:
     deprecate(COMPONENT_STRIPE_INDEX_MAP);
     deprecate(COMPONENT_INDEX_SEGMENT_MAP);
     deprecate(COMPONENT_ACCUMULATED_STRIPE_NUMBER);
     deprecate(COMPONENT_SLICEWISE_VOXEL_NUMBER);
     deprecate(COMPONENT_Z_PROJECTION);
+    deprecate(COMPONENT_BOUND_BOX);
     break;
   }
 }
@@ -519,12 +539,10 @@ void ZObject3dScan::loadStack(const Stack *stack)
   clear();
 
   if (stack == NULL) {
-    RECORD_ERROR(true, "null stack");
     return;
   }
 
   if (C_Stack::kind(stack) != GREY) {
-    RECORD_ERROR(true, "unsupported kind");
     return;
   }
 
@@ -535,7 +553,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   int sw = width;
   int sh = height;
   int sd = depth;
-  zgeom::shiftSliceAxis(sw, sh, sd, m_sliceAxis);
+  zgeom::ShiftSliceAxis(sw, sh, sd, m_sliceAxis);
 
   uint8_t *array = stack->array;
   uint8_t *arrayOrigin = array;
@@ -545,7 +563,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   size_t yStride = width;
   size_t zStride = area;
 
-  zgeom::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
+  zgeom::ShiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
   case neutu::EAxis::Z: //XY plane
@@ -685,11 +703,19 @@ bool ZObject3dScan::load(const std::string &filePath)
   } else if (ZFileType::FileType(filePath) == ZFileType::EFileType::OBJECT_SCAN) {
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp != NULL) {
+      neutu::ApplyOnce closeFile(neutu::NullFunction, [&]() {
+        fclose(fp);
+      });
       int stripeNumber = 0;
       fread(&stripeNumber, sizeof(int), 1, fp);
 
-      PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number",
-                    fclose(fp); return false);
+      if (stripeNumber < 0) {
+        neutu::ReportError("Invalid stripe number");
+//        fclose(fp);
+        return false;
+      }
+//      PROCESS_ERROR(stripeNumber < 0, "Invalid stripe number",
+//                    fclose(fp); return false);
       /*
     if (stripeNumber < 0) {
       RECORD_ERROR(true, "Invalid stripe number");
@@ -702,7 +728,7 @@ bool ZObject3dScan::load(const std::string &filePath)
            iter != m_stripeArray.end(); ++iter) {
         iter->read(fp);
       }
-      fclose(fp);
+//      fclose(fp);
 
       if (isCanonizedActually()) {
         m_isCanonized = true;
@@ -726,7 +752,10 @@ bool ZObject3dScan::load(const std::string &filePath)
     setSource(filePath);
   }
 
-  RECORD_WARNING(!succ, "Cannont open file " + filePath);
+  if (!succ) {
+    neutu::ReportWarning("Cannont open file " + filePath);
+  }
+//  RECORD_WARNING(!succ, "Cannont open file " + filePath);
 
   return succ;
 }
@@ -857,7 +886,8 @@ bool ZObject3dScan::save(const std::string &filePath) const
     fclose(fp);
     succ = true;
   } else {
-    RECORD_WARNING(true, "Cannont open file " + filePath);
+    neutu::ReportWarning("Cannont open file " + filePath);
+//    RECORD_WARNING(true, "Cannont open file " + filePath);
   }
 
   return succ;
@@ -1112,16 +1142,16 @@ void ZObject3dScan::remove(const ZIntCuboid &box)
   canonize();
   TEvent event = EVENT_NULL;
   for (ZObject3dStripe &stripe : m_stripeArray) {
-    if (stripe.getZ() >= box.getFirstCorner().getZ() &&
-        stripe.getZ() <= box.getLastCorner().getZ()) {
-      if (stripe.getY() >= box.getFirstCorner().getY() &&
-          stripe.getY() <= box.getLastCorner().getY()) {
-        stripe.remove(box.getFirstCorner().getX(), box.getLastCorner().getX());
+    if (stripe.getZ() >= box.getMinCorner().getZ() &&
+        stripe.getZ() <= box.getMaxCorner().getZ()) {
+      if (stripe.getY() >= box.getMinCorner().getY() &&
+          stripe.getY() <= box.getMaxCorner().getY()) {
+        stripe.remove(box.getMinCorner().getX(), box.getMaxCorner().getX());
         if (stripe.isEmpty()) {
           event |= EVENT_OBJECT_UNCANONIZED;
         }
       }
-    } else if (stripe.getZ() > box.getLastCorner().getZ()) {
+    } else if (stripe.getZ() > box.getMaxCorner().getZ()) {
       break;
     }
   }
@@ -1400,8 +1430,8 @@ bool ZObject3dScan::isAdjacentTo(
   canonizeConst();
   obj.canonizeConst();
 
-  ZIntCuboid box1 = getBoundBox();
-  ZIntCuboid box2 = obj.getBoundBox();
+  ZIntCuboid box1 = getIntBoundBox();
+  ZIntCuboid box2 = obj.getIntBoundBox();
   box1.expand(1, 1, 1);
   if (!box1.hasOverlap(box2)) {
     return false;
@@ -1496,8 +1526,8 @@ bool ZObject3dScan::isAdjacentToOld(const ZObject3dScan &obj) const
   canonizeConst();
   obj.canonizeConst();
 
-  ZIntCuboid box1 = getBoundBox();
-  ZIntCuboid box2 = obj.getBoundBox();
+  ZIntCuboid box1 = getIntBoundBox();
+  ZIntCuboid box2 = obj.getIntBoundBox();
 
   box1.expand(1, 1, 1);
 
@@ -1554,17 +1584,28 @@ bool ZObject3dScan::hasOverlap(ZObject3dScan &obj) const
   return false;
 }
 
+ZStack* ZObject3dScan::toStack(const ZIntCuboid &box, int v) const
+{
+  ZStack *stack = nullptr;
+  if (!box.isEmpty()) {
+    stack = ZStackFactory::MakeZeroStack(box);
+    drawStack(stack, v);
+  }
+
+  return stack;
+}
+
 Stack* ZObject3dScan::toStack(int *offset, int v) const
 {
   if (getVoxelNumber() == 0) {
     return NULL;
   }
 
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
   if (offset != NULL) {
-    offset[0] = boundBox.getFirstCorner().getX();
-    offset[1] = boundBox.getFirstCorner().getY();
-    offset[2] = boundBox.getFirstCorner().getZ();
+    offset[0] = boundBox.getMinCorner().getX();
+    offset[1] = boundBox.getMinCorner().getY();
+    offset[2] = boundBox.getMinCorner().getZ();
   }
 
 #if 0
@@ -1583,9 +1624,9 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
 
 
   int drawingOffet[3];
-  drawingOffet[0] = -boundBox.getFirstCorner().getX();
-  drawingOffet[1] = -boundBox.getFirstCorner().getY();
-  drawingOffet[2] = -boundBox.getFirstCorner().getZ();
+  drawingOffet[0] = -boundBox.getMinCorner().getX();
+  drawingOffet[1] = -boundBox.getMinCorner().getY();
+  drawingOffet[2] = -boundBox.getMinCorner().getZ();
 
   drawStack(stack, v, drawingOffet);
 
@@ -1603,11 +1644,11 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
     return NULL;
   }
 
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
   if (offset != NULL) {
-    offset[0] = boundBox.getFirstCorner().getX() - margin;
-    offset[1] = boundBox.getFirstCorner().getY() - margin;
-    offset[2] = boundBox.getFirstCorner().getZ() - margin;
+    offset[0] = boundBox.getMinCorner().getX() - margin;
+    offset[1] = boundBox.getMinCorner().getY() - margin;
+    offset[2] = boundBox.getMinCorner().getZ() - margin;
   }
 
 #if 0
@@ -1622,9 +1663,9 @@ Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
 
 
   int drawingOffet[3];
-  drawingOffet[0] = -boundBox.getFirstCorner().getX() + margin;
-  drawingOffet[1] = -boundBox.getFirstCorner().getY() + margin;
-  drawingOffet[2] = -boundBox.getFirstCorner().getZ() + margin;
+  drawingOffet[0] = -boundBox.getMinCorner().getX() + margin;
+  drawingOffet[1] = -boundBox.getMinCorner().getY() + margin;
+  drawingOffet[2] = -boundBox.getMinCorner().getZ() + margin;
 
   drawStack(stack, v, drawingOffet);
 
@@ -1672,34 +1713,47 @@ ZStack* ZObject3dScan::toStackObjectWithMargin(int v, int margin) const
 
 ZStack* ZObject3dScan::toVirtualStack() const
 {
-  ZIntCuboid box = getBoundBox();
+  ZIntCuboid box = getIntBoundBox();
 
   ZStack *stack = new ZStack(GREY, box.getWidth(), box.getHeight(),
                              box.getDepth(), 1, true);
-  stack->setOffset(box.getFirstCorner());
+  stack->setOffset(box.getMinCorner());
 
   stack->setDsIntv(getDsIntv());
 
   return stack;
 }
 
-ZIntCuboid ZObject3dScan::getBoundBox() const
+ZCuboid ZObject3dScan::getBoundBox() const
 {
-  ZIntCuboid boundBox;
+  ZCuboid box;
+  box.set(getIntBoundBox());
 
+  return box;
+}
+
+ZIntCuboid ZObject3dScan::getIntBoundBox() const
+{
+  if (!isDeprecated(COMPONENT_BOUND_BOX)) {
+    return m_boundBox;
+  }
+
+//  ZIntCuboid boundBox;
+
+  m_boundBox.reset();
   bool isFirst = true;
   for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     if (!iter->isEmpty()) {
       if (isFirst) {
-        boundBox.set(iter->getMinX(), iter->getY(), iter->getZ(),
+        m_boundBox.set(iter->getMinX(), iter->getY(), iter->getZ(),
                      iter->getMaxX(), iter->getY(), iter->getZ());
         isFirst = false;
       } else {
-        boundBox.joinY(iter->getY());
-        boundBox.joinZ(iter->getZ());
-        boundBox.joinX(iter->getMinX());
-        boundBox.joinX(iter->getMaxX());
+        m_boundBox.joinY(iter->getY());
+        m_boundBox.joinZ(iter->getZ());
+        m_boundBox.joinX(iter->getMinX());
+        m_boundBox.joinX(iter->getMaxX());
       }
 #ifdef _DEBUG_2
       std::cout << iter->getMinX() << " " << iter->getMaxX() << " "
@@ -1710,18 +1764,18 @@ ZIntCuboid ZObject3dScan::getBoundBox() const
     }
   }
 
-  boundBox.shiftSliceAxis(m_sliceAxis);
+  m_boundBox.shiftSliceAxis(m_sliceAxis);
 
-  return boundBox;
+  return m_boundBox;
 }
 
-void ZObject3dScan::getBoundBox(Cuboid_I *box) const
+void ZObject3dScan::getIntBoundBox(Cuboid_I *box) const
 {
-  ZIntCuboid boundBox = getBoundBox();
+  ZIntCuboid boundBox = getIntBoundBox();
 
-  Cuboid_I_Set_S(box, boundBox.getFirstCorner().getX(),
-                 boundBox.getFirstCorner().getY(),
-                 boundBox.getFirstCorner().getZ(),
+  Cuboid_I_Set_S(box, boundBox.getMinCorner().getX(),
+                 boundBox.getMinCorner().getY(),
+                 boundBox.getMinCorner().getZ(),
                  boundBox.getWidth(),
                  boundBox.getHeight(), boundBox.getDepth());
 }
@@ -1729,7 +1783,7 @@ void ZObject3dScan::getBoundBox(Cuboid_I *box) const
 void ZObject3dScan::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
-    *box = getBoundBox();
+    *box = getIntBoundBox();
   }
 }
 
@@ -2026,10 +2080,21 @@ size_t ZObject3dScan::getSegmentNumber() const
 
 void ZObject3dScan::translate(int dx, int dy, int dz)
 {
-  zgeom::shiftSliceAxis(dx, dy, dz, m_sliceAxis);
+  zgeom::ShiftSliceAxis(dx, dy, dz, m_sliceAxis);
 
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     m_stripeArray[i].translate(dx, dy, dz);
+  }
+
+  processEvent(EVENT_OBJECT_MODEL_CHANGED);
+}
+
+void ZObject3dScan::scale(int sx, int sy, int sz)
+{
+  zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
+
+  for (size_t i = 0; i < getStripeNumber(); ++i) {
+    m_stripeArray[i].scale(sx, sy, sz);
   }
 
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
@@ -2105,6 +2170,7 @@ void ZObject3dScan::duplicateSlice(int depth)
   processEvent(EVENT_OBJECT_MODEL_CHANGED);
 }
 
+#if 0
 void ZObject3dScan::displaySolid(
     ZPainter &painter, int z, bool isProj, int stride) const
 {
@@ -2131,33 +2197,85 @@ void ZObject3dScan::displaySolid(
   //  size_t lineIndex = 0;
   //int offsetX = iround(painter.getOffset().x());
   //int offsetY = iround(painter.getOffset().y());
-  for (size_t i = 0; i < stripeNumber; i += stride) {
-    const ZObject3dStripe &stripe = slice.getStripe(i);
-    if (stripe.getZ() == z || isProj) {
-      int nseg = stripe.getSegmentNumber();
-      for (int j = 0; j < nseg; ++j) {
-        int x0 = stripe.getSegmentStart(j);// - offsetX;
-        int x1 = stripe.getSegmentEnd(j);// - offsetX;
-        int y = stripe.getY();// - offsetY;
+//  double scale = painter.getScale(neutu::EAxis::X);
 
-        if (!m_dsIntv.isZero()) {
-          x0 *= (m_dsIntv.getX() + 1);
-          x1 *= (m_dsIntv.getX() + 1);
-          y *= m_dsIntv.getY() + 1;
+//  if (scale > 0.5) {
+    ZIntCuboid box;
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      if (stripe.getZ() == z || isProj) {
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          int x0 = stripe.getSegmentStart(j);// - offsetX;
+          int x1 = stripe.getSegmentEnd(j);// - offsetX;
+          int y = stripe.getY();// - offsetY;
+
+          /*
+          if (!m_dsIntv.isZero()) {
+            x0 *= (m_dsIntv.getX() + 1);
+            x1 *= (m_dsIntv.getX() + 1);
+            y *= m_dsIntv.getY() + 1;
+          }
+          */
+
+          //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
+          //        for (int x = x0; x <= x1; ++x) {
+          //          pointArray.push_back(QPoint(x, y));
+          //          pointArray[pointIndex++] = QPoint(x, y);
+          //        }
+          box.join(x0, y, 1);
+          box.join(x1, y, 1);
+          lineArray.push_back(QLine(x0, y, x1, y));
         }
-
-        //        lineArray[lineIndex++] = QLine(x0, y, x1, y);
-        //        for (int x = x0; x <= x1; ++x) {
-        //          pointArray.push_back(QPoint(x, y));
-        //          pointArray[pointIndex++] = QPoint(x, y);
-        //        }
-        lineArray.push_back(QLine(x0, y, x1, y));
       }
     }
+    painter.drawLines(lineArray, box.getMinX(), box.getMinY(),
+                      box.getWidth(), box.getHeight(),
+                      m_dsIntv.getX() + 1, m_dsIntv.getY() + 1);
+//    painter.drawLines(lineArray);
+#if 0
+  } else {
+    ZObject3dScan processedSlice;
+
+    for (size_t i = 0; i < stripeNumber; i += stride) {
+      const ZObject3dStripe &stripe = slice.getStripe(i);
+      if (stripe.getZ() == z || isProj) {
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          int x0 = stripe.getSegmentStart(j);// - offsetX;
+          int x1 = stripe.getSegmentEnd(j);// - offsetX;
+          int y = stripe.getY();// - offsetY;
+
+          if (!m_dsIntv.isZero()) {
+            x0 *= (m_dsIntv.getX() + 1);
+            x1 *= (m_dsIntv.getX() + 1);
+            y *= m_dsIntv.getY() + 1;
+          }
+          processedSlice.addSegment(z, y, x0, x1);
+        }
+      }
+    }
+    int intv = neutu::floor(1.0 / scale) - 1;
+    processedSlice.downsampleMax(intv, intv, 0);
+    ConstSegmentIterator iter(&processedSlice);
+    ZIntCuboid box;
+    while (iter.hasNext()) {
+      const ZObject3dScan::Segment &seg = iter.next();
+
+      lineArray.push_back(
+            QLine(seg.getStart(), seg.getY(), seg.getEnd(), seg.getY()));
+      box.join(seg.getStart(), seg.getY(), 1);
+      box.join(seg.getEnd(), seg.getY(), 1);
+    }
+    painter.drawLines(lineArray, box.getFirstX(), box.getFirstY(),
+                      box.getWidth(), box.getHeight(), intv + 1);
   }
+#endif
+#ifdef _DEBUG_
+  std::cout << "Painter scale: " << painter.getScale(neutu::EAxis::X) << std::endl;
+#endif
 
 
-  painter.drawLines(lineArray);
 #endif
 
 //  if (!lineArray.empty()) {
@@ -2168,6 +2286,7 @@ void ZObject3dScan::displaySolid(
 
 //  return painted;
 }
+#endif
 
 #ifdef _QT_GUI_USED_
 static QList<std::vector<QPoint> > extract_contour(
@@ -2232,6 +2351,146 @@ static QList<std::vector<QPoint> > extract_contour(
 }
 #endif
 
+bool ZObject3dScan::getDefaultCosmetic(EDisplayStyle style) const
+{
+  if (style == ZStackObject::EDisplayStyle::BOUNDARY) {
+    if (m_dsIntv.getX() > 0 || m_dsIntv.getY() > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZObject3dScan::display(QPainter *painter, const DisplayConfig &config) const
+{
+  if (getSliceAxis() == config.getSliceAxis()) {
+    ZSlice2dPainter s2Painter;
+//    s3Painter.setModelViewTransform(config.getWorldViewTransform());
+    ZModelViewTransform t = config.getWorldViewTransform();
+    s2Painter.setViewPlaneTransform(config.getViewCanvasTransform());
+    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
+
+    int z = neutu::iround(config.getCutDepth(ZPoint::ORIGIN));
+    ZObject3dScan slice = getSlice(z);
+    size_t stripeNumber = slice.getStripeNumber();
+//    ZIntCuboid box;
+
+    ZStackObject::EDisplayStyle style = config.getStyle();
+    if (hasVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY)) {
+      style = ZStackObject::EDisplayStyle::BOUNDARY;
+    }
+
+    QPen pen(getColor());
+    pen.setCosmetic(getDefaultCosmetic(style));
+    painter->setPen(pen);
+    painter->setRenderHint(QPainter::Antialiasing, false);
+
+    ZPoint center = t.getCutCenter();
+    center.shiftSliceAxis(getSliceAxis());
+
+    switch (style) {
+    case ZStackObject::EDisplayStyle::SOLID:
+    {
+      std::vector<QLineF> lineArray;
+      std::vector<QPointF> pointArray;
+      size_t stride = 1;
+      for (size_t i = 0; i < stripeNumber; i += stride) {
+        const ZObject3dStripe &stripe = slice.getStripe(i);
+        int nseg = stripe.getSegmentNumber();
+        for (int j = 0; j < nseg; ++j) {
+          double x0 = stripe.getSegmentStart(j) - center.getX();
+          double x1 = stripe.getSegmentEnd(j) - center.getX();
+          double y = stripe.getY() - center.getY();
+          if (x0 == x1) {
+            pointArray.push_back(QPointF(x0, y));
+          } else {
+            lineArray.push_back(QLineF(x0, y, x1, y));
+          }
+        }
+      }
+      s2Painter.drawLines(painter, lineArray);
+      s2Painter.drawPoints(painter, pointArray);
+    }
+      break;
+    case ZStackObject::EDisplayStyle::BOUNDARY:
+    {
+      if (m_dsIntv.getX() > 0 || m_dsIntv.getY() > 0) {
+        ZObject3dScan slice = getSlice(z);
+
+        if (!slice.isEmpty()) {
+          ZStack *stack = slice.toStackObject();
+          int conn = 8;
+          Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+          QList<std::vector<QPoint> > contourList =
+              extract_contour(pre, stack->getOffset().getX(),
+                              stack->getOffset().getY(),
+                              m_dsIntv.getX() + 1, m_dsIntv.getY() + 1);
+          delete stack;
+          C_Stack::kill(pre);
+          for (QList<std::vector<QPoint> >::const_iterator
+               iter = contourList.begin();
+               iter != contourList.end(); ++iter) {
+            const std::vector<QPoint> &ptArray = *iter;
+            std::vector<QPointF> transformed(ptArray.size());
+            for (size_t i = 0; i < ptArray.size(); ++i) {
+              transformed[i] = QPointF(
+                    ptArray[i].x() - center.getX(),
+                    ptArray[i].y() - center.getY());
+            }
+            s2Painter.drawPolyline(painter, transformed);
+//            painter.drawPolyline(&ptArray[0], ptArray.size());
+          }
+        }
+      } else {
+        std::vector<QPointF> ptArray;
+        ZObject3dScan slice = getSlice(z);
+
+        ZStack *stack = slice.toStackObject();
+        if (stack != NULL) {
+          int width = stack->width();
+          int height = stack->height();
+          int conn = 4;
+
+          Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+
+          size_t offset = 0;
+          for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+              if (pre->array[offset++] > 0) {
+                int cx = x + stack->getOffset().getX();
+                int cy = y + stack->getOffset().getY();
+                if (!m_dsIntv.isZero()) {
+                  cx *= m_dsIntv.getX() + 1;
+                  cy *= m_dsIntv.getY() + 1;
+                }
+
+                ptArray.push_back(
+                      QPointF(cx - center.getX(), cy - center.getY()));
+              }
+            }
+          }
+          delete stack;
+          C_Stack::kill(pre);
+        }
+        if (!ptArray.empty()) {
+          s2Painter.drawPoints(painter, ptArray);
+//          painter.drawPoints(&(ptArray[0]), ptArray.size());
+          //        painted = true;
+        }
+      }
+    }
+    default:
+      break;
+    }
+
+    return s2Painter.getPaintedHint();
+  }
+
+  return false;
+}
+
+#if 0
 void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
                             neutu::EAxis sliceAxis) const
 {
@@ -2257,6 +2516,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   int z = slice + painter.getZOffset();
 
   QPen pen(m_color);
+  pen.setCosmetic(false);
 
 
   if (hasVisualEffect(neutu::display::SparseObject::VE_PLANE_BOUNDARY)) {
@@ -2286,7 +2546,13 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
       if (isSelected()) {
         displaySolid(painter, z, isProj, 1);
       } else {
+#ifdef _DEBUG_
+        tic();
+#endif
         displaySolid(painter, z, isProj, 1);
+#ifdef _DEBUG_
+        std::cout << "ZObject3dScan painting time " << toc() << std::endl;
+#endif
       }
     }
   }
@@ -2373,6 +2639,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   UNUSED_PARAMETER(style);
 #endif
 }
+#endif
 
 void ZObject3dScan::setDsIntv(int x, int y, int z)
 {
@@ -2494,8 +2761,8 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         ZObject3dScan slice1 = getSlice(z0);
         ZObject3dScan slice2 = getSlice(z1);
 
-        ZIntPoint c1 = slice1.getCentroid().toIntPoint();
-        ZIntPoint c2 = slice2.getCentroid().toIntPoint();
+        ZIntPoint c1 = slice1.getCentroid().roundToIntPoint();
+        ZIntPoint c2 = slice2.getCentroid().roundToIntPoint();
         slice2.translate(c1.getX() - c2.getX(), c1.getY() - c2.getY(), 0);
 
         {
@@ -2515,7 +2782,7 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         }
 
 
-        ZIntCuboid box = slice1.getBoundBox().join(slice2.getBoundBox());
+        ZIntCuboid box = slice1.getIntBoundBox().join(slice2.getIntBoundBox());
         box.expandX(1);
         box.expandY(1);
 //        box.setFirstX(box.getFirstCorner().getX() - 1);
@@ -2634,7 +2901,7 @@ void ZObject3dScan::exportImageSlice(const std::string outputFolder) const
 void ZObject3dScan::exportImageSlice(
     int minZ, int maxZ, const std::string outputFolder) const
 {
-  ZIntCuboid box = getBoundBox();
+  ZIntCuboid box = getIntBoundBox();
   if (!box.isEmpty()) {
     for (int i = minZ; i <= maxZ; ++i) {
       std::cout << "Saving " << i << std::endl;
@@ -2642,8 +2909,8 @@ void ZObject3dScan::exportImageSlice(
       path.appendNumber(i, 5);
       path += ".tif";
       ZIntCuboid sliceBox = box;
-      sliceBox.setFirstZ(i);
-      sliceBox.setLastZ(i);
+      sliceBox.setMinZ(i);
+      sliceBox.setMaxZ(i);
       ZStack *stack = ZStackFactory::MakeZeroStack(GREY, sliceBox);
       getSlice(i).drawStack(stack, 255);
       ZStackWriter writer;
@@ -2792,7 +3059,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   int tx = neutu::iround(x);
   int ty = neutu::iround(y);
   int tz = neutu::iround(z);
-  zgeom::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
+  zgeom::ShiftSliceAxis(tx, ty, tz, m_sliceAxis);
   tx /= m_dsIntv.getX() + 1;
   ty /= m_dsIntv.getY() + 1;
   tz /= m_dsIntv.getZ() + 1;
@@ -3143,7 +3410,7 @@ bool ZObject3dScan::equalsLiterally(const ZObject3dScan &obj) const
 ZObject3dScan ZObject3dScan::getComplementObject()
 {
   ZObject3dScan fullObj;
-  ZObject3dFactory::MakeBoxObject3dScan(getBoundBox(), &fullObj);
+  ZObject3dFactory::MakeBoxObject3dScan(getIntBoundBox(), &fullObj);
 
 #ifdef _DEBUG_2
   fullObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
@@ -3258,7 +3525,7 @@ ZObject3dScan ZObject3dScan::findHoleObject()
       compObj.getConnectedComponent(ACTION_CANONIZE);
 
   Cuboid_I boundBox;
-  getBoundBox(&boundBox);
+  getIntBoundBox(&boundBox);
   for (std::vector<ZObject3dScan>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZObject3dScan &subobj = *iter;
@@ -3266,7 +3533,7 @@ ZObject3dScan ZObject3dScan::findHoleObject()
     subobj.print();
 #endif
     Cuboid_I subbox;
-    subobj.getBoundBox(&subbox);
+    subobj.getIntBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
       obj.unify(subobj);
@@ -3287,12 +3554,12 @@ std::vector<ZObject3dScan> ZObject3dScan::findHoleObjectArray()
       compObj.getConnectedComponent(ACTION_NONE);
 
   Cuboid_I boundBox;
-  getBoundBox(&boundBox);
+  getIntBoundBox(&boundBox);
   for (std::vector<ZObject3dScan>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZObject3dScan &subobj = *iter;
     Cuboid_I subbox;
-    subobj.getBoundBox(&subbox);
+    subobj.getIntBoundBox(&subbox);
     if (Cuboid_I_Hit_Internal(&boundBox, subbox.cb[0], subbox.cb[1], subbox.cb[2]) &&
         Cuboid_I_Hit_Internal(&boundBox, subbox.ce[0], subbox.ce[1], subbox.ce[2])) {
       subobj.canonize();
@@ -3310,13 +3577,14 @@ void ZObject3dScan::fillHole()
   unify(holeObj);
 }
 
+/*
 #define READ_TEST(real, expected, action) \
   if (real != expected) { \
     action; \
     fclose(fp); \
     return false; \
   }
-
+*/
 void ZObject3dScan::exportDvidObject(const std::string &filePath) const
 {
   FILE *fp = fopen(filePath.c_str(), "w");
@@ -3406,20 +3674,30 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
   FILE *fp = fopen(filePath.c_str(), "r");
   if (fp != NULL) {
+    neutu::ApplyOnce closeFile(neutu::NullFunction, [&]() {
+      fclose(fp);
+    });
+
     tz_uint8 flag = 0;
     size_t n = fread(&flag, 1, 1, fp);
-    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Reading error"));
+    if (n != 1) {
+      neutu::ReportError("Flag reading error");
+      return false;
+    }
+//    READ_TEST(n, 1, neutu::ReportError("Reading error"));
 
     tz_uint8 numberOfDimensions = 0;
     n = fread(&numberOfDimensions, 1, 1, fp);
     if (n != 1) {
-      fclose(fp);
+      neutu::ReportError("Dimension reading error");
+//      fclose(fp);
       return false;
     }
 
     if (numberOfDimensions != 3) {
-      RECORD_ERROR_UNCOND("Current version only supports 3D");
-      fclose(fp);
+      neutu::ReportError("Current version only supports 3D");
+//      RECORD_ERROR_UNCOND("Current version only supports 3D");
+//      fclose(fp);
       return false;
     }
 
@@ -3431,8 +3709,9 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
     }
 
     if (dimOfRun != 0) {
-      RECORD_ERROR_UNCOND("Unspported run dimension");
-      fclose(fp);
+      neutu::ReportError("Unspported run dimension");
+//      RECORD_ERROR_UNCOND("Unspported run dimension");
+//      fclose(fp);
       return false;
     }
 
@@ -3457,7 +3736,11 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
     tz_uint32 numberOfSpans = 0;
     n = fread(&numberOfSpans, 4, 1, fp);
-    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read number of spans"));
+    if (n != 1) {
+      neutu::ReportError("Failed to read number of spans");
+      return false;
+    }
+//    READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read number of spans"));
 
     Appender appender(this);
 
@@ -3465,10 +3748,16 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
     while (!feof(fp)) {
       tz_int32 coord[3];
       n = fread(coord, 4, 3, fp);
-      READ_TEST(n, 3, RECORD_ERROR_UNCOND("Failed to read span"));
+      if (n != 3) {
+        neutu::ReportError("Failed to read span");
+        return false;
+      }
+//      READ_TEST(n, 3, RECORD_ERROR_UNCOND("Failed to read span"));
 
       if (feof(fp)) {
-        RECORD_ERROR_UNCOND("Reading error. File ends prematurely")
+        neutu::ReportError("Reading error. File ends prematurely");
+        return false;
+//        RECORD_ERROR_UNCOND("Reading error. File ends prematurely")
       }
 
 #ifdef _DEBUG_
@@ -3479,10 +3768,14 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
       tz_int32 runLength;
       n = fread(&runLength, 4, 1, fp);
-      READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read run length"));
+      if (n != 1) {
+        neutu::ReportError("Failed to read run length");
+        return false;
+      }
+//      READ_TEST(n, 1, RECORD_ERROR_UNCOND("Failed to read run length"));
       if (runLength <= 0) {
-        fclose(fp);
-        RECORD_ERROR_UNCOND("Invalid run length");
+//        fclose(fp);
+        neutu::ReportError("Invalid run length");
         return false;
       }
 
@@ -3495,12 +3788,14 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
     }
 
     if (readSegmentNumber != numberOfSpans) {
-      RECORD_ERROR_UNCOND("Unmatched numbers of spans");
-      fclose(fp);
+      neutu::ReportError("Unmatched numbers of spans");
+//      RECORD_ERROR_UNCOND("Unmatched numbers of spans");
+//      fclose(fp);
       return false;
     }
   } else {
-    RECORD_ERROR_UNCOND("Unable to open file");
+    neutu::ReportError("Unable to open file");
+//    RECORD_ERROR_UNCOND("Unable to open file");
     return false;
   }
 
@@ -3510,7 +3805,7 @@ bool ZObject3dScan::importDvidObject(const std::string &filePath)
 
 #define READ_BYTE_BUFFER(target, type) \
   if (byteNumber < sizeof(type)) { \
-    RECORD_ERROR_UNCOND("Buffer ended prematurely."); \
+    neutu::ReportError("Buffer ended prematurely."); \
     return false; \
   } \
   target = *(const type*)(byteArray + currentIndex); \
@@ -3523,7 +3818,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
   clear();
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    neutu::ReportError("Invalid byte buffer");
     return false;
   }
 
@@ -3537,14 +3832,14 @@ bool ZObject3dScan::importDvidObjectBuffer(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return false;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return false;
   }
 
@@ -3567,13 +3862,13 @@ bool ZObject3dScan::importDvidObjectBuffer(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return false;
     }
 
 //    addStripeFast(coord[2], coord[1]);
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
-    zgeom::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
+    zgeom::ShiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
     if (getSliceAxis() == neutu::EAxis::X) {
       for (int i = 0; i < runLength; ++i) {
@@ -3622,6 +3917,11 @@ bool ZObject3dScan::importDvidBlockBuffer(
 
     if (canonizing) {
       sort();
+//      setCanonized(true); //to test
+#ifdef _DEBUG_
+      std::cout << "Canonized: " << isCanonizedActually() << std::endl;
+      std::cout << "Z Range: " << getMinZ() << " -> " << getMaxZ() << std::endl;
+#endif
     }
   } catch (std::exception &e) {
 #ifdef _QT_GUI_USED_
@@ -3639,7 +3939,7 @@ size_t ZObject3dScan::CountVoxelNumber(
   size_t count = 0;
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    neutu::ReportError("Invalid byte buffer");
     return 0;
   }
 
@@ -3653,14 +3953,14 @@ size_t ZObject3dScan::CountVoxelNumber(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return 0;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return 0;
   }
 
@@ -3681,7 +3981,7 @@ size_t ZObject3dScan::CountVoxelNumber(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return 0;
     }
 
@@ -3703,7 +4003,6 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   clear();
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
     return false;
   }
 
@@ -3717,14 +4016,14 @@ bool ZObject3dScan::importDvidObjectBufferDs(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return false;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return false;
   }
 
@@ -3770,7 +4069,7 @@ bool ZObject3dScan::importDvidObjectBufferDs(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return false;
     }
 
@@ -3839,7 +4138,8 @@ bool ZObject3dScan::importDvidObjectBuffer(
   m_dsIntv.set(xIntv, yIntv, zIntv);
 
   if (byteArray == NULL || byteNumber <= 12) {
-    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    neutu::ReportError("Invalid byte buffer");
+//    RECORD_ERROR_UNCOND("Invalid byte buffer");
     return false;
   }
 
@@ -3853,14 +4153,14 @@ bool ZObject3dScan::importDvidObjectBuffer(
   READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
 
   if (numberOfDimensions != 3) {
-    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    neutu::ReportError("Current version only supports 3D");
     return false;
   }
 
   tz_uint8 dimOfRun = 0;
   READ_BYTE_BUFFER(dimOfRun, tz_uint8);
   if (dimOfRun != 0) {
-    RECORD_ERROR_UNCOND("Unspported run dimension");
+    neutu::ReportError("Unspported run dimension");
     return false;
   }
 
@@ -3889,7 +4189,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
     READ_BYTE_BUFFER(runLength, tz_int32);
 
     if (runLength <= 0) {
-      RECORD_ERROR_UNCOND("Invalid run length");
+      neutu::ReportError("Invalid run length");
       return false;
     }
 
@@ -3944,7 +4244,7 @@ void ZObject3dScan::addForeground(ZStack *stack)
     int z = seg.getZ();
     int y = seg.getY();
     for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
-      zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
+      zgeom::ShiftSliceAxis(x, y, z, m_sliceAxis);
       if (stack->getIntValue(x, y, z) > 0) {
         stack->addIntValue(x, y, z, 0, 1);
       }
@@ -4391,7 +4691,7 @@ ZObject3dScan* ZObject3dScan::subobject(
     remain->setSliceAxis(m_sliceAxis);
   }
 
-  if (box.contains(getBoundBox())) {
+  if (box.contains(getIntBoundBox())) {
     *result = *this;
     return result;
   }
@@ -4399,9 +4699,9 @@ ZObject3dScan* ZObject3dScan::subobject(
   ConstSegmentIterator iter(this);
   while (iter.hasNext()) {
     const ZObject3dScan::Segment &seg = iter.next();
-    if (box.containYZ(seg.getY(), seg.getZ())) {
-      int x0 = imax2(seg.getStart(), box.getFirstCorner().getX());
-      int x1 = imin2(seg.getEnd(), box.getLastCorner().getX());
+    if (box.containsYZ(seg.getY(), seg.getZ())) {
+      int x0 = imax2(seg.getStart(), box.getMinCorner().getX());
+      int x1 = imin2(seg.getEnd(), box.getMaxCorner().getX());
       if (x0 <= x1) {
         result->addSegment(seg.getZ(), seg.getY(), x0, x1, false);
 
@@ -4457,7 +4757,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
 
   if (!isEmpty()) {
     Cuboid_I boundBox;
-    getBoundBox(&boundBox);
+    getIntBoundBox(&boundBox);
 
     double xMean = 0.0;
     double yMean = 0.0;
@@ -4503,7 +4803,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
     cov[2] = (xyCorr - xMean * yMean) * factor;
   }
 
-  zgeom::shiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
+  zgeom::ShiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
 
   return cov;
 }
@@ -4528,7 +4828,7 @@ bool ZObject3dScan::contains(const ZIntPoint &pt)
 
 bool ZObject3dScan::contains(int x, int y, int z)
 {
-  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::ShiftSliceAxis(x, y, z, m_sliceAxis);
 
   canonize();
 
@@ -4569,6 +4869,10 @@ void ZObject3dScan::blockEvent(bool blocking)
 void ZObject3dScan::processEvent(TEvent event)
 {
   if (!m_blockingEvent) {
+    if (event & EVENT_OBJECT_MODEL_CHANGED) {
+      deprecate(COMPONENT_BOUND_BOX);
+    }
+
     if (event & EVENT_OBJECT_MODEL_CHANGED & ~EVENT_OBJECT_VIEW_CHANGED) {
       deprecate(COMPONENT_ACCUMULATED_STRIPE_NUMBER);
       deprecate(COMPONENT_SLICEWISE_VOXEL_NUMBER);

@@ -7,21 +7,23 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdviddata.h"
 #include "dvid/zdviddef.h"
-#include "geometry/zintcuboid.h"
 
 class ZIntPoint;
+class ZIntCuboid;
 
 class ZDvidUrl
 {
 public:
   ZDvidUrl();
   ZDvidUrl(const std::string &serverAddress, const std::string &uuid, int port);
-  ZDvidUrl(const ZDvidTarget &target);
-  ZDvidUrl(const ZDvidTarget &target, const std::string &uuid);
-
+  ZDvidUrl(const ZDvidTarget &target, bool admin = false);
+  ZDvidUrl(const ZDvidTarget &target, const std::string &uuid, bool replacing);
 
   void setDvidTarget(const ZDvidTarget &target);
-  void setDvidTarget(const ZDvidTarget &target, const std::string &uuid);
+  void setDvidTarget(
+      const ZDvidTarget &target, const std::string &uuid, bool replacing = true);
+
+  void setAdmin(bool admin);
 
   std::string getApiLoadUrl() const;
   std::string getNodeUrl() const;
@@ -39,6 +41,8 @@ public:
   std::string getInstanceUrl() const;
   std::string getOldMasterUrl() const;
   std::string getMasterUrl() const;
+  std::string getAliasBranchUrl(
+      const std::string &alias, const std::string &user) const;
   std::string getMirrorInfoUrl() const;
   std::string getDefaultDataInstancesUrl() const;
   std::string getDataMapUrl() const;
@@ -54,9 +58,16 @@ public:
 
   std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
 
-  std::string getMeshUrl();
+  enum class EMeshType {
+    DEFAULT, MERGED, NG, DRACO
+  };
+
+  std::string getMeshUrl() const;
+  std::string getMeshUrl(uint64_t bodyId, EMeshType type) const;
+  std::string getMergedMeshUrl(uint64_t bodyId) const;
+  std::string getNgMeshUrl(uint64_t bodyId) const;
   std::string getMeshUrl(uint64_t bodyId, int zoom);
-  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
+//  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
   static std::string GetMeshInfoUrl(const std::string &meshUrl);
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
@@ -92,13 +103,6 @@ public:
   std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom) const;
 //  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
-  struct SparsevolConfig {
-    uint64_t bodyId = 0;
-    ZIntCuboid range;
-    int zoom = 0;
-    std::string format;
-    neutu::EBodyLabelType labelType;
-  };
 
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
@@ -111,7 +115,7 @@ public:
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom) const;
   std::string getSparsevolSizeUrl(uint64_t bodyId, neutu::EBodyLabelType labelType) const;
 
-  std::string getSparsevolUrl(const SparsevolConfig &config);
+  std::string getSparsevolUrl(const dvid::SparsevolConfig &config);
 
   std::string getSparsevolLastModUrl(uint64_t bodyId);
 
@@ -156,7 +160,11 @@ public:
       const std::string &key1, const std::string &key2) const;
   std::string getAllKeyUrl(const std::string &name) const;
   std::string getKeyValuesUrl(const std::string &name) const;
+  std::string getKeyValuesUrl(
+      const std::string &name, const std::string &key1, const std::string &key2) const;
 
+  std::string getBodyAnnotationSchemaUrl(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationSchemaUrl() const;
   std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
   std::string getBodyAnnotationUrl(
       uint64_t bodyId, const std::string &bodyLabelName) const;
@@ -216,6 +224,7 @@ public:
       const std::string &dataName, int resLevel,
       int xi0, int yi0, int z0) const;
 
+  std::string getReposInfoUrl() const;
   std::string getRepoInfoUrl() const;
   std::string getLockUrl() const;
   std::string getBranchUrl() const;
@@ -295,14 +304,20 @@ public:
   std::string getContrastUrl() const;
 
   static std::string GetBodyKey(uint64_t bodyId);
+  static std::string GetBodyKey(uint64_t bodyId, int zoom);
   static std::string GetSkeletonKey(uint64_t bodyId);
-  static std::string GetMeshKey(uint64_t bodyId);
+  static std::string GetMeshKey(
+      uint64_t bodyId, EMeshType type = EMeshType::DEFAULT);
+  static std::string GetMeshKey(uint64_t bodyId, int zoom);
+  static std::string GetMeshKey(uint64_t bodyId, int zoom, EMeshType type);
   static std::string GetMeshInfoKey(uint64_t bodyId);
   static std::string GetTaskKey();
 
   void setUuid(const std::string &uuid);
 
 
+  std::string getSynapseLabelszUrl() const;
+  std::string getSynapseLabelszReloadUrl() const;
   std::string getSynapseLabelszUrl(int n) const;
   std::string getSynapseLabelszBodyUrl(uint64_t bodyId) const;
   std::string getSynapseLabelszBodiesUrl() const;
@@ -319,16 +334,38 @@ public:
   std::string getSynapseLabelszThresholdUrl(
       int threshold, dvid::ELabelIndexType indexType, int offset, int number) const;
 
+  std::string applyAdminToken(const std::string &url) const;
+
 public:
+  /*!
+   * \brief Get DVID path (after /api/node/<node>)
+   */
   static std::string GetPath(const std::string &url);
+
+  /*!
+   * \brief Compose a full url
+   *
+   * It returns empty if any input component is empty.
+   */
   static std::string GetFullUrl(
       const std::string &prefix, const std::string &path);
+  template<typename... Args>
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &path, Args... args) {
+    if (prefix.empty() || path.empty()) {
+      return "";
+    }
+
+    return GetFullUrl(GetFullUrl(prefix, path), args...);
+  }
+
   /*!
    * \brief Get entry point of getting key value entries
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
   static std::string GetKeyValuesCommandUrl(const std::string &dataUrl);
+  static std::string GetKeyRangeValuesCommandUrl(const std::string &dataUrl);
 
   static std::string GetTarfileCommandUrl(const std::string &dataUrl);
 
@@ -345,10 +382,40 @@ public:
 
 //  static bool IsSplitTask(const std::string &url);
 
+  static std::string AppendQuery(const std::string &url, const std::string query);
+  static std::string AppendQuery(
+        const std::string &url, const std::pair<std::string,std::string> &query);
+  static std::string AppendQuery(
+      const std::string &url, const std::pair<std::string, bool> &query);
+
+
+  template<typename T>
+  static std::string AppendQuery(
+        const std::string &url, const std::pair<std::string,T> &query)
+  {
+    if (!query.first.empty()) {
+      std::string qstr = query.first + "=" + std::to_string(query.second);
+      return ZDvidUrl::AppendQuery(url, qstr);
+    }
+
+    return url;
+  }
+
+  template<typename T>
+  static std::string AppendQuery(
+        const std::string &url, const std::string &name, const T &value)
+  {
+    return ZDvidUrl::AppendQuery(url, std::pair<std::string,T>(name, value));
+  }
+
   static std::string AppendRangeQuery(
       const std::string &url, const ZIntCuboid &box);
   static std::string AppendRangeQuery(
+      const std::string &url, const ZIntCuboid &box, bool exact);
+  static std::string AppendRangeQuery(
       const std::string &url, int minZ, int maxZ, neutu::EAxis axis, bool exact);
+
+  static std::string AppendSourceQuery(const std::string &url);
 
 private:
   std::string getSplitUrl(
@@ -374,11 +441,13 @@ public:
 
 private:
   ZDvidTarget m_dvidTarget;
+  bool m_admin = false;
 
   static const std::string m_keyCommand;
   static const std::string m_keysCommand;
   static const std::string m_keyRangeCommand;
   static const std::string m_keyValuesCommand;
+  static const std::string m_keyRangeValuesCommand;
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;

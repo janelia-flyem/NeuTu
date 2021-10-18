@@ -58,7 +58,7 @@ void ZDvidBufferReader::_init()
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 void ZDvidBufferReader::setService(
-    const ZSharedPointer<libdvid::DVIDNodeService> &service)
+    const std::shared_ptr<libdvid::DVIDNodeService> &service)
 {
   m_service = service;
 }
@@ -111,7 +111,7 @@ void ZDvidBufferReader::read(
 //  qDebug() << "Using libdvidcpp";
 
   ZDvidTarget target;
-  target.setFromUrl(url.toStdString());
+  target.setFromUrl_deprecated(url.toStdString());
 
   if (target.isValid()) {
     try {
@@ -138,7 +138,7 @@ void ZDvidBufferReader::read(
         libdvid::DVIDNodeService service(
               target.getAddressWithPort(), target.getUuid());
 #endif
-        ZSharedPointer<libdvid::DVIDNodeService> service =
+        std::shared_ptr<libdvid::DVIDNodeService> service =
             dvid::MakeDvidNodeService(target);
         data = service->custom_request(
             endPoint, libdvidPayload, connMeth, m_tryingCompress);
@@ -193,12 +193,18 @@ void ZDvidBufferReader::readFromPath(const QString &path, bool outputingUrl)
 #endif
 }
 
-void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
+void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
 {
   m_statusCode = 0;
 
+  QString url = inputUrl;
+
   if (url.isEmpty()) {
     return;
+  }
+
+  if (!url.contains("://")) {
+    url = "http://" + url;
   }
 
   if (outputingUrl) {
@@ -208,9 +214,19 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 
   m_buffer.clear();
 
+  ZNetBufferReaderThread thread;
+  thread.setUrl(url);
+  thread.setOperation(znetwork::EOperation::READ);
+  thread.start();
+  thread.wait();
+  m_statusCode = thread.getStatusCode();
+  m_status = thread.getStatus();
+  m_buffer = thread.getData();
+
+#if 0
 #if defined(_ENABLE_LIBDVIDCPP_)
   ZDvidTarget target;
-  target.setFromUrl(url.toStdString());
+  target.setFromUrl_deprecated(url.toStdString());
 
   if (target.isValid()) {
     try {
@@ -220,7 +236,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
         data = m_service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       } else {
-        ZSharedPointer<libdvid::DVIDNodeService> service =
+        std::shared_ptr<libdvid::DVIDNodeService> service =
             dvid::MakeDvidNodeService(target);
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
@@ -295,6 +311,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
           this, SLOT(handleError(QNetworkReply::NetworkError)));
 
   waitForReading();
+#endif
 #endif
 
   KLOG << ZLog::Info()

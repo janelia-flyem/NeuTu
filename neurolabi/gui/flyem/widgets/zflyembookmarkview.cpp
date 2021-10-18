@@ -4,6 +4,7 @@
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
 #include <QHeaderView>
+#include <QGuiApplication>
 
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
@@ -51,6 +52,11 @@ void ZFlyEmBookmarkView::processSingleClick(const QModelIndex &index)
   const ZFlyEmBookmark *bookmark = getBookmark(index);
   if (bookmark != NULL) {
     KINFO << bookmark->toLogString() + " is clicked";
+    if (QGuiApplication::keyboardModifiers() == Qt::AltModifier) {
+      QList<ZIntPoint> posList;
+      posList.append(bookmark->getCenter().roundToIntPoint());
+      emit togglingBodiesAt(posList);
+    }
   }
 }
 
@@ -93,6 +99,13 @@ void ZFlyEmBookmarkView::setBookmarkModel(
 void ZFlyEmBookmarkView::createMenu()
 {
   m_contextMenu = new QMenu(this);
+
+  QAction *bodySelectionAction = new QAction("Select Bodies", this);
+  m_contextMenu->addAction(bodySelectionAction);
+  connect(bodySelectionAction, SIGNAL(triggered()),
+          this, SLOT(selectBodyUnderSelectedBookmark()));
+  m_contextMenu->addSeparator();
+
   QAction *checkAction = new QAction("Set Checked", this);
   m_contextMenu->addAction(checkAction);
   connect(checkAction, SIGNAL(triggered()), this, SLOT(checkCurrentBookmark()));
@@ -247,6 +260,18 @@ void ZFlyEmBookmarkView::deleteSelectedBookmark()
   QList<ZFlyEmBookmark*> bookmarkList = getSelectedBookmark();
   if (!bookmarkList.empty()) {
     emit removingBookmark(bookmarkList);
+  }
+}
+
+void ZFlyEmBookmarkView::selectBodyUnderSelectedBookmark()
+{
+  QList<ZFlyEmBookmark*> bookmarkList = getSelectedBookmark();
+  if (!bookmarkList.empty()) {
+    QList<ZIntPoint> posList;
+    foreach (ZFlyEmBookmark *bookmark, bookmarkList) {
+      posList.append(bookmark->getCenter().roundToIntPoint());
+    }
+    emit selectingBodyAt(posList, true);
   }
 }
 

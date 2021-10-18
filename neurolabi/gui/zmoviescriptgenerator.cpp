@@ -209,7 +209,7 @@ void ZMovieScriptGenerator::writeCameraReset(
 //  TZ_ASSERT(reset.size() % 2 == 0, "must be pairs");
 
   for (size_t resetIndex = 0; resetIndex < reset.size();
-       resetIndex += 2) {
+       resetIndex  += 2) {
     if (resetIndex > 0) {
       stream << "," <<endl;
     }

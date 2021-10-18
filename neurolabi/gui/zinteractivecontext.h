@@ -5,8 +5,11 @@
 #ifndef ZINTERACTIVECONTEXT_H
 #define ZINTERACTIVECONTEXT_H
 
+#include <unordered_map>
 #include <QRect>
+
 #include "common/neutudefs.h"
+#include "data3d/displayconfig.h"
 
 class ZPoint;
 class ZImageWidget;
@@ -92,7 +95,8 @@ public:
     EXPLORE_CAPTURE_MOUSE,
     EXPLORE_LOCAL,
     EXPLORE_EXTERNALLY,
-    EXPLORE_DETAIL
+    EXPLORE_DETAIL,
+    EXPLORE_ROTATE_IMAGE
   };
 
   enum EUniqueMode{
@@ -103,7 +107,7 @@ public:
     INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT,
     INTERACT_ADD_BOOKMARK, INTERACT_ADD_SYNAPSE, INTERACT_MOVE_SYNAPSE,
     INTERACT_ADD_TODO_ITEM, INTERACT_MOVE_CROSSHAIR, INTERACT_EXPLORE_LOCAL,
-    INTERACT_EXPLORE_EXTERNALLY, INTERACT_EXPLORE_DETAIL
+    INTERACT_EXPLORE_EXTERNALLY, INTERACT_EXPLORE_DETAIL, INTERACT_IMAGE_ROTATE
   };
 
 public:
@@ -179,13 +183,24 @@ public:
 
   bool isFreeMode() const;
 
-  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
-  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
+  void setSliceViewTransform(int viewId, const ZSliceViewTransform &transform);
+  ZSliceViewTransform getSliceViewTransform(int viewId) const;
+  neutu::EAxis getSliceAxis(int viewId) const;
+  void setSliceAxis(int viewId, neutu::EAxis axis);
+
+  void setSliceMode(int viewId, neutu::data3d::EDisplaySliceMode mode);
+  neutu::data3d::EDisplaySliceMode getSliceMode(int viewId) const;
+  const neutu::data3d::DisplayConfig& getDisplayConfig(int viewId) const;
+//  neutu::EAxis getSliceAxis() const { return m_sliceAxis; }
+//  void setSliceAxis(neutu::EAxis axis) { m_sliceAxis = axis; }
 
   void setAcceptingRect(bool on) { m_acceptingRect = on; }
   bool acceptingRect() const { return m_acceptingRect; }
   void setRectSpan(bool on) { m_rectSpan = on; }
   bool rectSpan() const { return m_rectSpan; }
+
+  int getViewId() const;
+  void setViewId(int viewId);
 
 private:
   MarkPunctaMode m_markPunctaMode;
@@ -205,8 +220,14 @@ private:
   bool m_blockingContextMenu;
   bool m_acceptingRect;
   bool m_rectSpan;
-  neutu::EAxis m_sliceAxis;
+//  neutu::EAxis m_sliceAxis;
   int m_keyIndex;
+  int m_viewId = -1;
+
+  std::unordered_map<int, neutu::data3d::DisplayConfig> m_displayConfigMap;
+  neutu::data3d::DisplayConfig m_nullDispalyConfig;
+//  ZSliceViewTransform m_transform;
+//  neutu::data3d::EDisplaySliceMode m_sliceMode;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;
   //QRect m_viewPort;

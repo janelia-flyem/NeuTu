@@ -17,7 +17,7 @@
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zobject3dscan.h"
-
+#include "zglobal.h"
 #include "zmeshfactory.h"
 
 #include "logging/zlog.h"
@@ -27,6 +27,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidsynapse.h"
+#include "dvid/zdvidversiondag.h"
 
 #include "zdvidutil.h"
 
@@ -67,17 +68,27 @@ ZFlyEmNeuronBodyInfo FlyEmDataReader::ReadBodyInfo(
 
   QByteArray byteArray = reader.readKeyValue(
         ZDvidData::GetName(ZDvidData::ERole::BODY_INFO,
-                           ZDvidData::ERole::BODY_LABEL,
+                           ZDvidData::ERole::SPARSEVOL,
                            reader.getDvidTarget().getBodyLabelName()).c_str(),
         ZString::num2str(bodyId).c_str());
   if (!byteArray.isEmpty()) {
-    obj.decode(byteArray.constData());
+    obj.decode(byteArray.constData(), false);
   }
 
   ZFlyEmNeuronBodyInfo bodyInfo;
   bodyInfo.loadJsonObject(obj);
 
   return bodyInfo;
+}
+
+ZJsonObject FlyEmDataReader::ReadGenericBodyAnnotation(
+    const ZDvidReader &reader, uint64_t bodyId)
+{
+  if (reader.getDvidTarget().hasBodyLabel()) {
+    return reader.readBodyAnnotationJson(bodyId);
+  }
+
+  return ZJsonObject();
 }
 
 ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
@@ -88,9 +99,10 @@ ZFlyEmBodyAnnotation FlyEmDataReader::ReadBodyAnnotation(
   if (reader.getDvidTarget().hasBodyLabel()) {
     ZDvidUrl url(reader.getDvidTarget());
 
-    QByteArray data = reader.readBuffer(url.getBodyAnnotationUrl(bodyId));
+    QByteArray data = reader.readBuffer(
+          ZDvidUrl::AppendSourceQuery(url.getBodyAnnotationUrl(bodyId)));
     annotation.loadJsonString(data.constData());
-    annotation.setBodyId(bodyId);
+//    annotation.setBodyId(bodyId);
   }
 
   return annotation;
@@ -100,7 +112,8 @@ std::vector<ZFlyEmToDoItem> FlyEmDataReader::ReadToDoItem(
     const ZDvidReader &reader, const ZIntCuboid &box)
 {
   ZDvidUrl dvidUrl(reader.getDvidTarget());
-  ZJsonArray obj = reader.readJsonArray(dvidUrl.getTodoListUrl(box));
+  ZJsonArray obj = reader.readJsonArray(
+        ZDvidUrl::AppendSourceQuery(dvidUrl.getTodoListUrl(box)));
 
   std::vector<ZFlyEmToDoItem> itemArray(obj.size());
 
@@ -123,6 +136,19 @@ ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
   }
 
   return ZFlyEmToDoItem();
+}
+
+ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
+      const ZDvidReader &reader, const ZIntPoint &pos)
+{
+  return ReadToDoItem(reader, pos.getX(), pos.getY(), pos.getZ());
+}
+
+ZIntCuboid FlyEmDataReader::ReadTodoDataRange(const ZDvidReader &reader)
+{
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+
+  return dvidInfo.getDataRange();
 }
 
 ZMesh* FlyEmDataReader::LoadRoi(
@@ -211,7 +237,7 @@ ZMesh* FlyEmDataReader::ReadRoiMesh(
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ERole::ROI_KEY).c_str(), roiName.c_str());
   ZJsonObjectParser parser;
-  bool visible = parser.getValue(roiInfo, "visible", true);
+  bool visible = parser.GetValue(roiInfo, "visible", true);
 
   if (visible && roiInfo.hasKey(neutu::json::REF_KEY)) {
     ZJsonObject jsonObj(roiInfo.value(neutu::json::REF_KEY));
@@ -258,7 +284,7 @@ ZObject3dScan* FlyEmDataReader::ReadRoi(
     result = new ZObject3dScan;
   }
 
-  for (const std::string roi : roiList) {
+  for (const std::string &roi : roiList) {
     reader.readRoi(roi, result, true);
   }
 
@@ -344,7 +370,15 @@ bool FlyEmDataReader::IsSkeletonSynced(
   return true;
 }
 
-#if 0
+std::string FlyEmDataReader::ReadBookmarkUser(
+    const ZDvidReader &reader, const ZIntPoint &pos)
+{
+  ZJsonObject obj = reader.readBookmarkJson(pos);
+
+  return ZJsonObjectParser::GetValue(ZJsonObject(obj.value("Prop")), "user", "");
+}
+
+
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
     const ZDvidReader &reader,
     const ZIntCuboid &box, dvid::EAnnotationLoadMode mode)
@@ -362,6 +396,52 @@ std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
   return synapseArray;
 }
 
+namespace {
+
+void update_synapse(const ZDvidReader &reader, ZDvidSynapse *synapse)
+{
+  ZDvidUrl dvidUrl(reader.getDvidTarget());
+  ZJsonArray objArray = reader.readJsonArray(
+        dvidUrl.getSynapseUrl(synapse->getPosition(), 1, 1, 1));
+
+  if (!objArray.isEmpty()) {
+    ZJsonObject obj(objArray.value(0));
+    synapse->loadJsonObject(obj, dvid::EAnnotationLoadMode::PARTNER_RELJSON);
+    synapse->updatePartner();
+    synapse->updatePartnerProperty(reader);
+  }
+}
+
+}
+
+ZDvidSynapse FlyEmDataReader::ReadSynapse(
+      const ZDvidReader &reader, const ZIntPoint &pos)
+{
+  ZDvidSynapse synapse;
+  synapse.setPosition(pos);
+  update_synapse(reader, &synapse);
+  return synapse;
+}
+
+void FlyEmDataReader::UpdateSynapsePartner(
+    const ZDvidReader &reader, ZDvidSynapse *synapse)
+{
+  if (synapse && synapse->isValid()) {
+    synapse->clearPartner();
+
+    update_synapse(reader, synapse);
+  }
+}
+
+void FlyEmDataReader::UpdateSynapse(
+    const ZDvidReader &reader, ZDvidSynapse *synapse)
+{
+  if (synapse && synapse->isValid()) {
+    update_synapse(reader, synapse);
+  }
+}
+
+#if 0
 std::vector<ZDvidSynapse> FlyEmDataReader::ReadSynapse(
     const ZDvidReader &reader, uint64_t label, dvid::EAnnotationLoadMode mode)
 {
@@ -426,4 +506,5 @@ ZDvidSynapse FlyEmDataReader::ReadSynapse(
 {
   return FlyEmDataReader::ReadSynapse(reader, pt.getX(), pt.getY(), pt.getZ(), mode);
 }
+
 #endif

@@ -225,10 +225,10 @@ void ZStackBlockSource::cacheStack(
       while (iter.hasNext()) {
         const ZObject3dScan::Segment& seg = iter.next();
         //      ZIntPoint blockIndex(seg.getStart(), seg.getY(), seg.getZ());
-        if (range.containYZ(seg.getY(), seg.getZ())) {
+        if (range.containsYZ(seg.getY(), seg.getZ())) {
           std::vector<std::pair<int, int>> segArray =
               IntersectSegment(seg.getStart(), seg.getEnd(),
-                         range.getFirstCorner().getX(), range.getLastCorner().getX());
+                         range.getMinCorner().getX(), range.getMaxCorner().getX());
           for (const auto& newSeg : segArray) {
             ZIntPoint blockIndex(newSeg.first, seg.getY(), seg.getZ());
             int n = newSeg.second - newSeg.first + 1;

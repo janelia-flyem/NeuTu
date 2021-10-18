@@ -20,6 +20,7 @@ class ZDvidSynapse : public ZDvidAnnotation
 {
 public:
   ZDvidSynapse();
+//  ZDvidSynapse(const ZDvidSynapse &synapse);
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::DVID_SYNAPSE;
@@ -28,8 +29,10 @@ public:
 //  enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_UNKNOWN, KIND_INVALID };
 
 //  const std::string& className() const;
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+//  void display(ZPainter &painter, int slice, EDisplayStyle option,
+//               neutu::EAxis sliceAxis) const;
+
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
 
   std::string getConfidenceStr() const;
   void setConfidence(const std::string str);
@@ -55,9 +58,9 @@ public:
 
   ZVaa3dMarker toVaa3dMarker(double radius) const;
 
-  void updatePartnerProperty(ZDvidReader &reader);
+  void updatePartnerProperty(const ZDvidReader &reader);
 
-  EKind getParterKind(size_t i) const;
+  EKind getPartnerKind(size_t i) const;
 
   void updateProperty(const ZJsonObject &propJson);
 
@@ -74,6 +77,8 @@ public:
 
   std::string getConnString(
       const std::unordered_map<ZIntPoint, uint64_t> &labelMap) const;
+
+  bool hit(double x, double y, double z, int viewId) override;
 
 #if 0
 public: //Json APIs

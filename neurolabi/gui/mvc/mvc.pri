@@ -1,8 +1,14 @@
+include($$PWD/tests/tests.pri)
+include($$PWD/annotation/annotation.pri)
+
 HEADERS += \
     $$PWD/logging.h \
     $$PWD/utilities.h \
+    $$PWD/zmousecursorglyph.h \
     $$PWD/zpositionmapper.h \
+    $$PWD/zstackdocobjectmonitor.h \
     $$PWD/zstackdocobjectupdate.h \
+    $$PWD/zstackobjectpaintsorter.h \
     $$PWD/zstackview.h \
     $$PWD/zstackdoc.h \
     $$PWD/zstackpresenter.h \
@@ -12,14 +18,18 @@ HEADERS += \
     $$PWD/mvcdef.h \
     $$PWD/zstackdocutil.h \
     $$PWD/zstackviewrecorder.h \
-    $$PWD/zstackdocdatabuffer.h \
-    $$PWD/dialogs/zstackviewrecorddialog.h
+    $$PWD/dialogs/zstackviewrecorddialog.h \
+    $$PWD/zstackdocmeta.h \
+    $$PWD/zstackdocdatabuffer.h
 
 SOURCES += \
     $$PWD/logging.cpp \
     $$PWD/utilities.cpp \
+    $$PWD/zmousecursorglyph.cpp \
     $$PWD/zpositionmapper.cpp \
+    $$PWD/zstackdocobjectmonitor.cpp \
     $$PWD/zstackdocobjectupdate.cpp \
+    $$PWD/zstackobjectpaintsorter.cpp \
     $$PWD/zstackview.cpp \
     $$PWD/zstackdoc.cpp \
     $$PWD/zstackpresenter.cpp \
@@ -29,8 +39,9 @@ SOURCES += \
     $$PWD/mvcdef.cpp \
     $$PWD/zstackdocutil.cpp \
     $$PWD/zstackviewrecorder.cpp \
-    $$PWD/zstackdocdatabuffer.cpp \
-    $$PWD/dialogs/zstackviewrecorddialog.cpp
+    $$PWD/dialogs/zstackviewrecorddialog.cpp \
+    $$PWD/zstackdocmeta.cpp \
+    $$PWD/zstackdocdatabuffer.cpp
 
 FORMS +=  \
     $$PWD/dialogs/zstackviewrecorddialog.ui

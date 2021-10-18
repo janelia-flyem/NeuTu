@@ -1,13 +1,15 @@
 #include "zflyemorthomvc.h"
-#include "zflyemorthodoc.h"
 
 #include "logging/zlog.h"
+#include "data3d/displayconfig.h"
+
 #include "mvc/utilities.h"
 #include "mvc/zstackpresenter.h"
 #include "mvc/zstackview.h"
 
 #include "zwidgetmessage.h"
 
+#include "zflyemorthodoc.h"
 #include "zflyemsupervisor.h"
 #include "zflyemproofpresenter.h"
 #include "zflyemtodolist.h"
@@ -35,17 +37,18 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
 
   BaseConstruct(mvc, doc, axis);
   mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
-  mvc->getView()->layout()->setContentsMargins(0, 0, 0, 0);
-  mvc->getView()->setContentsMargins(0, 0, 0, 0);
-  mvc->getView()->hideThresholdControl();
-  mvc->getView()->setHoverFocus(true);
-  mvc->getView()->setViewInfoFlag(
+
+  ZStackView *view = mvc->getMainView();
+  view->layout()->setContentsMargins(0, 0, 0, 0);
+  view->setContentsMargins(0, 0, 0, 0);
+  view->hideThresholdControl();
+  view->setHoverFocus(true);
+  view->setViewInfoFlag(
         neutu::mvc::ViewInfoFlags(neutu::mvc::ViewInfoFlag::DATA_COORD) |
         neutu::mvc::ViewInfoFlag::IMAGE_VALUE);
   mvc->updateDvidTargetFromDoc();
   mvc->getPresenter()->useHighContrastProtocal(true);
 
-  ZStackView *view = mvc->getView();
 
   QList<ZDvidSynapseEnsemble*> seList = doc->getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
@@ -134,8 +137,8 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 //      enableSynapseFetcher();
     }
 
-    getView()->updateContrastProtocal();
-    getView()->reset(false);
+    getMainView()->updateContrastProtocal();
+//    getView()->reset(false);
 //    if (getSupervisor() != NULL) {
 //      getSupervisor()->setDvidTarget(doc->getDvidTarget());
 //    }
@@ -148,7 +151,7 @@ void ZFlyEmOrthoMvc::setCrossHairCenter(double x, double y)
 {
   ZFlyEmOrthoDoc *doc = getCompleteDocument();
   if (doc != NULL) {
-    doc->setCrossHairCenter(x, y, getView()->getSliceAxis());
+    doc->setCrossHairCenter(x, y, getMainView()->getSliceAxis());
     emit crossHairChanged();
   }
 }
@@ -158,17 +161,18 @@ void ZFlyEmOrthoMvc::updateStackFromCrossHair()
 
   ZFlyEmOrthoDoc *doc = getCompleteDocument();
   if (doc != NULL) {
-    ZPoint pt = doc->getCrossHairCenter();
-    pt.setZ(getView()->sliceIndex());
-    ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
-    updateStack(dataPos);
+    ZPoint dataPos = getMainView()->getAnchorPoint(neutu::data3d::ESpace::MODEL);
+//    ZPoint pt = doc->getCrossHairCenter();
+//    pt.setZ(getView()->sliceIndex());
+//    ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
+    updateStack(dataPos.roundToIntPoint());
   }
 }
 
 void ZFlyEmOrthoMvc::moveCrossHairTo(int x, int y)
 {
   setCrossHairCenter(x, y);
-  getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+  getMainView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 }
 
 /*
@@ -186,7 +190,26 @@ void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
              arg(center.getX()).arg(center.getY()).arg(center.getZ());
 
     doc->updateStack(center);
-    getView()->updateViewBox();
+    getMainView()->updateViewBox();
+  }
+}
+
+void ZFlyEmOrthoMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
+{
+  if (/*getView()->getSliceAxis() == neutu::EAxis::Z &&*/
+      viewParam == getMainView()->getViewParameter() && m_autoReload) {
+    ZFlyEmOrthoDoc *doc = getCompleteDocument();
+    if (doc != NULL) {
+//      ZPoint pt = doc->getCrossHairCenter();
+//      pt.setZ(getView()->sliceIndex());
+//      ZIntPoint dataPos = neutu::mvc::MapWidgetPosToData(getView(), pt).toIntPoint();
+      ZIntPoint dataPos = getMainView()->getAnchorPoint(
+            neutu::data3d::ESpace::MODEL).roundToIntPoint();
+      if (!doc->getDataRange().contains(dataPos)) {
+        doc->updateStack(dataPos);
+//        updateStack(dataPos);
+      }
+    }
   }
 }
 

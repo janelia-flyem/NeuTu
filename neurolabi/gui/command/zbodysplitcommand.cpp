@@ -64,15 +64,19 @@ ZDvidReader *ZBodySplitCommand::parseInputPath(
   ZDvidReader *reader= NULL;
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
-    inputJson = reader->readJsonObject(inputPath);
-    if (inputJson.hasKey(neutu::json::REF_KEY)) {
-      inputJson =
-          reader->readJsonObject(
-            ZJsonParser::stringValue(inputJson[neutu::json::REF_KEY]));
+    if (reader) {
+      inputJson = reader->readJsonObject(inputPath);
+      if (inputJson.hasKey(neutu::json::REF_KEY)) {
+        inputJson =
+            reader->readJsonObject(
+              ZJsonParser::stringValue(inputJson[neutu::json::REF_KEY]));
+      }
+      isFile = false;
+      splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
+      splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
+    } else {
+      throw std::runtime_error("Cannot perform IO for " + inputPath);
     }
-    isFile = false;
-    splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
-    splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
     if (ZFileType::FileType(inputPath) == ZFileType::EFileType::JSON) {
       inputJson.load(inputPath);
@@ -83,10 +87,10 @@ ZDvidReader *ZBodySplitCommand::parseInputPath(
     dataDir = ZString(inputPath).dirPath();
   } else {
     m_bodyId = extract_bodyid_from_input(inputPath);
-    if (ZFlyEmBodyManager::encodingSupervoxel(m_bodyId)) {
+    if (ZFlyEmBodyManager::EncodingSupervoxel(m_bodyId)) {
       m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
     }
-    m_bodyId = ZFlyEmBodyManager::decode(m_bodyId);
+    m_bodyId = ZFlyEmBodyManager::Decode(m_bodyId);
   }
 
   return reader;
@@ -105,15 +109,15 @@ ZBodySplitCommand::parseSignalPath(
   if (signalUrl.scheme() == "http") { //Sparse stack
     if (m_bodyId == 0) {
       m_bodyId = ZDvidUrl::GetBodyId(signalPath);
-      if (ZFlyEmBodyManager::encodingSupervoxel(m_bodyId)) {
+      if (ZFlyEmBodyManager::EncodingSupervoxel(m_bodyId)) {
         m_labelType = neutu::EBodyLabelType::SUPERVOXEL;
       }
-      m_bodyId = ZFlyEmBodyManager::decode(m_bodyId);
+      m_bodyId = ZFlyEmBodyManager::Decode(m_bodyId);
     }
 
     if (m_bodyId > 0) {
       ZDvidTarget target;
-      target.setFromUrl(signalPath);
+      target.setFromUrl_deprecated(signalPath);
 
       KINFO << signalPath;
 //      KINFO << QString("Start splitting %1").arg(m_bodyId);
@@ -541,7 +545,7 @@ void ZBodySplitCommand::processResult(
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result, NULL);
 
-      if (ZFileType::isImageFile(output)) {
+      if (ZFileType::IsImageFile(output)) {
         ZStack *labelStack = result.toColorField();
 
         writer.write(output, labelStack);

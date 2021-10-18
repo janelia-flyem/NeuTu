@@ -86,7 +86,6 @@ ZWidgetMessage::ZWidgetMessage(
   m_message.append(msg);
 }
 
-
 bool ZWidgetMessage::hasTarget(ETarget target) const
 {
   return (m_targets & target) == target;
@@ -97,31 +96,65 @@ bool ZWidgetMessage::hasTarget(FTargets target) const
   return (m_targets & target) == target;
 }
 
+bool ZWidgetMessage::hasTargetIn(FTargets target) const
+{
+  return (m_targets & target);
+}
+
 bool ZWidgetMessage::hasTargetOtherThan(FTargets targets) const
 {
   return (m_targets & ~targets);
 }
 
+bool ZWidgetMessage::hasAnyTarget() const
+{
+  return m_targets != TARGET_NULL;
+}
+
+void ZWidgetMessage::addTarget(ETarget target)
+{
+  m_targets |= target;
+}
+
+void ZWidgetMessage::removeTarget(ETarget target)
+{
+  m_targets &= ~target;
+}
+
+void ZWidgetMessage::addTarget(FTargets target)
+{
+  m_targets |= target;
+}
+
+void ZWidgetMessage::removeTarget(FTargets target)
+{
+  m_targets &= ~target;
+}
+
 
 QString ZWidgetMessage::ToHtmlString(
-    const QString &msg, neutu::EMessageType type)
+    const QString &msg, neutu::EMessageType type, const ToHtmlStringOption &option)
 {
   QString output = msg;
 
   if (!output.startsWith("<p>")) {
-    switch (type) {
-    case neutu::EMessageType::INFORMATION:
-//      output += "<font color = \"#007700\">test</font>";
-//      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
-      break;
-    case neutu::EMessageType::ERROR:
-      output = "<p><font color=\"#FF0000\">" + output + "</font></p>";
-      break;
-    case neutu::EMessageType::WARNING:
-      output = "<p><font color=\"#777700\">" + output + "</font></p>";
-      break;
-    default:
-      break;
+    if (option.coloring) {
+      switch (type) {
+      case neutu::EMessageType::INFORMATION:
+        output = "<font color = \"#007700\">" + output + "</font>";
+        break;
+      case neutu::EMessageType::ERROR:
+        output = "<font color=\"#FF0000\">" + output + "</font>";
+        break;
+      case neutu::EMessageType::WARNING:
+        output = "<font color=\"#777700\">" + output + "</font>";
+        break;
+      default:
+        break;
+      }
+    }
+    if (option.makingParagraph) {
+      output = "<p>" + output + "</p>";
     }
   }
 
@@ -137,7 +170,10 @@ QString ZWidgetMessage::toPlainString() const
 {
   QString result;
   foreach (const QString &str, m_message) {
-    result += str + " ";
+    if (!result.isEmpty()) {
+      result += " ";
+    }
+    result += str;
   }
 
   return result;
@@ -149,7 +185,7 @@ QString ZWidgetMessage::ToHtmlString(
   QString output;
 
   foreach (const QString msg, msgList) {
-    output += ToHtmlString(msg, type);
+    output += ToHtmlString(msg, type, ToHtmlStringOption(type));
   }
 
   return output;
@@ -189,6 +225,11 @@ ZWidgetMessageFactory::ZWidgetMessageFactory(const char *msg)
   m_message.setMessage(msg);
 }
 
+ZWidgetMessageFactory::ZWidgetMessageFactory(const ZWidgetMessage &msg)
+{
+  m_message = msg;
+}
+
 ZWidgetMessageFactory ZWidgetMessageFactory::Make(const char *msg)
 {
   return ZWidgetMessageFactory(msg);
@@ -196,7 +237,15 @@ ZWidgetMessageFactory ZWidgetMessageFactory::Make(const char *msg)
 
 ZWidgetMessageFactory& ZWidgetMessageFactory::to(ZWidgetMessage::ETarget target)
 {
-  m_message.setTarget(target);
+  m_message.addTarget(target);
+
+  return *this;
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::without(
+    ZWidgetMessage::FTargets targets)
+{
+  m_message.removeTarget(targets);
 
   return *this;
 }

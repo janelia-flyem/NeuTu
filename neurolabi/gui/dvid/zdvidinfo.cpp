@@ -3,8 +3,10 @@
 #include <iostream>
 #include <cmath>
 
+#include "zstring.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zjsonobjectparser.h"
 #include "zobject3dfactory.h"
 #include "geometry/zintcuboidarray.h"
 #include "geometry/zintcuboid.h"
@@ -12,13 +14,14 @@
 
 const int ZDvidInfo::m_defaultBlockSize = 32;
 
-const char* ZDvidInfo::m_minPointKey = "MinPoint";
-const char* ZDvidInfo::m_maxPointKey = "MaxPoint";
+const char* ZDvidInfo::KEY_MIN_POINT = "MinPoint";
+const char* ZDvidInfo::KEY_MAX_POINT = "MaxPoint";
 const char* ZDvidInfo::m_blockSizeKey = "BlockSize";
 const char* ZDvidInfo::m_voxelSizeKey = "VoxelSize";
 const char* ZDvidInfo::m_voxelUnitKey = "VoxelUnits";
 const char* ZDvidInfo::m_blockMinIndexKey = "MinIndex";
 const char* ZDvidInfo::m_blockMaxIndexKey = "MaxIndex";
+const char* ZDvidInfo::KEY_COMPRESSION = "Compression";
 
 ZDvidInfo::ZDvidInfo() : m_dvidPort(7000)
 {
@@ -49,8 +52,8 @@ bool ZDvidInfo::isValid() const
 
 void ZDvidInfo::setExtents(const ZJsonObject &obj)
 {
-  if (obj.hasKey(m_minPointKey)) {
-    ZJsonArray array(obj[m_minPointKey], ZJsonValue::SET_INCREASE_REF_COUNT);
+  if (obj.hasKey(KEY_MIN_POINT)) {
+    ZJsonArray array(obj[KEY_MIN_POINT], ZJsonValue::SET_INCREASE_REF_COUNT);
     std::vector<int> startCoordinates = array.toIntegerArray();
     if (startCoordinates.size() == 3) {
       m_startCoordinates.set(startCoordinates);
@@ -59,8 +62,8 @@ void ZDvidInfo::setExtents(const ZJsonObject &obj)
     }
   }
 
-  if (obj.hasKey(m_maxPointKey)) {
-    ZJsonArray array(obj[m_maxPointKey], ZJsonValue::SET_INCREASE_REF_COUNT);
+  if (obj.hasKey(KEY_MAX_POINT)) {
+    ZJsonArray array(obj[KEY_MAX_POINT], ZJsonValue::SET_INCREASE_REF_COUNT);
     std::vector<int> endCoordinates = array.toIntegerArray();
     if (endCoordinates.size() == 3) {
       for (int i = 0; i < 3; ++i) {
@@ -78,6 +81,12 @@ void ZDvidInfo::set(const ZJsonObject &rootObj)
 {
   clear();
   if (!rootObj.isEmpty()) {
+    if (rootObj.hasKey("Base")) {
+      ZJsonObjectParser parser;
+      setCompression(
+            parser.GetValue(rootObj.value("Base"), KEY_COMPRESSION, ""));
+    }
+
     ZJsonObject obj;
 
     if (rootObj.hasKey("Extents")) {
@@ -173,7 +182,7 @@ void ZDvidInfo::set(const ZJsonObject &rootObj)
 void ZDvidInfo::setFromJsonString(const std::string &str)
 {
   ZJsonObject rootObj;
-  rootObj.decode(str);
+  rootObj.decode(str, false);
   set(rootObj);
 }
 
@@ -205,9 +214,29 @@ void ZDvidInfo::print() const
             << m_blockSize[1] << " x " << m_blockSize[2] << std::endl;
 }
 
+bool ZDvidInfo::isLz4Compression() const
+{
+  return ZString(m_compression).startsWith("LZ4");
+}
+
+bool ZDvidInfo::isJpegCompression() const
+{
+  return ZString(m_compression).startsWith("jpeg");
+}
+
+void ZDvidInfo::setCompression(const std::string &compression)
+{
+  m_compression = compression;
+}
+
 ZIntPoint ZDvidInfo::getBlockSize() const
 {
   return ZIntPoint(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
+}
+
+int ZDvidInfo::getBlockLevel() const
+{
+  return zgeom::GetZoomLevel(m_blockSize[0]);
 }
 
 int ZDvidInfo::CoordToBlockIndex(int x, int s)
@@ -283,8 +312,8 @@ bool ZDvidInfo::isValidBlockIndex(const ZIntPoint &pt)
 
 ZObject3dScan ZDvidInfo::getBlockIndex(const ZIntCuboid &box) const
 {
-  ZIntPoint startIndex = getBlockIndex(box.getFirstCorner());
-  ZIntPoint endIndex = getBlockIndex(box.getLastCorner());
+  ZIntPoint startIndex = getBlockIndex(box.getMinCorner());
+  ZIntPoint endIndex = getBlockIndex(box.getMaxCorner());
 
 
   return ZObject3dFactory::MakeObject3dScan(ZIntCuboid(startIndex, endIndex));
@@ -393,7 +422,7 @@ ZIntCuboid ZDvidInfo::getBlockBox(int ix, int iy, int iz) const
 {
   ZIntCuboid cuboid;
 
-  cuboid.setFirstCorner(getBlockCoord(ix, iy, iz));
+  cuboid.setMinCorner(getBlockCoord(ix, iy, iz));
   cuboid.setSize(m_blockSize[0], m_blockSize[1], m_blockSize[2]);
 
   return cuboid;

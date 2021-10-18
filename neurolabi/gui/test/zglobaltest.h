@@ -14,7 +14,7 @@ TEST(ZGlobal, DVID)
   ZDvidTarget target;
   std::string url =
       "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master";
-  target.setFromUrl(url);
+  target.setFromUrl_deprecated(url);
 
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader(target);
   reader->getDvidTarget().print();

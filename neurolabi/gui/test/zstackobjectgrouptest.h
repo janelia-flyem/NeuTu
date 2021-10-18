@@ -109,6 +109,15 @@ TEST(ZStackObjectGroup, Basic) {
   ASSERT_EQ(dynamic_cast<ZStackObject*>(tree4), objList[1]);
 }
 
+TEST(ZStackObjectGroup, hasObject) {
+  ZStackObjectGroup group;
+  ASSERT_FALSE(group.hasObjectHandle(ZStackObjectHandle()));
+
+  ZSwcTree *obj = new ZSwcTree;
+  group.add(obj, true);
+  ASSERT_TRUE(group.hasObjectHandle(obj->getHandle()));
+}
+
 TEST(ZStackObjectGroup, add) {
   ZStackObjectGroup group;
 
@@ -389,10 +398,14 @@ TEST(ZStackObjectGroup, Selection) {
 
   objectGroup.resetSelector();
   objectGroup.setSelected(obj, true);
+  ASSERT_TRUE(obj->isSelected());
+  ASSERT_TRUE(objectGroup.hasSelected());
   ASSERT_TRUE(objectGroup.getSelector()->isInSelectedSet(obj));
   ASSERT_FALSE(objectGroup.getSelector()->isInDeselectedSet(obj));
 
   objectGroup.setSelected(obj, false);
+  ASSERT_FALSE(obj->isSelected());
+  ASSERT_FALSE(objectGroup.hasSelected());
   ASSERT_FALSE(objectGroup.getSelector()->isInSelectedSet(obj));
   ASSERT_FALSE(objectGroup.getSelector()->isInDeselectedSet(obj));
 

@@ -40,6 +40,10 @@ public:
   static void SubtractBackground(ZStack *stack);
   static void SubtractBackground(ZStack *stack, double minFr, int maxIter);
   static int SubtractBackground(Stack *stack, double minFr, int maxIter);
+
+  static void SubtractBackgroundAdaptive(Stack *stack, int nsample, int stride);
+  static void SubtractBackgroundAdaptive(ZStack *stack, int nsample, int stride);
+
   static void MexihatFilter(ZStack *stack, double sigma = 1.0);
   static void GaussianSmooth(ZStack *stack, double sigma = 1.0);
   static void GaussianSmooth(ZStack *stack, double sx, double sy, double sz);
@@ -47,16 +51,29 @@ public:
 
   static ZStack* Rgb2Gray(const ZStack *stack);
 
-  static ZStack* Intepolate(
+  static ZStack* Interpolate(
       const ZStack *stack1, const ZStack *stack2, double lambda,
       ZStack *out = NULL);
-  static ZStack* IntepolatePri(
+  static ZStack* InterpolatePri(
       const ZStack *stack1, const ZStack *stack2, int scale, int cw, int ch,
       double lambda, ZStack *out = NULL);
+
+  /*
   static ZStack* IntepolateFovia(
       const ZStack *stack1, const ZStack *stack2, int cw, int ch,
       double lambda, ZStack *out = NULL);
-  static ZStack* IntepolateFovia(
+  */
+  /*!
+   * \brief Interpolate image with fovia
+   *
+   * It interplates two images downsampled by \a scale or/and \a scale +1 for
+   * smooth transition through slices belonging to the same downsampling block.
+   * \a z1 is the source position of \a stack1, \a z2 is the source position of
+   * \a stack2, and \a z is the postion of the interpolated stack.
+   * The source stacks are expected to have a centercut area with the size
+   * \a cw x \a ch.
+   */
+  static ZStack* InterpolateFovia(
       const ZStack *stack1, const ZStack *stack2, int cw, int ch,
       int scale, int z1, int z2, int z, ZStack *out = NULL);
 

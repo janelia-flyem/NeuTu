@@ -23,6 +23,7 @@
 #include "zstackdocument.h"
 #include "zobject3dstripe.h"
 #include "geometry/zgeometry.h"
+#include "geometry/zintcuboid.h"
 
 class ZObject3d;
 class ZGraph;
@@ -52,10 +53,10 @@ class ZObject3dScan : public ZStackObject
 {
 public:
   ZObject3dScan();
-  virtual ~ZObject3dScan();
+  virtual ~ZObject3dScan() override;
 
   ZObject3dScan(const ZObject3dScan &obj);
-  ZObject3dScan(const ZObject3dScan &&obj);
+  ZObject3dScan(ZObject3dScan &&obj) = default;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::OBJECT3D_SCAN;
@@ -127,7 +128,7 @@ public:
     COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
     COMPONENT_ACCUMULATED_STRIPE_NUMBER,
     COMPONENT_SLICEWISE_VOXEL_NUMBER,
-    COMPONENT_Z_PROJECTION,
+    COMPONENT_Z_PROJECTION, COMPONENT_BOUND_BOX,
     COMPONENT_ALL
   };
 
@@ -154,12 +155,12 @@ public:
   bool load(const char *filePath);
   bool load(const std::string &filePath);
 
-  bool hit(double x, double y, double z);
-  bool hit(double x, double y, neutu::EAxis axis);
+  bool hit(double x, double y, double z) override;
+  bool hit(double x, double y, neutu::EAxis axis) override;
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
-  ZObject3dScan& operator=(const ZObject3dScan&& obj);
+  ZObject3dScan& operator=(ZObject3dScan&& obj) = default;
 
   void copyDataFrom(const ZObject3dScan &obj);
   void copyAttributeFrom(const ZObject3dScan &obj);
@@ -375,12 +376,15 @@ public:
 
   ZStack* toStackObjectWithMargin(int v, int margin) const;
 
+  ZStack* toStack(const ZIntCuboid &box, int v) const;
+
   ZStack* toVirtualStack() const;
   //ZStack* toDownsampledStack(int xIntv, int yIntv, int zIntv);
 
-  ZIntCuboid getBoundBox() const;
-  void getBoundBox(Cuboid_I *box) const;
-  void boundBox(ZIntCuboid *box) const;
+  ZIntCuboid getIntBoundBox() const;
+  ZCuboid getBoundBox() const override;
+  void getIntBoundBox(Cuboid_I *box) const;
+  void boundBox(ZIntCuboid *box) const override;
 
   template<class T>
   static std::map<uint64_t, ZObject3dScan*>* extractAllObject(
@@ -443,6 +447,7 @@ public:
 
   void translate(int dx, int dy, int dz);
   void translate(const ZIntPoint &dp);
+  void scale(int sx, int sy, int sz);
 
   /*!
    * \brief Add z value
@@ -466,9 +471,12 @@ public:
   void exportImageSlice(int minZ, int maxZ, const std::string outputFolder) const;
   void exportImageSlice(const std::string outputFolder) const;
 
+  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  /*
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option,
-      neutu::EAxis sliceAxis) const;
+      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
+      neutu::EAxis sliceAxis) const override;
+      */
 //  virtual const std::string& className() const;
 
   void dilate();
@@ -843,7 +851,7 @@ private:
   void addForeground(ZStack *stack);
   void addForegroundSlice8(ZStack *stack);
   int subtractForegroundSlice8(ZStack *stack);
-  void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
+//  void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
   void makeZProjection(ZObject3dScan *obj, int z) const;
 
@@ -861,6 +869,8 @@ private:
 
   bool isAdjacentToOld(const ZObject3dScan &obj) const;
 
+  bool getDefaultCosmetic(ZStackObject::EDisplayStyle style) const;
+
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
 
@@ -869,7 +879,8 @@ protected:
   mutable std::unordered_map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
-  mutable ZObject3dScan *m_zProjection;
+  mutable ZObject3dScan *m_zProjection = nullptr;
+  mutable ZIntCuboid m_boundBox;
 
   //SWIG has some problem recognizing const static type
 #ifndef SWIG

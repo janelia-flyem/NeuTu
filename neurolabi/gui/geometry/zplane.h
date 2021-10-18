@@ -16,9 +16,15 @@ public:
   ZPlane(const ZPoint &v1, const ZPoint &v2);
 
   bool isValid() const;
+  void invalidate();
 
-  ZPoint getV1() const;
-  ZPoint getV2() const;
+  inline const ZPoint& getV1() const {
+    return m_v1;
+  }
+
+  inline const ZPoint& getV2() const {
+    return m_v2;
+  }
 
   /*!
    * \brief Set a plane by giving two vectors of the plane.
@@ -37,6 +43,30 @@ public:
   ZPoint getNormal() const;
   bool onSamePlane(const ZPlane &p) const;
   bool contains(const ZPoint &pt) const;
+  double computeSignedDistance(const ZPoint &pt) const;
+  double computeSignedDistance(double x, double y, double z) const;
+
+  /*!
+   * \brief Align a point with plane
+   *
+   * It aligns a point by tranforming it to the plane coordinate system.
+   *
+   * \return Transformed point.
+   */
+  ZPoint align(const ZPoint &pt) const;
+
+  ZPoint mapAligned(double u, double v) const;
+
+  friend std::ostream& operator<<(std::ostream& stream, const ZPlane &p);
+
+  bool approxEquals(const ZPlane &plane) const;
+  bool operator== (const ZPlane &p) const;
+  bool operator!= (const ZPlane &p) const;
+
+  /*!
+   * \brief Check if the plane orientation is aligned with all coordinate axes
+   */
+  bool isAxisAligned() const;
 
 private:
   static bool IsValid(const ZPoint &v1, const ZPoint &v2);

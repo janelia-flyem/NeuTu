@@ -12,7 +12,7 @@ class ResolutionDialog : public QDialog
   Q_OBJECT
 
 public:
-  explicit ResolutionDialog(QWidget *parent = 0);
+  explicit ResolutionDialog(QWidget *parent = nullptr);
   ~ResolutionDialog();
 
 //  double getXYScale() const;

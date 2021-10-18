@@ -16,16 +16,17 @@
 #ifndef Z3DFILTER_H
 #define Z3DFILTER_H
 
-#include "z3dgl.h"
-#include "z3dcanvaseventlistener.h"
-#include "zflags.h"
-#include "logging/zloggable.h"
-
 #include <QObject>
 #include <map>
 #include <set>
 #include <vector>
 #include <QString>
+
+#include "z3dgl.h"
+#include "z3dcanvaseventlistener.h"
+#include "zflags.h"
+#include "logging/zloggable.h"
+#include "zwidgetmessage.h"
 
 class Z3DInputPortBase;
 class Z3DOutputPortBase;
@@ -112,6 +113,7 @@ signals:
 
   // emit this only if resize starts from current filter.
   void requestUpstreamSizeChange(Z3DFilter*);
+  void messageGenerated(ZWidgetMessage);
 
 protected:
   // mark that the output of current filter for certain eye is valid.

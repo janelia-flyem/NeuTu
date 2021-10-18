@@ -1,11 +1,11 @@
 #ifndef ZFLYEMMISCTEST_H
 #define ZFLYEMMISCTEST_H
 
-#include "ztestheader.h"
-#include "flyem/zflyemmisc.h"
-#include "zpunctum.h"
 
 #ifdef _USE_GTEST_
+
+#include "gtest/gtest.h"
+#include "flyem/zflyemmisc.h"
 
 TEST(flyemmisc, HasConnecion)
 {

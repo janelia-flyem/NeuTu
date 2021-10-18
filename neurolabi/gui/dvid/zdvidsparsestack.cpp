@@ -3,14 +3,18 @@
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 
-#include "zdvidinfo.h"
-#include "zdvidreader.h"
 #include "zpainter.h"
 #include "zimage.h"
 #include "neutubeconfig.h"
 #include "c_stack.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
+#include "geometry/zcuboid.h"
+#include "data3d/displayconfig.h"
+
+#include "zdvidinfo.h"
+#include "zdvidreader.h"
+#include "zdvidglobal.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
@@ -30,7 +34,7 @@ ZDvidSparseStack::~ZDvidSparseStack()
 
 void ZDvidSparseStack::init()
 {
-  setTarget(ZStackObject::ETarget::OBJECT_CANVAS);
+  setTarget(neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS);
   m_type = GetType();
   m_label = 0;
   setCancelFillValue(false);
@@ -70,7 +74,7 @@ ZStack* ZDvidSparseStack::makeSlice(int z) const
   if (objectMask != NULL) {
     ZObject3dScan slice = objectMask->getSlice(z);
     if (!slice.isEmpty()) {
-      ZIntCuboid box = slice.getBoundBox();
+      ZIntCuboid box = slice.getIntBoundBox();
       stack = new ZStack(GREY, box, 1);
       stack->setZero();
 
@@ -100,7 +104,9 @@ void ZDvidSparseStack::initBlockGrid()
 {
   ZDvidReader &reader = getGrayscaleReader();
   if (reader.good()) {
-    m_grayscaleInfo = reader.readGrayScaleInfo();
+//    m_grayscaleInfo = reader.readGrayScaleInfo();
+    m_grayscaleInfo =
+        ZDvidGlobal::Memo::ReadGrayscaleInfo(reader.getDvidTarget());
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     m_sparseStack.setGreyScale(grid);
 //    grid->setMinPoint(dvidInfo.getStartCoordinates());
@@ -165,6 +171,27 @@ void ZDvidSparseStack::setLabelType(neutu::EBodyLabelType type)
   m_labelType = type;
 }
 
+bool ZDvidSparseStack::display(QPainter *painter, const DisplayConfig &config) const
+{
+  bool painted = false;
+  if (loadingObjectMask()) {
+    ZObject3dScan *obj = m_dvidReader.readBody(
+          getLabel(), getLabelType(),
+          config.getCutDepth(ZPoint::ORIGIN), config.getSliceAxis(), true, NULL);
+    obj->setColor(getColor());
+    painted = obj->display(painter, config);
+    delete obj;
+  } else {
+    ZObject3dScan *obj = const_cast<ZDvidSparseStack&>(*this).getObjectMask();
+    if (obj != NULL) {
+      painted = obj->display(painter, config);
+    }
+  }
+
+  return painted;
+}
+
+#if 0
 void ZDvidSparseStack::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const
 {
@@ -182,20 +209,28 @@ void ZDvidSparseStack::display(
     }
   }
 }
+#endif
 
 void ZDvidSparseStack::setCancelFillValue(bool flag)
 {
   m_cancelingValueFill = flag;
 }
 
-ZIntCuboid ZDvidSparseStack::getBoundBox() const
+ZIntCuboid ZDvidSparseStack::getIntBoundBox() const
 {
   ZIntCuboid box;
   ZObject3dScan *obj = const_cast<ZDvidSparseStack&>(*this).getObjectMask();
   if (obj != NULL) {
-    box = obj->getBoundBox();
+    box = obj->getIntBoundBox();
   }
 
+  return box;
+}
+
+ZCuboid ZDvidSparseStack::getBoundBox() const
+{
+  ZCuboid box;
+  box.set(getIntBoundBox());
   return box;
 }
 
@@ -425,10 +460,10 @@ bool ZDvidSparseStack::fillValue(
 
       size_t stripeNumber = blockObj.getStripeNumber();
       ZIntCuboid blockBox;
-      blockBox.setFirstCorner(
-            m_grayscaleInfo.getBlockIndex(box.getFirstCorner()));
-      blockBox.setLastCorner(
-            m_grayscaleInfo.getBlockIndex(box.getLastCorner()));
+      blockBox.setMinCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMinCorner()));
+      blockBox.setMaxCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMaxCorner()));
 
 #ifdef _DEBUG_2
       objMask->save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -604,10 +639,10 @@ bool ZDvidSparseStack::fillValue(
 
       size_t stripeNumber = blockObj.getStripeNumber();
       ZIntCuboid blockBox;
-      blockBox.setFirstCorner(
-            m_grayscaleInfo.getBlockIndex(box.getFirstCorner()));
-      blockBox.setLastCorner(
-            m_grayscaleInfo.getBlockIndex(box.getLastCorner()));
+      blockBox.setMinCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMinCorner()));
+      blockBox.setMaxCorner(
+            m_grayscaleInfo.getBlockIndex(box.getMaxCorner()));
 
 
 #ifdef _DEBUG_2
@@ -840,7 +875,7 @@ ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range, bool preservingBord
 {
   ZStack *stack = NULL;
 
-  if (range.contains(getBoundBox()) || range.isEmpty()) {
+  if (range.contains(getIntBoundBox()) || range.isEmpty()) {
     stack = getStack()->clone();
   } else {
     runFillValueFunc(range, true, false);

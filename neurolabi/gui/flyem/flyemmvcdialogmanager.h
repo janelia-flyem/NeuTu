@@ -1,6 +1,12 @@
 #ifndef FLYEMMVCDIALOGMANAGER_H
 #define FLYEMMVCDIALOGMANAGER_H
 
+#include <string>
+
+#include <QObject>
+
+class ZJsonObject;
+class QDialog;
 class ZFlyEmProofMvc;
 class NeuprintSetupDialog;
 class ZContrastProtocalDialog;
@@ -20,6 +26,9 @@ class TipDetectorDialog;
 class ZFlyEmSplitCommitDialog;
 class FlyEmBodyAnnotationDialog;
 class NeuPrintQueryDialog;
+class ZSynapsePropertyDialog;
+class NeuroglancerLinkDialog;
+class ZGenericBodyAnnotationDialog;
 //class ZStackViewRecordDialog;
 
 /*!
@@ -28,10 +37,13 @@ class NeuPrintQueryDialog;
  * This class is not expected to be used by other classes except ZFlyEmProofMvc
  * and its derivatives.
  */
-class FlyEmMvcDialogManager
+class FlyEmMvcDialogManager : public QObject
 {
+  Q_OBJECT
+
 public:
-  FlyEmMvcDialogManager(ZFlyEmProofMvc *parent);
+  FlyEmMvcDialogManager(ZFlyEmProofMvc *parent = nullptr);
+  virtual ~FlyEmMvcDialogManager();
 
   ZDvidTargetProviderDialog* getDvidDlg();
   FlyEmBodyInfoDialog* getBodyInfoDlg();
@@ -49,10 +61,15 @@ public:
   ZFlyEmMergeUploadDialog* getMergeUploadDlg();
   ZFlyEmProofSettingDialog* getSettingDlg();
   FlyEmBodyAnnotationDialog* getAnnotationDlg();
+  ZGenericBodyAnnotationDialog* getGenericAnnotationDlg();
   NeuPrintQueryDialog* getNeuprintQueryDlg();
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
   TipDetectorDialog* getTipDetectorDlg();
+  ZSynapsePropertyDialog* getSynpasePropertyDlg();
+  NeuroglancerLinkDialog* getNeuroglancerLinkDlg();
+
+  void showSynpasePropertyDlg();
 //  ZStackViewRecordDialog* getRecordDlg();
 
   void setDvidDlg(ZDvidTargetProviderDialog *dlg);
@@ -60,6 +77,17 @@ public:
   bool isRoiDlgReady() const;
   bool isBodyInfoDlgReady() const;
   bool isSplitUploadDlgReady() const;
+
+  /*
+  void setNeuprintDataset(const std::string &dataset) {
+    m_neuprintDataset = dataset;
+  }
+  */
+
+private slots:
+  void detachBodyInfoDlg();
+  void detachNeuprintBodyDlg();
+  void detachBodyQueryDlg();
 
 private:
   inline bool isNull(void *dlg) const {
@@ -70,9 +98,11 @@ private:
   bool createIfNecessary(T* &dlg);
 //  bool creationRequired(void *dlg) const;
 
+  static void Show(QDialog *dlg);
+
 private:
   template<typename T>
-  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag);
+  FlyEmBodyInfoDialog* makeBodyInfoDlg(const T &flag, bool initTarget);
 
 private:
   ZFlyEmProofMvc *m_parent = nullptr;
@@ -93,10 +123,14 @@ private:
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg = nullptr;
   ZFlyEmProofSettingDialog *m_settingDlg = nullptr;
   FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
+  ZGenericBodyAnnotationDialog *m_genericAnnotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;
   TipDetectorDialog *m_tipDetectorDlg = nullptr;
+  ZSynapsePropertyDialog *m_synapseDlg = nullptr;
+  NeuroglancerLinkDialog *m_neuroglancerLinkDlg = nullptr;
+  std::string m_neuprintDataset; //temp hack
 //  ZStackViewRecordDialog *m_recordDlg = nullptr;
 
 };

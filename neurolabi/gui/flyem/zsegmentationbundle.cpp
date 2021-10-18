@@ -8,7 +8,6 @@
 #include "flyem/zsegmentationanalyzer.h"
 
 #include "tz_stack_utils.h"
-#include "tz_iarray.h"
 
 using namespace std;
 
@@ -1064,10 +1063,10 @@ const vector<double>& flyem::ZSegmentationBundle::getGalaProbability()
 
     ZJsonObject_foreach(rootObject, key, value) {
       if (eqstr(key, "edge_list")) {
-        size_t edgeNumber = ZJsonParser::arraySize(value);
+        size_t edgeNumber = ZJsonParser::ArraySize(value);
         m_galaProbability.resize(bodyGraph->size(), 0.0);
         for (size_t i = 0; i < edgeNumber; ++i) {
-          json_t *edge = ZJsonParser::arrayValue(value, i);
+          json_t *edge = ZJsonParser::ArrayValue(value, i);
           ZGalaPredictionEntry entry;
           entry.loadJsonObject(edge);
 

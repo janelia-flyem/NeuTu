@@ -31,7 +31,7 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoViewHelper::getMasterDoc() const
 ZStackView* ZFlyEmOrthoViewHelper::getMasterView() const
 {
   if (getMasterMvc() != NULL) {
-    return getMasterMvc()->getView();
+    return getMasterMvc()->getMainView();
   }
 
   return NULL;
@@ -66,14 +66,16 @@ neutu::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(
 
 neutu::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(const ZFlyEmOrthoMvc *mvc)
 {
-  return getAlignAxis(mvc->getView()->getSliceAxis(),
-                      getMasterMvc()->getView()->getSliceAxis());
+  return getAlignAxis(mvc->getMainView()->getSliceAxis(),
+                      getMasterMvc()->getMainView()->getSliceAxis());
 }
 
 ZPoint ZFlyEmOrthoViewHelper::getCrossCenter() const
 {
   ZPoint center;
   if (getMasterMvc() != NULL) {
+    center = getMasterMvc()->getMainView()->getCutCenter();
+    /*
     center = getMasterDoc()->getCrossHair()->getCenter();
     center.shiftSliceAxis(getMasterView()->getSliceAxis());
 #ifdef _DEBUG_
@@ -85,6 +87,7 @@ ZPoint ZFlyEmOrthoViewHelper::getCrossCenter() const
     center.setY(pt.y());
     center.setZ(getMasterView()->getCurrentZ());
     center.shiftSliceAxisInverse(getMasterView()->getSliceAxis());
+    */
   }
 
   return center;
@@ -95,15 +98,16 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
   if (getMasterMvc() != NULL) {
 #ifdef _DEBUG_
     std::cout << "Sync crosshair from " << neutu::EnumValue(getMasterView()->getSliceAxis())
-              << " to " << neutu::EnumValue(mvc->getView()->getSliceAxis()) << std::endl;
+              << " to " << neutu::EnumValue(mvc->getMainView()->getSliceAxis())
+              << std::endl;
 #endif
 //    ZCrossHair *crossHair = mvc->getCompleteDocument()->getCrossHair();
 //    ZPoint crossCenter = getMasterDoc()->getCrossHair()->getCenter();
     ZPoint mappedCrossCenter = getCrossCenter();
 //    mappedCrossCenter.shiftSliceAxisInverse(getMasterMvc);
-    mvc->getView()->setZ(
-          mappedCrossCenter.getSliceCoord(mvc->getView()->getSliceAxis()));
-    mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
+    mvc->getMainView()->setDepth(
+          mappedCrossCenter.getValue(mvc->getMainView()->getSliceAxis()));
+    mvc->getMainView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 
 #if 0
     NeuTube::EAxis axis = getAlignAxis(mvc);
@@ -135,8 +139,9 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
   }
 }
 
-void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
+void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc */*mvc*/)
 {
+#if 0
   if (getMasterMvc() != NULL) {
 #ifdef _DEBUG_2
     std::cout << "Sync viewport from " << getMasterView()->getSliceAxis()
@@ -198,8 +203,8 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
       break;
     }
 
-    mvc->getView()->setZ(mappedCrossCenter.getSliceCoord(slaveAxis));
     mvc->getView()->setViewProj(newViewProj);
+    mvc->getView()->setZ(mappedCrossCenter.getSliceCoord(slaveAxis));
     mvc->getView()->updateImageScreen(ZStackView::EUpdateOption::QUEUED);
 
 #ifdef _DEBUG_2
@@ -207,5 +212,7 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     mvc->getView()->printViewParam();
 #endif
   }
+#endif
+
 }
 

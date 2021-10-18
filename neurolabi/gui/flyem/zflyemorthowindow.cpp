@@ -77,7 +77,7 @@ void ZFlyEmOrthoWindow::copyBookmarkFrom(ZFlyEmProofDoc *doc)
 
 void ZFlyEmOrthoWindow::syncBodyColorMap(ZFlyEmProofDoc *doc)
 {
-  getDocument()->updateBodyColor(doc->getActiveBodyColorMap());
+  getDocument()->updateBodyColor(doc->getActiveBodyColorMap(), false);
   getDocument()->setActiveBodyColorMap(doc->getActiveBodyColorMap());
 }
 
@@ -90,3 +90,9 @@ void ZFlyEmOrthoWindow::processMessage(const ZWidgetMessage &message)
 {
   m_orthoWidget->processMessage(message);
 }
+
+/*
+void ZFlyEmOrthoWindow::closeEvent(QCloseEvent *event)
+{
+}
+*/

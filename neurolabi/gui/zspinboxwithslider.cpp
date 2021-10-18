@@ -94,6 +94,7 @@ void ZSpinBoxWithSlider::createWidget(int value, int min, int max, int step, boo
   m_slider->setValue(value);
   m_slider->setSingleStep(step);
   m_slider->setTracking(tracking);
+//  m_slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
   m_spinBox = new ZSpinBox();
   m_spinBox->setRange(min, max);
   m_spinBox->setValue(value);
@@ -109,6 +110,10 @@ void ZSpinBoxWithSlider::createWidget(int value, int min, int max, int step, boo
   connect(m_spinBox, qOverload<int>(&ZSpinBox::valueChanged), this, &ZSpinBoxWithSlider::valueChangedFromSpinBox);
 #else
   connect(m_spinBox, QOverload<int>::of(&ZSpinBox::valueChanged), this, &ZSpinBoxWithSlider::valueChangedFromSpinBox);
+#endif
+
+#ifdef _DEBUG_0
+  qDebug() << "slider size: " << m_slider->sizeHint() << m_slider->size();
 #endif
 }
 

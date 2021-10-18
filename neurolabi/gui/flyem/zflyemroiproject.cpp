@@ -525,6 +525,31 @@ int ZFlyEmRoiProject::uploadRoi(int z)
   return count;
 }
 
+void ZFlyEmRoiProject::exportRoiData(const std::string &path)
+{
+  ZObject3dScan obj = getRoiSlice();
+
+  int intv = dvid::DEFAULT_ROI_BLOCK_SIZE - 1;
+
+  obj.downsampleMax(intv, intv, intv);
+  obj.setDsIntv(0, 0, 0);
+  int minZ = obj.getMinZ();
+  int maxZ = obj.getMaxZ();
+
+  ZObject3dScan interpolated;
+  for (int z = minZ; z <= maxZ; ++z) {
+    interpolated.concat(obj.interpolateSlice(z));
+  }
+
+  if (ZFileType::FileType(path) == ZFileType::EFileType::JSON) {
+    ZJsonArray array = ZJsonFactory::MakeJsonArray(
+          interpolated, ZJsonFactory::OBJECT_SPARSE);
+    array.dump(path);
+  } else {
+    interpolated.save(path);
+  }
+}
+
 bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent)
 {
   bool succ = false;
@@ -1101,14 +1126,14 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack, int bgValue)
 
   ZIntCuboid cuboid0 = stack.getBoundBox();
   ZIntCuboid cuboid;
-  cuboid.set(cuboid0.getLastCorner(), cuboid0.getFirstCorner());
+  cuboid.set(cuboid0.getMaxCorner(), cuboid0.getMinCorner());
   //Left bound
   for (int y = 0; y < height; y += 100) {
     size_t offset = width * y;
     for (int x = 0; x < width; ++x) {
       if (array[offset++] != fgValue) {
-        if (x < cuboid.getFirstCorner().getX()) {
-          cuboid.setFirstX(x);
+        if (x < cuboid.getMinCorner().getX()) {
+          cuboid.setMinX(x);
           break;
         }
       }
@@ -1120,8 +1145,8 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack, int bgValue)
     size_t offset = width * y + width - 1;
     for (int x = width - 1; x >= 0; --x) {
       if (array[offset--] != fgValue) {
-        if (x > cuboid.getLastCorner().getX()) {
-          cuboid.setLastX(x);
+        if (x > cuboid.getMaxCorner().getX()) {
+          cuboid.setMaxX(x);
           break;
         }
       }
@@ -1133,8 +1158,8 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack, int bgValue)
     size_t offset =x;
     for (int y = 0; y < height; ++y) {
       if (array[offset] != fgValue) {
-        if (y < cuboid.getFirstCorner().getY()) {
-          cuboid.setFirstY(y);
+        if (y < cuboid.getMinCorner().getY()) {
+          cuboid.setMinY(y);
           break;
         }
       }
@@ -1148,8 +1173,8 @@ ZIntCuboid ZFlyEmRoiProject::estimateBoundBox(const ZStack &stack, int bgValue)
     size_t offset = area - 1 - x;
     for (int y = height - 1; y >= 0; --y) {
       if (array[offset] != fgValue) {
-        if (y > cuboid.getLastCorner().getY()) {
-          cuboid.setLastY(y);
+        if (y > cuboid.getMaxCorner().getY()) {
+          cuboid.setMaxY(y);
           break;
         }
       }
@@ -1178,7 +1203,7 @@ std::string ZFlyEmRoiProject::getRoiKey(int z) const
     key.appendNumber(z, 7);
   }
 
-  return key;
+  return std::move(key);
 }
 
 double ZFlyEmRoiProject::estimateRoiVolume(char unit) const
@@ -1320,13 +1345,17 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
 void ZFlyEmRoiProject::setSynapseVisible(bool isVisible)
 {
   if (m_dataFrame != NULL) {
+    m_dataFrame->document()->setVisible(
+          ZStackObject::EType::PUNCTUM, isVisible);
+    /*
     QList<ZPunctum*> puncta = m_dataFrame->document()->getPunctumList();
     for (QList<ZPunctum*>::iterator iter = puncta.begin();
          iter != puncta.end(); ++iter) {
       ZPunctum *punctum = *iter;
       punctum->setVisible(isVisible);
     }
-    m_dataFrame->document()->notifyPunctumModified();
+    */
+//    m_dataFrame->document()->notifyPunctumModified();
   }
 }
 

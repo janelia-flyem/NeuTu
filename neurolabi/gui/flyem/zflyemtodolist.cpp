@@ -3,8 +3,11 @@
 #include "common/math.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
+
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidurl.h"
+#include "dvid/zdvidglobal.h"
+
 #include "mvc/zstackview.h"
 #include "flyemdatareader.h"
 
@@ -30,15 +33,16 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
   m_dvidTarget = target;
   if (m_reader.open(target)) {
     m_writer.open(target);
-    m_dvidInfo = m_reader.readGrayScaleInfo();
-    m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+    m_dvidInfo = ZDvidGlobal::Memo::ReadGrayscaleInfo(m_reader.getDvidTarget());
+//    m_dvidInfo = m_reader.readGrayScaleInfo();
+    m_startZ = m_dvidInfo.getStartCoordinates().getCoord(m_sliceAxis);
   }
 }
 
 void ZFlyEmToDoList::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
-  m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+  m_startZ = m_dvidInfo.getStartCoordinates().getCoord(m_sliceAxis);
 }
 
 void ZFlyEmToDoList::init()
@@ -64,7 +68,8 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
 
   if (!dataBox.isEmpty()) {
     ZDvidUrl dvidUrl(m_dvidTarget);
-    ZJsonArray obj = m_reader.readJsonArray(dvidUrl.getTodoListUrl(dataBox));
+    ZJsonArray obj = m_reader.readJsonArray(
+          ZDvidUrl::AppendSourceQuery(dvidUrl.getTodoListUrl(dataBox)));
 
     for (size_t i = 0; i < obj.size(); ++i) {
       ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -110,7 +115,7 @@ void ZFlyEmToDoList::download(int z)
 {
   int currentArea = 0;
   if (m_view != NULL) {
-    currentArea = m_view->getViewParameter().getArea();
+    currentArea = m_view->getViewParameter().getArea(neutu::data3d::ESpace::MODEL);
   }
 
   int blockIndex = m_dvidInfo.getBlockIndexZ(z);
@@ -119,14 +124,18 @@ void ZFlyEmToDoList::download(int z)
   blockBox.shiftSliceAxis(m_sliceAxis);
 
   if (currentArea > 0 && currentArea < m_maxPartialArea) {
-    QRect viewPort = m_view->getViewParameter().getViewPort();
-    ZIntCuboid box(
-          viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
-          viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
+    ZAffineRect viewPort = m_view->getCutRect();
+    ZIntCuboid box = zgeom::GetIntBoundBox(viewPort);
+    box.setMinZ(blockBox.getMinCorner().getZ());
+    box.setMaxZ(blockBox.getMaxCorner().getZ());
+//    QRect viewPort = m_view->getViewParameter().getViewPort();
+//    ZIntCuboid box(
+//          viewPort.left(), viewPort.top(), blockBox.getMinCorner().getZ(),
+//          viewPort.right(), viewPort.bottom(), blockBox.getMaxCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
     update(box);
-    for (int cz = blockBox.getFirstCorner().getZ();
-         cz <= blockBox.getLastCorner().getZ(); ++cz) {
+    for (int cz = blockBox.getMinCorner().getZ();
+         cz <= blockBox.getMaxCorner().getZ(); ++cz) {
       ItemSlice &slice = getSlice(cz, ADJUST_FULL);
       slice.setDataRect(viewPort);
       slice.setStatus(STATUS_PARTIAL_READY);
@@ -142,24 +151,27 @@ void ZFlyEmToDoList::download(int z)
     int height = lastCorner.getY() - firstCorner.getY() + 1;
     ZIntCuboid box;
 
-    box.setFirstCorner(firstCorner.getX(), firstCorner.getY(),
-                       blockBox.getFirstCorner().getZ());
+    box.setMinCorner(firstCorner.getX(), firstCorner.getY(),
+                       blockBox.getMinCorner().getZ());
     box.setSize(width, height, blockBox.getDepth());
 
     box.shiftSliceAxisInverse(m_sliceAxis);
 
     box = update(box);
 
-    for (int cz = blockBox.getFirstCorner().getZ();
-         cz <= blockBox.getLastCorner().getZ(); ++cz) {
+    for (int cz = blockBox.getMinCorner().getZ();
+         cz <= blockBox.getMaxCorner().getZ(); ++cz) {
       ItemSlice &slice = getSlice(cz, ADJUST_FULL);
       if (m_dataRange.isEmpty()) {
         slice.setStatus(STATUS_READY);
       } else {
         box.shiftSliceAxisInverse(getSliceAxis());
-        slice.setDataRect(
-              QRect(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-                    box.getWidth(), box.getHeight()));
+        ZAffineRect rect;
+        rect.setCenter(box.getExactCenter());
+        rect.setSize(box.getWidth(), box.getHeight());
+//        slice.setDataRect(
+//              QRect(box.getMinCorner().getX(), box.getMinCorner().getY(),
+//                    box.getWidth(), box.getHeight()));
         slice.setStatus(STATUS_PARTIAL_READY);
       }
     }
@@ -260,7 +272,7 @@ int ZFlyEmToDoList::getMaxZ() const
 
 bool ZFlyEmToDoList::hasLocalItem(int x, int y, int z) const
 {
-  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::ShiftSliceAxis(x, y, z, m_sliceAxis);
 
   int zIndex = z - m_startZ;
 
@@ -287,7 +299,7 @@ bool ZFlyEmToDoList::removeItem(int x, int y, int z, EDataScope scope)
       int sx = x;
       int sy = y;
       int sz = z;
-      zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+      zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
       getItemMap(sy, sz).remove(sx);
       getSelector().deselectObject(ZIntPoint(x, y, z));
 
@@ -353,6 +365,7 @@ bool ZFlyEmToDoList::isReady() const
   return m_isReady;
 }
 
+#if 0
 void ZFlyEmToDoList::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutu::EAxis sliceAxis) const
@@ -371,8 +384,8 @@ void ZFlyEmToDoList::display(
       ZIntCuboid range = m_dataRange;
       range.shiftSliceAxis(getSliceAxis());
 
-      rangeRect.setTopLeft(QPoint(range.getFirstCorner().getX(),
-                                  range.getFirstCorner().getY()));
+      rangeRect.setTopLeft(QPoint(range.getMinCorner().getX(),
+                                  range.getMinCorner().getY()));
       rangeRect.setSize(QSize(range.getWidth(), m_dataRange.getHeight()));
     }
 
@@ -431,6 +444,7 @@ void ZFlyEmToDoList::display(
     }
   }
 }
+#endif
 
 ZFlyEmToDoItem& ZFlyEmToDoList::getItem(
     int x, int y, int z, EDataScope scope)
@@ -443,7 +457,7 @@ ZFlyEmToDoItem& ZFlyEmToDoList::getItem(
     int sx = x;
     int sy = y;
     int sz = z;
-    zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+    zgeom::ShiftSliceAxis(sx, sy, sz, m_sliceAxis);
 
     return getSlice(sz).getMap(sy)[sx];
   } else {
@@ -514,15 +528,6 @@ void ZFlyEmToDoList::deselectSub()
     }
   }
   deselectAll();
-}
-
-void ZFlyEmToDoList::deselect(bool recursive)
-{
-  setSelected(false);
-
-  if (recursive) {
-    deselectSub();
-  }
 }
 
 bool ZFlyEmToDoList::hit(double x, double y, double z)
@@ -681,6 +686,7 @@ bool ZFlyEmToDoList::ItemSlice::contains(int x, int y) const
   return false;
 }
 
+/*
 bool ZFlyEmToDoList::ItemSlice::isReady(
     const QRect &rect, const QRect &range) const
 {
@@ -706,8 +712,9 @@ bool ZFlyEmToDoList::ItemSlice::isReady(
 
   return false;
 }
+*/
 
-void ZFlyEmToDoList::ItemSlice::setDataRect(const QRect &rect)
+void ZFlyEmToDoList::ItemSlice::setDataRect(const ZAffineRect &rect)
 {
   m_dataRect = rect;
 }

@@ -12,11 +12,13 @@ class ZLineSegmentObject : public ZStackObject
 {
 public:
   ZLineSegmentObject();
-  void display(ZPainter &painter, int slice, EDisplayStyle option,
-               neutu::EAxis sliceAxis) const;
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+    return false;
+  }
 
 
-  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutu::EAxis sliceAxis) const override;
 
 
   double getLowerX() const;

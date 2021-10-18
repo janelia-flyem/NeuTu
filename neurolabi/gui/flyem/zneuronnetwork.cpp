@@ -5,7 +5,6 @@
 #include "zstring.h"
 #include "zsynapseannotationanalyzer.h"
 #include "geometry/zcuboid.h"
-#include "tz_darray.h"
 #include "zswcnetwork.h"
 #include "swctreenode.h"
 
@@ -291,7 +290,7 @@ void ZNeuronNetwork::layoutSwc()
   for (size_t i = 0; i < m_swcTreeArray.size(); i++) {
     double corner[6];
 
-    m_swcTreeArray[i]->getBoundBox(corner);
+    m_swcTreeArray[i]->getBoundBoxC(corner);
     //originalBoundBoxArray[i].set(corner);
 
     corner[0] -= cxArray[i] - xArray[i];

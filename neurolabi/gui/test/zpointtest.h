@@ -11,17 +11,50 @@
 
 TEST(ZIntPoint, Basic)
 {
-  ZIntPoint pt;
-  ASSERT_TRUE(pt.isZero());
+  {
+    ZIntPoint pt;
+    ASSERT_TRUE(pt.isZero());
 
-  pt.invalidate();
-  ASSERT_FALSE(pt.isValid());
+    pt.invalidate();
+    ASSERT_FALSE(pt.isValid());
 
-  pt.set(1, 2, 3);
-  ASSERT_EQ(1, pt.getValue(neutu::EAxis::X));
-  ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
-  ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
-  ASSERT_EQ(0, pt.getValue(neutu::EAxis::ARB));
+    pt.set(1, 2, 3);
+    ASSERT_EQ(1, pt.getValue(neutu::EAxis::X));
+    ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
+    ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
+    ASSERT_EQ(0, pt.getValue(neutu::EAxis::ARB));
+  }
+
+  {
+    ZIntPoint pt({1, 2, 3});
+    ASSERT_EQ(1, pt.getValue(neutu::EAxis::X));
+    ASSERT_EQ(2, pt.getValue(neutu::EAxis::Y));
+    ASSERT_EQ(3, pt.getValue(neutu::EAxis::Z));
+  }
+
+  {
+    ZIntPoint pt;
+    pt.setValue(1, neutu::EAxis::X);
+    pt.setValue(2, neutu::EAxis::Y);
+    pt.setValue(3, neutu::EAxis::Z);
+    ASSERT_EQ(ZIntPoint(1, 2, 3), pt);
+
+    pt.setValue(4, neutu::EAxis::ARB);
+    ASSERT_EQ(ZIntPoint(4, 4, 4), pt);
+  }
+}
+
+TEST(ZIntPoint, ToPoint)
+{
+  ZIntPoint pt(1, 2, 3);
+  ASSERT_EQ(ZPoint(1, 2, 3), pt.toPoint());
+  ASSERT_EQ(ZPoint(1, 2, 3), pt.toMinCorner());
+  ASSERT_EQ(ZPoint(2, 3, 4), pt.toMaxCorner());
+
+  pt.set(-1, -2, -3);
+  ASSERT_EQ(ZPoint(-1, -2, -3), pt.toPoint());
+  ASSERT_EQ(ZPoint(-1, -2, -3), pt.toMinCorner());
+  ASSERT_EQ(ZPoint(0, -1, -2), pt.toMaxCorner());
 }
 
 TEST(ZPoint, Basic)
@@ -41,6 +74,16 @@ TEST(ZPoint, Basic)
 
   pt.normalize();
   ASSERT_TRUE(pt.isUnitVector());
+
+  {
+    ZPoint pt;
+    pt.setValue(1, neutu::EAxis::X);
+    pt.setValue(2, neutu::EAxis::Y);
+    pt.setValue(3, neutu::EAxis::Z);
+    ASSERT_EQ(ZPoint(1, 2, 3), pt);
+    pt.setValue(4, neutu::EAxis::ARB);
+    ASSERT_EQ(ZPoint(4, 4, 4), pt);
+  }
 }
 
 TEST(ZPoint, Relation)
@@ -73,10 +116,33 @@ TEST(ZPoint, Relation)
   ASSERT_FALSE(pt1.isParallelTo(pt2));
 }
 
+TEST(ZPoint, onAxis)
+{
+  ASSERT_FALSE(ZPoint(0, 0, 0).onAxis());
+  ASSERT_FALSE(ZPoint(1, 1, 0).onAxis());
+  ASSERT_FALSE(ZPoint(0, 1, 1).onAxis());
+  ASSERT_FALSE(ZPoint(1, 0, 1).onAxis());
+  ASSERT_TRUE(ZPoint(1, 0, 0).onAxis());
+  ASSERT_TRUE(ZPoint(0, 1, 0).onAxis());
+  ASSERT_TRUE(ZPoint(0, 0, 1).onAxis());
+}
+
 TEST(ZPoint, toIntPoint)
 {
   ZPoint pt(1.0, 2.6, 4.1);
-  ASSERT_EQ(ZIntPoint(1, 3, 4), pt.toIntPoint());
+  ASSERT_EQ(ZIntPoint(1, 3, 4), pt.roundToIntPoint());
+  ASSERT_EQ(ZIntPoint(1, 2, 4), pt.toIntPoint());
+
+  pt.set(1.5, 2.5, 3.5);
+  ASSERT_EQ(ZIntPoint(2, 3, 4), pt.roundToIntPoint());
+  ASSERT_EQ(ZIntPoint(1, 2, 3), pt.toIntPoint());
+
+  pt.set(-1.5, -2.5, -3.5);
+  ASSERT_EQ(ZIntPoint(-1, -2, -3), pt.roundToIntPoint());
+  ASSERT_EQ(ZIntPoint(-2, -3, -4), pt.toIntPoint());
+
+  ASSERT_FALSE(pt.hasIntCoord());
+  ASSERT_TRUE(pt.roundToIntPoint().toPoint().hasIntCoord());
 }
 
 TEST(ZIntPoint, Operator)
@@ -194,6 +260,16 @@ TEST(ZIntPoint, Hash)
 
   pointMap[ZIntPoint(1, 2, 3)]  = 3;
   ASSERT_EQ(3, pointMap.at(ZIntPoint(1, 2, 3)));
+}
+
+TEST(ZIntPoint, String)
+{
+  ZIntPoint pt(1, 2, 3);
+  ASSERT_EQ("(1, 2, 3)", pt.toString());
+  ASSERT_EQ("1, 2, 3", pt.toString("$x, $y, $z"));
+  ASSERT_EQ("1, 2, 3", pt.toString("$X, $Y, $Z"));
+  ASSERT_EQ("(2, 3, 1)", pt.toString("($y, $z, $x)"));
+
 }
 
 #endif

@@ -43,6 +43,7 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
   }
 }
 
+#if 0
 void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
                             neutu::EAxis sliceAxis) const
 {
@@ -71,6 +72,7 @@ void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
   }
 
 }
+#endif
 
 void ZSlicedPuncta::clear()
 {

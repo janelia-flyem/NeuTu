@@ -1,18 +1,28 @@
 #ifndef ZDVIDDATASLICEHELPER_H
 #define ZDVIDDATASLICEHELPER_H
 
+#include <unordered_map>
+#include <mutex>
+
 #include "zdvidreader.h"
 #include "zstackviewparam.h"
 #include "zdviddata.h"
+#include "data3d/displayconfig.h"
 
+class QPainter;
 class QRect;
 class ZIntCuboid;
 class ZRect2d;
+class ZAffineRect;
 
 class ZDvidDataSliceHelper
 {
 public:
   ZDvidDataSliceHelper(ZDvidData::ERole role);
+
+  enum class EViewParamOption {
+    LAST_UPDATE, ACTIVE
+  };
 
   void setDvidTarget(const ZDvidTarget &target);
   inline const ZDvidTarget& getDvidTarget() const {
@@ -31,17 +41,27 @@ public:
   }
 
   bool validateSize(int *width, int *height) const;
-  int updateParam(ZStackViewParam *param);
 
-  int getZoom() const {
-    return m_zoom;
+  int getZoom(int viewId, EViewParamOption option) const;
+  int getHighresZoom(int viewId, EViewParamOption option) const;
+
+  int getLowresZoom(int viewId, EViewParamOption option) const;
+
+  ZStackViewParam getViewParam(int viewId, EViewParamOption option) const;
+
+  const ZStackViewParam& getViewParamLastUpdate(int viewId) const;
+
+  ZStackViewParam& getViewParamLastUpdate(int viewId) {
+    return const_cast<ZStackViewParam&>(
+          static_cast<const ZDvidDataSliceHelper&>(*this)
+            .getViewParamLastUpdate(viewId));
   }
 
-  int getLowresZoom() const;
+  ZStackViewParam getViewParamActive(int viewId) const;
 
-  const ZStackViewParam& getViewParam() const {
-    return m_currentViewParam;
-  }
+  void forEachViewParam(std::function<void(const ZStackViewParam&)> f);
+
+  neutu::EAxis getSliceAxis(int viewId, EViewParamOption option) const;
 
   int getMaxWidth() const {
     return m_maxWidth;
@@ -64,45 +84,88 @@ public:
   bool hasMaxSize() const;
   bool getMaxArea() const;
 
-  QRect getViewPort() const;
-  int getX() const;
-  int getY() const;
+//  QRect getViewPort() const;
+//  int getX() const;
+//  int getY() const;
+  int getZ(int viewId) const;
   int getZ() const;
-  void setZ(int z);
-  int getWidth() const;
-  int getHeight() const;
-  size_t getViewPortArea() const;
-  size_t getViewDataSize() const;
+//  void setZ(int z);
+  int getWidth(int viewId, EViewParamOption option) const;
+  int getHeight(int viewId, EViewParamOption option) const;
+  size_t getViewPortArea(int viewId, EViewParamOption option) const;
+  size_t getViewDataSize(int viewId, EViewParamOption option) const;
+  double getPixelScale(int viewId, EViewParamOption option) const;
   static size_t GetViewDataSize(const ZStackViewParam &viewParam, int zoom);
 
-  void closeViewPort();
-  void openViewPort();
+  void closeViewPort(int viewId, EViewParamOption option);
+  void openViewPort(int viewId, EViewParamOption option);
 
   int getCenterCutWidth() const;
   int getCenterCutHeight() const;
 
   static ZIntCuboid GetBoundBox(const QRect &viewPort, int z);
-  ZIntCuboid getBoundBox() const;
-  void setBoundBox(const ZRect2d &rect);
+  ZIntCuboid getBoundBox(int viewId) const;
+  ZIntCuboid getDataRange() const;
+//  void setBoundBox(const ZRect2d &rect);
 
-  int getScale() const;
-  void setZoom(int zoom);
+  int getScale(int viewId, EViewParamOption option) const;
+//  void setZoom(int zoom);
 
-  void setViewParam(const ZStackViewParam &viewParam);
-  ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
+  void setViewParamLastUpdate(const ZStackViewParam &viewParam);
+  void setViewParamActive(const ZStackViewParam &viewParam);
+  void setViewParamActive(
+      QPainter *painter, const neutu::data3d::DisplayConfig &config);
+
   bool hasNewView(const ZStackViewParam &viewParam) const;
   bool hasNewView(
+      const ZStackViewParam &viewParam, const ZIntCuboid &modelRange) const;
+  bool hasNewView(
       const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const;
-  /*
-  bool containedIn(
-      const ZStackViewParam &viewParam, int zoom,
-      int centerCutX, int centerCutY, bool centerCut) const;
-      */
+
+  //Obsolete
+  ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
+
+  /*!
+   * \brief Check if the current viewing slice is within a given slice
+   *
+   * It returns true iff:
+   * 1. the currrent viewport does not exist; or
+   * 2. the current viewport is the same as the given one, and the
+   *    given viewport has a higher resolution; or
+   * 3. the current viewport is within and smaller than the given one, and the
+   *    given viewport does not have a lower resolution.
+   */
   bool actualContainedIn(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
 
-  bool needHighResUpdate() const;
+  /*
+  ZSliceViewTransform getCanvasTransform(
+      const ZAffinePlane &ap, int width, int height) const;
+      */
+  ZSliceViewTransform getCanvasTransform(
+      const ZAffinePlane &ap, int width, int height, int zoom, int viewId,
+      EViewParamOption option) const;
+  ZSliceViewTransform getCanvasTransform(neutu::EAxis axis, const ZAffinePlane &ap,
+      int width, int height, int zoom) const;
+
+  ZAffineRect getIntCutRect(int viewId, EViewParamOption option) const;
+
+  /*!
+   * \brief Check if the actual resolution is not lower than the specified one
+   */
+//  bool isResolutionReached(int viewId) const;
+
+  /*!
+   * \brief Check if a high resolution update is needed
+   */
+  bool highResUpdateNeeded(int viewId) const;
+
+  /*
+  bool updateNeeded(
+      const ZStackViewParam &viewParam, int zoom,
+      int centerCutX, int centerCutY, bool usingCenterCut) const;
+*/
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);
@@ -113,14 +176,15 @@ public:
   void setMaxZoom(int maxZoom);
   void updateMaxZoom();
 
-  void invalidateViewParam();
+  void invalidateViewParam(int viewId);
+  void invalidateAllViewParam();
   void updateCenterCut();
 
-  void setActualQuality(int zoom, int ccw, int cch, bool centerCut);
-  void syncActualQuality();
+  void setActualQuality(int zoom, int ccw, int cch, bool centerCut, int viewId);
+//  void syncActualQuality(int viewId);
 
-  int getActualScale() const;
-  int getActualZoom() const;
+  int getActualScale(int viewId) const;
+  int getActualZoom(int viewId) const;
 
   neutu::EDataSliceUpdatePolicy getUpdatePolicy() const;
   void setUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
@@ -128,6 +192,8 @@ public:
 
   void setPreferredUpdatePolicy(neutu::EDataSliceUpdatePolicy policy);
   neutu::EDataSliceUpdatePolicy getPreferredUpdatePolicy() const;
+
+  bool hit(double x, double y, double z, int viewId) const;
 
 private:
   /*!
@@ -142,8 +208,27 @@ private:
       int targetZoom, int targetCenterCutX, int targetCenterCutY, bool targetCenterCut,
       int viewWidth, int viewHeight, int maxZoom);
 
+  struct ViewParamBuffer {
+    ZStackViewParam m_viewParam;
+
+    int m_actualZoom = 0;
+    int m_actualCenterCutWidth = 256;
+    int m_actualCenterCutHeight = 256;
+    bool m_actualUsingCenterCut = true;
+  };
+
+  bool isViewParamBuffered(int viewId) const;
+  const ViewParamBuffer& getViewParamBuffer(int viewId) const;
+  ViewParamBuffer& getViewParamBuffer(int viewId);
+  int updateParam(ZStackViewParam *param) const;
+
 public:
-  ZStackViewParam m_currentViewParam;
+  std::unordered_map<int, ViewParamBuffer> m_lastUpdateParam;
+  ViewParamBuffer m_emptyViewParamBuffer;
+
+  mutable std::mutex m_activeViewParamMutex;
+  std::unordered_map<int, ZStackViewParam> m_activeViewParam;
+
   int m_zoom = 0;
   int m_maxZoom = 0;
 
@@ -154,10 +239,10 @@ public:
   int m_centerCutHeight = 256;
   bool m_usingCenterCut = true;
 
-  int m_actualZoom = 0;
-  int m_actualCenterCutWidth = 256;
-  int m_actualCenterCutHeight = 256;
-  bool m_actualUsingCenterCut = true;
+//  int m_actualZoom = 0;
+//  int m_actualCenterCutWidth = 256;
+//  int m_actualCenterCutHeight = 256;
+//  bool m_actualUsingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
   neutu::EDataSliceUpdatePolicy m_updatePolicy = neutu::EDataSliceUpdatePolicy::DIRECT;
@@ -165,6 +250,7 @@ public:
 
   ZDvidReader m_reader;
   ZDvidReader m_workReader; //reader for worker thread
+  ZDvidInfo m_dvidInfo;
 };
 
 #endif // ZDVIDDATASLICEHELPER_H

@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <memory>
 
 #include <QMainWindow>
 #include <QTabWidget>
@@ -70,6 +71,9 @@ class ZObject3d;
 class ZWidgetMessage;
 class ZFlyEmBodyEnv;
 class ZFlyEmTodoFilterDialog;
+class ZRoiMesh;
+class ZRoiProvider;
+class ZFlyEmBody3dDoc;
 
 class Z3DWindow : public QMainWindow
 {
@@ -120,6 +124,7 @@ public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
   void gotoPosition(const ZPoint& position, double radius);
   void zoomToSelectedSwcNodes();
+  void zoomToSelected();
 
 public: //Components
   Z3DTrackballInteractionHandler* getInteractionHandler() {
@@ -168,6 +173,10 @@ public:
   void removeRectRoi();
 
   bool isProjectedInRectRoi(const ZIntPoint &pt) const;
+
+//  void initRois(const std::vector<std::shared_ptr<ZRoiMesh>> &roiList);
+  void initRoiView(const std::shared_ptr<ZRoiProvider> &roiProvider);
+  void registerRoiWidget(ZROIWidget *widget);
 
 public: //controls
   void createToolBar();
@@ -275,6 +284,7 @@ public slots:
   { m_view->resetCameraClippingRange(); }
 
   void zoomToSelectedMeshes();
+  void zoomToRoiMesh(const QString &name);
   void selectMeshByID();
   void selectAllMeshes();
 
@@ -394,12 +404,13 @@ public slots:
   void setTodoItemNoSoma();
   void addDoneMarker();
   void updateBody();
+  void syncBodyColor();
   void compareBody();
   void deselectBody();
   void copyPosition();
   void setNormalTodoVisible(bool visible);
   void setDoneItemVisible(bool visible);
-  void updateTodoVisibility();
+//  void updateTodoVisibility();
   void toggleSetting();
   void toggleObjects();
 //  void removeAllTodo();

@@ -33,8 +33,14 @@ public:
   void clear();
   bool isEmpty() const;
 
+  bool display(
+      QPainter */*painter*/, const DisplayConfig &/*config*/) const {
+    return false;
+  }
+  /*
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutu::EAxis sliceAxis) const;
+               */
 
   ZDvidTile* getTile(int resLevel, const ZDvidTileInfo::TIndex &index);
 

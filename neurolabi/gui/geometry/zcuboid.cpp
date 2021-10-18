@@ -5,7 +5,10 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
+#include "common/utilities.h"
+#include "common/math.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
 #include "zlinesegment.h"
@@ -16,8 +19,10 @@
 
 using namespace std;
 
-ZCuboid::ZCuboid() : m_firstCorner(), m_lastCorner()
+ZCuboid::ZCuboid()
 {
+  m_minCorner.set(std::numeric_limits<double>::infinity());
+  m_maxCorner.set(-std::numeric_limits<double>::infinity());
 }
 
 ZCuboid::ZCuboid(double x1, double y1, double z1,
@@ -31,28 +36,36 @@ ZCuboid::ZCuboid(const ZPoint &firstCorner, const ZPoint &lastCorner)
   set(firstCorner, lastCorner);
 }
 
-ZCuboid::ZCuboid(const ZCuboid &cuboid) : m_firstCorner(cuboid.m_firstCorner),
-  m_lastCorner(cuboid.m_lastCorner)
+ZCuboid::ZCuboid(const ZCuboid &cuboid) : m_minCorner(cuboid.m_minCorner),
+  m_maxCorner(cuboid.m_maxCorner)
 {
 }
 
 void ZCuboid::set(double x1, double y1, double z1,
                   double x2, double y2, double z2)
 {
-  m_firstCorner.set(x1, y1, z1);
-  m_lastCorner.set(x2, y2, z2);
+  m_minCorner.set(x1, y1, z1);
+  m_maxCorner.set(x2, y2, z2);
 }
 
 void ZCuboid::set(const ZPoint &firstCorner, const ZPoint &lastCorner)
 {
-  m_firstCorner = firstCorner;
-  m_lastCorner = lastCorner;
+  m_minCorner = firstCorner;
+  m_maxCorner = lastCorner;
 }
 
 void ZCuboid::set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
 {
-  m_firstCorner.set(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ());
-  m_lastCorner.set(lastCorner.getX(), lastCorner.getY(), lastCorner.getZ());
+  m_minCorner.set(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ());
+  m_maxCorner.set(lastCorner.getX(), lastCorner.getY(), lastCorner.getZ());
+}
+
+void ZCuboid::set(const ZIntCuboid &cuboid)
+{
+  if (!cuboid.isEmpty()) {
+    set(cuboid.getMinCorner().toPoint(),
+        cuboid.getMaxCorner().toPoint() + 1.0);
+  }
 }
 
 void ZCuboid::set(const double *corner)
@@ -60,57 +73,57 @@ void ZCuboid::set(const double *corner)
   set(corner[0], corner[1], corner[2], corner[3], corner[4], corner[5]);
 }
 
-void ZCuboid::setFirstCorner(const ZPoint &pt)
+void ZCuboid::setMinCorner(const ZPoint &pt)
 {
-  m_firstCorner = pt;
+  m_minCorner = pt;
 }
 
-void ZCuboid::setFirstCorner(double x, double y, double z)
+void ZCuboid::setMinCorner(double x, double y, double z)
 {
-  m_firstCorner.set(x, y, z);
+  m_minCorner.set(x, y, z);
 }
 
-void ZCuboid::setLastCorner(const ZPoint &pt)
+void ZCuboid::setMaxCorner(const ZPoint &pt)
 {
-  m_lastCorner = pt;
+  m_maxCorner = pt;
 }
 
-void ZCuboid::setLastCorner(double x, double y, double z)
+void ZCuboid::setMaxCorner(double x, double y, double z)
 {
-  m_lastCorner.set(x, y, z);
+  m_maxCorner.set(x, y, z);
 }
 
 
 void ZCuboid::setSize(double width, double height, double depth)
 {
-  m_lastCorner = m_firstCorner + ZPoint(width, height, depth);
+  m_maxCorner = m_minCorner + ZPoint(width, height, depth);
 }
 
 bool ZCuboid::isValid() const
 {
-  return (m_lastCorner.x() > m_firstCorner.x()) &&
-      (m_lastCorner.y() > m_firstCorner.y()) &&
-      (m_lastCorner.z() > m_firstCorner.z());
+  return (m_maxCorner.x() > m_minCorner.x()) &&
+      (m_maxCorner.y() > m_minCorner.y()) &&
+      (m_maxCorner.z() > m_minCorner.z());
 }
 
 void ZCuboid::invalidate()
 {
-  m_firstCorner.setX(m_lastCorner.x());
+  m_minCorner.setX(m_maxCorner.x());
 }
 
 double ZCuboid::width() const
 {
-  return (m_lastCorner.x() - m_firstCorner.x());
+  return (m_maxCorner.x() - m_minCorner.x());
 }
 
 double ZCuboid::height() const
 {
-  return (m_lastCorner.y() - m_firstCorner.y());
+  return (m_maxCorner.y() - m_minCorner.y());
 }
 
 double ZCuboid::depth() const
 {
-  return (m_lastCorner.z() - m_firstCorner.z());
+  return (m_maxCorner.z() - m_minCorner.z());
 }
 
 double ZCuboid::volume() const
@@ -121,16 +134,16 @@ double ZCuboid::volume() const
 void ZCuboid::intersect(const ZCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {
-    m_firstCorner[i] = std::max(m_firstCorner[i], cuboid.m_firstCorner[i]);
-    m_lastCorner[i] = std::min(m_lastCorner[i], cuboid.m_lastCorner[i]);
+    m_minCorner[i] = std::max(m_minCorner[i], cuboid.m_minCorner[i]);
+    m_maxCorner[i] = std::min(m_maxCorner[i], cuboid.m_maxCorner[i]);
   }
 }
 
 void ZCuboid::bind(const ZCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {
-    m_firstCorner[i] = std::min(m_firstCorner[i], cuboid.m_firstCorner[i]);
-    m_lastCorner[i] = std::max(m_lastCorner[i], cuboid.m_lastCorner[i]);
+    m_minCorner[i] = std::min(m_minCorner[i], cuboid.m_minCorner[i]);
+    m_maxCorner[i] = std::max(m_maxCorner[i], cuboid.m_maxCorner[i]);
   }
 }
 
@@ -140,7 +153,7 @@ double ZCuboid::moveOutFrom(ZCuboid &cuboid, double margin)
   int movingDim = -1;
 
   for (int i = 0; i < 3; i++) {
-    double offset = cuboid.m_firstCorner[i] - m_lastCorner[i];
+    double offset = cuboid.m_minCorner[i] - m_maxCorner[i];
     if (movingDim < 0) {
       movingDim = 0;
       minOffset = offset;
@@ -151,7 +164,7 @@ double ZCuboid::moveOutFrom(ZCuboid &cuboid, double margin)
       }
     }
 
-    offset = cuboid.m_lastCorner[i] - m_firstCorner[i];
+    offset = cuboid.m_maxCorner[i] - m_minCorner[i];
     if (fabs(minOffset) > fabs(offset)) {
       minOffset = offset;
       movingDim = i;
@@ -164,8 +177,8 @@ double ZCuboid::moveOutFrom(ZCuboid &cuboid, double margin)
     minOffset -= margin;
   }
 
-  m_firstCorner[movingDim] += minOffset;
-  m_lastCorner[movingDim] += minOffset;
+  m_minCorner[movingDim] += minOffset;
+  m_maxCorner[movingDim] += minOffset;
 
   return fabs(minOffset);
 }
@@ -205,8 +218,8 @@ void ZCuboid::layout(std::vector<ZCuboid> *cuboidArray, double margin)
 
 ZCuboid& ZCuboid::operator= (const ZCuboid &cuboid)
 {
-  m_firstCorner = cuboid.m_firstCorner;
-  m_lastCorner = cuboid.m_lastCorner;
+  m_minCorner = cuboid.m_minCorner;
+  m_maxCorner = cuboid.m_maxCorner;
 
   return *this;
 }
@@ -219,10 +232,10 @@ double& ZCuboid::operator [](int index)
 const double& ZCuboid::operator [](int index) const
 {
   if (index < 3) {
-    return m_firstCorner[index];
+    return m_minCorner[index];
   }
 
-  return m_lastCorner[index - 3];
+  return m_maxCorner[index - 3];
 }
 
 double ZCuboid::estimateSeparateScale(const ZCuboid &cuboid, const ZPoint &vec)
@@ -262,44 +275,50 @@ const
 
 void ZCuboid::print()
 {
-  cout << "(" << m_firstCorner.x() << "," << m_firstCorner.y() << "," <<
-          m_firstCorner.z() << ")" << " -> (" << m_lastCorner.x() << "," <<
-          m_lastCorner.y() << "," << m_lastCorner.z() << ")" << endl;
+  cout << "(" << m_minCorner.x() << "," << m_minCorner.y() << "," <<
+          m_minCorner.z() << ")" << " -> (" << m_maxCorner.x() << "," <<
+          m_maxCorner.y() << "," << m_maxCorner.z() << ")" << endl;
 }
 
 void ZCuboid::scale(double s)
 {
-  m_firstCorner *= s;
-  m_lastCorner *= s;
+  m_minCorner *= s;
+  m_maxCorner *= s;
+}
+
+void ZCuboid::scale(double sx, double sy, double sz)
+{
+  m_minCorner *= ZPoint(sx, sy, sz);
+  m_maxCorner *= ZPoint(sx, sy, sz);
 }
 
 void ZCuboid::expand(double margin)
 {
-  m_firstCorner -= margin;
-  m_lastCorner += margin;
+  m_minCorner -= margin;
+  m_maxCorner += margin;
 }
 
-ZPoint ZCuboid::corner(int index) const
+ZPoint ZCuboid::getCorner(int index) const
 {
 //  TZ_ASSERT(index >= 0 && index <= 7, "invalid index.");
 
   switch (index) {
   case 0:
-    return m_firstCorner;
+    return m_minCorner;
   case 7:
-    return m_lastCorner;
+    return m_maxCorner;
   case 1:
-    return ZPoint(m_lastCorner.x(), m_firstCorner.y(), m_firstCorner.z());
+    return ZPoint(m_maxCorner.x(), m_minCorner.y(), m_minCorner.z());
   case 2:
-    return ZPoint(m_firstCorner.x(), m_lastCorner.y(), m_firstCorner.z());
+    return ZPoint(m_minCorner.x(), m_maxCorner.y(), m_minCorner.z());
   case 3:
-    return ZPoint(m_lastCorner.x(), m_lastCorner.y(), m_firstCorner.z());
+    return ZPoint(m_maxCorner.x(), m_maxCorner.y(), m_minCorner.z());
   case 4:
-    return ZPoint(m_firstCorner.x(), m_firstCorner.y(), m_lastCorner.z());
+    return ZPoint(m_minCorner.x(), m_minCorner.y(), m_maxCorner.z());
   case 5:
-    return ZPoint(m_lastCorner.x(), m_firstCorner.y(), m_lastCorner.z());
+    return ZPoint(m_maxCorner.x(), m_minCorner.y(), m_maxCorner.z());
   case 6:
-    return ZPoint(m_firstCorner.x(), m_lastCorner.y(), m_lastCorner.z());
+    return ZPoint(m_minCorner.x(), m_maxCorner.y(), m_maxCorner.z());
   default:
     throw std::invalid_argument("Invalid corner index");
 //    break;
@@ -308,45 +327,64 @@ ZPoint ZCuboid::corner(int index) const
   return ZPoint(0, 0, 0);
 }
 
-ZPoint ZCuboid::center() const
+ZPoint ZCuboid::getCenter() const
 {
-  return ZPoint((m_firstCorner.x() + m_lastCorner.x()) / 2.0,
-                (m_firstCorner.y() + m_lastCorner.y()) / 2.0,
-                (m_firstCorner.z() + m_lastCorner.z()) / 2.0);
+  return ZPoint((m_minCorner.x() + m_maxCorner.x()) / 2.0,
+                (m_minCorner.y() + m_maxCorner.y()) / 2.0,
+                (m_minCorner.z() + m_maxCorner.z()) / 2.0);
+}
+
+void ZCuboid::join(double x, double y, double z)
+{
+  joinX(x);
+  joinY(y);
+  joinZ(z);
+}
+
+void ZCuboid::join(const ZPoint &pt)
+{
+  join(pt.getX(), pt.getY(), pt.getZ());
 }
 
 void ZCuboid::joinX(double x)
 {
-  if (m_firstCorner.x() > x) {
-    m_firstCorner.setX(x);
-  } else if (m_lastCorner.x() < x) {
-    m_lastCorner.setX(x);
+  if (m_minCorner.x() > x) {
+    m_minCorner.setX(x);
+  } else if (m_maxCorner.x() < x) {
+    m_maxCorner.setX(x);
   }
 }
 
 void ZCuboid::joinY(double y)
 {
-  if (m_firstCorner.y() > y) {
-    m_firstCorner.setY(y);
-  } else if (m_lastCorner.y() < y) {
-    m_lastCorner.setY(y);
+  if (m_minCorner.y() > y) {
+    m_minCorner.setY(y);
+  } else if (m_maxCorner.y() < y) {
+    m_maxCorner.setY(y);
   }
 }
 
 void ZCuboid::joinZ(double z)
 {
-  if (m_firstCorner.z() > z) {
-    m_firstCorner.setZ(z);
-  } else if (m_lastCorner.z() < z) {
-    m_lastCorner.setZ(z);
+  if (m_minCorner.z() > z) {
+    m_minCorner.setZ(z);
+  } else if (m_maxCorner.z() < z) {
+    m_maxCorner.setZ(z);
   }
 }
 
 void ZCuboid::join(const ZCuboid &box)
 {
   if (box.isValid()) {
-    include(box.firstCorner());
-    include(box.lastCorner());
+    include(box.getMinCorner());
+    include(box.getMaxCorner());
+  }
+}
+
+void ZCuboid::join(const ZIntCuboid &box)
+{
+  if (!box.isEmpty()) {
+    join(FromIntCuboid(box));
   }
 }
 
@@ -366,12 +404,12 @@ double ZCuboid::computeDistance(
 
 double ZCuboid::computeDistance(const ZCuboid &box) const
 {
-  double xDist = computeDistance(firstCorner().x(), lastCorner().x(),
-                                 box.firstCorner().x(), box.lastCorner().x());
-  double yDist = computeDistance(firstCorner().y(), lastCorner().y(),
-                                 box.firstCorner().y(), box.lastCorner().y());
-  double zDist = computeDistance(firstCorner().z(), lastCorner().z(),
-                                 box.firstCorner().z(), box.lastCorner().z());
+  double xDist = computeDistance(getMinCorner().x(), getMaxCorner().x(),
+                                 box.getMinCorner().x(), box.getMaxCorner().x());
+  double yDist = computeDistance(getMinCorner().y(), getMaxCorner().y(),
+                                 box.getMinCorner().y(), box.getMaxCorner().y());
+  double zDist = computeDistance(getMinCorner().z(), getMaxCorner().z(),
+                                 box.getMinCorner().z(), box.getMaxCorner().z());
 
   return sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
 }
@@ -384,8 +422,8 @@ void ZCuboid::include(const ZPoint &point) {
 
 void ZCuboid::translate(const ZPoint &pt)
 {
-  m_firstCorner += pt;
-  m_lastCorner += pt;
+  m_minCorner += pt;
+  m_maxCorner += pt;
 }
 
 #define SET_HIT_POINT(x, y, z) \
@@ -409,17 +447,17 @@ bool ZCuboid::intersectLine(
     return false;
   }
 
-  ZPoint firstCorner = m_firstCorner - p0;
-  ZPoint lastCorner = m_lastCorner - p0;
+  ZPoint firstCorner = m_minCorner - p0;
+  ZPoint lastCorner = m_maxCorner - p0;
 
   //For a line parallel to an axis
   //parallel to X
   if (slope.y() == 0 && slope.z() == 0) {
-    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.y(), lastCorner.y()) &&
-        IS_IN_CLOSE_RANGE(0.0, firstCorner.z(), lastCorner.z())) {
+    if (neutu::WithinCloseRange(0.0, firstCorner.y(), lastCorner.y()) &&
+        neutu::WithinCloseRange(0.0, firstCorner.z(), lastCorner.z())) {
       if (seg != NULL) {
-        seg->setStartPoint(m_firstCorner.x(), p0.y(), p0.z());
-        seg->setEndPoint(m_lastCorner.x(), p0.y(), p0.z());
+        seg->setStartPoint(m_minCorner.x(), p0.y(), p0.z());
+        seg->setEndPoint(m_maxCorner.x(), p0.y(), p0.z());
       }
       return true;
     }
@@ -427,11 +465,11 @@ bool ZCuboid::intersectLine(
 
   //parallel to Y
   if (slope.x() == 0 && slope.z() == 0) {
-    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.x(), lastCorner.x()) &&
-        IS_IN_CLOSE_RANGE(0.0, firstCorner.z(), lastCorner.z())) {
+    if (neutu::WithinCloseRange(0.0, firstCorner.x(), lastCorner.x()) &&
+        neutu::WithinCloseRange(0.0, firstCorner.z(), lastCorner.z())) {
       if (seg != NULL) {
-        seg->setStartPoint(p0.x(), m_firstCorner.y(), p0.z());
-        seg->setEndPoint(p0.x(), m_lastCorner.y(), p0.z());
+        seg->setStartPoint(p0.x(), m_minCorner.y(), p0.z());
+        seg->setEndPoint(p0.x(), m_maxCorner.y(), p0.z());
       }
       return true;
     }
@@ -439,11 +477,11 @@ bool ZCuboid::intersectLine(
 
   //parallel to Z
   if (slope.x() == 0 && slope.y() == 0) {
-    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.x(), lastCorner.x()) &&
-        IS_IN_CLOSE_RANGE(0.0, firstCorner.y(), lastCorner.y())) {
+    if (neutu::WithinCloseRange(0.0, firstCorner.x(), lastCorner.x()) &&
+        neutu::WithinCloseRange(0.0, firstCorner.y(), lastCorner.y())) {
       if (seg != NULL) {
-        seg->setStartPoint(p0.x(), p0.y(), m_firstCorner.z());
-        seg->setEndPoint(p0.x(), p0.y(), m_lastCorner.z());
+        seg->setStartPoint(p0.x(), p0.y(), m_minCorner.z());
+        seg->setEndPoint(p0.x(), p0.y(), m_maxCorner.z());
       }
       return true;
     }
@@ -454,14 +492,14 @@ bool ZCuboid::intersectLine(
   //For a line parallel to a face
   //parallel to X-Y
   if (slope.z() == 0) {
-    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.z(), lastCorner.z())) {
+    if (neutu::WithinCloseRange(0.0, firstCorner.z(), lastCorner.z())) {
       //face x0
       double t = firstCorner.x() / slope.x();
       double y = t * slope.y();
       //double z = 0;
       int hitCount = 0;
-      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
-        segBuffer.setStartPoint(m_firstCorner.x(), p0.y() + y, p0.z());
+      if (neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y())) {
+        segBuffer.setStartPoint(m_minCorner.x(), p0.y() + y, p0.z());
         /*
         if (seg != NULL) {
           seg->setStartPoint(m_firstCorner.x(), p0.y() + y, p0.z());
@@ -473,22 +511,22 @@ bool ZCuboid::intersectLine(
       //face x1
       t = lastCorner.x() / slope.x();
       y = t * slope.y();
-      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
-        SET_HIT_POINT(m_lastCorner.x(), p0.y() + y, p0.z());
+      if (neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y())) {
+        SET_HIT_POINT(m_maxCorner.x(), p0.y() + y, p0.z());
       }
 
       //face y0
       t = firstCorner.y() / slope.y();
       double x = t * slope.x();
-      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
-        SET_HIT_POINT(p0.x() + x, m_firstCorner.y(), p0.z());
+      if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, m_minCorner.y(), p0.z());
       }
 
       //face y1
       t = lastCorner.y() / slope.y();
       x = t * slope.x();
-      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
-        SET_HIT_POINT(p0.x() + x, m_lastCorner.y(), p0.z());
+      if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, m_maxCorner.y(), p0.z());
       }
       if (hitCount > 1) {
         if (seg != NULL) {
@@ -501,34 +539,34 @@ bool ZCuboid::intersectLine(
 
   //parallel to X-Z
   if (slope.y() == 0) {
-    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.y(), lastCorner.y())) {
+    if (neutu::WithinCloseRange(0.0, firstCorner.y(), lastCorner.y())) {
       //face x0
       double t = firstCorner.x() / slope.x();
       double z = t * slope.z();
       int hitCount = 0;
-      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-        SET_HIT_POINT(m_firstCorner.x(), p0.y(), p0.z() + z);
+      if (neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(m_minCorner.x(), p0.y(), p0.z() + z);
       }
 
       //face x1
       t = lastCorner.x() / slope.x();
       z = t * slope.z();
-      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-        SET_HIT_POINT(m_lastCorner.x(), p0.y(), p0.z() + z);
+      if (neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(m_maxCorner.x(), p0.y(), p0.z() + z);
       }
 
       //face z0
       t = firstCorner.z() / slope.z();
       double x = t * slope.x();
-      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
-        SET_HIT_POINT(p0.x() + x, p0.y(), m_firstCorner.z());
+      if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, p0.y(), m_minCorner.z());
       }
 
       //face y1
       t = lastCorner.z() / slope.z();
       x = t * slope.x();
-      if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x())) {
-        SET_HIT_POINT(p0.x() + x, p0.y(), m_lastCorner.z());
+      if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x())) {
+        SET_HIT_POINT(p0.x() + x, p0.y(), m_maxCorner.z());
       }
       if (hitCount > 1) {
         if (seg != NULL) {
@@ -541,34 +579,34 @@ bool ZCuboid::intersectLine(
 
   //parallel to Y-Z
   if (slope.x() == 0) {
-    if (IS_IN_CLOSE_RANGE(0.0, firstCorner.x(), lastCorner.x())) {
+    if (neutu::WithinCloseRange(0.0, firstCorner.x(), lastCorner.x())) {
       //face y0
       double t = firstCorner.y() / slope.y();
       double z = t * slope.z();
       int hitCount = 0;
-      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-        SET_HIT_POINT(p0.x(), m_firstCorner.y(), p0.z() + z);
+      if (neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(p0.x(), m_minCorner.y(), p0.z() + z);
       }
 
       //face y1
       t = lastCorner.y() / slope.y();
       z = t * slope.z();
-      if (IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-        SET_HIT_POINT(p0.x(), m_lastCorner.y(), p0.z() + z);
+      if (neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+        SET_HIT_POINT(p0.x(), m_maxCorner.y(), p0.z() + z);
       }
 
       //face z0
       t = firstCorner.z() / slope.z();
       double y = t * slope.y();
-      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
-        SET_HIT_POINT(p0.x(), p0.y() + y, m_firstCorner.z());
+      if (neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y())) {
+        SET_HIT_POINT(p0.x(), p0.y() + y, m_minCorner.z());
       }
 
       //face z1
       t = lastCorner.z() / slope.z();
       y = t * slope.y();
-      if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
-        SET_HIT_POINT(p0.x(), p0.y() + y, m_lastCorner.z());
+      if (neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y())) {
+        SET_HIT_POINT(p0.x(), p0.y() + y, m_maxCorner.z());
       }
 
       if (hitCount > 1) {
@@ -586,36 +624,36 @@ bool ZCuboid::intersectLine(
   double y = t * slope.y();
   double z = t * slope.z();
   int hitCount = 0;
-  if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y()) &&
-      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-    SET_HIT_POINT(m_firstCorner.x(), p0.y() + y, p0.z() + z);
+  if (neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y()) &&
+      neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(m_minCorner.x(), p0.y() + y, p0.z() + z);
   }
 
   //face x1
   t = lastCorner.x() / slope.x();
   y = t * slope.y();
   z = t * slope.z();
-  if (IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y()) &&
-      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-    SET_HIT_POINT(m_lastCorner.x(), p0.y() + y, p0.z() + z);
+  if (neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y()) &&
+      neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(m_maxCorner.x(), p0.y() + y, p0.z() + z);
   }
 
   //face y0
   t = firstCorner.y() / slope.y();
   double x = t * slope.x();
   z = t * slope.z();
-  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
-      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-    SET_HIT_POINT(p0.x() + x, m_firstCorner.y(), p0.z() + z);
+  if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x()) &&
+      neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(p0.x() + x, m_minCorner.y(), p0.z() + z);
   }
 
   //face y1
   t = lastCorner.y() / slope.y();
   x = t * slope.x();
   z = t * slope.z();
-  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
-      IS_IN_CLOSE_RANGE(z, firstCorner.z(), lastCorner.z())) {
-    SET_HIT_POINT(p0.x() + x, m_lastCorner.y(), p0.z() + z);
+  if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x()) &&
+      neutu::WithinCloseRange(z, firstCorner.z(), lastCorner.z())) {
+    SET_HIT_POINT(p0.x() + x, m_maxCorner.y(), p0.z() + z);
   }
 
 
@@ -623,18 +661,18 @@ bool ZCuboid::intersectLine(
   t = firstCorner.z() / slope.z();
   x = t * slope.x();
   y = t * slope.y();
-  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
-      IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
-    SET_HIT_POINT(p0.x() + x, p0.y() + y, m_firstCorner.z());
+  if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x()) &&
+      neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y())) {
+    SET_HIT_POINT(p0.x() + x, p0.y() + y, m_minCorner.z());
   }
 
   //face z1
   t = lastCorner.z() / slope.z();
   x = t * slope.x();
   y = t * slope.y();
-  if (IS_IN_CLOSE_RANGE(x, firstCorner.x(), lastCorner.x()) &&
-      IS_IN_CLOSE_RANGE(y, firstCorner.y(), lastCorner.y())) {
-    SET_HIT_POINT(p0.x() + x, p0.y() + y, m_lastCorner.z());
+  if (neutu::WithinCloseRange(x, firstCorner.x(), lastCorner.x()) &&
+      neutu::WithinCloseRange(y, firstCorner.y(), lastCorner.y())) {
+    SET_HIT_POINT(p0.x() + x, p0.y() + y, m_maxCorner.z());
   }
   if (hitCount > 1) {
     if (seg != NULL) {
@@ -649,14 +687,31 @@ bool ZCuboid::intersectLine(
 ZIntCuboid ZCuboid::toIntCuboid() const
 {
   ZIntCuboid cuboid;
-  cuboid.setFirstCorner(std::floor(m_firstCorner.getX()),
-                        std::floor(m_firstCorner.getY()),
-                        std::floor(m_firstCorner.getZ()));
-  cuboid.setLastCorner(std::ceil(m_lastCorner.getX()),
-                       std::ceil(m_lastCorner.getY()),
-                       std::ceil(m_lastCorner.getZ()));
+  cuboid.setMinCorner(ZIntPoint(neutu::ifloor(m_minCorner.getX()),
+                                neutu::ifloor(m_minCorner.getY()),
+                                neutu::ifloor(m_minCorner.getZ())));
+  int x = neutu::ifloor(m_maxCorner.getX());
+  int y = neutu::ifloor(m_maxCorner.getY());
+  int z = neutu::ifloor(m_maxCorner.getZ());
+  if (double(x) == m_maxCorner.getX()) {
+    --x;
+  }
+  if (double(y) == m_maxCorner.getY()) {
+    --y;
+  }
+  if (double(z) == m_maxCorner.getZ()) {
+    --z;
+  }
+  cuboid.setMaxCorner(ZIntPoint(x, y, z));
 
   return cuboid;
+}
+
+ZCuboid ZCuboid::FromIntCuboid(const ZIntCuboid &cuboid)
+{
+  ZCuboid result;
+  result.set(cuboid);
+  return result;
 }
 
 double ZCuboid::getDiagonalLength() const
@@ -664,18 +719,37 @@ double ZCuboid::getDiagonalLength() const
   return sqrt(width() * width() + height() * height() + depth() * depth());
 }
 
+int ZCuboid::getMinSideLength() const
+{
+  return std::min(std::min(width(), height()), depth());
+}
+
 std::vector<double> ZCuboid::toCornerVector() const
 {
   std::vector<double> corner(6);
-  corner[0] = firstCorner().x();
-  corner[1] = lastCorner().x();
+  corner[0] = getMinCorner().x();
+  corner[1] = getMaxCorner().x();
 
-  corner[2] = firstCorner().y();
-  corner[3] = lastCorner().y();
+  corner[2] = getMinCorner().y();
+  corner[3] = getMaxCorner().y();
 
-  corner[4] = firstCorner().z();
-  corner[5] = lastCorner().z();
+  corner[4] = getMinCorner().z();
+  corner[5] = getMaxCorner().z();
 
   return corner;
 }
 
+bool ZCuboid::contains(const ZPoint &pt) const
+{
+  ZPoint minCorner = getMinCorner();
+  ZPoint maxCorner = getMaxCorner();
+
+  return neutu::WithinCloseRange(pt.x(), minCorner.x(), maxCorner.x()) &&
+      neutu::WithinCloseRange(pt.y(), minCorner.y(), maxCorner.y()) &&
+      neutu::WithinCloseRange(pt.z(), minCorner.z(), maxCorner.z());
+}
+
+bool ZCuboid::contains(const ZCuboid &box) const
+{
+  return contains(box.getMinCorner()) && contains(box.getMaxCorner());
+}

@@ -18,7 +18,7 @@ public:
     return m_viewParam;
   }
 
-  void setViewParam(const ZArbSliceViewParam &param);
+//  void setViewParam(const ZArbSliceViewParam &param);
 
 
 private:

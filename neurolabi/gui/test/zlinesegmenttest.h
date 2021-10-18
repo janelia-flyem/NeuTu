@@ -25,6 +25,20 @@ TEST(ZLineSegment, basic)
   ASSERT_DOUBLE_EQ(1.5, pt.x());
 }
 
+TEST(ZLineSegment, Operator)
+{
+  ZLineSegment seg(1, 2, 3, 4, 5, 6);
+
+  ASSERT_TRUE(seg == seg);
+  ASSERT_EQ(ZLineSegment(2, 4, 6, 5, 7, 9), seg + ZPoint(1, 2, 3));
+  ASSERT_EQ(ZLineSegment(0, 0, 0, 3, 3, 3), seg - ZPoint(1, 2, 3));
+
+  seg += ZPoint(1, 2, 3);
+  ASSERT_EQ(ZLineSegment(2, 4, 6, 5, 7, 9), seg);
+  seg -= ZPoint(1, 2, 3);
+  ASSERT_EQ(ZLineSegment(1, 2, 3, 4, 5, 6), seg);
+}
+
 TEST(ZLineSegment, Flip)
 {
   ZLineSegment seg(1, 2, 3, 4, 5, 6);
@@ -35,6 +49,15 @@ TEST(ZLineSegment, Flip)
   seg.flip();
   ASSERT_EQ(ZPoint(4, 5, 6), seg.getEndPoint());
   ASSERT_EQ(ZPoint(1, 2, 3), seg.getStartPoint());
+}
+
+TEST(ZLineSegment, Compare)
+{
+  ZLineSegment seg(1, 2, 3, 4, 5, 6);
+  ASSERT_TRUE(seg.approxEquals(ZLineSegment(1, 2, 3, 4, 5, 6)));
+  ASSERT_TRUE(seg.approxEquals(ZLineSegment(4, 5, 6,1, 2, 3)));
+  ASSERT_FALSE(seg.approxEquals(ZLineSegment(1, 2, 3, 7, 8, 9)));
+
 }
 
 #endif
