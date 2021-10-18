@@ -98,6 +98,7 @@ void ZMultiscaleSegmentationWindow::updateMask(const std::string &id){
       wrapper->setDisplayStyle(ZStackObject::EDisplayStyle::SOLID);
     }
     m_frame->document()->getDataBuffer()->addUpdate(wrapper, ZStackDocObjectUpdate::EAction::ADD_NONUNIQUE);
+    m_frame->document()->getDataBuffer()->deliver();
   }
 }
 
