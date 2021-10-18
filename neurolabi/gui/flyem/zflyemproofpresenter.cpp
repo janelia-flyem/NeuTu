@@ -1144,7 +1144,8 @@ void ZFlyEmProofPresenter::runTipDetection() {
     const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
           Qt::RightButton, ZMouseEvent::EAction::RELEASE);
     ZPoint pt = event.getDataPosition();
-    uint64_t bodyId = getCompleteDocument()->getLabelId(pt.getX(), pt.getY(), pt.getZ());
+    uint64_t bodyId = getCompleteDocument()->getLabelId(
+          pt.getX(), pt.getY(), pt.getZ(), neutu::ELabelSource::ORIGINAL);
 
     emit tipDetectRequested(pt.roundToIntPoint(), bodyId);
 }
@@ -1367,6 +1368,18 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     break;
   case ZStackOperator::OP_OBJECT_SELECT_IN_ROI:
     emit selectingBodyInRoi(op.getViewId(), true);
+    break;
+  case ZStackOperator::OP_BOOKMARK_SELECT_BODY_SINGLE:
+  {
+    ZStackObject *obj = op.getHitObject<ZStackObject>();
+    if (obj) {
+      m_docSelector.deselectAll();
+      buddyDocument()->setSelected(obj, true);
+      getCompleteDocument()->toggleBodyUnderObject(obj);
+      e->setEvent(
+            ZInteractionEvent::EVENT_OBJECT_SELECTED);
+    }
+  }
     break;
   case ZStackOperator::OP_FLYEM_TODO_SELECT_SINGLE:
   {

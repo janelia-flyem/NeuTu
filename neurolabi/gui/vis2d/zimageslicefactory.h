@@ -4,6 +4,7 @@
 #include <memory>
 
 class ZSliceCanvas;
+class ZSparseStack;
 class ZStack;
 class ZModelViewTransform;
 class ZPoint;
@@ -18,6 +19,10 @@ public:
       const ZStack &stack, const ZModelViewTransform &transform,
       double width, double height, std::shared_ptr<ZSliceCanvas> result);
 
+  static std::shared_ptr<ZSliceCanvas> Make(
+      const ZSparseStack &stack, const ZModelViewTransform &transform,
+      double width, double height, std::shared_ptr<ZSliceCanvas> result);
+
   /*!
    * \brief Make a canvas from a slice of a stack along Z
    *
@@ -29,6 +34,10 @@ public:
    */
   static std::shared_ptr<ZSliceCanvas> MakeXY(
       const ZStack &stack, int depth, const ZModelViewTransform &cutPlane,
+      double a, double b, int zoom, std::shared_ptr<ZSliceCanvas> result);
+
+  static std::shared_ptr<ZSliceCanvas> MakeXY(
+      const ZSparseStack &stack, int depth, const ZModelViewTransform &cutPlane,
       double a, double b, int zoom, std::shared_ptr<ZSliceCanvas> result);
 };
 

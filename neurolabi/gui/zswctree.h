@@ -97,24 +97,9 @@ public:
     OPERATION_SELECT_FLOOD
   };
 
-//  typedef uint32_t TVisualEffect;
-
-//  const static TVisualEffect VE_NONE;
-//  const static TVisualEffect VE_FULL_SKELETON;
-
   /** @name Constructors
    */
   ///@{
-
-  /*!
-   * \brief Copy constructor.
-   *
-   * It performs deep copy of a tree, i.e. there is no memory sharing between
-   * the constructed object and \src . Intermediate results will not be copied.
-   *
-   * \param src Original object.
-   */
-  //ZSwcTree(const ZSwcTree &src);
 
   /*!
    * \brief Default constructor.

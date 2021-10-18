@@ -1727,10 +1727,10 @@ void ZSwcTree::reduceNodeNumber(double lengthThre)
   deprecate(ALL_COMPONENT);
 }
 
-ZSwcTree& ZSwcTree::operator=(const ZSwcTree &other)
+ZSwcTree& ZSwcTree::operator=(const ZSwcTree &rhs)
 {
-  //swap(*this, other);
-  setData(other.cloneData());
+  ZStackObject::operator=(rhs);
+  setData(rhs.cloneData());
 
   return *this;
 }

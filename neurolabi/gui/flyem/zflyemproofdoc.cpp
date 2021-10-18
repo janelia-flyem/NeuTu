@@ -593,6 +593,20 @@ void ZFlyEmProofDoc::toggleBodySelection(
   setSelectedBody(currentSelected, labelType);
 }
 
+void ZFlyEmProofDoc::toggleBodySelection(
+    const std::set<uint64_t> &selected, neutu::ELabelSource labelType)
+{
+  std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
+  for (uint64_t bodyId : selected) {
+    if (currentSelected.count(bodyId) > 0) {
+      currentSelected.erase(bodyId);
+    } else {
+      currentSelected.insert(bodyId);
+    }
+  }
+  setSelectedBody(currentSelected, labelType);
+}
+
 void ZFlyEmProofDoc::deselectMappedBody(
     uint64_t bodyId, neutu::ELabelSource labelType)
 {
@@ -5433,8 +5447,15 @@ uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
   return getBodyId(pt.getX(), pt.getY(), pt.getZ());
 }
 
-uint64_t ZFlyEmProofDoc::getLabelId(int x, int y, int z)
+uint64_t ZFlyEmProofDoc::getLabelId(int x, int y, int z, neutu::ELabelSource source)
 {
+  ZDvidLabelSlice *slice = getDvidLabelSlice(false);
+  if (slice) {
+    return slice->getLabelAt(x, y, z, source);
+  }
+
+  return 0;
+ /*
   uint64_t bodyId = 0;
   ZDvidReader &reader = getDvidReader();
   if (reader.good()) {
@@ -5442,6 +5463,7 @@ uint64_t ZFlyEmProofDoc::getLabelId(int x, int y, int z)
   }
 
   return bodyId;
+  */
 }
 
 uint64_t ZFlyEmProofDoc::getSupervoxelId(int x, int y, int z)
@@ -5459,13 +5481,20 @@ uint64_t ZFlyEmProofDoc::getSupervoxelId(int x, int y, int z)
 }
 
 std::set<uint64_t> ZFlyEmProofDoc::getLabelIdSet(
-    const std::vector<ZIntPoint> &ptArray)
+    const std::vector<ZIntPoint> &ptArray, neutu::ELabelSource source)
 {
+  ZDvidLabelSlice *slice = getDvidLabelSlice(false);
+
   std::set<uint64_t> idSet;
 
+  if (slice) {
+    idSet = slice->getLabelIdSet(ptArray, source);
+  }
+  /*
   std::vector<uint64_t> bodyList =
       getDvidReader().readBodyIdAt(ptArray);
   idSet.insert(bodyList.begin(), bodyList.end());
+  */
 
   return idSet;
 }
@@ -5518,12 +5547,33 @@ void ZFlyEmProofDoc::saveCustomBookmark()
 
 void ZFlyEmProofDoc::selectBodyAt(const QList<ZIntPoint> &posList, bool appending)
 {
-  auto bodySet = getLabelIdSetFromIter(posList.begin(), posList.end());
+  auto bodySet = getLabelIdSetFromIter(
+        posList.begin(), posList.end(), neutu::ELabelSource::MAPPED);
   if (appending) {
-    addSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
+    addSelectedBody(bodySet, neutu::ELabelSource::MAPPED);
   } else {
-    setSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
+    setSelectedBody(bodySet, neutu::ELabelSource::MAPPED);
   }
+}
+
+void ZFlyEmProofDoc::toggleBodyAt(const ZIntPoint &pos)
+{
+  uint64_t bodyId = getLabelId(
+        pos.getX(), pos.getY(), pos.getZ(), neutu::ELabelSource::MAPPED);
+  toggleBodySelection(bodyId, neutu::ELabelSource::MAPPED);
+}
+
+void ZFlyEmProofDoc::toggleBodiesAt(const QList<ZIntPoint> &posList)
+{
+  auto bodySet = getLabelIdSetFromIter(
+        posList.begin(), posList.end(), neutu::ELabelSource::MAPPED);
+  toggleBodySelection(bodySet, neutu::ELabelSource::MAPPED);
+}
+
+void ZFlyEmProofDoc::toggleBodyUnderObject(const ZStackObject *obj)
+{
+  ZPoint pos = ZStackObjectHelper::GetPosition(*obj);
+  toggleBodyAt(pos.toIntPoint());
 }
 
 void ZFlyEmProofDoc::selectBodyUnderSelectedObject(
@@ -6519,11 +6569,12 @@ void ZFlyEmProofDoc::selectBodyOnMergeLink(bool appending)
     }
   }
 
-  std::set<uint64_t> bodySet = getLabelIdSet(ptArray);
+  std::set<uint64_t> bodySet = getLabelIdSet(
+        ptArray, neutu::ELabelSource::MAPPED);
   if (appending) {
-    addSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
+    addSelectedBody(bodySet, neutu::ELabelSource::MAPPED);
   } else {
-    setSelectedBody(bodySet, neutu::ELabelSource::ORIGINAL);
+    setSelectedBody(bodySet, neutu::ELabelSource::MAPPED);
   }
 }
 

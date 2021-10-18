@@ -119,6 +119,14 @@ const ZStackObject* ZStackObjectGroup::getLastObjectUnsync(
   return obj;
 }
 
+void ZStackObjectGroup::setSelected(
+    const ZStackObjectHandle &handle, bool selected)
+{
+  ZStackObject *obj = getObject(handle, &m_mutex);
+  if (obj) {
+    setSelected(obj, selected);
+  }
+}
 
 void ZStackObjectGroup::setSelected(ZStackObject *obj, bool selected)
 {
@@ -1099,7 +1107,7 @@ void ZStackObjectGroup::add(ZStackObject *obj, int zOrder, bool uniqueSource)
   addUnsync(obj, zOrder, uniqueSource);
 }
 
-bool ZStackObjectGroup::hasObjectHandle(uint64_t handle) const
+bool ZStackObjectGroup::hasObjectHandle(const ZStackObjectHandle &handle) const
 {
   QMutexLocker locker(&m_mutex);
   foreach (const ZStackObject *obj, m_objectList) {
@@ -1109,6 +1117,17 @@ bool ZStackObjectGroup::hasObjectHandle(uint64_t handle) const
   }
 
   return false;
+}
+
+ZStackObject* ZStackObjectGroup::getObject(const ZStackObjectHandle &handle, QMutex *mutex) const
+{
+  QMutexLocker locker(mutex);
+  foreach (ZStackObject *obj, m_objectList) {
+    if (obj->getHandle() == handle) {
+      return obj;
+    }
+  }
+  return nullptr;
 }
 
 bool ZStackObjectGroup::hasObject(const ZStackObject *obj) const

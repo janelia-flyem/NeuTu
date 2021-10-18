@@ -4,6 +4,7 @@
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
 #include <QHeaderView>
+#include <QGuiApplication>
 
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
@@ -51,6 +52,11 @@ void ZFlyEmBookmarkView::processSingleClick(const QModelIndex &index)
   const ZFlyEmBookmark *bookmark = getBookmark(index);
   if (bookmark != NULL) {
     KINFO << bookmark->toLogString() + " is clicked";
+    if (QGuiApplication::keyboardModifiers() == Qt::AltModifier) {
+      QList<ZIntPoint> posList;
+      posList.append(bookmark->getCenter().roundToIntPoint());
+      emit togglingBodiesAt(posList);
+    }
   }
 }
 
@@ -263,7 +269,7 @@ void ZFlyEmBookmarkView::selectBodyUnderSelectedBookmark()
   if (!bookmarkList.empty()) {
     QList<ZIntPoint> posList;
     foreach (ZFlyEmBookmark *bookmark, bookmarkList) {
-      posList.append(bookmark->getCenter().toIntPoint());
+      posList.append(bookmark->getCenter().roundToIntPoint());
     }
     emit selectingBodyAt(posList, true);
   }

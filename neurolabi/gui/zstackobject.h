@@ -10,6 +10,7 @@
 #include "geometry/zintpoint.h"
 #include "geometry/zaffinerect.h"
 #include "data3d/defs.h"
+#include "data3d/zstackobjecthandle.h"
 #include "zqtheader.h"
 #include "zstackobjectrole.h"
 
@@ -32,6 +33,8 @@ class ViewSpaceAlignedDisplayConfig;
  * ZStackObject is a class of objects in a stack. We call those objects stack
  * objects. The common properties of a stack object are:
  *
+ *  Handle: each object has a unique handle that can be used as a reference of
+ *          the object. Once an object is created, its handle cannot be changed.
  *  Source: a string telling where the object is from. It can be empty, meaning
  *          that the object is from unknown source.
  *  Visibility: the object is visible or not.
@@ -61,49 +64,11 @@ class ZStackObject
 {
 public:
   ZStackObject();
+  ZStackObject(const ZStackObject &obj);
+  ZStackObject(ZStackObject &&obj);
   virtual ~ZStackObject();
 
-  enum class EType { //#Review-TZ: Consider moving types to a separate file with namespace zstackobject
-    UNIDENTIFIED = 0, //Unidentified type
-    SWC,
-    PUNCTUM,
-    MESH,
-    OBJ3D,
-    STROKE,
-    LOCSEG_CHAIN,
-    CONN,
-    OBJECT3D_SCAN,
-    SPARSE_OBJECT,
-    CIRCLE,
-    STACK_BALL,
-    STACK_PATCH,
-    RECT2D,
-    DVID_TILE,
-    DVID_GRAY_SLICE,
-    DVID_GRAY_SLICE_ENSEMBLE,
-    DVID_TILE_ENSEMBLE,
-    DVID_LABEL_SLICE,
-    DVID_SPARSE_STACK,
-    DVID_SPARSEVOL_SLICE,
-    STACK,
-    SWC_NODE,
-    GRAPH_3D,
-    PUNCTA,
-    FLYEM_BOOKMARK,
-    INT_CUBOID,
-    LINE_SEGMENT,
-    SLICED_PUNCTA,
-    DVID_SYNAPSE,
-    DVID_SYNAPE_ENSEMBLE,
-    CUBE,
-    DVID_ANNOTATION,
-    FLYEM_TODO_ITEM,
-    FLYEM_TODO_LIST,
-    FLYEM_TODO_ENSEMBLE,
-    FLYEM_SYNAPSE_ENSEMBLE,
-    CROSS_HAIR,
-    SEGMENTATION_ENCODER
-  };
+  using EType = neutu::data3d::EType;
 
   static std::string GetTypeName(EType type);
 
@@ -127,11 +92,14 @@ public:
    */
   std::string getTypeName() const;
 
-  uint64_t getHandle() const;
+  const ZStackObjectHandle& getHandle() const;
 
   virtual ZStackObject* clone() const;
   template<typename T>
   static T* Clone(T *obj);
+
+  ZStackObject& operator=(const ZStackObject &obj);
+  ZStackObject& operator=(ZStackObject &&obj);
 
 //  virtual const std::string& className() const = 0;
 
@@ -169,59 +137,6 @@ public:
   void addCallBackOnDeselection(CallBack callback){
     m_deselectionCallbacks.push_back(callback);}
 
-  #if 0
-  /*!
-   * \brief Display an object to widget
-   *
-   * \a painter stores the painting status changed by the function. The
-   * painting parameters, including pen and brush, of \a painter is expected to
-   * be restored after painting.
-   *
-   * \param slice Index of the slice to display. The index is the offset from
-   *    the current Z position to the start Z position in the painter. If it is
-   *    negative, it means that the projection mode has been turned on at the
-   *    current slice -(\a slice + 1).
-   */
-  virtual void display(
-      ZPainter &painter, int slice, zstackobject::EDisplayStyle option,
-      neutu::EAxis sliceAxis) const = 0;
-
-  /*!
-   * For special painting when ZPainter cannot be created
-   *
-   * \return false if nothing is painted. But returning true does not mean
-   *         if there is something painted.
-   */
-  virtual bool display(
-      QPainter *painter, int z, zstackobject::EDisplayStyle option,
-      zstackobject::EDisplaySliceMode sliceMode, neutu::EAxis sliceAxis) const;
-
-  struct ViewSpaceAlignedDisplayConfig {
-    int z = 0;
-    EDisplayStyle style = EDisplayStyle::SOLID;
-    EDisplaySliceMode sliceMode = EDisplaySliceMode::SINGLE;
-  };
-
-  struct DisplayConfig {
-     neutu::EAxis sliceAxis = neutu::EAxis::Z;
-     ZAffineRect cutPlane;
-     ViewSpaceAlignedDisplayConfig alignedConfig;
-
-     int getZ() const {
-       return alignedConfig.z;
-     }
-
-     int getSlice(int z0) const {
-       return alignedConfig.sliceMode ==
-           EDisplaySliceMode::SINGLE ? (getZ() - z0) : -1;
-     }
-
-     EDisplayStyle getStyle() const {
-       return alignedConfig.style;
-     }
-  };
-#endif
-
   /*!
    * \brief The main painting function
    *
@@ -231,10 +146,6 @@ public:
    */
   virtual bool display(
       QPainter *painter, const DisplayConfig &config) const;
-
-  virtual bool isVisible_inner(const DisplayConfig &/*config*/) const {
-    return isVisible();
-  }
 
   bool isVisible(const DisplayConfig &config) const {
     return isVisible() && isVisible_inner(config);
@@ -505,12 +416,15 @@ protected:
     return false;
   };
 
+  virtual bool isVisible_inner(const DisplayConfig &/*config*/) const {
+    return true;
+  }
   virtual bool display_inner(QPainter *painter, const DisplayConfig &config) const;
 
   mutable std::unordered_map<int,
   std::function<bool(const ZStackObject*, double,double,double)>> m_hitMap;
 
-  static uint64_t GetNextHandle();
+//  static uint64_t GetNextHandle();
 
 protected:
   static double m_defaultPenWidth;
@@ -529,7 +443,8 @@ protected:
   std::string m_objectClass;
   std::string m_objectId;
   uint64_t m_uLabel = 0;
-  uint64_t m_handle = 0;
+//  uint64_t m_handle = 0;
+  ZStackObjectHandle m_handle;
 //  int m_label = -1;
   int m_zOrder = 1;
   int64_t m_timeStamp = 0;
@@ -552,7 +467,7 @@ protected:
   bool m_projectionVisible = true;
   bool m_usingCosmeticPen = false;
 
-  static std::atomic<uint64_t> m_currentHandle;
+//  static std::atomic<uint64_t> m_currentHandle;
 //  static std::mutex m_handleMutex;
 };
 

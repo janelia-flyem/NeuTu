@@ -182,6 +182,9 @@ public:
 
   uint64_t getHitLabel() const;
   std::set<uint64_t> getHitLabelSet() const;
+  uint64_t getLabelAt(int x, int y, int z, neutu::ELabelSource source) const;
+  std::set<uint64_t> getLabelIdSet(
+      const std::vector<ZIntPoint> &ptArray, neutu::ELabelSource source) const;
 
 //  const ZStackViewParam& getViewParam() const;
   int getCurrentZ() const;

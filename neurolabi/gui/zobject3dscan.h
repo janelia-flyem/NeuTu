@@ -23,6 +23,7 @@
 #include "zstackdocument.h"
 #include "zobject3dstripe.h"
 #include "geometry/zgeometry.h"
+#include "geometry/zintcuboid.h"
 
 class ZObject3d;
 class ZGraph;
@@ -55,7 +56,7 @@ public:
   virtual ~ZObject3dScan() override;
 
   ZObject3dScan(const ZObject3dScan &obj);
-  ZObject3dScan(const ZObject3dScan &&obj);
+  ZObject3dScan(ZObject3dScan &&obj) = default;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::EType::OBJECT3D_SCAN;
@@ -127,7 +128,7 @@ public:
     COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
     COMPONENT_ACCUMULATED_STRIPE_NUMBER,
     COMPONENT_SLICEWISE_VOXEL_NUMBER,
-    COMPONENT_Z_PROJECTION,
+    COMPONENT_Z_PROJECTION, COMPONENT_BOUND_BOX,
     COMPONENT_ALL
   };
 
@@ -159,7 +160,7 @@ public:
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
-  ZObject3dScan& operator=(const ZObject3dScan&& obj);
+  ZObject3dScan& operator=(ZObject3dScan&& obj) = default;
 
   void copyDataFrom(const ZObject3dScan &obj);
   void copyAttributeFrom(const ZObject3dScan &obj);
@@ -878,7 +879,8 @@ protected:
   mutable std::unordered_map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
-  mutable ZObject3dScan *m_zProjection;
+  mutable ZObject3dScan *m_zProjection = nullptr;
+  mutable ZIntCuboid m_boundBox;
 
   //SWIG has some problem recognizing const static type
 #ifndef SWIG

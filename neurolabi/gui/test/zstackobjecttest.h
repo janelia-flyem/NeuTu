@@ -28,13 +28,17 @@ TEST(ZStackObject, basic)
 
 TEST(ZStackObject, Handle)
 {
-  uint64_t handle = ZSwcTree().getHandle();
-
   ZSwcTree obj1;
-  ASSERT_EQ(handle + 1, obj1.getHandle());
+  ASSERT_TRUE(obj1.getHandle().isValid());
+  ASSERT_NE(ZSwcTree().getHandle(), obj1.getHandle());
 
   ZStackBall obj2;
-  ASSERT_EQ(handle + 2, obj2.getHandle());
+  ASSERT_TRUE(obj2.getHandle().isValid());
+  ASSERT_NE(obj1.getHandle(), obj2.getHandle());
+
+  ZStackBall obj3 = obj2;
+  ASSERT_TRUE(obj3.getHandle().isValid());
+  ASSERT_NE(obj2.getHandle(), obj3.getHandle());
 
 }
 

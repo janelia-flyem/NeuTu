@@ -89,7 +89,7 @@ T ZIntPointAnnotationChunk<T>::hitClosestItem(
   T closestItem;
 
   double r2 = r * r;
-  for (auto item : this->m_itemMap) {
+  for (auto &item : this->m_itemMap) {
     T &t = item.second;
     double minDist2 = std::numeric_limits<double>::infinity();
     double d2 = t.getPosition().distanceSquareTo(x, y, z);

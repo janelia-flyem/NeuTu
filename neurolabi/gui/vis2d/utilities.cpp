@@ -1,11 +1,13 @@
 #include "utilities.h"
 
+#include <memory>
 #include <QtGui>
 
 #include "common/math.h"
 #include "common/utilities.h"
 
 #include "zstack.hxx"
+#include "zsparsestack.h"
 #include "zimage.h"
 #include "data3d/displayconfig.h"
 #include "data3d/zviewplanetransform.h"
@@ -43,6 +45,16 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, int z)
   int y0 = stack.getOffset().getY();
   int x1 = x0 + stack.width() - 1;
   int y1 = y0 + stack.height() - 1;
+  return GetSlice(stack, x0, y0, x1, y1, z);
+}
+
+QImage neutu::vis2d::GetSlice(const ZSparseStack &stack, int z)
+{
+  ZIntCuboid box = stack.getBoundBox();
+  int x0 = box.getMinCorner().getX();
+  int y0 = box.getMaxCorner().getY();
+  int x1 = x0 + box.getWidth() - 1;
+  int y1 = y0 + box.getHeight() - 1;
   return GetSlice(stack, x0, y0, x1, y1, z);
 }
 
@@ -85,6 +97,22 @@ QImage neutu::vis2d::GetSlice(
 
   return QImage();
 }
+
+QImage neutu::vis2d::GetSlice(
+    const ZSparseStack &stack, int &x0, int &y0, int &x1, int &y1, int z)
+{
+  ZIntCuboid box = stack.getBoundBox();
+
+  if (neutu::WithinCloseRange(z, box.getMinZ(), box.getMaxZ())) {
+    std::shared_ptr<ZStack> slice{stack.getSlice(z)};
+    if (slice) {
+      return GetSlice(*slice, x0, y0, x1, y1, z);
+    }
+  }
+
+  return QImage();
+}
+
 
 //ZY plane
 QImage neutu::vis2d::GetSliceX(
@@ -223,6 +251,44 @@ QImage neutu::vis2d::GetSlice(const ZStack &stack, ZAffineRect &rect)
       rect.setSize(image.width(), image.height());
       rect.setCenter(cx, cy, cz);
     }
+  }
+
+  return image;
+}
+
+QImage neutu::vis2d::GetSlice(const ZSparseStack &stack, ZAffineRect &rect)
+{
+  QImage image;
+
+  double halfWidth = rect.getWidth() / 2.0;
+  double halfHeight = rect.getHeight() / 2.0;
+  int x0 = 0;
+  int y0 = 0;
+  int x1 = 0;
+  int y1 = 0;
+  int z = 0;
+  double cx = 0;
+  double cy = 0;
+  int cz = 0;
+
+  ZIntCuboid box = stack.getBoundBox();
+  if (rect.getV1() == ZPoint(1, 0, 0) && rect.getV2() == ZPoint(0, 1, 0)) {
+    z = neutu::iround(rect.getCenter().getZ());
+    if (neutu::WithinCloseRange(z, box.getMinZ(), box.getMaxZ())) {
+      x0 = neutu::ifloor(rect.getCenter().getX() - halfWidth);
+      x1 = neutu::iround(rect.getCenter().getX() + halfWidth);
+      y0 = neutu::ifloor(rect.getCenter().getY() - halfHeight);
+      y1 = neutu::iround(rect.getCenter().getY() + halfHeight);
+      image = GetSlice(stack, x0, y0, x1, y1, z);
+      cx = (x0 + x1 + 1) / 2.0;
+      cy = (y0 + y1 + 1) / 2.0;
+      cz = z;
+    }
+  }
+
+  if (!image.isNull()) {
+    rect.setSize(image.width(), image.height());
+    rect.setCenter(cx, cy, cz);
   }
 
   return image;

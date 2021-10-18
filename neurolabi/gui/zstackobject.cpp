@@ -18,13 +18,23 @@
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
-std::atomic<uint64_t> ZStackObject::m_currentHandle{0};
+//std::atomic<uint64_t> ZStackObject::m_currentHandle{0};
 
 ZStackObject::ZStackObject()
 {
   setSliceAxis(neutu::EAxis::Z);
   m_basePenWidth = m_defaultPenWidth;
-  m_handle = GetNextHandle();
+//  m_handle = GetNextHandle();
+}
+
+ZStackObject::ZStackObject(const ZStackObject &obj)
+{
+  *this = obj;
+}
+
+ZStackObject::ZStackObject(ZStackObject &&obj)
+{
+  *this = std::move(obj);
 }
 
 ZStackObject::~ZStackObject()
@@ -48,11 +58,13 @@ ZStackObject::~ZStackObject()
 #endif
 }
 
+/*
 uint64_t ZStackObject::GetNextHandle()
 {
 //  std::lock_guard<std::mutex> guard(m_handleMutex);
   return ++m_currentHandle;
 }
+*/
 
 #define RETURN_TYPE_NAME(v, t) \
   if (v == EType::t) return NT_STR(t)
@@ -109,9 +121,51 @@ ZStackObject* ZStackObject::clone() const
   return nullptr;
 }
 
-uint64_t ZStackObject::getHandle() const
+const ZStackObjectHandle &ZStackObject::getHandle() const
 {
   return m_handle;
+}
+
+ZStackObject& ZStackObject::operator=(ZStackObject &&obj)
+{
+  *this = obj;
+//  m_handle = std::move(obj.m_handle);
+  m_selectionCallbacks = std::move(obj.m_selectionCallbacks);
+  m_deselectionCallbacks = std::move(obj.m_deselectionCallbacks);
+
+  return *this;
+}
+
+ZStackObject& ZStackObject::operator=(const ZStackObject &obj)
+{
+  m_hitProtocal = obj.m_hitProtocal;
+  m_hitMap = obj.m_hitMap;
+  _hit = obj._hit;
+  m_color = obj.m_color;
+  m_target = obj.m_target;
+  m_type = obj.m_type;
+  m_coordSpace = obj.m_coordSpace;
+  m_basePenWidth = obj.m_basePenWidth;
+  m_zScale = obj.m_zScale;
+  m_source = obj.m_source;
+  m_objectClass = obj.m_objectClass;
+  m_uLabel = obj.m_uLabel;
+  m_zOrder = obj.m_zOrder;
+  m_role = obj.m_role;
+  m_hitPoint = obj.m_hitPoint;
+  m_sliceAxis = obj.m_sliceAxis;
+  m_timeStamp = obj.m_timeStamp;
+
+  m_visualEffect = obj.m_visualEffect;
+
+  m_selected = obj.m_selected;
+  m_isSelectable = obj.m_isSelectable;
+  m_hittable = obj.m_hittable;
+  m_isVisible = obj.m_isVisible;
+  m_projectionVisible = obj.m_projectionVisible;
+  m_usingCosmeticPen = obj.m_usingCosmeticPen;
+
+  return *this;
 }
 
 #if 0

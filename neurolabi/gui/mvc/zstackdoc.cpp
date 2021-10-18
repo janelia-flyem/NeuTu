@@ -10324,14 +10324,15 @@ const ZStack* ZStackDoc::getLabelField() const
   return getLabelFieldUnsync();
 }
 
-uint64_t ZStackDoc::getLabelId(int /*x*/, int /*y*/, int /*z*/)
+uint64_t ZStackDoc::getLabelId(
+    int /*x*/, int /*y*/, int /*z*/, neutu::ELabelSource /*source*/)
 {
   return 0;
 }
 
 uint64_t ZStackDoc::getSupervoxelId(int x, int y, int z)
 {
-  return getLabelId(x, y, z);
+  return getLabelId(x, y, z, neutu::ELabelSource::ORIGINAL);
 }
 
 template<typename InputIterator>
@@ -10340,7 +10341,8 @@ std::set<uint64_t> getLabelIdSet(InputIterator /*first*/, InputIterator /*last*/
   return std::set<uint64_t>();
 }
 
-std::set<uint64_t> ZStackDoc::getLabelIdSet(const std::vector<ZIntPoint> &/*ptArray*/)
+std::set<uint64_t> ZStackDoc::getLabelIdSet(
+    const std::vector<ZIntPoint> &/*ptArray*/, neutu::ELabelSource /*source*/)
 {
   return std::set<uint64_t>();
 }

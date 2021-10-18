@@ -154,6 +154,8 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_MULTIPLE);
       } else if (event.getModifiers() == Qt::ControlModifier) {
         op.setOperation(ZStackOperator::OP_OBJECT_SELECT_TOGGLE);
+      } else if (event.getModifiers() == Qt::AltModifier) {
+        op.setOperation(ZStackOperator::OP_BOOKMARK_SELECT_BODY_SINGLE);
       }
       break;
     case ZStackObject::EType::DVID_SYNAPE_ENSEMBLE:

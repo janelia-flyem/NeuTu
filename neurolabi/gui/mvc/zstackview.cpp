@@ -2370,6 +2370,19 @@ void ZStackView::paintStackBuffer()
     }
   }
 
+  if (buddyDocument()->getTag() == neutu::Document::ETag::NORMAL) {
+    ZSparseStack *spStack = buddyDocument()->getSparseStack();
+    if (spStack) {
+      QSizeF viewportSize = imageWidget()->getViewportSize();
+      if (viewportSize.width() > 0 && viewportSize.height() > 0) {
+        auto canvas = getClearCanvas(neutu::data3d::ETarget::STACK_CANVAS);
+        ZImageSliceFactory::Make(
+              *spStack,
+              imageWidget()->getSliceViewTransform().getModelViewTransform(),
+              viewportSize.width(), viewportSize.height(), canvas);
+      }
+    }
+  }
 }
 
 void ZStackView::paintStack()

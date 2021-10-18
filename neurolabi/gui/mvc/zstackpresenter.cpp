@@ -3616,7 +3616,8 @@ void ZStackPresenter::copyLabelId()
   ZPoint pt = event.getDataPosition();
 
   uint64_t id = buddyDocument()->getLabelId(
-        neutu::iround(pt.x()), neutu::iround(pt.y()), neutu::iround(pt.z()));
+        neutu::iround(pt.x()), neutu::iround(pt.y()), neutu::iround(pt.z()),
+        neutu::ELabelSource::ORIGINAL);
 
   ZGlobal::CopyToClipboard(std::to_string(id));
 

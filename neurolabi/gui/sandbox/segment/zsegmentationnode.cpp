@@ -14,7 +14,7 @@ ZSegmentationNode::ZSegmentationNode(int label, ZSegmentationNode* parent)
   s<<m_id;
   s>>id;
   static ZColorScheme scheme;
-  scheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+  scheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
   m_color = scheme.getColor(id);
   m_color.setAlpha(50);
 }

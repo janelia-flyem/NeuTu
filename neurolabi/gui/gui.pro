@@ -412,7 +412,7 @@ HEADERS += mainwindow.h \
     zlabelededitwidget.h \
     zlabeledcombowidget.h \
     zbuttonbox.h \
-    zkeyeventswcmapper.h \
+#    zkeyeventswcmapper.h \
     newprojectmainwindow.h \
     zmouseeventmapper.h \
     zframefactory.h \
@@ -739,7 +739,7 @@ SOURCES += main.cpp \
     zlabelededitwidget.cpp \
     zlabeledcombowidget.cpp \
     zbuttonbox.cpp \
-    zkeyeventswcmapper.cpp \
+#    zkeyeventswcmapper.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     zframefactory.cpp \

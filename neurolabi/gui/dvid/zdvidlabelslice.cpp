@@ -1839,6 +1839,34 @@ uint64_t ZDvidLabelSlice::getMappedLabel(
 
   return label;
 }
+
+uint64_t ZDvidLabelSlice::getLabelAt(
+    int x, int y, int z, neutu::ELabelSource source) const
+{
+  uint64_t label = getHelper()->getDvidReader().readBodyIdAt(x, y, z);
+  if (source == neutu::ELabelSource::MAPPED) {
+    label = getMappedLabel(label, neutu::ELabelSource::ORIGINAL);
+  }
+
+  return label;
+}
+
+std::set<uint64_t> ZDvidLabelSlice::getLabelIdSet(
+    const std::vector<ZIntPoint> &ptArray, neutu::ELabelSource source) const
+{
+  std::set<uint64_t> idSet;
+  std::vector<uint64_t> bodyList =
+      getHelper()->getDvidReader().readBodyIdAt(ptArray);
+  idSet.insert(bodyList.begin(), bodyList.end());
+  if (source == neutu::ELabelSource::MAPPED) {
+    std::function<uint64_t(uint64_t)> f = [&](uint64_t id) {
+      return getMappedLabel(id, neutu::ELabelSource::ORIGINAL);
+    };
+    idSet = neutu::transform(idSet, f);
+  }
+
+  return idSet;
+}
 /*
 const ZStackViewParam& ZDvidLabelSlice::getViewParam() const
 {

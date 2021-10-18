@@ -110,7 +110,6 @@ std::string ToString(const T &v)
   return stream.str();
 }
 
-
 template<template<class...> class Container, typename T>
 std::string ToString(const Container<T> &container, const std::string &delimiter)
 {
@@ -127,6 +126,22 @@ std::string ToString(const Container<T> &container, const std::string &delimiter
   }
 
   return result;
+}
+
+template <template<class...> class C, typename T>
+C<T> transform(const C<T> &in, std::function<T(T)> uop)
+{
+  C<T> out;
+  std::transform(in.begin(), in.end(), std::back_inserter(out), uop);
+  return out;
+}
+
+template <typename T>
+std::set<T> transform(const std::set<T> &in, std::function<T(T)> uop)
+{
+  std::set<T> out;
+  std::transform(in.begin(), in.end(), std::inserter(out, out.begin()), uop);
+  return out;
 }
 
 bool UsingLocalHost(const std::string &url);

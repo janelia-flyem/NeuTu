@@ -111,7 +111,7 @@ TEST(ZStackObjectGroup, Basic) {
 
 TEST(ZStackObjectGroup, hasObject) {
   ZStackObjectGroup group;
-  ASSERT_FALSE(group.hasObjectHandle(1));
+  ASSERT_FALSE(group.hasObjectHandle(ZStackObjectHandle()));
 
   ZSwcTree *obj = new ZSwcTree;
   group.add(obj, true);

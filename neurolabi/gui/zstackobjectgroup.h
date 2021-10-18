@@ -44,6 +44,7 @@ public:
   int getMaxZOrder() const;
 
   void setSelected(ZStackObject *obj, bool selected);
+  void setSelected(const ZStackObjectHandle &handle, bool selected);
   void setSelected(bool selected);
   void setSelected(
       bool selected, std::function<void(const ZStackObject*)> selChangeProc);
@@ -201,7 +202,8 @@ public:
   bool hasSelected() const;
   bool hasSelected(ZStackObject::EType type) const;
 
-  bool hasObjectHandle(uint64_t handle) const;
+  bool hasObjectHandle(const ZStackObjectHandle &handle) const;
+  ZStackObject* getObject(const ZStackObjectHandle &handle, QMutex *mutex) const;
 
   QList<ZStackObject::EType> getAllType() const;
 

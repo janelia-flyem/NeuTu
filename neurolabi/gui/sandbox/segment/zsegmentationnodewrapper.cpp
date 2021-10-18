@@ -1,6 +1,10 @@
 #include "zsegmentationnodewrapper.h"
+
+#include "neulib/math/utilities.h"
 #include "zpainter.h"
 #include "geometry/zcuboid.h"
+#include "data3d/displayconfig.h"
+#include "vis2d/zslicepainter.h"
 
 bool ZSegmentationNodeWrapper::hit(double x, double y, double z){
   if(!isSelectable()){
@@ -24,6 +28,133 @@ ZCuboid ZSegmentationNodeWrapper::getBoundBox() const
   }
 
   return ZCuboid::FromIntCuboid(box);
+}
+
+bool ZSegmentationNodeWrapper::display_inner(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  if (getSliceAxis() != config.getSliceAxis()) {
+    return false;
+  }
+
+  if(!m_tree->hasID(m_id)){
+    return false;
+  }
+
+  ZSlice2dPainter s2Painter;
+  ZModelViewTransform t = config.getWorldViewTransform();
+  s2Painter.setViewPlaneTransform(config.getViewCanvasTransform());
+
+
+  QColor color = m_tree->getColor(m_id);
+  QPen pen(color);
+
+  if (isSelected()) {
+    QColor color(Qt::white);
+    color.setAlpha(120);
+    pen.setColor(color);
+  }
+  painter->setPen(pen);
+
+  int z = neulib::iround(config.getCutDepth(ZPoint::ORIGIN));
+
+  vector<shared_ptr<ZSegmentationEncoder>> vec_encoders;
+
+  for(auto id: m_tree->getLeavesIDs(m_id)){
+    vec_encoders.push_back(m_tree->getEncoder(id));
+  }
+
+  if(!vec_encoders.size()){
+    return false;
+  }
+
+  ZIntCuboid box;
+  for(auto encoder: vec_encoders){
+    box.join(encoder->getBoundBox());
+  }
+
+  if(box.getWidth() <= 0 || box.getHeight() <= 0 || box.getDepth() <= 0||
+     z < box.getMinCorner().getZ() || z > box.getMaxCorner().getZ()){
+    return false;
+  }
+
+  auto option = config.getStyle();
+  ZPoint center = t.getCutCenter();
+  center.shiftSliceAxis(getSliceAxis());
+
+  for(auto p_encoder: vec_encoders){
+    const ZSegmentationEncoder* encoder = p_encoder.get();
+    if(option == ZStackObject::EDisplayStyle::BOUNDARY){
+      ZIntCuboid box = encoder->getBoundBox();
+      box.setMinZ(z);
+      box.setMaxZ(z);
+      shared_ptr<ZStack> stack = shared_ptr<ZStack>(new ZStack(GREY,box,1));
+      uint8_t* p = stack->array8();
+
+      int y0 = box.getMinCorner().getY();
+      int y1 = box.getMaxCorner().getY();
+      int x0 = box.getMinCorner().getX();
+
+      int width = box.getWidth();
+      int height = box.getHeight();
+      for(int y = y0; y <= y1; ++y){
+        const vector<int>& segs = encoder->getSegment(z,y);
+        for(auto it = segs.begin(); it != segs.end();){
+          int x1 = *it++;
+          int x2 = *it++;
+          int offset = (y - y0) * width + x1 - x0;
+          for(int x = x1; x <= x2; ++x){
+            p[offset++] = 1;
+          }
+        }
+      }
+
+      std::vector<QPointF> points;
+      int nb[4] = {1,-1,width,-width};
+      int max_off= stack->getVoxelNumber() - 1;
+      for(int y = 0; y < height; ++y){
+        int offset = y * width;
+        for(int x = 0; x < width; ++x, ++offset){
+          uint8 v = p[offset];
+          if(v){
+            if(x == 0 || y==0){
+              points.push_back(QPointF(x + x0 - center.getX(), y + y0 - center.getY()));
+            } else {
+              for(int i = 0; i < 4; ++i){
+                int off_nb = offset + nb[i];
+                if(off_nb >= 0 && off_nb <= max_off && p[off_nb] != v){
+                  points.push_back(QPointF(x+x0 - center.getX(),y+y0 - center.getY()));
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      s2Painter.drawPoints(painter, points);
+      //painter.drawPolyline(&points[0], points.size());
+//      painter.drawPoints(points);
+    } else {
+      box = encoder->getBoundBox();
+      std::vector<QLineF> lineArray;
+      int y0 = box.getMinCorner().getY();
+      int y1 = box.getMaxCorner().getY();
+      int stride = 1;
+      for(int y = y0; y <= y1; y += stride){
+        const vector<int>& segments = encoder->getSegment(z,y);
+        for(auto it = segments.begin(); it != segments.end(); ){
+          int x1 = *it++;
+          int x2 = *it++;
+          lineArray.push_back(
+                QLineF(x1 - center.getX(),y - center.getY(),
+                       x2 - center.getX(),y - center.getY()));
+        }
+      }
+      s2Painter.drawLines(painter, lineArray);
+    }
+  }
+
+  return s2Painter.getPaintedHint();
 }
 
 #if 0

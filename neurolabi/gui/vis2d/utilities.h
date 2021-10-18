@@ -5,6 +5,7 @@ class ZViewPlaneTransform;
 class QTransform;
 class ZSlice3dPainter;
 class ZStack;
+class ZSparseStack;
 class QImage;
 class ZAffineRect;
 class ZSliceCanvas;
@@ -31,6 +32,11 @@ QImage GetSlice(const ZStack &stack, int &x0, int &y0, int &x1, int &y1, int z);
 QImage GetSliceX(const ZStack &stack, int &x0, int &y0, int &x1, int &y1, int z);
 QImage GetSliceY(const ZStack &stack, int &x0, int &y0, int &x1, int &y1, int z);
 //ZSliceCanvas GetSliceCanvas(const ZStack &stack, const ZAffineRect &rect);
+
+QImage GetSlice(
+    const ZSparseStack &stack, int &x0, int &y0, int &x1, int &y1, int z);
+QImage GetSlice(const ZSparseStack &stack, int z);
+QImage GetSlice(const ZSparseStack &stack, ZAffineRect &rect);
 
 }
 

@@ -39,6 +39,7 @@ signals:
   void removingBookmark(QList<ZFlyEmBookmark*> bookmarkList);
   void copyingBookmarkUrl(int x, int y, int z);
   void selectingBodyAt(QList<ZIntPoint> posList, bool appending);
+  void togglingBodiesAt(QList<ZIntPoint> posList);
 
 public slots:
   void checkCurrentBookmark();

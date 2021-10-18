@@ -154,16 +154,21 @@ public:
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
 
-  uint64_t getLabelId(int x, int y, int z) override;
+  uint64_t getLabelId(int x, int y, int z, neutu::ELabelSource source) override;
   uint64_t getSupervoxelId(int x, int y, int z) override;
-  std::set<uint64_t> getLabelIdSet(const std::vector<ZIntPoint> &ptArray) override;
+  std::set<uint64_t> getLabelIdSet(
+      const std::vector<ZIntPoint> &ptArray, neutu::ELabelSource source) override;
 
   bool hasBodySelected() const;
 
   std::set<uint64_t> getSelectedBodySet(neutu::ELabelSource labelType) const;
-  void setSelectedBody(const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
-  void setSelectedBody(uint64_t bodyId, neutu::ELabelSource labelType);
+  void setSelectedBody(
+      const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
+  void setSelectedBody(
+      uint64_t bodyId, neutu::ELabelSource labelType);
   void toggleBodySelection(uint64_t bodyId, neutu::ELabelSource labelType);
+  void toggleBodySelection(
+      const std::set<uint64_t> &selected, neutu::ELabelSource labelType);
   /*!
    * \brief Deselect bodies
    *
@@ -733,6 +738,9 @@ public slots:
 
   void selectBodyAt(const QList<ZIntPoint> &posList, bool appending);
   void selectBodyUnderSelectedObject(ZStackObject::EType type, bool appending);
+  void toggleBodiesAt(const QList<ZIntPoint> &posList);
+  void toggleBodyAt(const ZIntPoint &pos);
+  void toggleBodyUnderObject(const ZStackObject *obj);
 
   QString getBodyLockFailMessage(uint64_t bodyId);
 

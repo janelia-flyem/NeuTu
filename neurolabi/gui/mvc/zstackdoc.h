@@ -1097,13 +1097,14 @@ public:
   void setLabelField(ZStack *getStack);
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
-  virtual uint64_t getLabelId(int x, int y, int z);
+  virtual uint64_t getLabelId(int x, int y, int z, neutu::ELabelSource source);
   virtual uint64_t getSupervoxelId(int x, int y, int z);
-  virtual std::set<uint64_t> getLabelIdSet(const std::vector<ZIntPoint> &ptArray);
+  virtual std::set<uint64_t> getLabelIdSet(
+      const std::vector<ZIntPoint> &ptArray, neutu::ELabelSource source);
 
   template<typename InputIterator>
   std::set<uint64_t> getLabelIdSetFromIter(
-      InputIterator first, InputIterator last);
+      InputIterator first, InputIterator last, neutu::ELabelSource source);
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);
@@ -1762,12 +1763,12 @@ QList<T*> ZStackDoc::getSelectedObjectList() const
 
 template<typename InputIterator>
 std::set<uint64_t> ZStackDoc::getLabelIdSetFromIter(
-    InputIterator first, InputIterator last)
+    InputIterator first, InputIterator last, neutu::ELabelSource source)
 {
   std::vector<ZIntPoint> ptArray;
   ptArray.insert(ptArray.end(), first, last);
 
-  return getLabelIdSet(ptArray);
+  return getLabelIdSet(ptArray, source);
 }
 
 #endif

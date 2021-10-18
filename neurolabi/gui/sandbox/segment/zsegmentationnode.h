@@ -211,7 +211,7 @@ public:
   //virtual int getVoxelNumber()const;
 
 public://should never be called
-  virtual void add(int, int, int){}
+  void add(int, int, int) override {}
 
 private:
   template<typename T>

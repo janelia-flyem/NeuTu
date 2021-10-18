@@ -4,6 +4,7 @@ SOURCES += \
   $$PWD/displayconfig.cpp \
   $$PWD/zmodelviewtransform.cpp \
   $$PWD/zsliceviewtransform.cpp \
+  $$PWD/zstackobjecthandle.cpp \
   $$PWD/zviewplanetransform.cpp \
   $${PWD}/utilities.cpp \
   $${PWD}/zstackobjectconfig.cpp \
@@ -14,6 +15,7 @@ HEADERS += \
   $$PWD/displayconfig.h \
   $$PWD/zmodelviewtransform.h \
   $$PWD/zsliceviewtransform.h \
+  $$PWD/zstackobjecthandle.h \
   $$PWD/zviewplanetransform.h \
   $${PWD}/utilities.h \
   $${PWD}/zstackobjectconfig.h \

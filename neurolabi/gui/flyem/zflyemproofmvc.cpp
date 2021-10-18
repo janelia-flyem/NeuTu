@@ -822,6 +822,8 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(copyBookmarkUrl(int,int,int)));
   connect(view, &ZFlyEmBookmarkView::selectingBodyAt,
           getCompleteDocument(), &ZFlyEmProofDoc::selectBodyAt);
+  connect(view, &ZFlyEmBookmarkView::togglingBodiesAt,
+          getCompleteDocument(), &ZFlyEmProofDoc::toggleBodiesAt);
 }
 
 void ZFlyEmProofMvc::copyBookmarkUrl(int x, int y, int z)

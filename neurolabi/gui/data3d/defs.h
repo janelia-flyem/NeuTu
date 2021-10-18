@@ -33,6 +33,48 @@ enum class ETarget {
 
 const static int TARGET_COUNT = int(ETarget::TARGET_NONE);
 
+enum class EType { //#Review-TZ: Consider moving types to a separate file with namespace zstackobject
+  UNIDENTIFIED = 0, //Unidentified type
+  SWC,
+  PUNCTUM,
+  MESH,
+  OBJ3D,
+  STROKE,
+  LOCSEG_CHAIN,
+  CONN,
+  OBJECT3D_SCAN,
+  SPARSE_OBJECT,
+  CIRCLE,
+  STACK_BALL,
+  STACK_PATCH,
+  RECT2D,
+  DVID_TILE,
+  DVID_GRAY_SLICE,
+  DVID_GRAY_SLICE_ENSEMBLE,
+  DVID_TILE_ENSEMBLE,
+  DVID_LABEL_SLICE,
+  DVID_SPARSE_STACK,
+  DVID_SPARSEVOL_SLICE,
+  STACK,
+  SWC_NODE,
+  GRAPH_3D,
+  PUNCTA,
+  FLYEM_BOOKMARK,
+  INT_CUBOID,
+  LINE_SEGMENT,
+  SLICED_PUNCTA,
+  DVID_SYNAPSE,
+  DVID_SYNAPE_ENSEMBLE,
+  CUBE,
+  DVID_ANNOTATION,
+  FLYEM_TODO_ITEM,
+  FLYEM_TODO_LIST,
+  FLYEM_TODO_ENSEMBLE,
+  FLYEM_SYNAPSE_ENSEMBLE,
+  CROSS_HAIR,
+  SEGMENTATION_ENCODER
+};
+
 } //namespace data3d
 
 } //namespace neutu

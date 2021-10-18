@@ -66,17 +66,17 @@ ZObject3dScan::ZObject3dScan()
   init();
 }
 
-ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj),
-  m_zProjection(NULL)
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj)
 {
   *this = obj;
 }
 
-ZObject3dScan::ZObject3dScan(const ZObject3dScan &&obj) : ZStackObject(obj),
-  m_zProjection(NULL)
+/*
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &&obj)
 {
   *this = obj;
 }
+*/
 
 ZObject3dScan::~ZObject3dScan()
 {
@@ -99,6 +99,7 @@ void ZObject3dScan::init()
 
 ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
 {
+  ZStackObject::operator=(obj);
   deprecate(COMPONENT_ALL);
 
   dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
@@ -117,8 +118,10 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   return *this;
 }
 
+/*
 ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
 {
+  ZStackObject::operator=(obj);
   deprecate(COMPONENT_ALL);
 
   dynamic_cast<ZStackObject&>(*this) = obj;
@@ -130,12 +133,14 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
   m_blockingEvent = false;
   m_sliceAxis = obj.m_sliceAxis;
   m_dsIntv = obj.m_dsIntv;
+  m_zProjection = obj.m_zProjection;
 //  uint64_t m_label;
 
 //  this->m_zProjection = NULL;
 
   return *this;
 }
+*/
 
 void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 {
@@ -195,6 +200,8 @@ bool ZObject3dScan::isDeprecated(EComponent comp) const
     return m_slicewiseVoxelNumber.empty();
   case COMPONENT_Z_PROJECTION:
     return m_zProjection == NULL;
+  case COMPONENT_BOUND_BOX:
+    return m_boundBox.isEmpty();
   default:
     break;
   }
@@ -223,12 +230,16 @@ void ZObject3dScan::deprecate(EComponent comp)
     delete m_zProjection;
     m_zProjection = NULL;
     break;
+  case COMPONENT_BOUND_BOX:
+    m_boundBox.reset();
+    break;
   case COMPONENT_ALL:
     deprecate(COMPONENT_STRIPE_INDEX_MAP);
     deprecate(COMPONENT_INDEX_SEGMENT_MAP);
     deprecate(COMPONENT_ACCUMULATED_STRIPE_NUMBER);
     deprecate(COMPONENT_SLICEWISE_VOXEL_NUMBER);
     deprecate(COMPONENT_Z_PROJECTION);
+    deprecate(COMPONENT_BOUND_BOX);
     break;
   }
 }
@@ -1723,21 +1734,26 @@ ZCuboid ZObject3dScan::getBoundBox() const
 
 ZIntCuboid ZObject3dScan::getIntBoundBox() const
 {
-  ZIntCuboid boundBox;
+  if (!isDeprecated(COMPONENT_BOUND_BOX)) {
+    return m_boundBox;
+  }
 
+//  ZIntCuboid boundBox;
+
+  m_boundBox.reset();
   bool isFirst = true;
   for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     if (!iter->isEmpty()) {
       if (isFirst) {
-        boundBox.set(iter->getMinX(), iter->getY(), iter->getZ(),
+        m_boundBox.set(iter->getMinX(), iter->getY(), iter->getZ(),
                      iter->getMaxX(), iter->getY(), iter->getZ());
         isFirst = false;
       } else {
-        boundBox.joinY(iter->getY());
-        boundBox.joinZ(iter->getZ());
-        boundBox.joinX(iter->getMinX());
-        boundBox.joinX(iter->getMaxX());
+        m_boundBox.joinY(iter->getY());
+        m_boundBox.joinZ(iter->getZ());
+        m_boundBox.joinX(iter->getMinX());
+        m_boundBox.joinX(iter->getMaxX());
       }
 #ifdef _DEBUG_2
       std::cout << iter->getMinX() << " " << iter->getMaxX() << " "
@@ -1748,9 +1764,9 @@ ZIntCuboid ZObject3dScan::getIntBoundBox() const
     }
   }
 
-  boundBox.shiftSliceAxis(m_sliceAxis);
+  m_boundBox.shiftSliceAxis(m_sliceAxis);
 
-  return boundBox;
+  return m_boundBox;
 }
 
 void ZObject3dScan::getIntBoundBox(Cuboid_I *box) const
@@ -4853,6 +4869,10 @@ void ZObject3dScan::blockEvent(bool blocking)
 void ZObject3dScan::processEvent(TEvent event)
 {
   if (!m_blockingEvent) {
+    if (event & EVENT_OBJECT_MODEL_CHANGED) {
+      deprecate(COMPONENT_BOUND_BOX);
+    }
+
     if (event & EVENT_OBJECT_MODEL_CHANGED & ~EVENT_OBJECT_VIEW_CHANGED) {
       deprecate(COMPONENT_ACCUMULATED_STRIPE_NUMBER);
       deprecate(COMPONENT_SLICEWISE_VOXEL_NUMBER);

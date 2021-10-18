@@ -344,10 +344,10 @@ public:
   ZDvidGraySlicePlayer(ZStackObject* data = NULL);
 
 public:
-  QString getTypeName() const { return "DvidGraySlice"; }
-  bool updateData(const ZStackViewParam &viewParam) const;
+  QString getTypeName() const override { return "DvidGraySlice"; }
+  bool updateData(const ZStackViewParam &viewParam) const override;
   ZDvidGraySlice *getCompleteData() const;
-  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
+  ZTask* getFutureTask(ZStackDoc *doc, int viewId) const override;
   void trackView(const ZStackViewParam &param) override;
 };
 

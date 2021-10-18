@@ -22,9 +22,7 @@ public:
 
 public:
 //  const std::string& className() const override {static std::string name("ZSegmentationNodeWrapper");return name;}
-  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
-    return false;
-  }
+  bool display_inner(QPainter *painter, const DisplayConfig &config) const override;
   /*
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option, neutu::EAxis sliceAxis) const override;
