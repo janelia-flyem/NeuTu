@@ -52,6 +52,7 @@ namespace {
   static const QString KEY_SUPERVOXEL_ID2 = "supervoxel ID 2";
   static const QString KEY_SUPERVOXEL_POINT1 = "supervoxel point 1";
   static const QString KEY_SUPERVOXEL_POINT2 = "supervoxel point 2";
+  static const QString KEY_ASSIGNEE = "assignee";
 
   // For the result JSON.
   static const QString KEY_RESULT = "result";
@@ -514,6 +515,10 @@ bool TaskBodyMerge::loadSpecific(QJsonObject json)
                            QString::number(m_supervoxelId2) +
                            ", the key \"" + KEY_SUPERVOXEL_POINT2 + "\" cannot be parsed as a 3D point.");
     }
+  }
+
+  if (json.contains(KEY_ASSIGNEE)) {
+    m_assignee = json[KEY_ASSIGNEE].toString().toStdString();
   }
 
   return true;
@@ -1154,6 +1159,9 @@ void TaskBodyMerge::writeResult(const QString &result)
   json[KEY_SUPERVOXEL_POINT2] =
       QJsonArray({ m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z() });
   json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
+  if (!m_assignee.empty()) {
+    json[KEY_ASSIGNEE] = m_assignee.c_str();
+  }
   json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
   json[KEY_SOURCE] = jsonSource();
   json[KEY_BUILD_VERSION] = getBuildVersion().c_str();
@@ -1174,7 +1182,7 @@ void TaskBodyMerge::writeResult(const QString &result)
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
-  std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
+  std::string key = dvidResultKey();
   writer.writeJsonString(instance, key, jsonStr);
 
   // Populate the OpenTracing-style "span" with the results of this task, and log it
@@ -1205,7 +1213,7 @@ QString TaskBodyMerge::readResult()
   if (reader.open(m_bodyDoc->getDvidTarget())) {
     std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
     if (reader.hasData(instance)) {
-      std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
+      std::string key = dvidResultKey();
       ZJsonObject valueObj = reader.readJsonObjectFromKey(instance.c_str(), key.c_str());
       if (valueObj.isObject()){
 //        const char *resultKey = KEY_RESULT.toLatin1().data();
@@ -1263,4 +1271,20 @@ void TaskBodyMerge::suggestWriting()
       }
     }
   }
+}
+
+std::string TaskBodyMerge::dvidResultKey() const
+{
+  std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
+
+  if (!m_assignee.empty()) {
+    key += "_" + m_assignee;
+  } else {
+    std::string user = NeutubeConfig::GetUserName();
+    if (!user.empty()) {
+      key += "_" + user;
+    }
+  }
+
+  return key;
 }
