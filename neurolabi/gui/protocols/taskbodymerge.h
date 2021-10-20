@@ -54,6 +54,7 @@ private:
   uint64_t m_bodyId2;
   ZPoint m_supervoxelPoint1;
   ZPoint m_supervoxelPoint2;
+  std::string m_assignee;
 
   size_t m_hiResCount;
 
@@ -99,6 +100,7 @@ private:
   QString readResult();
   void restoreResult(const QString &result);
   void suggestWriting();
+  std::string dvidResultKey() const;
 };
 
 #endif // TASKBODYMERGE_H
