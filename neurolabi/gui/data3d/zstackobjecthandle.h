@@ -7,8 +7,8 @@ class ZStackObjectHandle
 {
 public:
   ZStackObjectHandle();
-  ZStackObjectHandle(ZStackObjectHandle &&rhs) = delete;
-  ZStackObjectHandle(const ZStackObjectHandle&) = delete;
+  ZStackObjectHandle(ZStackObjectHandle &&rhs) = default;
+  ZStackObjectHandle(const ZStackObjectHandle&) = default;
 
   bool operator == (const ZStackObjectHandle &handle) const;
   bool operator != (const ZStackObjectHandle &handle) const;
@@ -18,11 +18,16 @@ public:
   ZStackObjectHandle& operator=(ZStackObjectHandle &&rhs) = delete;
   ZStackObjectHandle& operator=(const ZStackObjectHandle&) = delete;
 
-private:
-  static uint64_t GetNextHandle();
+public: // for testing
+  uint64_t _getValue_() const;
+  static void _reset_();
 
 private:
-  uint64_t m_handle = 0;
+  static uint64_t GetNextHandle();
+  uint64_t getValue() const;
+
+private:
+  const uint64_t m_handle = 0;
   static std::atomic<uint64_t> m_currentHandle;
 };
 

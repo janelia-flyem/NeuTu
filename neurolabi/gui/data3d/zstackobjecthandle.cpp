@@ -2,17 +2,9 @@
 
 std::atomic<uint64_t> ZStackObjectHandle::m_currentHandle{0};
 
-ZStackObjectHandle::ZStackObjectHandle()
+ZStackObjectHandle::ZStackObjectHandle() : m_handle(GetNextHandle())
 {
-  m_handle = GetNextHandle();
 }
-
-/*
-ZStackObjectHandle::ZStackObjectHandle(ZStackObjectHandle &&rhs)
-{
-  *this = std::move(rhs);
-}
-*/
 
 uint64_t ZStackObjectHandle::GetNextHandle()
 {
@@ -21,16 +13,23 @@ uint64_t ZStackObjectHandle::GetNextHandle()
 
 bool ZStackObjectHandle::isValid() const
 {
-  return m_handle > 0;
+  return getValue() > 0;
 }
 
-/*
-ZStackObjectHandle& ZStackObjectHandle::operator=(ZStackObjectHandle&& rhs)
+uint64_t ZStackObjectHandle::getValue() const
 {
-  m_handle = rhs.m_handle;
-  return *this;
+  return m_handle;
 }
-*/
+
+uint64_t ZStackObjectHandle::_getValue_() const
+{
+  return getValue();
+}
+
+void ZStackObjectHandle::_reset_()
+{
+  m_currentHandle = 0;
+}
 
 bool ZStackObjectHandle::operator== (const ZStackObjectHandle &handle) const
 {

@@ -444,7 +444,7 @@ protected:
   std::string m_objectId;
   uint64_t m_uLabel = 0;
 //  uint64_t m_handle = 0;
-  ZStackObjectHandle m_handle;
+  const ZStackObjectHandle m_handle;
 //  int m_label = -1;
   int m_zOrder = 1;
   int64_t m_timeStamp = 0;

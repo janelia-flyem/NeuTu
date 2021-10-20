@@ -739,7 +739,6 @@ SOURCES += main.cpp \
     zlabelededitwidget.cpp \
     zlabeledcombowidget.cpp \
     zbuttonbox.cpp \
-#    zkeyeventswcmapper.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     zframefactory.cpp \
