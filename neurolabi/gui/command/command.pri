@@ -1,4 +1,5 @@
 HEADERS += \
+    $$PWD/utilities.h \
     $$PWD/zbodyprocesscommand.h \
     $$PWD/zneurontracecommand.h \
     $$PWD/zsyncskeletoncommand.h \
@@ -15,6 +16,7 @@ HEADERS += \
     $$PWD/zstackfiltercommand.h
 
 SOURCES += \
+    $$PWD/utilities.cpp \
     $$PWD/zbodyprocesscommand.cpp \
     $$PWD/zneurontracecommand.cpp \
     $$PWD/zsyncskeletoncommand.cpp \

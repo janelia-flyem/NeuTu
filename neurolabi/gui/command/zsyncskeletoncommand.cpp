@@ -16,6 +16,8 @@
 #include "zjsonobjectparser.h"
 #include "zswctree.h"
 #include "filesystem/utilities.h"
+#include "command/utilities.h"
+#include "filesystem/utilities.h"
 
 #include "zdvidutil.h"
 #include "dvid/zdvidtarget.h"
@@ -156,7 +158,7 @@ std::set<uint64_t> get_body_set_from_annotation(
   QStringList annotList =
       reader.readKeys(reader.getDvidTarget().getBodyAnnotationName().c_str());
   auto statusSet = get_status_set(config);
-  for (const QString &bodyStr : annotList) {
+  foreach (const QString &bodyStr, annotList) {
     uint64_t bodyId = ZString(bodyStr.toStdString()).firstUint64();
     if (bodyId > 0) {
       ZFlyEmBodyAnnotation annot =
@@ -213,8 +215,21 @@ std::set<uint64_t> get_body_set(
       bodySet = get_body_set_from_annotation(config, reader);
     }
   } else if (config.hasKey("bodyList")) {
-    auto bodyList = ZJsonParser::integerArray(config["bodyList"]);
-    bodySet.insert(bodyList.begin(), bodyList.end());
+    if (ZJsonParser::IsArray(config["bodyList"])) {
+      auto bodyList = ZJsonParser::integerArray(config["bodyList"]);
+      bodySet.insert(bodyList.begin(), bodyList.end());
+    } else {
+      std::string bodyFile = ZJsonObjectParser::GetValue(config, "bodyList", "");
+      if (!bodyFile.empty()) {
+        std::string sourcePath = ZJsonObjectParser::GetValue(config, "_source", "");
+        if (!sourcePath.empty()) {
+          bodyFile = neutu::Absolute(bodyFile, neutu::ParentPath(sourcePath));
+        }
+        std::cout << "Getting body list from " << bodyFile << "..." << std::endl;
+        auto bodyList = neutu::ImportBodies(bodyFile);
+        bodySet.insert(bodyList.begin(), bodyList.end());
+      }
+    }
   } else { //Get body set by lowres labels
     int zoom = reader.getMaxLabelZoom();
     ZDvidInfo info = reader.readDataInfo(
@@ -321,6 +336,7 @@ int ZSyncSkeletonCommand::run(
     reader.setVerbose(false);
     if (reader.hasData(reader.getDvidTarget().getSkeletonName())) {
       std::set<uint64_t> bodySet = get_body_set(config, reader);
+      std::cout << "Checking " << bodySet.size() << " bodies..." << std::endl;
       size_t i = 1;
       for (uint64_t bodyId : bodySet) {
         report_progress(i, bodySet.size());

@@ -1,4 +1,5 @@
 HEADERS += \
+  $$PWD/commandtest.h \
     $$PWD/commontest.h \
   $$PWD/flyembodyannotationiotest.h \
   $$PWD/flyembodyannotationmanagertest.h \

@@ -109,6 +109,7 @@
 #include "test/flyembodyannotationiotest.h"
 #include "test/flyembodyannotationmanagertest.h"
 #include "test/zstacksourcetest.h"
+#include "test/commandtest.h"
 
 #include "bigdata/tests/zitemchunktest.h"
 #include "bigdata/tests/zdatachunktest.h"
