@@ -6347,10 +6347,11 @@ void ZFlyEmProofMvc::notifyBodyMergeEdited()
   emit bodyMergeEdited();
 }
 
-/*
 void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
 {
   if (!getCompletePresenter()->isSplitWindow()) {
+    getCompleteDocument()->selectBody(bodyIdList.begin(), bodyIdList.end());
+    /*
     ZDvidLabelSlice *slice = ZFlyEmProofDocUtil::GetActiveLabelSlice(
           getCompleteDocument());
     if (slice != NULL) {
@@ -6366,9 +6367,9 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
     }
 //    updateBodySelection();
     getCompleteDocument()->notifyBodySelectionChanged();
+    */
   }
 }
-*/
 
 bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
 {

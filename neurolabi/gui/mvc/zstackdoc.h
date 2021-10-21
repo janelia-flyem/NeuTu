@@ -1404,7 +1404,7 @@ signals:
 
   void zoomingTo(int x, int y, int z);
   void updatingLatency(int);
-  void segmentAnnotated(uint64_t bodyId, ZJsonObject obj);
+  void segmentAnnotated(uint64_t segId, ZJsonObject obj);
 
   void hidingLocationObject(double x, double y, double z);
 

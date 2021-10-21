@@ -298,7 +298,7 @@ public slots:
   void selectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
   void deselectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
   void selectBodyInRoi(int viewId, bool appending = true);
-//  void selectBody(QList<uint64_t> bodyIdList);
+  void selectBody(QList<uint64_t> bodyIdList);
   void notifyBodyMergeEdited();
   void updateProtocolRangeGlyph(
       const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);

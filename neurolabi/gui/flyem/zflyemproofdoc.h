@@ -1015,9 +1015,9 @@ template <typename InputIterator>
 void ZFlyEmProofDoc::selectBody(
     const InputIterator &first, const InputIterator &last)
 {
-  for (InputIterator iter = first; iter != last; ++iter) {
-    selectBody(*iter);
-  }
+  std::set<uint64_t> bodySet;
+  bodySet.insert(first, last);
+  setSelectedBody(bodySet, neutu::ELabelSource::MAPPED);
 }
 
 extern template
