@@ -846,7 +846,7 @@ std::string ZDvidTarget::getBodyLabelName(int zoom) const
 bool ZDvidTarget::usingMulitresBodylabel() const
 {
   if (m_usingMultresBodyLabel) {
-    return getMaxLabelZoom() > 3;
+    return getMaxLabelZoom() > 0;
   }
 
   return false;
