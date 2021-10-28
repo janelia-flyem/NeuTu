@@ -1975,5 +1975,7 @@ void ZDvidLabelSlice::clearCache()
 
 bool ZDvidLabelSlice::refreshReaderBuffer()
 {
-  return getHelper()->getDvidReader().refreshLabelBuffer();
+  bool refreshed = getDvidReader().refreshLabelBuffer();
+  bool refreshed2 = getWorkDvidReader().refreshLabelBuffer();
+  return refreshed || refreshed2;
 }
