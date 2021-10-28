@@ -28,6 +28,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidversiondag.h"
+#include "dvid/zdvidglobal.h"
 
 #include "zdvidutil.h"
 
@@ -146,7 +147,11 @@ ZFlyEmToDoItem FlyEmDataReader::ReadToDoItem(
 
 ZIntCuboid FlyEmDataReader::ReadTodoDataRange(const ZDvidReader &reader)
 {
-  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  ZDvidInfo dvidInfo =
+      ZDvidGlobal::Memo::ReadGrayscaleInfo(reader.getDvidTarget());
+//  ZDvidTarget target(reader.getDvidTarget().getGrayScaleTarget());
+
+//  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 
   return dvidInfo.getDataRange();
 }

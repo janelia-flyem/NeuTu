@@ -77,7 +77,7 @@ ZJsonObject ZDvidGlobal::Memo::ReadInfo(const ZDvidTarget &target)
 
 ZDvidInfo ZDvidGlobal::Memo::ReadGrayscaleInfo(const ZDvidTarget &target)
 {
-  return ReadDataInfo(target, target.getGrayScaleName());
+  return ReadDataInfo(target.getGrayScaleTarget(), target.getGrayScaleName());
 }
 
 ZDvidInfo ZDvidGlobal::Memo::ReadSegmentationInfo(const ZDvidTarget &target)
