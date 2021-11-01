@@ -76,7 +76,7 @@ ZDvidTarget ZDvidEnv::getFullMainTarget() const
 
 void ZDvidEnv::setHost(const std::string &host)
 {
-  m_mainTarget.setServer(host);
+  m_mainTarget.setHost(host);
 }
 
 void ZDvidEnv::setPort(int port)

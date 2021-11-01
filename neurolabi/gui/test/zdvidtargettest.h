@@ -133,22 +133,22 @@ TEST(ZDvidTarget, Basic)
 
     ZDvidTarget target;
     ASSERT_FALSE(target.isValid());
-    target.setServer("http://emdata2.int.janelia.org:9000");
+    target.setHost("http://emdata2.int.janelia.org:9000");
     ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
     ASSERT_EQ(9000, target.getPort());
 
-    target.setServer("http://emdata2.int.janelia.org");
+    target.setHost("http://emdata2.int.janelia.org");
     ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
     ASSERT_EQ(9000, target.getPort());
 
     target.clear();
-    target.setServer(
+    target.setHost(
           "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
     ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
     ASSERT_EQ(9000, target.getPort());
 
     target.clear();
-    target.setServer(
+    target.setHost(
           "http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
     ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
     ASSERT_EQ(-1, target.getPort());
@@ -160,7 +160,7 @@ TEST(ZDvidTarget, Basic)
     target.setUuid("12345");
     ASSERT_EQ("12345", target.getUuid());
 
-    target.setServer("emdata2.int.janelia.org:9000");
+    target.setHost("emdata2.int.janelia.org:9000");
     ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
     ASSERT_EQ(9000, target.getPort());
 

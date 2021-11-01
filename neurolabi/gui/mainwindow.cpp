@@ -7003,9 +7003,9 @@ void MainWindow::on_actionLoad_Named_Bodies_triggered()
 {
   ZDvidTarget target;
   if (m_hackathonConfigDlg->usingInternalDvid()) {
-    target.setServer("emdata1.int.janelia.org");
+    target.setHost("emdata1.int.janelia.org");
   } else {
-    target.setServer("hackathon.janelia.org");
+    target.setHost("hackathon.janelia.org");
   }
   target.setUuid("2a3");
 

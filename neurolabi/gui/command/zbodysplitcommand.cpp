@@ -127,7 +127,7 @@ ZBodySplitCommand::parseSignalPath(
 
       if (!signalInfo.isEmpty()) {
         if (signalInfo.hasKey("address")) {
-          target.setServer(ZJsonParser::stringValue(signalInfo["address"]));
+          target.setHost(ZJsonParser::stringValue(signalInfo["address"]));
         }
         if (signalInfo.hasKey("port")) {
           target.setPort(ZJsonParser::integerValue(signalInfo["port"]));

@@ -4,8 +4,78 @@
 #include "ztestheader.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidtargetfactory.h"
+#include "dvid/zdvidtargetbuilder.h"
 
 #ifdef _USE_GTEST_
+
+TEST(ZDvidTargetBuilder, Basic)
+{
+  {
+    ZDvidTarget target = ZDvidTargetBuilder().on("http://test.com:8000");
+    ASSERT_EQ("http", target.getScheme());
+    ASSERT_EQ("test.com", target.getAddress());
+    ASSERT_EQ(8000, target.getPort());
+  }
+
+  {
+    ZDvidTarget target = ZDvidTargetBuilder().on("test.com:8000");
+    ASSERT_EQ("http", target.getScheme());
+    ASSERT_EQ("test.com", target.getAddress());
+    ASSERT_EQ(8000, target.getPort());
+  }
+
+  {
+    ZDvidTarget target = ZDvidTargetBuilder().on("https://test.com:8000");
+    ASSERT_EQ("https", target.getScheme());
+    ASSERT_EQ("test.com", target.getAddress());
+    ASSERT_EQ(8000, target.getPort());
+  }
+
+  {
+    ZDvidTarget target = ZDvidTargetBuilder().on("test.com");
+    ASSERT_EQ("http", target.getScheme());
+    ASSERT_EQ("test.com", target.getAddress());
+    ASSERT_EQ(-1, target.getPort());
+  }
+
+  {
+    ZDvidTarget target = ZDvidTargetBuilder().
+        on("http://test.com:8000").withUuid("1234");
+    ASSERT_EQ("http", target.getScheme());
+    ASSERT_EQ("test.com", target.getAddress());
+    ASSERT_EQ(8000, target.getPort());
+    ASSERT_EQ("1234", target.getUuid());
+  }
+
+  {
+    ZDvidTarget target = ZDvidTargetBuilder().
+        on("http://test.com:8000").
+        withUuid("1234").
+        withSegmentation("segmentation");
+    ASSERT_EQ("http", target.getScheme());
+    ASSERT_EQ("test.com", target.getAddress());
+    ASSERT_EQ(8000, target.getPort());
+    ASSERT_EQ("1234", target.getUuid());
+    ASSERT_EQ("segmentation", target.getSegmentationName());
+  }
+
+  {
+    ZDvidTarget target = ZDvidTargetBuilder().
+        on("http://test.com:8000").
+        roi().add("roi1").set("mainROI").
+        main().
+        withUuid("1234").
+        withSegmentation("segmentation");
+    ASSERT_EQ("http", target.getScheme());
+    ASSERT_EQ("test.com", target.getAddress());
+    ASSERT_EQ(8000, target.getPort());
+    ASSERT_EQ("1234", target.getUuid());
+    ASSERT_EQ("segmentation", target.getSegmentationName());
+    ASSERT_EQ("mainROI", target.getRoiName());
+    ASSERT_EQ(1, int(target.getRoiList().size()));
+  }
+
+}
 
 TEST(ZDvidTargetFactory, Basic)
 {

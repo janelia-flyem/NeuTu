@@ -1303,7 +1303,7 @@ int ZCommandLine::skeletonizeDvid(ZDvidTarget &target)
     target = reader.getDvidTarget();
 
     if (!mirror.empty()) {
-      target.setServer(mirror);
+      target.setHost(mirror);
       if (mirrorReader.open(target)) {
         bodyReader = &mirrorReader;
       } else {

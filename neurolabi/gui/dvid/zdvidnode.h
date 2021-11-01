@@ -18,6 +18,7 @@ public:
   void setHost(const std::string &address);
   void setUuid(const std::string &uuid);
   void setPort(int port);
+  void setServer(const std::string &server);
 
   void setInferredUuid(const std::string &uuid);
   void setMappedUuid(const std::string &original, const std::string &mapped);

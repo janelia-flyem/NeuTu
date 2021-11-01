@@ -23,9 +23,10 @@ public:
   void clear();
 
   void set(const std::string &address, const std::string &uuid, int port = -1);
-  void setServer(const std::string &address);
+  void setHost(const std::string &address);
   void setUuid(const std::string &uuid);
   void setPort(int port);
+  void setServer(const std::string &server);
 
   void setMappedUuid(const std::string &original, const std::string &mapped);
 

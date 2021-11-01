@@ -33179,6 +33179,16 @@ void ZTest::test(MainWindow *host)
   std::cout << "uuid: " << ZDvidReader::InferUuid(target) << std::endl;
 #endif
 
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("medulla-sample-28c");
+  ZDvidInfo dvidInfo;
+  dvidInfo = reader->readGrayScaleInfo();
+  dvidInfo.print();
+  ZStack *dest = ZStackFactory::MakeZeroStack(512, 512, 512);
+  std::vector<int> blockCoords{4, 3, 3};
+  reader->readGrayScaleBlock(blockCoords, 5, dest);
+#endif
+
   std::cout << "Done." << std::endl;
 }
 

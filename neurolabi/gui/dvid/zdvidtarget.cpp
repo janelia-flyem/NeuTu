@@ -138,10 +138,15 @@ void ZDvidTarget::clear()
 }
 #endif
 
-void ZDvidTarget::setServer(const std::string &address)
+void ZDvidTarget::setHost(const std::string &address)
 {
   m_node.setScheme(""); //default scheme
   m_node.setHost(address);
+}
+
+void ZDvidTarget::setServer(const std::string &server)
+{
+  m_node.setServer(server);
 }
 
 void ZDvidTarget::setUuid(const std::string &uuid)

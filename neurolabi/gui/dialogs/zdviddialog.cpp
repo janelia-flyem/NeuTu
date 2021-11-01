@@ -195,7 +195,7 @@ ZDvidTarget ZDvidDialog::getDvidTargetWithOriginalData()
 {
   ZDvidTarget target = m_dvidRepo[ui->serverComboBox->currentIndex()];
   if (target.isEditable()) {
-    target.setServer(getAddress().toStdString());
+    target.setHost(getAddress().toStdString());
     target.setUuid(getUuid().toStdString());
     target.setPort(getPort());
     target.setBodyLabelName(getBodyLabelName());

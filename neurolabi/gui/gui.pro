@@ -279,6 +279,7 @@ HEADERS += mainwindow.h \
     dvid/zdviddataslicehighrestask.h \
     dvid/zdvidglobal.h \
     dvid/zdvidstacksource.h \
+  dvid/zdvidtargetbuilder.h \
     neuapp.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
@@ -635,6 +636,7 @@ SOURCES += main.cpp \
     dvid/zdviddataslicehighrestask.cpp \
     dvid/zdvidglobal.cpp \
     dvid/zdvidstacksource.cpp \
+    dvid/zdvidtargetbuilder.cpp \
     dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     neuapp.cpp \

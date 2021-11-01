@@ -492,7 +492,7 @@ ZDvidTarget &DvidBranchDialog::getDvidTarget() {
     //  fixing something else, though
     m_dvidTarget = ZDvidTarget();
 
-    m_dvidTarget.setServer(ui->serverBox->text().toStdString());
+    m_dvidTarget.setHost(ui->serverBox->text().toStdString());
     m_dvidTarget.setUuid(ui->UUIDBox->text().toStdString());
     m_dvidTarget.setPort(ui->portBox->text().toInt());
 

@@ -42,7 +42,7 @@ ZDvidTarget make_dvid_target_from_source(
   ZDvidTarget target;
   if (source.startsWith("dvid://")) {
     QUrl url(source.substr(neutu::Length("dvid://")).c_str());
-    target.setServer(url.host().toStdString());
+    target.setHost(url.host().toStdString());
     target.setPort(url.port());
     QStringList pathSegs = url.path().split("/", QString::SkipEmptyParts);
     qDebug() << pathSegs;

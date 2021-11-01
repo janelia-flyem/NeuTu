@@ -201,6 +201,30 @@ void ZDvidNode::clear()
   */
 }
 
+void ZDvidNode::setServer(const std::string &server)
+{
+  clear();
+
+  std::regex re("(([^\\/]*)://)?([^/:\\s]+)(:([-]?\\d+))?.*");
+  std::smatch sm;
+  std::regex_match(server, sm, re);
+
+#ifdef _DEBUG_0
+  for (size_t i = 0; i < sm.size(); ++i) {
+    std::cout << sm[i] << " * ";
+  }
+  std::cout << std::endl;
+#endif
+
+  if (sm.size() == 6) {
+    m_scheme = sm[2].str();
+    m_host = sm[3].str();
+    if (!sm[5].str().empty()) {
+      m_port = std::atoi(sm[5].str().c_str());
+    }
+  }
+}
+
 std::string ZDvidNode::getHostWithScheme() const
 {
   if (m_scheme.empty()) {
