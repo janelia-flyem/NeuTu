@@ -497,14 +497,16 @@ bool ZString::endsWith(const string &str, ECaseSensitivity cs) const
   return String_Ends_With(str1.c_str(), str2.c_str());
 }
 
-void ZString::toLower()
+ZString &ZString::toLower()
 {
   std::transform(begin(), end(), begin(), ::tolower);
+  return *this;
 }
 
-void ZString::toUpper()
+ZString& ZString::toUpper()
 {
   std::transform(begin(), end(), begin(), ::toupper);
+  return *this;
 }
 
 std::string ZString::lower() const

@@ -219,14 +219,28 @@ std::set<uint64_t> get_body_set(
       auto bodyList = ZJsonParser::integerArray(config["bodyList"]);
       bodySet.insert(bodyList.begin(), bodyList.end());
     } else {
-      std::string bodyFile = ZJsonObjectParser::GetValue(config, "bodyList", "");
+      ZJsonObject bodyListConfig = config;
+      std::string bodyFile;
+      if (ZJsonParser::IsObject(config["bodyList"])) {
+        bodyListConfig = ZJsonObject(config.value("bodyList"));
+        bodyFile = ZJsonObjectParser::GetValue(bodyListConfig, "source", "");
+      } else {
+        bodyFile = ZJsonObjectParser::GetValue(config, "bodyList", "");
+      }
       if (!bodyFile.empty()) {
         std::string sourcePath = ZJsonObjectParser::GetValue(config, "_source", "");
         if (!sourcePath.empty()) {
           bodyFile = neutu::Absolute(bodyFile, neutu::ParentPath(sourcePath));
         }
         std::cout << "Getting body list from " << bodyFile << "..." << std::endl;
-        auto bodyList = neutu::ImportBodies(bodyFile);
+        std::vector<uint64_t> bodyList;
+        if (ZString(bodyFile).toLower().endsWith(".csv")) {
+          int column = ZJsonObjectParser::GetValue(bodyListConfig, "column", int64_t(0));
+          bool hasHead = ZJsonObjectParser::GetValue(bodyListConfig, "hasHead", false);
+          bodyList = neutu::ImportBodiesFromCsv(bodyFile, column, hasHead);
+        } else {
+          bodyList = neutu::ImportBodies(bodyFile);
+        }
         bodySet.insert(bodyList.begin(), bodyList.end());
       }
     }

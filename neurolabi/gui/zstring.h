@@ -97,8 +97,8 @@ public:
   void trim();
   ZString trimmed() const;
 
-  void toLower();
-  void toUpper();
+  ZString& toLower();
+  ZString &toUpper();
 
   std::string lower() const;
   std::string upper() const;
