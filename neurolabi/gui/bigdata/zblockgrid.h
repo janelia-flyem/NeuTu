@@ -103,12 +103,14 @@ public:
   bool containsBlock(int i, int j, int k) const;
   bool containsBlock(const ZIntPoint &index) const;
 
-  void forEachIntersectedBlock(
+  int forEachIntersectedBlock(
       const ZAffineRect &plane, std::function<void(int i, int j, int k)> f);
   /*!
    * \brief A faster but approximate way of iterating through intersected blocks.
+   *
+   * It returns the number of blocks that are iterated.
    */
-  void forEachIntersectedBlockApprox(
+  int forEachIntersectedBlockApprox(
       const ZAffineRect &plane, std::function<void(int i, int j, int k)> f,
       double normalRangeFactor);
 
@@ -118,6 +120,9 @@ protected:
   ZIntPoint m_size; //Grid size
   ZIntPoint m_minPoint;
   ZIntPoint m_blockSize;
+
+  int m_maxNumIntersected = 800;
+  uint64_t m_maxIntersectLatency = 1000; // in ms
 };
 
 #endif // ZBLOCKGRID_H

@@ -1,8 +1,12 @@
 #ifndef FLYEMPOINTANNOTATIONENSEMBLE_H
 #define FLYEMPOINTANNOTATIONENSEMBLE_H
 
+#include <QElapsedTimer>
+#include <neulib/core/stringbuilder.h>
+
 #include "geometry/zaffinerect.h"
 #include "data3d/displayconfig.h"
+#include "logging/utilities.h"
 #include "zstackobject.h"
 #include "zselector.h"
 #include "bigdata/zintpointannotationblockgrid.hpp"
@@ -96,7 +100,10 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
 {
   bool painted = false;
   ZAffineRect rect;
-  m_blockGrid->forEachIntersectedBlockApprox(
+  QElapsedTimer timer;
+  timer.start();
+
+  int count = m_blockGrid->forEachIntersectedBlockApprox(
         config.getCutRect(
           painter->device()->width(), painter->device()->height(),
           neutu::data3d::ESpace::CANVAS), [&](int i, int j, int k) {
@@ -108,6 +115,11 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
       }
     });
   }, 1.5);
+
+  neutu::LogProfileInfo(
+        timer.elapsed(),
+        neulib::StringBuilder("Display point annotation: ").
+        append(count).append(" blocks"));
 
   bool selectedPainted = display_selected(painter, config);
   painted = painted || selectedPainted;

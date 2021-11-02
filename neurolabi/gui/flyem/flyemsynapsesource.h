@@ -8,6 +8,8 @@ class FlyEmSynapseSource : public ZIntPointAnnotationSource<ZDvidSynapse>
 {
 public:
   FlyEmSynapseSource();
+
+  ZIntPoint getBlockSize() const override;
 };
 
 #endif // FLYEMSYNAPSESOURCE_H

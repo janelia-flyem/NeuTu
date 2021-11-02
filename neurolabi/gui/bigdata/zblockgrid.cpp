@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <unordered_map>
+#include <chrono>
 
 #include "geometry/zgeometry.h"
 #include "geometry/zaffinerect.h"
@@ -149,11 +150,11 @@ void ZBlockGrid::setGridByRange(const ZIntCuboid &box)
         (boxSize.getZ() % m_blockSize.getZ()) > 0);
 }
 
-void ZBlockGrid::forEachIntersectedBlock(
+int ZBlockGrid::forEachIntersectedBlock(
     const ZAffineRect &plane, std::function<void(int i, int j, int k)> f)
 {
   if (!isValid()) {
-    return;
+    return 0;
   }
 
   auto _getKey = [](int x, int y, int z) {
@@ -168,11 +169,23 @@ void ZBlockGrid::forEachIntersectedBlock(
   std::string key = _getKey(seedBlock.getX(), seedBlock.getY(), seedBlock.getZ());
   checked[key] = true;
 
+  int count = 0;
+  auto beginTime = std::chrono::steady_clock::now();
   while (!blockQueue.empty()) {
     ZIntPoint block = blockQueue.front();
     if (zgeom::Intersects(plane, getBlockBox(block))) {
       if (containsBlock(block)) {
         f(block.getX(), block.getY(), block.getZ());
+        auto currentTime = std::chrono::steady_clock::now();
+        auto latency = std::chrono::duration_cast<std::chrono::milliseconds>(
+              currentTime - beginTime).count();
+        if ((m_maxIntersectLatency > 0) &&
+            (uint64_t(latency) > m_maxIntersectLatency)) {
+          break;
+        }
+      }
+      if ((m_maxNumIntersected > 0) && (count > m_maxNumIntersected)) {
+        break;
       }
       zgeom::raster::ForEachNeighbor<3>(
             block.getX(), block.getY(), block.getZ(), [&](int x, int y, int z) {
@@ -192,15 +205,18 @@ void ZBlockGrid::forEachIntersectedBlock(
     }
 
     blockQueue.pop();
+    ++count;
   }
+
+  return count;
 }
 
-void ZBlockGrid::forEachIntersectedBlockApprox(
+int ZBlockGrid::forEachIntersectedBlockApprox(
     const ZAffineRect &plane, std::function<void(int i, int j, int k)> f,
     double normalRangeFactor)
 {
   if (!isValid()) {
-    return;
+    return 0;
   }
 
   auto _getKey = [](int x, int y, int z) {
@@ -224,41 +240,51 @@ void ZBlockGrid::forEachIntersectedBlockApprox(
         v1Range, v2Range, normalRange);
 
   normalRange *= normalRangeFactor;
-  const int maxNumIntersected = 800;
   int count = 0;
-
+  auto beginTime = std::chrono::steady_clock::now();
   while (!blockQueue.empty()) {
     ZIntPoint block = blockQueue.front();
 //    if (zgeom::Intersects(plane, getBlockBox(block))) {
-      if (containsBlock(block)) {
-        f(block.getX(), block.getY(), block.getZ());
+    if (containsBlock(block)) {
+      f(block.getX(), block.getY(), block.getZ());
+      auto currentTime = std::chrono::steady_clock::now();
+      auto latency = std::chrono::duration_cast<std::chrono::milliseconds>(
+            currentTime - beginTime).count();
+      if ((m_maxIntersectLatency > 0) &&
+          (uint64_t(latency) > m_maxIntersectLatency)) {
+        break;
       }
-      zgeom::raster::ForEachNeighbor<3>(
-            block.getX(), block.getY(), block.getZ(), [&](int x, int y, int z) {
-        std::string key = _getKey(x, y, z);
-        if (!checked[key]) {
-          if (containsBlock(x, y, z)) {
-            ZPoint minCorner = getBlockPosition(ZIntPoint(x, y, z)).toPoint();
-            ZCuboid box(minCorner, minCorner + m_blockSize.toPoint());
-            if (zgeom::IntersectsApprox(
-                  plane, box, normalRange, v1Range, v2Range) &&
-                count < maxNumIntersected) {
-              ++count;
-              blockQueue.push(ZIntPoint(x, y, z));
+    }
+    if ((m_maxNumIntersected > 0) && (count > m_maxNumIntersected)) {
+      break;
+    }
+    zgeom::raster::ForEachNeighbor<3>(
+          block.getX(), block.getY(), block.getZ(), [&](int x, int y, int z) {
+      std::string key = _getKey(x, y, z);
+      if (!checked[key]) {
+        if (containsBlock(x, y, z)) {
+          ZPoint minCorner = getBlockPosition(ZIntPoint(x, y, z)).toPoint();
+          ZCuboid box(minCorner, minCorner + m_blockSize.toPoint());
+          if (zgeom::IntersectsApprox(
+                plane, box, normalRange, v1Range, v2Range)) {
+            blockQueue.push(ZIntPoint(x, y, z));
 #ifdef _DEBUG_0
-              std::cout << "block: " << getBlockBox(ZIntPoint(x, y, z)) << std::endl;
+            std::cout << "block: " << getBlockBox(ZIntPoint(x, y, z)) << std::endl;
 #endif
-            }
           }
-          checked[key] = true;
         }
-      });
+        checked[key] = true;
+      }
+    });
 //    }
 #ifdef _DEBUG_0
           std::cout << "block queue " << blockQueue.size() << std::endl;
 #endif
     blockQueue.pop();
+    ++count;
   }
+
+  return count;
 }
 
 /**********************ZDvidBlockGrid::Location**********************/

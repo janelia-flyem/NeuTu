@@ -11,8 +11,10 @@
 
 class FlyEmTodoSource : public ZIntPointAnnotationSource<ZFlyEmToDoItem>
 {
-//public:
-//  FlyEmTodoSource();
+public:
+  FlyEmTodoSource();
+
+  ZIntPoint getBlockSize() const override;
 
 //  virtual std::vector<ZFlyEmToDoItem> getData(const ZIntCuboid &box) const = 0;
 //  virtual ZIntCuboid getRange() const = 0;
