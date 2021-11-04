@@ -103,17 +103,44 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
   QElapsedTimer timer;
   timer.start();
 
+  std::function<void(const T&)> displayFunc = [&](const T &item) {
+    if (!item.isSelected()) { // Selected items are painted separately
+      if (item.display(painter, config)) {
+        painted = true;
+      }
+    }
+  };
+
+  auto selectedPos = getSelectedPos();
+  if (hasVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT)) {
+    displayFunc = [&](const T &item) {
+      if (!item.isSelected()) { // Selected items are painted separately
+        if (item.isPrimaryPartner()) {
+          if (item.display(painter, config)) {
+            painted = true;
+          }
+        } else {
+          if (item.hasPartnerIn(selectedPos)) {
+            if (item.display(painter, config)) {
+              painted = true;
+            }
+          } else {
+            if (item.display(
+                  painter, neutu::data3d::DisplayConfigBuilder(config).withStyle(
+                    neutu::data3d::EDisplayStyle::SKELETON))) {
+              painted = true;
+            }
+          }
+        }
+      }
+    };
+  }
+
   int count = m_blockGrid->forEachIntersectedBlockApprox(
         config.getCutRect(
           painter->device()->width(), painter->device()->height(),
           neutu::data3d::ESpace::CANVAS), [&](int i, int j, int k) {
-    m_blockGrid->forEachItemInChunk(i, j, k, [&](const T &item) {
-      if (!item.isSelected()) { // Selected items are painted separately
-        if (item.display(painter, config)) {
-          painted = true;
-        }
-      }
-    });
+    m_blockGrid->forEachItemInChunk(i, j, k, displayFunc);
   }, 1.5);
 
   neutu::LogProfileInfo(

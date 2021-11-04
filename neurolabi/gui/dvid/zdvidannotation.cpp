@@ -470,6 +470,22 @@ void ZDvidAnnotation::setKind(const std::string &kind)
   }
 }
 
+bool ZDvidAnnotation::isPrimaryPartner() const
+{
+  return getKind() != EKind::KIND_POST_SYN;
+}
+
+bool ZDvidAnnotation::hasPartnerIn(const std::set<ZIntPoint> &ptSet) const
+{
+  for (const ZIntPoint pt : m_partnerHint) {
+    if (ptSet.count(pt) > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void ZDvidAnnotation::clearPartner()
 {
   m_partnerHint.clear();

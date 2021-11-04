@@ -75,8 +75,8 @@ QMenu* ZFlyEmProofDocMenuFactory::makeSynapseContextMenu(
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_MOVE));
   menu->addAction(presenter->getAction(ZActionFactory::ACTION_SYNAPSE_LINK));
 
-  menu->addSeparator();
-  menu->addAction(presenter->getAction(ZActionFactory::ACTION_SHOW_ORTHO));
+//  menu->addSeparator();
+//  menu->addAction(presenter->getAction(ZActionFactory::ACTION_SHOW_ORTHO));
 
   return menu;
 }
@@ -278,11 +278,11 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
     if (doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD) {
       config.appendSeparator();
-      config.append(ZActionFactory::ACTION_SHOW_ORTHO);
+//      config.append(ZActionFactory::ACTION_SHOW_ORTHO);
 
-      if (NeutubeConfig::IsAdvancedMode()) {
-        config.append(ZActionFactory::ACTION_SHOW_ORTHO_BIG);
-      }
+//      if (NeutubeConfig::IsAdvancedMode()) {
+//        config.append(ZActionFactory::ACTION_SHOW_ORTHO_BIG);
+//      }
 
       if (ZFlyEmProofDocUtil::HasSupervoxel(doc)) {
         config.append(ZActionFactory::ACTION_TOGGLE_SUPERVOXEL_VIEW);

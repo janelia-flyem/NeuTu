@@ -605,6 +605,7 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_SAVE_STACK:
       connect(action, SIGNAL(triggered()), this, SIGNAL(savingStack()));
       break;
+      /*
     case ZActionFactory::ACTION_SHOW_ORTHO:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyOrthoViewTriggered()));
@@ -613,6 +614,7 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyOrthoViewBigTriggered()));
       break;
+      */
     case ZActionFactory::ACTION_COPY_POSITION:
       connect(action, SIGNAL(triggered()), this, SLOT(copyCurrentPosition()));
       break;
@@ -3572,6 +3574,7 @@ void ZStackPresenter::notifyActivateMergeLinkTriggered()
   emit activateMergeLinkTriggered();
 }
 
+/*
 void ZStackPresenter::notifyOrthoViewTriggered()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
@@ -3593,6 +3596,7 @@ void ZStackPresenter::notifyOrthoViewBigTriggered()
 
   emit orthoViewBigTriggered(pt.x(), pt.y(), pt.z());
 }
+*/
 
 void ZStackPresenter::copyCurrentPosition()
 {

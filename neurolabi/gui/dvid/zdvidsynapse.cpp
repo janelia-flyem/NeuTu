@@ -569,6 +569,9 @@ bool ZDvidSynapse::display(QPainter *painter, const DisplayConfig &config) const
     pen.setCosmetic(m_usingCosmeticPen);
     pen.setWidthF(getPenWidth());
     painter->setPen(pen);
+    if (config.getStyle() == neutu::data3d::EDisplayStyle::SKELETON) {
+      neutu::ScalePenAlpha(painter, 0.3);
+    }
 
     const double depthScale = 2.0;
     const double fadingFactor = 1.0;

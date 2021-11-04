@@ -93,10 +93,11 @@ class DisplayConfigBuilder {
 
 public:
   DisplayConfigBuilder();
+  DisplayConfigBuilder(const DisplayConfig &start);
 
   operator DisplayConfig();
 //  void z(int z);
-  DisplayConfigBuilder& style(EDisplayStyle style);
+  DisplayConfigBuilder& withStyle(EDisplayStyle style);
   DisplayConfigBuilder& sliceMode(EDisplaySliceMode mode);
 //  void axis(neutu::EAxis axis);
   DisplayConfigBuilder& cutPlane(neutu::EAxis axis, double cutDepth);

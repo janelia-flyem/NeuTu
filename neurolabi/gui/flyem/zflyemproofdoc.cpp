@@ -2562,6 +2562,7 @@ void ZFlyEmProofDoc::initSynapseEnsemble()
 {
   FlyEmSynapseEnsemble *se = new FlyEmSynapseEnsemble;
   se->setSource(ZStackObjectSourceFactory::MakeSynapseEnsembleSource());
+  se->addVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
   addObject(se);
 }
 
@@ -3623,6 +3624,17 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
 
 void ZFlyEmProofDoc::highlightPsd(bool on)
 {
+  FlyEmSynapseEnsemble *se = getSynapseEnsemble();
+  if (se) {
+    if (on) {
+      se->addVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
+    } else {
+      se->removeVisualEffect(neutu::display::VE_GROUP_HIGHLIGHT);
+    }
+    processObjectModified(se);
+  }
+
+  /*
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
   QList<ZDvidSynapseEnsemble*> synapseList = getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::const_iterator iter = synapseList.begin();
@@ -3638,6 +3650,7 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
   endObjectModifiedMode();
 
   processObjectModified();
+  */
 }
 
 ZDvidSynapse ZFlyEmProofDoc::getSingleSelectedSynapse() const

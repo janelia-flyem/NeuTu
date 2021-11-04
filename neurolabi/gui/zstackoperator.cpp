@@ -628,6 +628,21 @@ std::ostream& operator<< (std::ostream &stream, const ZStackOperator &op)
   case ZStackOperator::OP_EXPLORE_LOCAL:
     stream << "EXPLORE_LOCAL";
     break;
+  case ZStackOperator::OP_VIEW_DISABLE_SCROLL:
+    stream << "VIEW_DISABLE_SCROLL";
+    break;
+  case ZStackOperator::OP_VIEW_ENABLE_SCROLL:
+    stream << "VIEW_ENABLE_SCROLL";
+    break;
+  case ZStackOperator::OP_VIEW_PAUSE_SCROLL:
+    stream << "VIEW_PAUSE_SCROLL";
+    break;
+  case ZStackOperator::OP_SWC_DELETE_SELECTED_HOST:
+    stream << "SWC_DELETE_SELECTED_HOST";
+    break;
+  case ZStackOperator::OP_BOOKMARK_SELECT_BODY_SINGLE:
+    stream << "BOOKMARK_SELECT_BODY_SINGLE";
+    break;
   }
 
   stream << "; ";

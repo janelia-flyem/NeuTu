@@ -87,7 +87,7 @@ public:
   virtual ZTask* getFutureTask(ZStackDoc *doc) const;
   virtual ZTask* getFutureTask(ZStackDoc *doc, int viewId) const;
 
-  virtual void trackView(const ZStackViewParam &param) {};
+  virtual void trackView(const ZStackViewParam &/*param*/) {};
 
   inline ZStackObject* getData() const {
     return m_data;

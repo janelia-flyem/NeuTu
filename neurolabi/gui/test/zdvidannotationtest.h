@@ -46,6 +46,26 @@ TEST(ZDvidAnnotation, Property)
   ASSERT_FALSE(annot.hasProperty(ZDvidAnnotation::KEY_COMMENT));
 }
 
+TEST(ZDvidAnnotation, Partner)
+{
+  ZDvidAnnotation annot;
+  annot.setPosition(1, 2, 3);
+
+  annot.setKind(ZDvidAnnotation::EKind::KIND_POST_SYN);
+  ASSERT_FALSE(annot.isPrimaryPartner());
+
+  annot.setKind(ZDvidAnnotation::EKind::KIND_PRE_SYN);
+  ASSERT_TRUE(annot.isPrimaryPartner());
+  ASSERT_FALSE(annot.hasPartnerIn({ZIntPoint(1, 2, 3), ZIntPoint(4, 5, 6)}));
+  annot.addPartner(4, 5, 6);
+  ASSERT_TRUE(annot.hasPartnerIn({ZIntPoint(1, 2, 3), ZIntPoint(4, 5, 6)}));
+
+  annot.addPartner(7, 8, 9);
+  ASSERT_TRUE(annot.hasPartnerIn({ZIntPoint(1, 2, 3), ZIntPoint(7, 8, 9)}));
+  ASSERT_TRUE(annot.hasPartnerIn({ZIntPoint(1, 2, 3), ZIntPoint(4, 5, 6)}));
+  ASSERT_FALSE(annot.hasPartnerIn({ZIntPoint(1, 2, 3), ZIntPoint(7, 5, 6)}));
+}
+
 TEST(ZDvidAnnotation, Json)
 {
   ASSERT_EQ("PreSynTo", ZDvidAnnotation::GetMatchingRelation("PostSynTo"));

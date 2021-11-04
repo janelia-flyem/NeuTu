@@ -422,8 +422,8 @@ public slots:
   void notifyBodyForceCheckinTriggered();
   void notifyBodyCheckoutTriggered();
 
-  void notifyOrthoViewTriggered();
-  void notifyOrthoViewBigTriggered();
+//  void notifyOrthoViewTriggered();
+//  void notifyOrthoViewBigTriggered();
 
   void slotTest();
 

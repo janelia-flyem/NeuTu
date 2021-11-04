@@ -76,6 +76,9 @@ public:
 
   void setKind(const std::string &kind);
 
+  bool isPrimaryPartner() const;
+  bool hasPartnerIn(const std::set<ZIntPoint> &ptSet) const;
+
   uint64_t getBodyId() const {
     return m_bodyId;
   }

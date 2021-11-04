@@ -224,13 +224,18 @@ neutu::data3d::DisplayConfigBuilder::DisplayConfigBuilder()
 {
 }
 
+neutu::data3d::DisplayConfigBuilder::DisplayConfigBuilder(
+    const DisplayConfig &start) : m_result(start)
+{
+}
+
 neutu::data3d::DisplayConfigBuilder::operator DisplayConfig()
 {
   return m_result;
 }
 
 neutu::data3d::DisplayConfigBuilder&
-neutu::data3d::DisplayConfigBuilder::style(EDisplayStyle style)
+neutu::data3d::DisplayConfigBuilder::withStyle(EDisplayStyle style)
 {
   m_result.setStyle(style);
   return *this;

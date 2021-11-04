@@ -287,7 +287,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
     //drawable->setVisible(true);
     drawable->display(
           painter,
-          neutu::data3d::DisplayConfigBuilder().style(
+          neutu::data3d::DisplayConfigBuilder().withStyle(
             neutu::data3d::EDisplayStyle::NORMAL).cutPlane(neutu::EAxis::Z, 0));
 
 //    drawable->display(painter, 0, ZStackObject::EDisplayStyle::NORMAL,
