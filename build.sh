@@ -179,8 +179,11 @@ echo $qmake_args > source.qmake
 echo $qmake_args | xargs $QMAKE
 echo "qmake done"
 
-
-THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
+if [[ -z "$THREAD_COUNT" ]]
+then
+  THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
+fi
+echo "Using ${THREAD_COUNT} threads for make"
 make -j${THREAD_COUNT}
 
 #bin_dir=.

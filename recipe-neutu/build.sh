@@ -76,7 +76,7 @@ then
   cd ../../
 fi
 
-if [ ${NEUTU_TARGET} == 'neutu-di' ] || [ ${NEUTU_TARGET} == 'neu3-di' ]
+if [ "${NEUTU_TARGET}" == 'neutu-di' ] || [ "${NEUTU_TARGET}" == 'neu3-di' ]
 then
   build_flag='-c force_debug_info'
 fi

@@ -9,5 +9,11 @@ fi
 export NEUTU_TARGET=$1
 
 recipe=recipe-neutu
+if [ `uname` = Darwin ]; then
+  if [ -z "$THREAD_COUNT" ]
+  then
+    export THREAD_COUNT=1
+  fi
+fi
 conda build $recipe -c flyem-forge -c conda-forge
  
