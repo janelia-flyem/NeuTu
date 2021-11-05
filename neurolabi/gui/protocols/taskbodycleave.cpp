@@ -681,7 +681,8 @@ void TaskBodyCleave::beforeLoading()
     s_startupTimer.start();
   }
 
-  KLog::SetOperationName("body_cleaving");
+  // Use default topic instead. Starting a new topic can make messages over-fragmented.
+//  KLog::SetOperationName("body_cleaving");
 
   checkOutCurrent();
   if (!m_checkedOut) {

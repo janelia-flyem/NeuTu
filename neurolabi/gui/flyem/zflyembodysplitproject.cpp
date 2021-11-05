@@ -68,6 +68,7 @@
 #include "flyemdatareader.h"
 #include "zflyemmisc.h"
 #include "flyembodyannotationmanager.h"
+#include "flyem/exception/utilities.h"
 
 const char* ZFlyEmBodySplitProject::THREAD_SPLIT_VIS3D = "updateSplitQuickFunc";
 
@@ -1895,10 +1896,15 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
 
         emitMessage(msg);
       } else {
-        emitError("Warning: Something wrong happened during uploading! "
-                  "Please contact the developer as soon as possible.");
+        emit messageGenerated(flyem::SplitErrorMessageBuilder().
+                    forBody(wholeBody->getLabel(), neutu::EBodyLabelType::BODY).
+                    to(ZWidgetMessage::ETarget::TARGET_DIALOG));
+        getProgressSignal()->endProgress();
+        return;
+//        emitError(
+//              "Warning: Something wrong happened during split uploading! "
+//              "Please stop working on the body and report the issue as soon as possible.");
       }
-
 
       getProgressSignal()->advanceProgress(dp);
       //    emit progressAdvanced(dp);

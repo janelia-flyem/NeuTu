@@ -857,6 +857,44 @@ std::string ZDvidWriter::createBranch()
 #if defined(_ENABLE_LIBDVIDCPP_)
 static libdvid::BinaryDataPtr makeRequest(
     const std::string &url, const std::string &method,
+    const dvid::RequestParam &param, int &statusCode)
+{
+  libdvid::ConnectionMethod connMethod = libdvid::GET;
+  if (method == "HEAD") {
+    connMethod = libdvid::HEAD;
+  } else if (method == "POST") {
+    connMethod = libdvid::POST;
+  } else if (method == "PUT") {
+    connMethod = libdvid::PUT;
+  } else if (method == "DELETE") {
+    connMethod = libdvid::DELETE;
+  }
+
+  QUrl qurl(url.c_str());
+  ZString address = qurl.host();
+  if (qurl.port() >= 0) {
+    address += ":";
+    address.appendNumber(qurl.port());
+  }
+  libdvid::DVIDConnection connection(
+        address, GET_FLYEM_CONFIG.getUserName(),
+        NeutubeConfig::GetSoftwareName());
+
+  libdvid::BinaryDataPtr results = libdvid::BinaryData::create_binary_data();
+  std::string error_msg;
+
+  auto payload =
+      libdvid::BinaryData::create_binary_data(param.payload, param.length);
+  statusCode = connection.make_request(
+        "/.." + qurl.path().toStdString(), connMethod, payload, results,
+        error_msg, param.isJson ? libdvid::JSON : libdvid::BINARY,
+        param.timeout);
+
+  return results;
+}
+
+static libdvid::BinaryDataPtr makeRequest(
+    const std::string &url, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode)
 {
@@ -906,6 +944,81 @@ static libdvid::BinaryDataPtr makeRequest(
   return results;
 }
 #endif
+
+std::string ZDvidWriter::request(
+    const std::string &url, const std::string &method, const RequestParam &param)
+{
+  if (url.empty()) {
+    KWARN << "Requesting an empty url: " + method;
+    return "";
+  }
+
+  neutu::LogUrlIO(method.c_str(), url.c_str());
+
+//  LKINFO << "HTTP " + method + ": " + url;
+
+  m_statusCode = 0;
+  m_statusErrorMessage.clear();
+  std::string response;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  try {
+    libdvid::BinaryDataPtr libdvidPayload;
+    if (param.payload != NULL && param.length > 0) {
+      libdvidPayload =
+          libdvid::BinaryData::create_binary_data(param.payload, param.length);
+    }
+
+    libdvid::ConnectionMethod connMethod = libdvid::POST;
+    if (method == "POST") {
+      connMethod = libdvid::POST;
+    } else if (method == "PUT") {
+      connMethod = libdvid::PUT;
+    } else if (method == "DELETE") {
+      connMethod = libdvid::DELETE;
+    }
+
+    libdvid::BinaryDataPtr data;
+    bool requested = false;
+    if (m_service != NULL) {
+      std::string endPoint = ZDvidUrl::GetPath(url);
+
+      if (!endPoint.empty()) {
+        //    std::cout << libdvidPayload->get_data().size() << std::endl;
+        requested = true;
+        data = m_service->custom_request(
+              endPoint, libdvidPayload, connMethod, false, 1, param.timeout);
+
+        m_statusCode = 200;
+      }
+    }
+
+    if (!requested) {
+      /*
+      libdvid::ConnectionType type = libdvid::BINARY;
+      if (param.isJson) {
+        type = libdvid::JSON;
+      }
+      */
+      data = makeRequest(url, method, param, m_statusCode);
+    }
+    response = data->get_data();
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    LKWARN << QString("HTTP %1 exception (%2): %3").
+             arg(method.c_str()).arg(e.getStatus()).arg(e.what());
+    m_statusCode = e.getStatus();
+    m_statusErrorMessage = e.what();
+  }
+#endif
+
+#ifdef _DEBUG_
+  if (!response.empty()) {
+    std::cout << "Post response: " << response << std::endl;
+  }
+#endif
+
+  return response;
+}
 
 std::string ZDvidWriter::request(
     const std::string &url, const std::string &method, const char *payload,
@@ -1034,6 +1147,11 @@ std::string ZDvidWriter::post(
   }
 
   return post(url, payload.c_str(), payload.length(), isJson);
+}
+
+std::string ZDvidWriter::post(const std::string &url, const RequestParam &param)
+{
+   return request(url, "POST", param);
 }
 
 std::string ZDvidWriter::post(
@@ -1363,7 +1481,12 @@ std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
         dataName, oldLabel);
 
   QByteArray payload = obj.toDvidPayload();
-  ZString response = post(ZDvidUrl::AppendSourceQuery(url), payload, false);
+  RequestParam param;
+  param.payload = payload.data();
+  param.length = payload.length();
+  param.isJson = false;
+  param.timeout = 600;
+  ZString response = post(ZDvidUrl::AppendSourceQuery(url), param);
 
   uint64_t newBodyId = 0;
   uint64_t remainderId = oldLabel;
@@ -1403,11 +1526,16 @@ uint64_t ZDvidWriter::writeSplit(
   }
 
   QByteArray payload = obj.toDvidPayload();
-  ZString response = post(ZDvidUrl::AppendSourceQuery(url), payload, false);
+  RequestParam param;
+  param.payload = payload.data();
+  param.length = payload.length();
+  param.isJson = false;
+  param.timeout = 600;
+  ZString response = post(ZDvidUrl::AppendSourceQuery(url), param);
 
   if (!response.empty()) {
 #ifdef _DEBUG_
-    std::cout << response << std::endl;
+    std::cout << "Write split: " << response << std::endl;
 #endif
     ZJsonObject obj;
     obj.decodeString(response.c_str());
@@ -1618,12 +1746,15 @@ uint64_t ZDvidWriter::writePartition(
       bsr.subtractSliently(bBsc);
 #endif
 
+#ifdef _DEBUG_
       std::cout << "Coarse processing time: " << timer.elapsed() << std::endl;
-
+#endif
       //Upload remaining part
       if (!bsr.isEmpty()) {
         newBodyId = writeSplit(bsr, oldLabel, 0, newBodyId);
+#ifdef _DEBUG_
         std::cout << "Fine time: " << timer.elapsed() << std::endl;
+#endif
       }
     } else {
       newBodyId = writeSplit(bs, oldLabel, 0);

@@ -683,8 +683,7 @@ bool ZStackWatershedContainer::isEmpty() const
 void ZStackWatershedContainer::logProfile(
     int64_t duration, const std::string &info)
 {
-  m_profileLogger(
-        duration, getName().empty() ? info : (info + " (" + getName() + ")"));
+  m_profileLogger(duration, getName(), info);
 }
 
 void ZStackWatershedContainer::refineBorder()
@@ -794,10 +793,10 @@ void ZStackWatershedContainer::run()
 
   ZStack *sourceStack = getSourceStack();
 
-  QElapsedTimer timer;
-  timer.start();
-
   if (sourceStack) {
+    QElapsedTimer timer;
+    timer.start();
+
     //Todo: unified processing for dense and sparse stacks
     if((sourceStack != nullptr) && m_scale > 1){//for normal stack
       ZStackMultiScaleWatershed watershed;
@@ -810,7 +809,7 @@ void ZStackWatershedContainer::run()
       Stack *source = getRawSourceStack(sourceStack);
       updateSeedMask();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
       if (!getSourceStack()->getDsIntv().isZero()) {
         exportMask(GET_TEST_DATA_DIR + "/_test.tif");
       }
@@ -829,7 +828,7 @@ void ZStackWatershedContainer::run()
         stack->setDsIntv(getSourceStack()->getDsIntv());
         m_result.push_back(stack);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
         if (!getSourceStack()->getDsIntv().isZero()) {
           stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
         }
@@ -843,17 +842,17 @@ void ZStackWatershedContainer::run()
         refineBorder();
       }
     }
+
+    logProfile(timer.elapsed(), "watershed computation");
   } else {
     ZOUT(LWARN(), 5) << "No source stack found. Abort watershed.";
   }
-
-  logProfile(timer.elapsed(), "watershed computation");
 
 //  std::cout << "Watershed time: " << timer.elapsed() << "ms" << std::endl;
 }
 
 void ZStackWatershedContainer::setProfileLogger(
-    std::function<void (int64_t, const std::string &)> logger)
+    std::function<void (int64_t, const std::string &, const std::string &)> logger)
 {
   m_profileLogger = logger;
 }

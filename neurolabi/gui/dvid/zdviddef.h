@@ -32,6 +32,13 @@ struct SparsevolConfig {
   std::string format;
 };
 
+struct RequestParam {
+  const char *payload = nullptr;
+  int length = 0;
+  bool isJson = false;
+  int timeout = 120; // in s
+};
+
 }
 
 #endif // ZDVIDDEF_H

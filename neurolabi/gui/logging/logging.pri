@@ -1,3 +1,5 @@
+include(tests/tests.pri)
+
 HEADERS += \
     $$PWD/zlog.h \
     $$PWD/neuopentracing.h \

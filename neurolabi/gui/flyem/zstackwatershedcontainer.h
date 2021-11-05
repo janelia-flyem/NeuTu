@@ -220,7 +220,8 @@ public:
   static void ConfigureResult(ZObject3dScanArray *result);
 
 public:
-  void setProfileLogger(std::function<void(int64_t, const std::string&)> logger);
+  void setProfileLogger(
+      std::function<void (int64_t, const std::string &, const std::string &)> logger);
 
 private:
   void init();
@@ -309,9 +310,10 @@ private:
 
   std::string m_name; //Name for logging purpose
 
-  std::function<void(int64_t, const std::string&)> m_profileLogger =
-      [](int64_t duration, const std::string &info) {
-    std::cout << info << ": " << duration << "ms" << std::endl; };
+  std::function<void(int64_t, const std::string &, const std::string&)>
+  m_profileLogger =
+      [](int64_t duration, const std::string &title, const std::string &info) {
+    std::cout << "[" << title << "]" << info << ": " << duration << "ms" << std::endl; };
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H

@@ -167,20 +167,22 @@ void ZWidgetMessage::DisconnectMessagePipe(T1 *source, T2 *target)
                    target, SLOT(processMessage(ZWidgetMessage)));
 }
 
-struct ZWidgetMessageFactory
+struct ZWidgetMessageBuilder
 {
-  ZWidgetMessageFactory(const char *msg);
-  ZWidgetMessageFactory(const ZWidgetMessage &msg);
+  ZWidgetMessageBuilder(neutu::EMessageType type);
+  ZWidgetMessageBuilder(const char *msg);
+  ZWidgetMessageBuilder(const ZWidgetMessage &msg);
   operator ZWidgetMessage() const;
 
-  static ZWidgetMessageFactory Make(const char *msg);
+  static ZWidgetMessageBuilder Build(const char *msg);
 
-  ZWidgetMessageFactory& to(ZWidgetMessage::ETarget target);
-  ZWidgetMessageFactory& without(ZWidgetMessage::FTargets targets);
-  ZWidgetMessageFactory& as(neutu::EMessageType type);
-  ZWidgetMessageFactory& title(const char *title);
+  ZWidgetMessageBuilder& to(ZWidgetMessage::ETarget target);
+  ZWidgetMessageBuilder& without(ZWidgetMessage::FTargets targets);
+  ZWidgetMessageBuilder& as(neutu::EMessageType type);
+  ZWidgetMessageBuilder& title(const char *title);
+  ZWidgetMessageBuilder& description(const char *msg);
 
-private:
+protected:
   ZWidgetMessage m_message;
 };
 

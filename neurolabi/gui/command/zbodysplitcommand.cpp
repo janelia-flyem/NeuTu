@@ -15,23 +15,26 @@
 #include "zstackwriter.h"
 #include "zstring.h"
 #include "logging/zlog.h"
-#include "flyem/zstackwatershedcontainer.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
-#include "flyem/zserviceconsumer.h"
 #include "zglobal.h"
-#include "dvid/zdvidwriter.h"
 #include "zobject3dfactory.h"
 #include "zobject3dscanarray.h"
 #include "zfiletype.h"
 //#include "dvid/zdvidendpoint.h"
-#include "dvid/zdvidpath.h"
 #include "zstackgarbagecollector.h"
-#include "dvid/zdvidsparsestack.h"
-#include "dvid/zdvidurl.h"
 #include "zswctree.h"
 #include "logging/utilities.h"
+
+#include "dvid/zdvidsparsestack.h"
+#include "dvid/zdvidurl.h"
+#include "dvid/zdvidpath.h"
+#include "dvid/zdvidwriter.h"
+
+#include "flyem/zstackwatershedcontainer.h"
+#include "flyem/zserviceconsumer.h"
 #include "flyem/zflyembodymanager.h"
+#include "flyem/exception/splitexception.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
@@ -152,7 +155,10 @@ ZBodySplitCommand::parseSignalPath(
           QElapsedTimer timer;
           timer.start();
           spStack = reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
-          neutu::LogProfileInfo(timer.elapsed(), "read sparse volume");
+          neutu::LogProfileInfo(
+                timer.elapsed(), "read sparsevol",
+                QString("read sparse volume: %1 with blocks").
+                arg(m_bodyId).arg(blockCount).toStdString());
         } else {
           LINFO() << m_bodyId << "ignored.";
         }
@@ -417,6 +423,9 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
     for (ZObject3dScan *obj : *objArray) {
       if (m_labelType == neutu::EBodyLabelType::BODY) {
         uint64_t newBodyId = writer.writeSplit(*obj, currentBodyId, 0);
+        if (newBodyId == 0) {
+          throw flyem::SplitException("Please stop working on the body and report the issue.");
+        }
         newBodyIdArray.push_back(newBodyId);
       } else {
         std::cout << "Splitting supervoxel: " << currentBodyId << std::endl;

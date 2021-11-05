@@ -3911,7 +3911,7 @@ void Z3DWindow::startBodySplit()
     if (getBodyEnv()) {
       if (getBodyEnv()->cleaving()) {
         doc->notify(
-              ZWidgetMessageFactory(
+              ZWidgetMessageBuilder(
                 "WARNING: You will not be able to undo previous cleaving after splitting.").
               as(neutu::EMessageType::WARNING));
       }

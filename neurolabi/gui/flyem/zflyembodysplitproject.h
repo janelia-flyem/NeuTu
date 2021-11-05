@@ -16,6 +16,7 @@
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
 #include "flyem/zflyembodyannotationprotocol.h"
+#include "flyem/exception/splitexception.h"
 
 class ZStackFrame;
 class Z3DWindow;

@@ -125,6 +125,7 @@ const char* DEFAULT_OPERATION_NAME = "app";
 }
 
 const char* ZLog::Category::KEY = "category";
+const char* ZLog::Title::KEY = "title";
 const char* ZLog::Description::KEY = "description";
 const char* ZLog::Duration::KEY = "duration";
 const char* ZLog::Time::KEY = "time";
@@ -149,7 +150,7 @@ KLog::KLog(EDestination dest) : ZLog(dest)
 
 KLog::~KLog()
 {
-  end();
+  _end();
 }
 
 //bool KLog::isStarted() const
@@ -230,11 +231,17 @@ void KLog::endKLog()
   }
 }
 
-void KLog::end()
+// For avoiding calling virtual end() in destructor
+void KLog::_end()
 {
   endKLog();
 
   ZLog::end();
+}
+
+void KLog::end()
+{
+  _end();
 }
 
 bool KLog::hasTag(const std::string &key) const

@@ -1,5 +1,4 @@
 cmake
-ninja=1.7.2*
 libneucore>=0.1.5,<2.0
 libneumath>=0.1.0,<2.0
 qt=5.12.*
@@ -7,7 +6,7 @@ fftw>=3.3.9,<3.4
 jansson=2.7.*
 libpng=1.6.*
 hdf5=1.10.*
-lowtis=0.1.0.post76.*
+lowtis=0.1.0.post77.*
 tbb=2020.2.*
 tbb-devel=2020.2.*
 vtk=9.0.*

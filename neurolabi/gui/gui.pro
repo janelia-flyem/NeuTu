@@ -469,6 +469,23 @@ HEADERS += mainwindow.h \
     dvid/zdvidversiondag.h \
     dvid/zdvidversion.h \
     dvid/zdvidversionnode.h \
+    dvid/zdvidannotationcommand.h \
+    dvid/zflyembookmarkcommand.h \
+    dvid/zdvidannotation.h \
+    dvid/zdvidsynapse.h \
+    dvid/zdvidsynapseensenmble.h \
+    dvid/zdvidpath.h \
+    dvid/zdvidpatchdatafetcher.h \
+    dvid/zdvidpatchdataupdater.h \
+    dvid/zdviddatafetcher.h \
+    dvid/zdviddataupdater.h \
+    dvid/zdvidsynapsecommand.h \
+    dvid/zdvidannotation.hpp \
+    dvid/zdvidgrayslicescrollstrategy.h \
+    dvid/zdvidroi.h \
+    dvid/zdvidgrayscale.h \
+    dvid/zdvidneurontracer.h \
+    dvid/zdvidresultservice.h \
     zwidgetmessage.h \
     zprogresssignal.h \
     zkeyeventstrokemapper.h \
@@ -492,12 +509,7 @@ HEADERS += mainwindow.h \
     zpunctumselector.h \
     zgraphobjsmodel.h \
     zsurfaceobjsmodel.h \
-    dvid/zdvidsynapse.h \
-    dvid/zdvidsynapseensenmble.h \
     zcubearray.h \
-    dvid/zdvidannotationcommand.h \
-    dvid/zflyembookmarkcommand.h \
-    dvid/zdvidannotation.h \
     zroiwidget.h \
     zstackdocselector.h \
     zactionlibrary.h \
@@ -506,26 +518,14 @@ HEADERS += mainwindow.h \
     zapplication.h \
     zdvidutil.h \
     zstackreader.h \
-    dvid/zdvidpath.h \
-    dvid/zdvidpatchdatafetcher.h \
-    dvid/zdvidpatchdataupdater.h \
-    dvid/zdviddatafetcher.h \
-    dvid/zdviddataupdater.h \
-    dvid/zdvidsynapsecommand.h \
-    dvid/zdvidannotation.hpp \
-    dvid/zdvidgrayslicescrollstrategy.h \
     zcubearraymovieactor.h \
-    dvid/zdvidroi.h \
     z3dwindow.h \
     z3dmainwindow.h \
-    dvid/zdvidgrayscale.h \
     zscrollslicestrategy.h \
     zviewproj.h \
-    dvid/zdvidneurontracer.h \
     zorthoviewhelper.h \
     dvid/zdvidstore.h \
     zglobal.h \
-    dvid/zdvidresultservice.h \
     zstackgarbagecollector.h \
     neu3window.h \
     zstackdockeyprocessor.h \

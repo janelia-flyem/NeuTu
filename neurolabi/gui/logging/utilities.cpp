@@ -96,9 +96,11 @@ void LogMessageF(const std::string &str, neutu::EMessageType type)
   LogMessage(msg);
 }
 
-void LogProfileInfo(int64_t duration, const std::string &info)
+void LogProfileInfo(
+    int64_t duration, const std::string &title, const std::string &info)
 {
   KLOG << ZLog::Profile() << ZLog::Duration(duration)
+       << ZLog::Title(title)
        << ZLog::Description(info);
 }
 

@@ -145,6 +145,7 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
 
   neutu::LogProfileInfo(
         timer.elapsed(),
+        "display point annotation",
         neulib::StringBuilder("Display point annotation: ").
         append(count).append(" blocks"));
 

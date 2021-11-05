@@ -1583,7 +1583,7 @@ void Z3DSwcFilter::prepareDataForImmutable()
 void Z3DSwcFilter::handleZeroRadius()
 {
   emit messageGenerated(
-        ZWidgetMessageFactory(
+        ZWidgetMessageBuilder(
           "The rendering mode has been set to 'sphere' automatically "
           "due to one or more zero radius SWC nodes.")
         .as(neutu::EMessageType::WARNING)

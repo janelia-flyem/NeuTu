@@ -75,6 +75,7 @@
 #include "zflyembodysplitter.h"
 #include "flyembodyannotationmanager.h"
 #include "flyembodyannotationgenericdlgbuilder.h"
+#include "flyem/exception/utilities.h"
 
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "dialogs/zflyemtodoannotationdialog.h"
@@ -3868,6 +3869,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
         neutu::LogProfileInfo(
               timer.elapsed(),
+              "mesh generation",
               QString("Mesh generating time for %1 with zoom %2~%3").
               arg(config.getBodyId()).arg(config.getDsLevel()).
               arg(config.getLocalDsLevel()).toStdString());
@@ -4504,6 +4506,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
         notifyWindowMessageUpdated(
               QString("Uploading %1").arg(seg->getLabel()));
         uint64_t newBodyId = 0;
+        uint64_t oldBodyId = remainderId;
         if (m_splitter->getLabelType() == neutu::EBodyLabelType::BODY) {
           QElapsedTimer timer;
           timer.start();
@@ -4520,24 +4523,26 @@ void ZFlyEmBody3dDoc::commitSplitResult()
           remainderId = idPair.first;
           newBodyId = idPair.second;
 
-          notifyWindowMessageUpdated(QString("Updating mesh ..."));
+          if (newBodyId > 0) {
+            notifyWindowMessageUpdated(QString("Updating mesh ..."));
 
-          if (mesh != nullptr) {
-//            FLYEM_ADD_PROFILE_TIME(
-//                  m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId),
-//                  meshUploadingTime);
-            QElapsedTimer timer;
-            timer.start();
-            m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId);
-            meshUploadingTime += timer.elapsed();
-          }
+            if (mesh != nullptr) {
+              //            FLYEM_ADD_PROFILE_TIME(
+              //                  m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId),
+              //                  meshUploadingTime);
+              QElapsedTimer timer;
+              timer.start();
+              m_mainDvidWriter.writeSupervoxelMesh(*mesh, newBodyId);
+              meshUploadingTime += timer.elapsed();
+            }
 
-          if (m_splitter->fromTar()) {
-            getBodyManager().registerBody(parentId, newBodyId);
-            m_helper->releaseObject(neutu3d::ERendererLayer::DECORATION, mesh);
-            ZStackDocAccessor::AddObjectUnique(this, mesh);
+            if (m_splitter->fromTar()) {
+              getBodyManager().registerBody(parentId, newBodyId);
+              m_helper->releaseObject(neutu3d::ERendererLayer::DECORATION, mesh);
+              ZStackDocAccessor::AddObjectUnique(this, mesh);
+            }
+            constructBodyMesh(mesh, newBodyId, m_splitter->fromTar());
           }
-          constructBodyMesh(mesh, newBodyId, m_splitter->fromTar());
 
 //          ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
 //          m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
@@ -4546,6 +4551,17 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 //          emit addingBody(newBodyId);
         }
 //        addEvent(BodyEvent::ACTION_ADD, newBodyId);
+
+        if (newBodyId == 0) {
+//          throw std::runtime_error(
+//                "Something wrong happend in the split. "
+//                         "Please stop working on this body and report this issue.");
+
+          notify(flyem::SplitErrorMessageBuilder().
+                 forBody(oldBodyId, neutu::EBodyLabelType::SUPERVOXEL).
+                 to(ZWidgetMessage::ETarget::TARGET_DIALOG));
+          return;
+        }
 
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
             arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
@@ -4667,6 +4683,7 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   neutu::LogProfileInfo(
         timer.elapsed(),
+        "body split",
         QString("commit split (uploading: %1ms; subtraction: %2ms; "
                 "mesh processing: %3ms; mesh uploading: %4ms.)")
         .arg(uploadingTime).arg(subtractingTime).arg(meshProcessingTime)

@@ -91,6 +91,11 @@ public:
     Diagnostic(const std::string &value) : Tag(KEY, value) {}
   };
 
+  struct Title : public Tag {
+    static const char *KEY;
+    Title(const std::string &value) : Tag(KEY, value) {}
+  };
+
   struct Description : public Tag {
     static const char *KEY;
     Description(const std::string &value) : Tag(KEY, value) {}
@@ -175,6 +180,7 @@ public:
   static void ResetOperationName(); //reset to default
 
 private:
+  void _end();
   void endKLog();
   bool localLogging() const;
 

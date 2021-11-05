@@ -76,10 +76,10 @@ TEST(ZWidgetMessage, target)
   }
 }
 
-TEST(ZWidgetMessageFactory, Basic)
+TEST(ZWidgetMessageBuilder, Basic)
 {
   {
-    ZWidgetMessage msg = ZWidgetMessageFactory("test").
+    ZWidgetMessage msg = ZWidgetMessageBuilder("test").
         title("test_title").
         to(ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA);
     ASSERT_EQ("test_title", msg.getTitle());
@@ -87,7 +87,7 @@ TEST(ZWidgetMessageFactory, Basic)
     ASSERT_TRUE(msg.hasTarget(ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA));
 
     ZWidgetMessage msg2 =
-        ZWidgetMessageFactory(msg).without(ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA);
+        ZWidgetMessageBuilder(msg).without(ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA);
     ASSERT_FALSE(msg2.hasTarget(ZWidgetMessage::ETarget::TARGET_CUSTOM_AREA));
   }
 }

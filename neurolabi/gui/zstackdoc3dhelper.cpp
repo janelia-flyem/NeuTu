@@ -199,7 +199,8 @@ void ZStackDoc3dHelper::updateDecorationData(Z3DView *view)
         QElapsedTimer timer;
         timer.start();
         ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
-        neutu::LogProfileInfo(timer.elapsed(), "extracting mesh decoration");
+        neutu::LogProfileInfo(
+              timer.elapsed(), "mesh generation", "extracting mesh decoration");
 
         if (mesh != NULL) {
           mesh->setLabel(obj->getLabel());
@@ -337,7 +338,7 @@ void ZStackDoc3dHelper::updateCustomCanvas(Z3DView *view)
   updateCustomCanvas(view, doc);
 }
 
-void ZStackDoc3dHelper::updateCustomCanvas(Z3DView *view, ZFlyEmBody3dDoc *doc)
+void ZStackDoc3dHelper::updateCustomCanvas(Z3DView */*view*/, ZFlyEmBody3dDoc *doc)
 {
   if (doc != NULL) {
     /*

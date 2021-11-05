@@ -215,34 +215,40 @@ bool ZWidgetMessage::hasMessage() const
   return !m_message.isEmpty();
 }
 
-ZWidgetMessageFactory::operator ZWidgetMessage() const
+ZWidgetMessageBuilder::ZWidgetMessageBuilder(neutu::EMessageType type)
 {
-  return m_message;
+  m_message.setType(type);
 }
 
-ZWidgetMessageFactory::ZWidgetMessageFactory(const char *msg)
+ZWidgetMessageBuilder::ZWidgetMessageBuilder(const char *msg)
 {
   m_message.setMessage(msg);
 }
 
-ZWidgetMessageFactory::ZWidgetMessageFactory(const ZWidgetMessage &msg)
+ZWidgetMessageBuilder::ZWidgetMessageBuilder(const ZWidgetMessage &msg)
 {
   m_message = msg;
 }
 
-ZWidgetMessageFactory ZWidgetMessageFactory::Make(const char *msg)
+ZWidgetMessageBuilder::operator ZWidgetMessage() const
 {
-  return ZWidgetMessageFactory(msg);
+  return m_message;
 }
 
-ZWidgetMessageFactory& ZWidgetMessageFactory::to(ZWidgetMessage::ETarget target)
+
+ZWidgetMessageBuilder ZWidgetMessageBuilder::Build(const char *msg)
+{
+  return ZWidgetMessageBuilder(msg);
+}
+
+ZWidgetMessageBuilder& ZWidgetMessageBuilder::to(ZWidgetMessage::ETarget target)
 {
   m_message.addTarget(target);
 
   return *this;
 }
 
-ZWidgetMessageFactory& ZWidgetMessageFactory::without(
+ZWidgetMessageBuilder& ZWidgetMessageBuilder::without(
     ZWidgetMessage::FTargets targets)
 {
   m_message.removeTarget(targets);
@@ -250,16 +256,23 @@ ZWidgetMessageFactory& ZWidgetMessageFactory::without(
   return *this;
 }
 
-ZWidgetMessageFactory& ZWidgetMessageFactory::as(neutu::EMessageType type)
+ZWidgetMessageBuilder& ZWidgetMessageBuilder::as(neutu::EMessageType type)
 {
   m_message.setType(type);
 
   return *this;
 }
 
-ZWidgetMessageFactory& ZWidgetMessageFactory::title(const char *title)
+ZWidgetMessageBuilder& ZWidgetMessageBuilder::title(const char *title)
 {
   m_message.setTitle(title);
+
+  return *this;
+}
+
+ZWidgetMessageBuilder& ZWidgetMessageBuilder::description(const char *msg)
+{
+  m_message.setMessage(msg);
 
   return *this;
 }

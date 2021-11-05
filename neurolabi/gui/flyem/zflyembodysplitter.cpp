@@ -233,6 +233,7 @@ ZSparseStack* ZFlyEmBodySplitter::getBodyForSplit()
     spStack = m_reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
     neutu::LogProfileInfo(
           timer.elapsed(),
+          "body split",
           "Load body for split: " + std::to_string(m_bodyId) + " " +
           neutu::ToString(m_labelType));
 

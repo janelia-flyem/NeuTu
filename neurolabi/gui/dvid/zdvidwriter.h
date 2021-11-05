@@ -293,9 +293,12 @@ public:
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:
+  using RequestParam = dvid::RequestParam;
+
   //For the following functions, nothing will be done with an empty string
   //returned if the input url is empty.
   std::string post(const std::string &url);
+  std::string post(const std::string &url, const RequestParam &param);
   std::string post(const std::string &url, const QByteArray &payload, bool isJson);
   std::string post(const std::string &url, const std::string &payload, bool isJson);
   std::string post(const std::string &url, const char *payload, int length,
@@ -310,6 +313,9 @@ public:
 
   std::string request(const std::string &url, const std::string &method,
                       const char *payload, int length, bool isJson);
+  std::string request(
+      const std::string &url, const std::string &method,
+      const RequestParam &param);
 
 private:
   std::string getJsonStringForCurl(const ZJsonValue &obj) const;

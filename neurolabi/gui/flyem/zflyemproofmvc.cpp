@@ -2546,7 +2546,7 @@ void ZFlyEmProofMvc::startMergeProfile(const uint64_t bodyId, int msec)
   ZFlyEmProofMvcController::GoToBody(this, bodyId);
   ZFlyEmProofMvcController::EnableHighlightMode(this);
 
-  ZWidgetMessage msg = ZWidgetMessageFactory("<p><i>Welcome to NeuTu challenge.</i><p>").
+  ZWidgetMessage msg = ZWidgetMessageBuilder("<p><i>Welcome to NeuTu challenge.</i><p>").
       to(ZWidgetMessage::TARGET_DIALOG).as(neutu::EMessageType::INFORMATION);
   msg.appendMessage("<p><font color=\"#007700\">Please trace the selected body "
                     "by clicking until the time is up.</font></p>");
