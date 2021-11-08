@@ -154,11 +154,11 @@ public: //Obsolete functions
     m_showingBodyMask = state;
   }
 
-  void viewPreviousSlice();
-  void viewNextSlice();
+//  void viewPreviousSlice();
+//  void viewNextSlice();
   void viewFullGrayscale();
   void viewFullGrayscale(bool viewing);
-  void updateBodyMask();
+//  void updateBodyMask();
 
   bool isSeedProcessed(uint64_t bodyId) const;
   void setSeedProcessed(uint64_t bodyId);

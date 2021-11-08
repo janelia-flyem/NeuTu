@@ -1117,7 +1117,12 @@ public:
   void addTask(std::function<void()> f);
   void addTask(const QString &name, std::function<void()> f);
 
-  virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
+  enum class ERoiRole {
+    NONE, GENERAL, SPLIT
+  };
+
+  virtual void processRectRoiUpdate(
+      ZRect2d *rect, ERoiRole role, bool appending);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;

@@ -31,12 +31,12 @@ class ZCuboid
 public:
   ZCuboid();
   ZCuboid(double x1, double y1, double z1, double x2, double y2, double z2);
-  ZCuboid(const ZPoint &getMinCorner, const ZPoint &getMaxCorner);
+  ZCuboid(const ZPoint &minCorner, const ZPoint &maxCorner);
   ZCuboid(const ZCuboid &cuboid);
 
   void set(double x1, double y1, double z1, double x2, double y2, double z2);
-  void set(const ZPoint &getMinCorner, const ZPoint &getMaxCorner);
-  void set(const ZIntPoint &getMinCorner, const ZIntPoint &getMaxCorner);
+  void set(const ZPoint &minCorner, const ZPoint &maxCorner);
+  void set(const ZIntPoint &minCorner, const ZIntPoint &maxCorner);
   void set(const ZIntCuboid &cuboid);
   void set(const double *getCorner);
 

@@ -1,5 +1,7 @@
 #include "utilities.h"
 
+#include <iostream>
+
 #include <QTextDocument>
 #include <QPixmap>
 #include <QPainter>
@@ -504,6 +506,26 @@ void neutu::ClearLayout(QLayout *layout)
       if (layout) {
         ClearLayout(layout);
         layout->deleteLater();
+      }
+    }
+  }
+}
+
+void neutu::PrintLayoutInfo(QLayout *layout, int indent)
+{
+  if (layout) {
+    if (indent > 0) {
+      std::cout << std::string(indent, ' ');
+    }
+    std::cout << layout->metaObject()->className() << std::endl;
+    for (int i = 0; i < layout->count(); ++i) {
+      QLayoutItem *item = layout->itemAt(i);
+      if (item->layout()) {
+        PrintLayoutInfo(item->layout(), indent + 2);
+      } else if (item->widget()) {
+        std::cout << std::string(indent + 2, ' ')
+                  << item->widget()->metaObject()->className() << std::endl;
+        PrintLayoutInfo(item->widget()->layout(), indent + 4);
       }
     }
   }

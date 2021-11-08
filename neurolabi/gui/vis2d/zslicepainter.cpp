@@ -8,7 +8,6 @@
 #include "common/utilities.h"
 #include "common/math.h"
 
-//#include "geometry/zcuboid.h"
 #include "geometry/zgeometry.h"
 #include "geometry/zlinesegment.h"
 #include "qt/gui/utilities.h"
@@ -94,7 +93,7 @@ void ZSlice2dPainter::drawCircle(
     QPainter *painter, double cx, double cy, double r) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawCircle(*painter, cx, cy, r, neutu::PixelCentered(true));
+    neutu::DrawCircle(*painter, cx, cy, r, m_pixelCentered);
   };
 
   drawCircleBase(painter, cx, cy, r, drawFunc);
@@ -105,8 +104,7 @@ void ZSlice2dPainter::drawArc(
     double startAngle, double spanAngle) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawArc(*painter, cx, cy, r, startAngle, spanAngle,
-                   neutu::PixelCentered(true));
+    neutu::DrawArc(*painter, cx, cy, r, startAngle, spanAngle, m_pixelCentered);
   };
 
   drawCircleBase(painter, cx, cy, r, drawFunc);
@@ -116,7 +114,7 @@ void ZSlice2dPainter::drawStar(
     QPainter *painter, double cx, double cy, double r) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawStar(*painter, cx, cy, r, neutu::PixelCentered(true));
+    neutu::DrawStar(*painter, cx, cy, r, m_pixelCentered);
   };
 
   drawCircleBase(painter, cx, cy, r, drawFunc);
@@ -128,7 +126,7 @@ void ZSlice2dPainter::drawTriangle(
 {
   auto drawFunc = [&](QPainter *painter) {
     neutu::DrawTriangle(
-          *painter, cx, cy, r, direction, neutu::PixelCentered(true));
+          *painter, cx, cy, r, direction, m_pixelCentered);
   };
 
   drawCircleBase(painter, cx, cy, r, drawFunc);
@@ -138,7 +136,7 @@ void ZSlice2dPainter::drawCross(
     QPainter *painter, double cx, double cy, double r) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawCross(*painter, cx, cy, r, neutu::PixelCentered(true));
+    neutu::DrawCross(*painter, cx, cy, r, m_pixelCentered);
   };
 
   drawCircleBase(painter, cx, cy, r, drawFunc);
@@ -155,7 +153,7 @@ void ZSlice2dPainter::drawLine(
     QPainter *painter, double x0, double y0, double x1, double y1) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawLine(*painter, x0, y0, x1, y1, neutu::PixelCentered(true));
+    neutu::DrawLine(*painter, x0, y0, x1, y1, m_pixelCentered);
   };
 
   auto pred = [&](QPainter *painter) {
@@ -178,7 +176,7 @@ void ZSlice2dPainter::drawPolyline(
     QPainter *painter, const std::vector<QPointF> &points) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawPolyline(*painter, points, neutu::PixelCentered(true));
+    neutu::DrawPolyline(*painter, points, m_pixelCentered);
   };
 
   auto pred = [&](QPainter */*painter*/) {
@@ -192,7 +190,7 @@ void ZSlice2dPainter::drawPolyline(
     QPainter *painter, const std::vector<QPoint> &points) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawPolyline(*painter, points, neutu::PixelCentered(true));
+    neutu::DrawPolyline(*painter, points, m_pixelCentered);
   };
 
   auto pred = [&](QPainter */*painter*/) {
@@ -205,7 +203,7 @@ void ZSlice2dPainter::drawPolyline(
 void ZSlice2dPainter::drawPoint(QPainter *painter, double x, double y) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawPoint(*painter, x, y, neutu::PixelCentered(true));
+    neutu::DrawPoint(*painter, x, y, m_pixelCentered);
   };
 
   auto pred = [&](QPainter *painter) {
@@ -219,7 +217,7 @@ void ZSlice2dPainter::drawPoints(
     QPainter *painter, const std::vector<QPointF> &points) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawPoints(*painter, points, neutu::PixelCentered(true));
+    neutu::DrawPoints(*painter, points, m_pixelCentered);
   };
 
   auto pred = [&](QPainter */*painter*/) {
@@ -233,7 +231,7 @@ void ZSlice2dPainter::drawPoints(
     QPainter *painter, const std::vector<QPoint> &points) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawPoints(*painter, points, neutu::PixelCentered(true));
+    neutu::DrawPoints(*painter, points, m_pixelCentered);
   };
 
   auto pred = [&](QPainter */*painter*/) {
@@ -253,7 +251,7 @@ void ZSlice2dPainter::drawRect(
     QPainter *painter, double x0, double y0, double x1, double y1) const
 {
   auto drawFunc = [&](QPainter *painter) {
-    neutu::DrawRect(*painter, x0, y0, x1, y1, neutu::PixelCentered(true));
+    neutu::DrawRect(*painter, x0, y0, x1, y1, m_pixelCentered);
   };
 
   auto pred = [&](QPainter *painter) {
@@ -261,15 +259,6 @@ void ZSlice2dPainter::drawRect(
   };
 
   draw(painter, drawFunc, pred);
-
-  /*
-  if (painter && intersects(painter, x0, y0, x1, y1)) {
-    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
-    preparePainter(painter);
-    neutu::DrawRect(*painter, x0, y0, x1, y1, neutu::PixelCentered(true));
-    setPaintedHint(true);
-  }
-  */
 }
 
 void ZSlice2dPainter::drawImage(QPainter *painter, const QImage &image)
@@ -299,7 +288,7 @@ void ZSlice2dPainter::drawLines(
 {
   if (!lines.empty()) {
     auto drawFunc = [&](QPainter *painter) {
-      neutu::DrawLines(*painter, lines, neutu::PixelCentered(true));
+      neutu::DrawLines(*painter, lines, m_pixelCentered);
     };
     auto pred = [&](QPainter *painter) {
       for (const QLineF &line : lines) {
@@ -359,6 +348,11 @@ bool ZSlice2dPainter::getPaintedHint() const
 void ZSlice2dPainter::setPaintedHint(bool painted) const
 {
   m_painted = painted;
+}
+
+void ZSlice2dPainter::setPixelCentered(bool on)
+{
+  m_pixelCentered = on;
 }
 
 //ZSlice3dPainter

@@ -37,7 +37,8 @@ public:
   bool contains(double x, double y) const;
 
 public:
-  bool display(QPainter *painter, const DisplayConfig &config) const override;
+  bool isVisible_inner(const DisplayConfig &config) const override;
+  bool display_inner(QPainter *painter, const DisplayConfig &config) const override;
   /*
   virtual void display(
       ZPainter &painter, int slice, zstackobject::EDisplayStyle option,

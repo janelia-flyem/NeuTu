@@ -376,9 +376,6 @@ HEADERS += mainwindow.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
     zpainter.h \
-    dvid/zdvidrequest.h \
-    dvid/zdviddataslicetaskfactory.h \
-    dvid/zdviddataslicetask.h \
     zmatlabprocess.h \
     zneuronseed.h \
     ztiledstackframe.h \
@@ -446,6 +443,9 @@ HEADERS += mainwindow.h \
     zstackviewparam.h \
     zflyemdataloader.h \
     zprogressmanager.h \
+    dvid/zdvidrequest.h \
+    dvid/zdviddataslicetaskfactory.h \
+    dvid/zdviddataslicetask.h \
     dvid/zdvidtile.h \
     dvid/zdvidresolution.h \
     dvid/zdvidtileinfo.h \

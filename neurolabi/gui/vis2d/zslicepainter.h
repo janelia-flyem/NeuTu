@@ -62,6 +62,8 @@ public:
   bool getPaintedHint() const;
   void setPaintedHint(bool painted) const;
 
+  void setPixelCentered(bool on);
+
 private:
   void preparePainter(QPainter *painter) const;
   bool intersects(QPainter *painter, double x, double y) const;
@@ -73,6 +75,7 @@ private:
 
 private:
   ZViewPlaneTransform m_viewPlaneTransform;
+  bool m_pixelCentered = true;
   mutable bool m_painted = false;
 };
 

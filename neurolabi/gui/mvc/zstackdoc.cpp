@@ -3801,7 +3801,7 @@ void ZStackDoc::activateLocationHint(double x, double y, double z)
     processObjectModified(obj);
   }
 
-  QTimer::singleShot(2000, [=](){ hideLocationObject(obj, x, y, z); } );
+  QTimer::singleShot(2000, this, [=](){ hideLocationObject(obj, x, y, z); } );
 }
 
 void ZStackDoc::hideLocationObject(ZStackBall *obj, double x, double y, double z)
@@ -11059,7 +11059,8 @@ void ZStackDoc::processRectRoiUpdateSlot()
 }
 */
 
-void ZStackDoc::processRectRoiUpdate(ZRect2d *rect, bool /*appending*/)
+void ZStackDoc::processRectRoiUpdate(
+    ZRect2d *rect, ERoiRole /*role*/, bool /*appending*/)
 {
   if (rect != NULL) {
     rect->setRole(ZStackObjectRole::ROLE_ROI);

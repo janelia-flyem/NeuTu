@@ -4,6 +4,10 @@
 #include <QAction>
 #include <QColorDialog>
 
+#ifdef _DEBUG_
+#  include "common/debug.h"
+#endif
+
 #include "logging/zlog.h"
 #include "qt/gui/loghelper.h"
 #include "zglobal.h"
@@ -1757,19 +1761,23 @@ bool ZFlyEmProofPresenter::showingData() const
 void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
   if (!rect->isEmpty()) {
+    ZStackDoc::ERoiRole roiRole = ZStackDoc::ERoiRole::GENERAL;
     if (isSplitOn()) {
-      ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
-      if (doc != NULL) {
-        doc->updateSplitRoi(rect, appending);
-      }
-    } else {
-      /*
-      if (interactiveContext().rectSpan()) {
-        rect->setZSpan((rect->getWidth() + rect->getHeight()) / 4);
-        rect->setPenetrating(false);
-      }
-      */
-      buddyDocument()->processRectRoiUpdate(rect, appending);
+      roiRole =  (rect->getZSpan() > 0)
+          ? ZStackDoc::ERoiRole::SPLIT
+          : ZStackDoc::ERoiRole::NONE;
+    }
+#ifdef _DEBUG_
+    std::cout << OUTPUT_HIGHTLIGHT_2
+              << "Process rect with role " << neutu::ToString(roiRole) << std::endl;
+#endif
+    if (roiRole == ZStackDoc::ERoiRole::NONE) {
+      rect->setSize(0, 0);
+      buddyDocument()->processObjectModified(rect);
+    }
+
+    buddyDocument()->processRectRoiUpdate(rect, roiRole, appending);
+    if (roiRole == ZStackDoc::ERoiRole::GENERAL) {
       interactiveContext().setAcceptingRect(true);
       QMenu *menu = getContextMenu();
       if (!menu->isEmpty()) {

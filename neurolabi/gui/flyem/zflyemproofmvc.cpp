@@ -557,11 +557,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 
   BaseConstruct(mvc, doc, axes);
 
-//  mvc->getView()->setHoverFocus(true);
   mvc->applySettings();
-
-//  mvc->initViewButton();
-//  mvc->prepareTopLayout();
 
   mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
 
@@ -577,22 +573,6 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 {
   std::vector<neutu::EAxis> axes{axis};
   return Make(parent, doc, axes, role);
-  /*
-  ZFlyEmProofMvc *mvc = new ZFlyEmProofMvc(parent);
-  mvc->setRole(role);
-
-  BaseConstruct(mvc, doc, axis);
-
-//  mvc->getView()->setHoverFocus(true);
-  mvc->applySettings();
-
-  mvc->prepareViewUi();
-  mvc->getPresenter()->setObjectStyle(ZStackObject::EDisplayStyle::SOLID);
-
-  mvc->connectSignalSlot();
-
-  return mvc;
-  */
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidEnv &env, ERole role)

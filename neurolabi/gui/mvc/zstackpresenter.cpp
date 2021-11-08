@@ -4,8 +4,11 @@
 #include <QtConcurrentRun>
 #endif
 
+#ifdef _DEBUG_
+#  include "common/debug.h"
+#endif
+
 #include "tz_geo3d_utils.h"
-//#include "tz_rastergeom.h"
 #include "neulib/math/utilities.h"
 
 #include "zstackpresenter.h"
@@ -3754,7 +3757,8 @@ void ZStackPresenter::selectConnectedNode()
 
 void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 {
-  buddyDocument()->processRectRoiUpdate(rect, appending);
+  buddyDocument()->processRectRoiUpdate(
+        rect, ZStackDoc::ERoiRole::GENERAL, appending);
 }
 
 void ZStackPresenter::acceptRectRoi(bool appending)
@@ -3764,9 +3768,17 @@ void ZStackPresenter::acceptRectRoi(bool appending)
         ZStackObjectSourceFactory::MakeRectRoiSource());
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
   if (rect) {
+#ifdef _DEBUG_
+    std::cout << OUTPUT_HIGHTLIGHT_2
+              << "Update rect " << rect->getSource() << std::endl;
+#endif
     rect->setColor(QColor(255, 255, 255));
     if (interactiveContext().rectSpan()) {
       rect->updateZSpanWithMinSide();
+#ifdef _DEBUG_
+    std::cout << OUTPUT_HIGHTLIGHT_2
+              << "Update rect span: " << rect->getZSpan() << std::endl;
+#endif
     }
     processRectRoiUpdate(rect, appending);
   }
@@ -4590,16 +4602,15 @@ bool ZStackPresenter::process(ZStackOperator &op)
     rect->setColor(255, 128, 128);
 
 #ifdef _DEBUG_
-    std::cout << "Adding roi: " << rect << std::endl;
+    std::cout << OUTPUT_HIGHTLIGHT_2 << "Adding roi: " << rect << " "
+              << rect->getX0() << ", " << rect->getY0() << ", " << rect->getZ()
+              << std::endl;
 #endif
 //    buddyDocument()->removeObject(rect->getSource(), false);
 
-    ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
-          ZStackObject::EType::RECT2D,
-          ZStackObjectSourceFactory::MakeRectRoiSource());
-    ZRect2d *oldRect = dynamic_cast<ZRect2d*>(obj);
-    if (oldRect != NULL) {
-      buddyDocument()->executeRemoveObjectCommand(obj);
+    ZRect2d *oldRect = buddyDocument()->getRect2dRoi();
+    if (oldRect) {
+      buddyDocument()->executeRemoveObjectCommand(oldRect);
     }
 
     buddyDocument()->addObject(rect, false); //Undo will be handled after roi accepted
@@ -4609,40 +4620,27 @@ bool ZStackPresenter::process(ZStackOperator &op)
     break;
   case ZStackOperator::OP_RECT_ROI_UPDATE:
   {
-    ZStackObject *obj = buddyDocument()->getObjectGroup().findFirstSameSource(
-          ZStackObject::EType::RECT2D,
-          ZStackObjectSourceFactory::MakeRectRoiSource());
-    ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
-    if (rect != NULL) {
-      /*
-      ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-            Qt::LeftButton, ZMouseEvent::EAction::PRESS, neutu::ECoordinateSystem::STACK);
-//      grabPosition.shiftSliceAxis(getSliceAxis());
-      ZPoint shiftedStackPos = currentStackPos;
-//      shiftedStackPos.shiftSliceAxis(getSliceAxis());
-
-      int x0 = std::min(grabPosition.x(), shiftedStackPos.x());
-      int y0 = std::min(grabPosition.y(), shiftedStackPos.y());
-
-      int x1 = std::max(grabPosition.x(), shiftedStackPos.x());
-      int y1 = std::max(grabPosition.y(), shiftedStackPos.y());
-
-      rect->setMinCorner(x0, y0);
-      rect->setMaxCorner(x1, y1);
-      */
+    ZRect2d *rect = buddyDocument()->getRect2dRoi();
+    if (rect) {
       rect->setEndCorner(currentWidgetPos.x(), currentWidgetPos.y());
       buddyDocument()->bufferObjectModified(rect);
       buddyDocument()->processObjectModified();
-//      buddyDocument()->processObjectModified(rect);
-//      buddyDocument()->processObjectModified();
     }
   }
     break;
   case ZStackOperator::OP_RECT_ROI_APPEND:
+#ifdef _DEBUG_
+    std::cout << OUTPUT_HIGHTLIGHT_2
+              << "OP_RECT_ROI_APPEND: Accept rect roi with appending" << std::endl;
+#endif
     acceptRectRoi(true);
     exitRectEdit();
     break;
   case ZStackOperator::OP_RECT_ROI_ACCEPT:
+#ifdef _DEBUG_
+    std::cout << OUTPUT_HIGHTLIGHT_2
+              << "OP_RECT_ROI_ACCEPT: Accept rect roi" << std::endl;
+#endif
     acceptRectRoi(false);
     exitRectEdit();
     break;

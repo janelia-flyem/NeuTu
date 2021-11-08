@@ -13,7 +13,7 @@
 class ZIntPoint;
 
 /*!
- * \brief The class of a ball (x, y, z, r)
+ * \brief The class of a ball (x, y, z, r) (OBSOETE)
  *
  * The class name ZCircle is a misnomer. Use ZStackBall instead.
  */

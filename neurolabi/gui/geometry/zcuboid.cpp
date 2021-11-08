@@ -31,9 +31,9 @@ ZCuboid::ZCuboid(double x1, double y1, double z1,
   set(x1, y1, z1, x2, y2, z2);
 }
 
-ZCuboid::ZCuboid(const ZPoint &firstCorner, const ZPoint &lastCorner)
+ZCuboid::ZCuboid(const ZPoint &minCorner, const ZPoint &maxCorner)
 {
-  set(firstCorner, lastCorner);
+  set(minCorner, maxCorner);
 }
 
 ZCuboid::ZCuboid(const ZCuboid &cuboid) : m_minCorner(cuboid.m_minCorner),
@@ -48,16 +48,16 @@ void ZCuboid::set(double x1, double y1, double z1,
   m_maxCorner.set(x2, y2, z2);
 }
 
-void ZCuboid::set(const ZPoint &firstCorner, const ZPoint &lastCorner)
+void ZCuboid::set(const ZPoint &minCorner, const ZPoint &maxCorner)
 {
-  m_minCorner = firstCorner;
-  m_maxCorner = lastCorner;
+  m_minCorner = minCorner;
+  m_maxCorner = maxCorner;
 }
 
-void ZCuboid::set(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+void ZCuboid::set(const ZIntPoint &minCorner, const ZIntPoint &maxCorner)
 {
-  m_minCorner.set(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ());
-  m_maxCorner.set(lastCorner.getX(), lastCorner.getY(), lastCorner.getZ());
+  m_minCorner.set(minCorner.getX(), minCorner.getY(), minCorner.getZ());
+  m_maxCorner.set(maxCorner.getX(), maxCorner.getY(), maxCorner.getZ());
 }
 
 void ZCuboid::set(const ZIntCuboid &cuboid)

@@ -575,6 +575,10 @@ bool ZStackObject::display(
   if (isVisible(config)) {
     neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
     painter->setRenderHint(QPainter::Antialiasing, m_usingCosmeticPen);
+    neutu::RevisePen(painter, [&](QPen &pen) {
+      pen.setColor(getColor());
+      pen.setCosmetic(m_usingCosmeticPen);
+    });
     return display_inner(painter, config);
   }
 

@@ -125,8 +125,10 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
   ZMenuConfig config;
 
   if (presenter->isSplitOn()) {
-    config.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
-    config.append(ZActionFactory::ACTION_BODY_CHOP);
+    if (!presenter->interactiveContext().acceptingRect()) {
+      config.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
+      config.append(ZActionFactory::ACTION_BODY_CHOP);
+    }
     ZIntCuboidObj *roi = doc->getSplitRoi();
     if (roi != NULL) {
       if (roi->isValid()) {

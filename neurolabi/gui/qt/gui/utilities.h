@@ -111,6 +111,7 @@ void HideLayout(QLayout *layout, bool removing);
 void ClearLayout(
     QLayout *layout, std::function<void(QLayoutItem*)> processChild);
 void ClearLayout(QLayout *layout);
+void PrintLayoutInfo(QLayout *layout, int indent = 0);
 
 }
 

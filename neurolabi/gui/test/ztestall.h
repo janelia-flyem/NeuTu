@@ -125,6 +125,7 @@
 #include "mvc/tests/zstackobjectpaintsortertest.h"
 #include "mvc/tests/zmousecursorglyphtest.h"
 #include "mvc/tests/zstackviewtest.h"
+#include "mvc/tests/zstackmvctest.h"
 
 #include "widgets/tests/zimagewidgettest.h"
 

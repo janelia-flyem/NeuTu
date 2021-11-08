@@ -11,6 +11,11 @@ FlyEmTodoMockSource::FlyEmTodoMockSource()
   m_data[pos].setDefaultHit();
 }
 
+ZIntPoint FlyEmTodoMockSource::getBlockSize() const
+{
+  return ZIntPoint(32, 32, 32);
+}
+
 std::vector<ZFlyEmToDoItem> FlyEmTodoMockSource::getData(const ZIntCuboid &box) const
 {
   std::vector<ZFlyEmToDoItem> data;

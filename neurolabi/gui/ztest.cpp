@@ -209,6 +209,7 @@
 #include "flyem/flyemtodoensemble.h"
 #include "flyem/flyemtodomocksource.h"
 #include "mvc/zstackdocobjectmonitor.h"
+#include "zintcuboidobj.h"
 
 #include "filesystem/utilities.h"
 #include "swc/zswcterminalsurfacemetric.h"
@@ -345,6 +346,7 @@
 #include "dialogs/zparameterdialog.h"
 #include "imgproc/zindexstacksource.h"
 #include "imgproc/zfunctionstacksource.h"
+#include "qt/gui/utilities.h"
 
 #include "flyem/zglobaldvidrepo.h"
 #include "flyem/zflyemarbmvc.h"
@@ -32478,18 +32480,42 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 0
-//  ZStack *stack = new ZStack;
-//  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
-  ZStack *stack = ZStackFactory::MakeVirtualStack(512, 512, 512);
+#if 1
+  ZStack *stack = new ZStack;
+  stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
+//  ZStack *stack = ZStackFactory::MakeVirtualStack(512, 512, 512);
   std::shared_ptr<ZStackDoc> doc = std::shared_ptr<ZStackDoc>(new ZStackDoc);
-  ZStackMvc *frame = ZStackMvc::Make(
-        nullptr, doc, {neutu::EAxis::Z, neutu::EAxis::X, neutu::EAxis::Y});
-  frame->connectSignalSlot();
+  ZStackMvc *frame = ZStackMvc::Make(nullptr, doc);
+//  frame->connectSignalSlot();
+//  neutu::PrintLayoutInfo(frame->layout());
+//  frame->updateViewLayout();
   doc->loadStack(stack);
-  ZStackBall *ball = new ZStackBall(300, 256, 256, 100);
-  ball->setColor(255, 0, 0);
-  doc->addObject(ball);
+//  ZStackBall *ball = new ZStackBall(300, 256, 256, 100);
+//  ball->setColor(255, 0, 0);
+//  doc->addObject(ball);
+
+  ZIntCuboidObj *cuboid = new ZIntCuboidObj;
+  cuboid->setColor(255, 0, 0);
+  cuboid->setFirstCorner(0, 0, 100);
+  cuboid->setLastCorner(1, 1, 300);
+  doc->addObject(cuboid);
+
+  /*
+  ZRect2d *rect = new ZRect2d;
+  rect->set(10, 10, 100, 100);
+  rect->setColor(255, 0, 0);
+  rect->setViewId(frame->getMainView()->getViewId());
+  doc->addObject(rect);
+  */
+
+  frame->dumpObjectInfo();
+
+  neutu::PrintLayoutInfo(frame->layout());
+  frame->dumpObjectTree();
+//  for (auto child : frame->layout()->children()) {
+//    child->dumpObjectTree();
+//  }
+//  std::cout << "Layout children size: " << frame->layout()->children().size() << std::endl;
 
   frame->show();
 #endif

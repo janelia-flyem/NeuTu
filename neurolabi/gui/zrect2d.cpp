@@ -125,14 +125,14 @@ bool ZRect2d::isEmpty() const
   return getWidth() <= 0 || getHeight() <= 0;
 }
 
-bool ZRect2d::display(QPainter *painter, const DisplayConfig &config) const
+bool ZRect2d::isVisible_inner(const DisplayConfig &config) const
 {
-  if (isVisible() && !isEmpty() && m_viewId == config.getViewId()) {
-    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
-    QPen pen(getColor());
-    pen.setCosmetic(m_usingCosmeticPen);
-    painter->setPen(pen);
+  return (!isEmpty() && m_viewId == config.getViewId());
+}
 
+bool ZRect2d::display_inner(QPainter *painter, const DisplayConfig &config) const
+{
+  if (isVisible(config)) {
     int x1 = m_x0 + m_width - 1;
     int y1 = m_y0 + m_height - 1;
     neutu::DrawIntRect(*painter, m_x0, m_y0, x1, y1);
@@ -151,12 +151,16 @@ bool ZRect2d::display(QPainter *painter, const DisplayConfig &config) const
     };
 
     this->_getBoundBox = [=](const ZRect2d &rect) {
-      ZPoint minCorner = config.getTransform().inverseTransform(
-            rect.m_x0, rect.m_y0, rect.m_z - rect.m_zSpan);
-      ZPoint maxCorner = config.getTransform().inverseTransform(
-            rect.m_x0 + rect.m_width,
-            rect.m_y0 + rect.m_height, rect.m_z + rect.m_zSpan);
-      return ZCuboid(minCorner, maxCorner);
+      if ((rect.m_zSpan > 0) && (config.getSliceAxis() == neutu::EAxis::Z)) {
+        ZPoint minCorner = config.getTransform().inverseTransform(
+              rect.m_x0, rect.m_y0, -rect.m_zSpan);
+        ZPoint maxCorner = config.getTransform().inverseTransform(
+              rect.m_x0 + rect.m_width,
+              rect.m_y0 + rect.m_height, rect.m_zSpan);
+        return ZCuboid(minCorner, maxCorner);
+      }
+
+      return ZCuboid();
     };
 
     this->_getAffineRect = [=](const ZRect2d &rect) {
@@ -173,51 +177,6 @@ bool ZRect2d::display(QPainter *painter, const DisplayConfig &config) const
   } else {
     this->_hit = [](const ZStackObject*, double,double,double) { return false; };
   }
-#if 0
-  if (isVisible() && (getSliceAxis() == config.getSliceAxis())) {
-    ZSlice3dPainter s3Painter;
-    s3Painter.setModelViewTransform(config.getWorldViewTransform());
-    s3Painter.setViewCanvasTransform(config.getViewCanvasTransform());
-    neutu::ApplyOnce ao([&]() {painter->save();}, [&]() {painter->restore();});
-
-    QPen pen(getColor());
-    pen.setCosmetic(m_usingCosmeticPen);
-
-    double x0 = m_x0;
-    double y0 = m_y0;
-    double x1 = x0 + m_width;
-    double y1 = y0 + m_height;
-    double z = m_z;
-
-    ZPoint center = config.getCutPlane().getOffset();
-    center.shiftSliceAxisInverse(getSliceAxis());
-
-    double dz = z - center.getZ();
-
-    if (!m_isPenetrating && std::fabs(dz) > std::max(double(m_zSpan), 0.5)) {
-      pen.setStyle(Qt::DashLine);
-    }
-
-    painter->setPen(pen);
-
-    ZSlice2dPainter s2Painter;
-    s2Painter.setViewPlaneTransform(config.getViewCanvasTransform());
-
-    x0 -= center.getX();
-    y0 -= center.getY();
-    x1 -= center.getX();
-    y1 -= center.getY();
-
-    s2Painter.drawRect(painter, x0, y0, x1, y1);
-
-    if (isSelected()) {
-      s2Painter.drawLine(painter, x0, y0, x1, y1);
-      s2Painter.drawLine(painter, x0, y1, x1, y0);
-    }
-
-    return s2Painter.getPaintedHint();
-  }
-#endif
 
   return false;
 }

@@ -5888,11 +5888,14 @@ void ZFlyEmProofDoc::runSplitFunc(
       break;
     }
 
-    if (range == flyem::EBodySplitRange::SEED || range == flyem::EBodySplitRange::FULL) {
+    if (range == flyem::EBodySplitRange::SEED ||
+        range == flyem::EBodySplitRange::FULL) {
       ZIntCuboidObj *roi = getSplitRoi();
-      if (roi != NULL) {
-        ZIntCuboid box;
+      ZIntCuboid box;
+      if (roi) {
         roi->boundBox(&box);
+      }
+      if (!box.isEmpty()) {
         container.setRange(box);
       }
     }
@@ -5997,6 +6000,14 @@ void ZFlyEmProofDoc::runSplitFunc(
   getProgressSignal()->endProgress();
 }
 
+void ZFlyEmProofDoc::processRectRoiUpdate(
+    ZRect2d *rect, ERoiRole role, bool appending)
+{
+  if (role == ERoiRole::SPLIT) {
+    updateSplitRoi(rect, appending);
+  }
+}
+
 void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 {
 //  ZRect2d rect = getRect2dRoi();
@@ -6018,6 +6029,7 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
   new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
 //    addObject(roi);
 //  }
+  rect->updateZSpanWithRadius();
 
   roi->setCuboid(rect->getIntBoundBox());
 
@@ -6028,21 +6040,7 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
     }
   }
 
-  /*
-  if (rect != NULL) {
-    if (rect->isValid()) {
-      int sz = neutu::iround(sqrt(rect->getWidth() * rect->getWidth() +
-                                  rect->getHeight() * rect->getHeight()) / 2.0);
-      roi->setFirstCorner(rect->getMinX(), rect->getMinY(), rect->getZ() - sz);
-      roi->setLastCorner(rect->getMaxX(), rect->getMaxY(), rect->getZ() + sz);
-    } else if (appending) {
-      roi->setFirstCorner(rect->getMinX(), rect->getMinY(), rect->getZ());
-      roi->setLastCorner(roi->getFirstCorner());
-    }
-  }
-  */
   deprecateSplitSource();
-//  m_splitSource.reset();
 
   executeRemoveObjectCommand(getSplitRoi());
 
@@ -6050,15 +6048,10 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 
   pushUndoCommand(command);
 
-//  new ZStackDocCommand::ObjectEdit::RemoveObje
-//  removeRect2dRoi();
-
-//  processObjectModified(roi);
-
   endObjectModifiedMode();
   processObjectModified();
 }
-
+#if 0
 ZIntCuboid ZFlyEmProofDoc::estimateLocalSplitRoi()
 {
   ZIntCuboid cuboid;
@@ -6118,6 +6111,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
 
   return cuboid;
 }
+#endif
 
 ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
     const ZIntCuboid &roi, neutu::EBodySplitMode mode) const

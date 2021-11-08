@@ -7,6 +7,9 @@
 #include "zpainter.h"
 #include "geometry/zintpoint.h"
 #include "geometry/zcuboid.h"
+#include "data3d/displayconfig.h"
+#include "vis2d/zslicepainter.h"
+#include "qt/gui/utilities.h"
 
 ZIntCuboidObj::ZIntCuboidObj()
 {
@@ -17,6 +20,55 @@ ZIntCuboidObj::ZIntCuboidObj()
 bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutu::EAxis /*sliceAxis*/) const
 {
   return true;
+}
+
+bool ZIntCuboidObj::isVisible_inner(const DisplayConfig &config) const
+{
+  if (!m_cuboid.isEmpty() && (config.getSliceAxis() == neutu::EAxis::Z)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool ZIntCuboidObj::display_inner(
+    QPainter *painter, const DisplayConfig &config) const
+{
+  if (config.getSliceAxis() == neutu::EAxis::Z) {
+//    neutu::SetPenColor(painter, getColor());
+
+#ifdef _DEBUG_
+    std::cout << "cosmetic: " << painter->pen().isCosmetic() << std::endl;
+#endif
+    ZCuboid cuboid = ZCuboid::FromIntCuboid(m_cuboid);
+    ZPoint minCorner =
+        config.getWorldViewTransform().transform(cuboid.getMinCorner());
+    ZPoint maxCorner =
+        config.getWorldViewTransform().transform(cuboid.getMaxCorner());
+
+    Qt::PenStyle penStyle = Qt::DashLine;
+    if (minCorner.getZ() <= 0 && maxCorner.getZ() >= 0) {
+      penStyle = Qt::SolidLine;
+    }
+
+    neutu::RevisePen(painter, [&](QPen &pen) {
+      pen.setStyle(penStyle);
+    });
+
+    ZSlice2dPainter s2Painter;
+    s2Painter.setViewPlaneTransform(config.getViewCanvasTransform());
+    s2Painter.setPixelCentered(false);
+    s2Painter.drawRect(painter, minCorner.getX(), minCorner.getY(),
+                       maxCorner.getX(), maxCorner.getY());
+    if (isSelected()) {
+      s2Painter.drawLine(
+            painter, minCorner.getX(), minCorner.getY(),
+            maxCorner.getX(), maxCorner.getY());
+    }
+    return s2Painter.getPaintedHint();
+  }
+
+  return false;
 }
 
 const ZIntPoint& ZIntCuboidObj::getFirstCorner() const

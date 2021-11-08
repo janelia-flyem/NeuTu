@@ -62,23 +62,30 @@ ZStackMvc::~ZStackMvc()
 
 ZStackMvc* ZStackMvc::Make(QWidget *parent, std::shared_ptr<ZStackDoc> doc)
 {
+  /*
   ZStackMvc *frame = new ZStackMvc(parent);
 
   BaseConstruct(frame, doc, neutu::EAxis::Z);
 
   return frame;
+  */
+  return Make(parent, doc, neutu::EAxis::Z);
 }
 
 ZStackMvc* ZStackMvc::Make(
     QWidget *parent, std::shared_ptr<ZStackDoc> doc, neutu::EAxis axis)
 {
+  return Make(parent, doc, std::vector<neutu::EAxis>{axis});
+  /*
   ZStackMvc *frame = new ZStackMvc(parent);
 
   BaseConstruct(frame, doc, axis);
 //  frame->getView()->setSliceAxis(axis);
 //  frame->getPresenter()->setSliceAxis(axis);
+//  frame->updateViewLayout();
 
   return frame;
+  */
 }
 
 ZStackMvc* ZStackMvc::Make(
@@ -88,6 +95,8 @@ ZStackMvc* ZStackMvc::Make(
   ZStackMvc *frame = new ZStackMvc(parent);
 
   BaseConstruct(frame, doc, axes);
+  frame->connectSignalSlot();
+  frame->updateViewLayout();
 
   return frame;
 }

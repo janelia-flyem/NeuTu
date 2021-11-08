@@ -2885,6 +2885,7 @@ ZFlyEmNeuron ZFlyEmBodySplitProject::getFlyEmNeuron() const
   return neuron;
 }
 
+/*
 void ZFlyEmBodySplitProject::viewPreviousSlice()
 {
   if (getDataFrame() != NULL) {
@@ -2906,6 +2907,7 @@ void ZFlyEmBodySplitProject::viewNextSlice()
     updateBodyMask();
   }
 }
+*/
 
 void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
 {
@@ -2993,6 +2995,8 @@ void ZFlyEmBodySplitProject::downloadBodyMask()
   }
 }
 */
+
+#if 0
 void ZFlyEmBodySplitProject::updateBodyMask()
 {
   ZStackFrame *frame = getDataFrame();
@@ -3004,9 +3008,13 @@ void ZFlyEmBodySplitProject::updateBodyMask()
 //        int currentSlice = frame->view()->sliceIndex();
 
         ZRect2d *rectRoi = frame->document()->getRect2dRoi();
-        ZIntCuboid box = rectRoi->getIntBoundBox();
+        ZIntCuboid box;
+
+        if (rectRoi) {
+          box = rectRoi->getIntBoundBox();
+        }
 //        ZIntPoint offset = frame->document()->getStackOffset();
-        if (!rectRoi->isValid()) {
+        if (box.isEmpty()) {
 //          int width = frame->document()->getStackWidth();
 //          int height = frame->document()->getStackHeight();
           box = frame->document()->getStack()->getBoundBox();
@@ -3061,6 +3069,7 @@ void ZFlyEmBodySplitProject::updateBodyMask()
     }
   }
 }
+#endif
 
 std::string ZFlyEmBodySplitProject::getSplitStatusName() const
 {

@@ -10,9 +10,9 @@ public:
   ZIntCuboidObj();
 
 public:
-  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
-    return false;
-  }
+//  bool display(QPainter */*painter*/, const DisplayConfig &/*config*/) const override {
+//    return false;
+//  }
   /*
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
                        neutu::EAxis sliceAxis) const override;
@@ -61,7 +61,11 @@ public:
   //For display settings
   void setGridInterval(int intv);
 
-public:
+protected:
+  bool isVisible_inner(const DisplayConfig &config) const override;
+  bool display_inner(QPainter *painter, const DisplayConfig &config) const override;
+
+private:
   ZIntCuboid m_cuboid;
   int m_gridIntv = 32;
 };

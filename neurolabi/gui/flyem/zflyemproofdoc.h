@@ -366,6 +366,7 @@ public:
   void notifyBodyLock(uint64_t bodyId, bool locking);
 
 public: //ROI functions
+  void processRectRoiUpdate(ZRect2d *rect, ERoiRole role, bool appending) override;
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect, bool appending);
   void selectBodyInRoi(int z, bool appending, bool removingRoi);
@@ -870,9 +871,11 @@ private:
   void localSplitFunc(neutu::EBodySplitMode mode);
   void runFullSplitFunc(neutu::EBodySplitMode mode);
 
+  /*
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
+  */
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
