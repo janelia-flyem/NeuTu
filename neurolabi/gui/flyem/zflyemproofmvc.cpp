@@ -4096,6 +4096,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, neutu::EBodySplitMode mode
       if (body == NULL) {
         ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
         body = updateBodyForSplit(bodyId, reader);
+      } else {
+        body->setVisible(true);
       }
 
       if (body) {
