@@ -161,8 +161,8 @@ void ZProofreadWindow::init()
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
   connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
-  connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
-          this, SLOT(showAndRaise()));
+  connect(m_mainMvc, &ZStackMvc::locating2DViewTriggered,
+          this, &ZProofreadWindow::showAndRaise);
   connect(m_mainMvc, SIGNAL(dvidReady()), this, SLOT(postDvidReady()));
 
   setCentralWidget(widget);

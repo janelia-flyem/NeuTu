@@ -1013,15 +1013,8 @@ void ZStackMvc::stepSlice(int dz)
 
 void ZStackMvc::zoomTo(int x, int y, int z)
 {
-  zoomTo(x, y, z, 800);
-  /*
-  QRect viewPort = getView()->getViewPort(NeuTube::COORD_STACK);
-  int width = imin3(800, viewPort.width(), viewPort.height());
-  if (width < 10) {
-    width = 200;
-  }
-  zoomTo(x, y, z, width);
-  */
+  getMainView()->zoomTo(x, y, z);
+  getMainView()->highlightPosition(x, y, z);
 }
 
 void ZStackMvc::zoomToL1(int x, int y, int z)

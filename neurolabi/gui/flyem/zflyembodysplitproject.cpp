@@ -637,8 +637,8 @@ void ZFlyEmBodySplitProject::showSplit3d()
         connect(m_splitVis3dWindow, SIGNAL(locating2DViewTriggered(int, int, int, int)),
                 m_dataFrame, SLOT(setView(int, int, int, int)));
       }
-      connect(m_splitVis3dWindow, SIGNAL(locating2DViewTriggered(int, int, int, int)),
-              this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
+      connect(m_splitVis3dWindow, SIGNAL(locating2DViewTriggered(int, int, int)),
+              this, SIGNAL(locating2DViewTriggered(int, int, int)));
 
 //      ZDvidReader reader;
       ZIntCuboid box(m_dvidInfo.getStartCoordinates(),

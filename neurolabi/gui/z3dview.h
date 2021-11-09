@@ -39,7 +39,8 @@ Q_OBJECT
 public:
   enum class EInitMode {
     NORMAL, EXCLUDE_VOLUME, FULL_RES_VOLUME,
-    EXCLUDE_MESH //A temporary fix for disalbing meshes in some cases
+    EXCLUDE_MESH, //A temporary fix for disalbing meshes in some cases
+    TEST
   };
 
   Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent = nullptr);

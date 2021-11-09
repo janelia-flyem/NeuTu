@@ -7,6 +7,7 @@ HEADERS += \
     $$PWD/miscutilitytest.h \
     $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \
+  $$PWD/z3dwindowtest.h \
     $$PWD/zaffinerecttest.h \
     $$PWD/zcolorschemetest.h \
     $$PWD/zdviddialogtest.h \

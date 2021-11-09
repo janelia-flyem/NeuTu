@@ -183,6 +183,7 @@ signals:
   void progressDone();
   void progressAdvanced(double dp);
   void locating2DViewTriggered(int x, int y, int z, int width);
+  void locating2DViewTriggered(int x, int y, int z);
   void bodyQuickViewReady();
   void result3dQuickViewReady();
   void rasingResultQuickView();

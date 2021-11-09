@@ -115,6 +115,7 @@ signals:
 //  void objectSelectionChanged();
   void messageGenerated(const ZWidgetMessage&);
   void viewChanged();
+  void locating2DViewTriggered();
 
 public slots:
 //  void updateActiveViewData();

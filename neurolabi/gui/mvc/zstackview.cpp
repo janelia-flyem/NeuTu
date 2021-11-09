@@ -3045,7 +3045,11 @@ void ZStackView::zoomTo(const ZIntPoint &pt)
 
 void ZStackView::zoomTo(int x, int y, int z, int w)
 {
-  imageWidget()->zoomTo(ZPoint(x, y, z), w, w, neutu::data3d::ESpace::MODEL);
+  if (w <= 0) {
+    imageWidget()->setCutCenter(x, y, z);
+  } else {
+    imageWidget()->zoomTo(ZPoint(x, y, z), w, w, neutu::data3d::ESpace::MODEL);
+  }
   buddyDocument()->activateLocationHint(x, y, z);
 }
 
@@ -3064,7 +3068,9 @@ void ZStackView::zoomTo(const ZPoint &pt, int w, bool showingHint)
 
 void ZStackView::zoomTo(int x, int y, int z)
 {
-  zoomTo(x, y, z, 800);
+  imageWidget()->zoomTo(ZPoint(x, y, z));
+  buddyDocument()->activateLocationHint(x, y, z);
+//  zoomTo(x, y, z, 800);
 }
 
 void ZStackView::increaseZoomRatio()

@@ -226,6 +226,7 @@ public: //external signal call
 signals:
   void closed();
 //  void locating2DViewTriggered(const ZStackViewParam &param);
+  void locating2DViewTriggered(int x, int y, int z);
   void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
   void savingSplitTask();
@@ -389,6 +390,7 @@ public slots:
   void saveAllPunctaAs();
   void markPunctum();
   void locatePunctumIn2DView();
+  void locate2DView(const ZPoint &center);
   void locate2DView(const ZPoint &center, double radius);
   void changeSelectedPunctaName();
   void addTodoMarker();

@@ -358,6 +358,17 @@ void ZImageWidget::zoomTo(
   notifyTransformChanged();
 }
 
+void ZImageWidget::zoomTo(const ZPoint &pt)
+{
+  if (m_detailScale > 0.0) {
+    if (m_sliceViewTransform.getScale() < m_detailScale) {
+      m_sliceViewTransform.setScale(m_detailScale);
+    }
+  }
+  m_sliceViewTransform.setCutCenter(pt);
+  notifyTransformChanged();
+}
+
 bool ZImageWidget::isBadView() const
 {
   return m_sliceViewTransform.getScale() <= m_sliceViewTransform.getMinScale();

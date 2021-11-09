@@ -773,10 +773,6 @@ SOURCES += main.cpp \
     zstackviewparam.cpp \
     zflyemdataloader.cpp \
     zprogressmanager.cpp \
-    dvid/zdvidtile.cpp \
-    dvid/zdvidresolution.cpp \
-    dvid/zdvidtileinfo.cpp \
-    dvid/zdvidversionmodel.cpp \
     zmessagemanager.cpp \
     zmessageprocessor.cpp \
     zmessage.cpp \
@@ -788,6 +784,10 @@ SOURCES += main.cpp \
     zmessagemanagermodel.cpp \
     zflyemcontrolform.cpp \
     zpixmap.cpp \
+    dvid/zdvidtile.cpp \
+    dvid/zdvidresolution.cpp \
+    dvid/zdvidtileinfo.cpp \
+    dvid/zdvidversionmodel.cpp \
     dvid/zdvidversiondag.cpp \
     dvid/zdvidversion.cpp \
     dvid/zdvidversionnode.cpp \

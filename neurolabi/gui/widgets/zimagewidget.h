@@ -172,6 +172,7 @@ public:
 
   void zoomTo(const QPoint &center, int w, int h);
   void zoomTo(const ZPoint &pt, double w, double h, neutu::data3d::ESpace space);
+  void zoomTo(const ZPoint &pt);
 
   void rotate(double au, double av, double rad);
   void rotate(double da, double db);
@@ -372,6 +373,7 @@ private:
   double m_viewAnchorY = 0.5;
   ZPlane m_defaultArbPlane;
   double m_initScale = 0.0;
+  double m_detailScale = 0.25;
 
   neutu::EAxis m_sliceAxis = neutu::EAxis::Z;
 //  QSize m_canvasSize;

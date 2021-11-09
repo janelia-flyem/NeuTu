@@ -990,10 +990,14 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     } else if (window == m_coarseMeshWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachCoarseMeshWindow()));
     }
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int)),
+            this, SLOT(zoomTo(int, int, int)));
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SLOT(zoomTo(int, int, int, int)));
-    connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
-            this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int)),
+            this, SIGNAL(locating2DViewTriggered()));
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int)),
+            this, SIGNAL(locating2DViewTriggered()));
 
     window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
   }
@@ -2764,8 +2768,8 @@ void ZFlyEmProofMvc::customInit()
 //  m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.setDocument(getDocument());
-  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
-          this, SLOT(zoomTo(int,int,int,int)));
+  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int)),
+          this, SLOT(zoomTo(int,int,int)));
 //  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
 //          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),

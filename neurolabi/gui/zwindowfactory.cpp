@@ -51,42 +51,46 @@ Z3DWindow* ZWindowFactory::open3DWindow(
 Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
                                         Z3DView::EInitMode mode)
 {
-  if (!ZSystemInfo::instance().is3DSupported()) {
+  bool is3DSupported = true;
+
+  if (mode != Z3DView::EInitMode::TEST) {
+    is3DSupported = ZSystemInfo::instance().is3DSupported();;
+  } else {
+    std::cout << "WARNING: Initializing 3D window with TEST mode should only be used in testing" << std::endl;
+  }
+
+  if (!is3DSupported) {
     if (GET_APPLICATION_NAME == "neuTube") {
-      QMessageBox::information(
-            NULL, "3D Unavailable", "The 3D visualization is unavailable in this"
-                                    "plug-in because of some technical problems. To obtain a "
-                                    "fully-functioing version of neuTube, because visit "
-                                    "<a href=www.neutracing.com>www.neutracing.com</a>");
-    } else {
-      QMessageBox::information(
+      QMessageBox::warning(
             NULL, "3D Unavailable",
-            "The 3D visualization is unavailable in this"
-            "plug-in because of some technical problems.");
+            "The 3D visualization is unavailable in this "
+            "plug-in because of some technical problems. To obtain a "
+            "fully-functioing version of neuTube, because visit "
+            "<a href=www.neutracing.com>www.neutracing.com</a>");
+    } else {
+      QMessageBox::warning(
+            NULL, "3D Unavailable",
+            "3D graphics checking failed. 3D visualization will not be available.");
     }
     return NULL;
   }
 
   Z3DWindow *window = NULL;
 
-  if (ZSystemInfo::instance().is3DSupported() && doc) {
+  if (doc) {
     window = new Z3DWindow(
           doc, mode, m_windowType, false, m_parentWidget);
-    window->show();
-    window->raise();
-
     if (m_windowTitle.isEmpty()) {
       window->setWindowTitle("3D View");
     } else {
       window->setWindowTitle(m_windowTitle);
     }
-    //connect(window, SIGNAL(destroyed()), m_hostFrame, SLOT(detach3DWindow()));
-    /*
-    if (GET_APPLICATION_NAME == "Biocytin") {
-      window->getCompositor()->setBackgroundFirstColor(glm::vec3(1, 1, 1));
-      window->getCompositor()->setBackgroundSecondColor(glm::vec3(1, 1, 1));
-    }
-    */
+  }
+
+  if (window && mode != Z3DView::EInitMode::TEST) {
+    window->show();
+    window->raise();
+
 
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isBackgroundOn()) {
       window->getCompositor()->setShowBackground(false);

@@ -2870,8 +2870,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
       bool located = false;
       if (doc != NULL) {
         ZFlyEmToDoItem *item = doc->getOneSelectedTodoItem();
-        if (item !=NULL) {
-          locate2DView(item->getPosition().toPoint(), item->getRadius());
+        if (item) {
+          locate2DView(item->getPosition().toPoint());
           located = true;
         }
         /*
@@ -3229,37 +3229,27 @@ void Z3DWindow::locateSwcNodeIn2DView()
     if (m_doc->getParentFrame() != NULL) {
       m_doc->getParentFrame()->zoomToSelectedSwcNodes();
       m_doc->getParentFrame()->raise();
-      /*
-      ZCuboid cuboid = SwcTreeNode::boundBox(*m_doc->selectedSwcTreeNodes());
-      int cx, cy, cz;
-      ZPoint center = cuboid.center();
-      cx = iround(center.x());
-      cy = iround(center.y());
-      cz = iround(center.z());
-      int radius = iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
-      m_doc->getParentFrame()->viewRoi(cx, cy, cz, radius);
-      */
     } else {
       const std::set<Swc_Tree_Node*> &nodeSet = m_doc->getSelectedSwcNodeSet();
 
-      ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
-      ZPoint center = cuboid.getCenter();
-      int cx, cy, cz;
-
-      //-= document()->getStackOffset();
-      cx = neutu::iround(center.x());
-      cy = neutu::iround(center.y());
-      cz = neutu::iround(center.z());
-      int radius = neutu::iround(std::max(cuboid.width(), cuboid.height()) / 2.0);
-      const int minRadius = 400;
-      if (radius < minRadius) {
-        radius = minRadius;
+      if (nodeSet.size() == 1) {
+        Swc_Tree_Node *tn = *(nodeSet.begin());
+        locate2DView(SwcTreeNode::center(tn));
+      } else if (nodeSet.size() > 1) {
+        ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
+        ZPoint center = cuboid.getCenter();
+        double radius = std::max(cuboid.width(), cuboid.height()) / 2.0;
+        locate2DView(center, radius);
       }
-      int width = radius * 2 + 1;
-
-      emit locating2DViewTriggered(cx, cy, cz, width);
     }
   }
+}
+
+void Z3DWindow::locate2DView(const ZPoint &center)
+{
+  emit locating2DViewTriggered(
+        neutu::iround(center.getX()), neutu::iround(center.getY()),
+        neutu::iround(center.getZ()));
 }
 
 void Z3DWindow::locate2DView(const ZPoint &center, double radius)
@@ -3287,7 +3277,15 @@ void Z3DWindow::locatePunctumIn2DView()
   if (punctumList.size() == 1) {
     ZPunctum* punc = *(punctumList.begin());
 
-    locate2DView(punc->getCenter(), punc->radius());
+    locate2DView(punc->getCenter());
+  } else if (punctumList.size() > 1) {
+    auto iter = punctumList.constBegin();
+    ZCuboid box = (*iter)->getBoundBox();
+    for (; iter != punctumList.constEnd(); ++iter) {
+      box.join((*iter)->getBoundBox());
+    }
+    double radius = std::max(box.width(), box.height()) / 2.0;
+    locate2DView(box.getCenter(), radius);
   }
 }
 
@@ -4386,7 +4384,7 @@ void Z3DWindow::browseWithRay(int x, int y)
 #if defined(_NEU3_)
     emit browsing(pt.x(), pt.y(), pt.z());
 #else
-    locate2DView(pt, 300);
+    locate2DView(pt);
 #endif
   }
 }
