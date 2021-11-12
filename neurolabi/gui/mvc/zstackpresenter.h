@@ -341,7 +341,7 @@ public:
   void enterSwcAddNodeMode(ZStackObjectRole::TRole role);
 
 public: //test functions
-  void testBiocytinProjectionMask();
+//  void testBiocytinProjectionMask();
 
   void processEvent(ZInteractionEvent &event);
 
@@ -540,7 +540,8 @@ protected:
   bool paintingStroke() const;
   void acceptActiveStroke();
   void acceptRectRoi(bool appending);
-  virtual void processRectRoiUpdate(ZRect2d *rect, bool appending);
+  virtual void processRectRoiUpdate(
+      ZRect2d *rect, const neutu::mvc::RectState &state);
 
 //  void addActiveObject(EObjectRole role, ZStackObject *obj);
 

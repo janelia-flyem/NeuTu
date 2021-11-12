@@ -66,6 +66,10 @@ TEST(ZInteractiveContext, basic)
   context.setRectEditMode(ZInteractiveContext::RECT_DRAW);
   ASSERT_EQ(ZInteractiveContext::INTERACT_RECT_DRAW, context.getUniqueMode());
 
+  ASSERT_EQ(neutu::mvc::ERectTarget::PLANE_ROI, context.getRectTarget());
+  context.setRectTarget(neutu::mvc::ERectTarget::CUBOID_ROI);
+  ASSERT_EQ(neutu::mvc::ERectTarget::CUBOID_ROI, context.getRectTarget());
+
   context.setSynapseEditMode(ZInteractiveContext::SYNAPSE_MOVE);
   ASSERT_EQ(ZInteractiveContext::INTERACT_RECT_DRAW, context.getUniqueMode());
   context.turnOffEditMode();

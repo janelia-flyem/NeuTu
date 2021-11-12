@@ -9,6 +9,20 @@ namespace neutu {
 
 namespace mvc {
 
+enum class ERectTarget {
+  PLANE_ROI, CUBOID_ROI
+};
+
+enum class ERoiRole {
+  NONE, GENERAL, SPLIT
+};
+
+struct RectState {
+  ERoiRole role = ERoiRole::NONE;
+  ERectTarget target = ERectTarget::PLANE_ROI;
+  bool appending = false;
+};
+
 enum class ViewInfoFlag {
   NONE = 0,
   RAW_STACK_COORD = BIT_FLAG(1),

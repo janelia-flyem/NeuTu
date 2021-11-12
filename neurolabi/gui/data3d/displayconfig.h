@@ -50,6 +50,10 @@ public:
 //  int getZ() const;
 //  int getSlice(int z0);
   neutu::EAxis getSliceAxis() const;
+  /*!
+   * \brief Check if the axis is X, Y, or Z
+   */
+  bool hasRegularSliceAxis() const;
 
   EDisplayStyle getStyle() const;
   EDisplaySliceMode getSliceMode() const;

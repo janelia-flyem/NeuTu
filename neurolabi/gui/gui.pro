@@ -784,6 +784,20 @@ SOURCES += main.cpp \
     zmessagemanagermodel.cpp \
     zflyemcontrolform.cpp \
     zpixmap.cpp \
+    dvid/zdvidsynapsecommand.cpp \
+    dvid/zdvidannotationcommand.cpp \
+    dvid/zflyembookmarkcommand.cpp \
+    dvid/zdvidannotation.cpp \
+    dvid/zdvidsynapse.cpp \
+    dvid/zdvidsynapseensenmble.cpp \
+    dvid/zdvidbodyhelper.cpp \
+    dvid/zdviddataslicetaskfactory.cpp \
+    dvid/zdviddataslicetask.cpp \
+    dvid/zdvidstackblockfactory.cpp \
+    dvid/zdvidblockstream.cpp \
+    dvid/zdvidgraysliceensemble.cpp \
+    dvid/zdvidenv.cpp \
+    dvid/zdvidpath.cpp \
     dvid/zdvidtile.cpp \
     dvid/zdvidresolution.cpp \
     dvid/zdvidtileinfo.cpp \
@@ -922,20 +936,6 @@ SOURCES += main.cpp \
     protocols/taskbodyhistory.cpp \
     protocols/taskbodycleave.cpp \
     protocols/taskbodymerge.cpp \
-    dvid/zdvidsynapsecommand.cpp \
-    dvid/zdvidannotationcommand.cpp \
-    dvid/zflyembookmarkcommand.cpp \
-    dvid/zdvidannotation.cpp \
-    dvid/zdvidsynapse.cpp \
-    dvid/zdvidsynapseensenmble.cpp \
-    dvid/zdvidbodyhelper.cpp \
-    dvid/zdviddataslicetaskfactory.cpp \
-    dvid/zdviddataslicetask.cpp \
-    dvid/zdvidstackblockfactory.cpp \
-    dvid/zdvidblockstream.cpp \
-    dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp \
-    dvid/zdvidpath.cpp \
     imgproc/zstackmultiscalewatershed.cpp
 
 DISTFILES += \

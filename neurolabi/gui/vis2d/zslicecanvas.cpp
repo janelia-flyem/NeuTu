@@ -199,7 +199,7 @@ bool ZSliceCanvas::paintTo(
     return false;
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << OUTPUT_HIGHTLIGHT_1 << "canvas transform: " << m_transform << std::endl;
   std::cout << OUTPUT_HIGHTLIGHT_1 << "painter transform: " << painterTransform << std::endl;
 #endif

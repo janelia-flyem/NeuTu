@@ -118,6 +118,7 @@ private:
     EWidgetType m_type = EWidgetType::LINE_EDIT;
     std::function<QVariant()> m_getter;
     std::function<void(const QVariant&)> m_setter;
+    QList<QWidget*> m_group;
 
     ValueManager() {}
     ValueManager(QWidget *widget, EWidgetType type,
@@ -135,6 +136,7 @@ private:
   void registerWidget(const QString &key, QCheckBox *widget);
 
   QWidget *getWidget(const QString &key) const;
+  QList<QWidget*> getWidgetGroup(const QString &key) const;
   void disableWidget(const QString &key);
   void hideWidget(const QString &key);
 

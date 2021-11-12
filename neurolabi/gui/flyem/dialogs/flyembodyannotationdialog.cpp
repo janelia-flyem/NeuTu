@@ -91,6 +91,19 @@ QWidget* FlyEmBodyAnnotationDialog::getWidget(const QString &key) const
   return nullptr;
 }
 
+QList<QWidget*> FlyEmBodyAnnotationDialog::getWidgetGroup(const QString &key) const
+{
+  QList<QWidget*> group;
+  if (m_widgetMap.contains(key)) {
+    auto vm = m_widgetMap.value(key);
+    group.append(vm.m_widget);
+    group.append(vm.m_group);
+//    return m_widgetMap[key].m_widget;
+  }
+
+  return group;
+}
+
 void FlyEmBodyAnnotationDialog::disableWidget(const QString &key)
 {
   QWidget *widget = getWidget(key);

@@ -24,7 +24,7 @@ bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutu::EAxis /*sliceAxis*/) const
 
 bool ZIntCuboidObj::isVisible_inner(const DisplayConfig &config) const
 {
-  if (!m_cuboid.isEmpty() && (config.getSliceAxis() == neutu::EAxis::Z)) {
+  if (!m_cuboid.isEmpty() && (config.hasRegularSliceAxis())) {
     return true;
   }
 
@@ -34,7 +34,8 @@ bool ZIntCuboidObj::isVisible_inner(const DisplayConfig &config) const
 bool ZIntCuboidObj::display_inner(
     QPainter *painter, const DisplayConfig &config) const
 {
-  if (config.getSliceAxis() == neutu::EAxis::Z) {
+//  if (config.getSliceAxis() == neutu::EAxis::Z) {
+  if (config.hasRegularSliceAxis()) {
 //    neutu::SetPenColor(painter, getColor());
 
 #ifdef _DEBUG_
@@ -47,9 +48,26 @@ bool ZIntCuboidObj::display_inner(
         config.getWorldViewTransform().transform(cuboid.getMaxCorner());
 
     Qt::PenStyle penStyle = Qt::DashLine;
-    if (minCorner.getZ() <= 0 && maxCorner.getZ() >= 0) {
+    if (minCorner.getZ() * maxCorner.getZ() <= 0) {
       penStyle = Qt::SolidLine;
     }
+
+    this->m_hitMap[config.getViewId()] =
+        [=](const ZStackObject */*obj*/, double x, double y, double z) {
+      ZPoint pt = config.getWorldViewTransform().transform({x, y, z});
+      if (minCorner.getZ() * maxCorner.getZ() <= 0) {
+        constexpr double margin = 5.0;
+        return ((pt.getX() >= minCorner.getX() - margin &&
+                 pt.getY() >= minCorner.getY() - margin &&
+                 pt.getX() < maxCorner.getX() + margin &&
+                 pt.getY() < maxCorner.getY() + margin) &&
+                !(pt.getX() >= minCorner.getX() + margin &&
+                  pt.getY() >= minCorner.getY() + margin &&
+                  pt.getX() < maxCorner.getX() - margin &&
+                  pt.getY() < maxCorner.getY() - margin));
+      }
+      return false;
+    };
 
     neutu::RevisePen(painter, [&](QPen &pen) {
       pen.setStyle(penStyle);
@@ -236,6 +254,7 @@ bool ZIntCuboidObj::hit(double x, double y, neutu::EAxis axis)
             x < lastCorner.getX() - 5 && y < lastCorner.getY() - 5));
 }
 
+/*
 bool ZIntCuboidObj::hit(double x, double y, double z)
 {
   if (isOnSlice(z, neutu::EAxis::Z)) {
@@ -244,6 +263,7 @@ bool ZIntCuboidObj::hit(double x, double y, double z)
 
   return false;
 }
+*/
 
 void ZIntCuboidObj::clear()
 {

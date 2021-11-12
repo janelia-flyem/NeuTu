@@ -94,6 +94,13 @@ neutu::EAxis neutu::data3d::DisplayConfig::getSliceAxis() const
   return m_transform.getSliceAxis();
 }
 
+bool neutu::data3d::DisplayConfig::hasRegularSliceAxis() const
+{
+  return (getSliceAxis() == neutu::EAxis::X ||
+          getSliceAxis() == neutu::EAxis::Y ||
+          getSliceAxis() == neutu::EAxis::Z);
+}
+
 neutu::data3d::EDisplayStyle neutu::data3d::DisplayConfig::getStyle() const
 {
   return m_alignedConfig.getStyle();

@@ -4,10 +4,13 @@
 #include <string>
 #include <set>
 #include <cstdint>
+#include <functional>
 
 class ZIntPoint;
 class ZStack;
 class ZSwcTree;
+class ZRect2d;
+class ZIntCuboidObj;
 
 namespace flyem
 {
@@ -30,6 +33,15 @@ int64_t GetMutationId(const ZSwcTree &tree);
 void SetMutationId(ZSwcTree *tree, int64_t mid);
 
 int GetSkeletonVersion(const ZSwcTree &tree);
+
+/*!
+ * \brief Create a cuboid split ROI from a plane rectangle
+ *
+ * \a prepare will called on \a rect to modify it potentially before converting
+ * \a rect to a box.
+ */
+ZIntCuboidObj* MakeSplitRoi(
+    ZRect2d *rect, std::function<void(ZRect2d*)> prepare = nullptr);
 
 }
 

@@ -299,3 +299,14 @@ void ZInteractiveContext::setSliceAxis(int viewId, neutu::EAxis axis)
   }
 }
 
+void ZInteractiveContext::setRectTarget(neutu::mvc::ERectTarget target)
+{
+  m_rectTarget = target;
+}
+
+neutu::mvc::ERectTarget
+ZInteractiveContext::getRectTarget() const
+{
+  return m_rectTarget;
+}
+

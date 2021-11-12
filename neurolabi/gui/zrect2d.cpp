@@ -125,39 +125,54 @@ bool ZRect2d::isEmpty() const
   return getWidth() <= 0 || getHeight() <= 0;
 }
 
+// Don't make empty rect invisible because it needs bound box func update to
+// respond to size change properly.
 bool ZRect2d::isVisible_inner(const DisplayConfig &config) const
 {
-  return (!isEmpty() && m_viewId == config.getViewId());
+  return (m_viewId == config.getViewId());
 }
 
 bool ZRect2d::display_inner(QPainter *painter, const DisplayConfig &config) const
 {
+  bool painted = false;
   if (isVisible(config)) {
-    int x1 = m_x0 + m_width - 1;
-    int y1 = m_y0 + m_height - 1;
-    neutu::DrawIntRect(*painter, m_x0, m_y0, x1, y1);
+    this->_hit = [](const ZStackObject*, double,double,double) { return false; };
+    this->_getBoundBox = nullptr;
+    this->_getAffineRect = nullptr;
 
-    if (isSelected()) {
-      neutu::DrawLine(*painter, QPoint(m_x0, m_y0), QPoint(x1, y1));
+    if (!isEmpty()) {
+      int x1 = m_x0 + m_width - 1;
+      int y1 = m_y0 + m_height - 1;
+      neutu::DrawIntRect(*painter, m_x0, m_y0, x1, y1);
+
+      if (isSelected()) {
+        neutu::DrawLine(*painter, QPoint(m_x0, m_y0), QPoint(x1, y1));
+      }
+
+      this->_hit = [=](const ZStackObject *obj, double x, double y, double z) {
+        auto s = dynamic_cast<const ZRect2d*>(obj);
+        ZPoint pt = config.getTransform().transform(x, y, z);
+        return ((pt.getX() >= s->m_x0 - 5 && pt.getY() >= s->m_y0 - 5 &&
+                 pt.getX() < s->m_x0 + s->m_width + 5 && pt.getY() < s->m_y0 + s->m_height + 5) &&
+                !(pt.getX() >= s->m_x0 + 5 && pt.getY() >= s->m_y0 + 5 &&
+                  pt.getX() < s->m_x0 + s->m_width - 5 && pt.getY() < s->m_y0 + s->m_height - 5));
+      };
+
+      painted = true;
     }
 
-    this->_hit = [=](const ZStackObject *obj, double x, double y, double z) {
-      auto s = dynamic_cast<const ZRect2d*>(obj);
-      ZPoint pt = config.getTransform().transform(x, y, z);
-      return ((pt.getX() >= s->m_x0 - 5 && pt.getY() >= s->m_y0 - 5 &&
-               pt.getX() < s->m_x0 + s->m_width + 5 && pt.getY() < s->m_y0 + s->m_height + 5) &&
-              !(pt.getX() >= s->m_x0 + 5 && pt.getY() >= s->m_y0 + 5 &&
-                pt.getX() < s->m_x0 + s->m_width - 5 && pt.getY() < s->m_y0 + s->m_height - 5));
-    };
-
     this->_getBoundBox = [=](const ZRect2d &rect) {
-      if ((rect.m_zSpan > 0) && (config.getSliceAxis() == neutu::EAxis::Z)) {
+      if ((rect.m_zSpan > 0) && (config.hasRegularSliceAxis())) {
+        double zSpan = rect.m_zSpan;
+        if (config.getTransform().getScale() > 0) {
+          zSpan /= config.getTransform().getScale();
+        }
         ZPoint minCorner = config.getTransform().inverseTransform(
-              rect.m_x0, rect.m_y0, -rect.m_zSpan);
+              rect.m_x0, rect.m_y0, -zSpan);
         ZPoint maxCorner = config.getTransform().inverseTransform(
               rect.m_x0 + rect.m_width,
-              rect.m_y0 + rect.m_height, rect.m_zSpan);
-        return ZCuboid(minCorner, maxCorner);
+              rect.m_y0 + rect.m_height, zSpan);
+        return ZCuboid::MakeFromCorner(minCorner, maxCorner);
       }
 
       return ZCuboid();
@@ -172,13 +187,9 @@ bool ZRect2d::display_inner(QPainter *painter, const DisplayConfig &config) cons
       ar.setCenter(config.getTransform().inverseTransform(pt.getX(), pt.getY()));
       return ar;
     };
-
-    return true;
-  } else {
-    this->_hit = [](const ZStackObject*, double,double,double) { return false; };
   }
 
-  return false;
+  return painted;
 }
 
 #if 0

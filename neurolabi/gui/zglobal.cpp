@@ -479,7 +479,7 @@ void ZGlobal::InitKafkaTracer(std::string serviceName)
 #endif
 
   if (const char* kafkaBrokersEnv = std::getenv(envName.c_str())) {
-    // The list of brokers should be separated by commans, per this example:
+    // The list of brokers should be separated by commas, per this example:
     // https://www.npmjs.com/package/node-rdkafka
     kafkaBrokers = kafkaBrokersEnv;
   }

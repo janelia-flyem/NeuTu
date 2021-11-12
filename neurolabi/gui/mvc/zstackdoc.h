@@ -50,7 +50,7 @@
 #include "zresolution.h"
 
 #include "zstackdocmeta.h"
-//#include "mvc/mvcdef.h"
+#include "mvc/mvcdef.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -267,8 +267,8 @@ public: //attributes
   /*!
    * \brief Map stack coodinates to data space
    */
-  void mapToDataCoord(ZPoint *pt);
-  void mapToDataCoord(double *x, double *y, double *z);
+//  void mapToDataCoord(ZPoint *pt);
+//  void mapToDataCoord(double *x, double *y, double *z);
 
   /*!
    * \brief Data coordinates to stack coordinates
@@ -851,6 +851,7 @@ public:
   ZRect2d* getRect2dRoi() const;
   ZAffineRect getRectRoi() const;
   ZIntCuboid getCuboidRoi() const;
+  bool hasValidRect2dRoi() const;
 
   ZCuboid getSelectedBoundBox() const;
 
@@ -1117,12 +1118,8 @@ public:
   void addTask(std::function<void()> f);
   void addTask(const QString &name, std::function<void()> f);
 
-  enum class ERoiRole {
-    NONE, GENERAL, SPLIT
-  };
-
   virtual void processRectRoiUpdate(
-      ZRect2d *rect, ERoiRole role, bool appending);
+      ZRect2d *rect, const neutu::mvc::RectState &state);
   /*
   inline void setLastAddedSwcNode(Swc_Tree_Node *tn) {
     m_lastAddedSwcNode = tn;
@@ -1418,7 +1415,7 @@ protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
-  virtual ZStackArray createWatershedMask(bool selectedOnly) const;
+//  virtual ZStackArray createWatershedMask(bool selectedOnly) const;
   virtual void makeKeyProcessor();
   void addTaskSlot(ZTask *task);
   void endWorkThread();

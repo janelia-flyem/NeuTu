@@ -10,6 +10,7 @@
 
 #include "common/neutudefs.h"
 #include "data3d/displayconfig.h"
+#include "mvc/mvcdef.h"
 
 class ZPoint;
 class ZImageWidget;
@@ -198,6 +199,8 @@ public:
   bool acceptingRect() const { return m_acceptingRect; }
   void setRectSpan(bool on) { m_rectSpan = on; }
   bool rectSpan() const { return m_rectSpan; }
+  void setRectTarget(neutu::mvc::ERectTarget target);
+  neutu::mvc::ERectTarget getRectTarget() const;
 
   int getViewId() const;
   void setViewId(int viewId);
@@ -220,6 +223,7 @@ private:
   bool m_blockingContextMenu;
   bool m_acceptingRect;
   bool m_rectSpan;
+  neutu::mvc::ERectTarget m_rectTarget = neutu::mvc::ERectTarget::PLANE_ROI;
 //  neutu::EAxis m_sliceAxis;
   int m_keyIndex;
   int m_viewId = -1;

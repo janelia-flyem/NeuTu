@@ -345,6 +345,25 @@ void ZImageWidget::zoomTo(const QPoint &center, int w, int h)
 //  updateView();
 }
 
+double ZImageWidget::getScaleHintFromRange(
+    double w, double h, neutu::data3d::ESpace space) const
+{
+  double scale = std::max(m_detailScale, m_sliceViewTransform.getScale());
+
+  if (w > 0.0 && h >= 0.0) {
+    double rangeScale = std::min(width() / w, height() / h);
+    if (space == neutu::data3d::ESpace::CANVAS) {
+      rangeScale *= m_sliceViewTransform.getScale();
+    }
+
+    if (scale < rangeScale) {
+      scale = rangeScale;
+    }
+  }
+
+  return scale;
+}
+
 void ZImageWidget::zoomTo(
     const ZPoint &pt, double w, double h, neutu::data3d::ESpace space)
 {

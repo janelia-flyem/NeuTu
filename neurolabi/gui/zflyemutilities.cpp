@@ -6,6 +6,9 @@
 #include "geometry/zintpoint.h"
 #include "zstack.hxx"
 #include "zswctree.h"
+#include "zrect2d.h"
+#include "zintcuboidobj.h"
+#include "zstackobjectsourcefactory.h"
 
 double flyem::GetFlyEmRoiMarkerRadius(double s)
 {
@@ -148,4 +151,26 @@ void flyem::SetMutationId(ZSwcTree *tree, int64_t mid)
     jsonObj.setEntry(mutation_key, mid);
     tree->addComment("$" + jsonObj.dumpString(0));
   }
+}
+
+ZIntCuboidObj* flyem::MakeSplitRoi(
+    ZRect2d *rect, std::function<void(ZRect2d*)> prepare)
+{
+  ZIntCuboidObj *roi = nullptr;
+  if (rect) {
+    if (prepare) {
+      prepare(rect);
+    }
+    if (!rect->isEmpty()) {
+      roi = new ZIntCuboidObj;
+      roi->setColor(QColor(255, 255, 255));
+      roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+      //  roi->addVisualEffect(neutube::display::Box::VE_GRID); //For testing
+      roi->clear();
+      roi->setRole(ZStackObjectRole::ROLE_ROI);
+      roi->setCuboid(rect->getIntBoundBox());
+    }
+  }
+
+  return roi;
 }

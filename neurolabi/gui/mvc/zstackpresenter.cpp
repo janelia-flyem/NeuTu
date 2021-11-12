@@ -2111,6 +2111,11 @@ bool ZStackPresenter::processKeyPressEventForStroke(QKeyEvent *event)
       tryDrawRectMode();
       if (event->modifiers() == Qt::ControlModifier) {
         interactiveContext().setRectSpan(true);
+        interactiveContext().setRectTarget(
+              neutu::mvc::ERectTarget::CUBOID_ROI);
+      } else {
+        interactiveContext().setRectTarget(
+              neutu::mvc::ERectTarget::PLANE_ROI);
       }
       taken = true;
     } else {
@@ -3755,10 +3760,10 @@ void ZStackPresenter::selectConnectedNode()
   buddyDocument()->selectConnectedNode();
 }
 
-void ZStackPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
+void ZStackPresenter::processRectRoiUpdate(
+    ZRect2d *rect, const neutu::mvc::RectState &state)
 {
-  buddyDocument()->processRectRoiUpdate(
-        rect, ZStackDoc::ERoiRole::GENERAL, appending);
+  buddyDocument()->processRectRoiUpdate(rect, state);
 }
 
 void ZStackPresenter::acceptRectRoi(bool appending)
@@ -3770,17 +3775,23 @@ void ZStackPresenter::acceptRectRoi(bool appending)
   if (rect) {
 #ifdef _DEBUG_
     std::cout << OUTPUT_HIGHTLIGHT_2
-              << "Update rect " << rect->getSource() << std::endl;
+              << "Update rect " << rect->getSource() << " " << rect->getWidth()
+              << "x" << rect->getHeight() << std::endl;
 #endif
     rect->setColor(QColor(255, 255, 255));
-    if (interactiveContext().rectSpan()) {
-      rect->updateZSpanWithMinSide();
+
+    if (interactiveContext().getRectTarget() == neutu::mvc::ERectTarget::CUBOID_ROI) {
+      rect->updateZSpanWithRadius();
 #ifdef _DEBUG_
     std::cout << OUTPUT_HIGHTLIGHT_2
               << "Update rect span: " << rect->getZSpan() << std::endl;
 #endif
     }
-    processRectRoiUpdate(rect, appending);
+    neutu::mvc::RectState state;
+    state.appending = appending;
+    state.target = interactiveContext().getRectTarget();
+    state.role = neutu::mvc::ERoiRole::GENERAL;
+    processRectRoiUpdate(rect, state);
   }
 
 //  exitRectEdit();
@@ -5004,6 +5015,7 @@ bool ZStackPresenter::isSwcFullSkeletonVisible() const
   return m_actionMap[ZActionFactory::ACTION_TOGGLE_SWC_SKELETON]->isChecked();
 }
 
+/*
 void ZStackPresenter::testBiocytinProjectionMask()
 {
   interactiveContext().setStrokeEditMode(
@@ -5044,6 +5056,7 @@ void ZStackPresenter::testBiocytinProjectionMask()
 
   delete stack;
 }
+*/
 
 #if 0
 bool ZStackPresenter::isActiveObjectOn(EObjectRole role) const

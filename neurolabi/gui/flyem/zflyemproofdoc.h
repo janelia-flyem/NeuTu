@@ -366,7 +366,8 @@ public:
   void notifyBodyLock(uint64_t bodyId, bool locking);
 
 public: //ROI functions
-  void processRectRoiUpdate(ZRect2d *rect, ERoiRole role, bool appending) override;
+  void processRectRoiUpdate(
+      ZRect2d *rect, const neutu::mvc::RectState &state) override;
   ZIntCuboidObj* getSplitRoi() const;
   void updateSplitRoi(ZRect2d *rect, bool appending);
   void selectBodyInRoi(int z, bool appending, bool removingRoi);
@@ -870,6 +871,8 @@ private:
   void runSplitFunc(neutu::EBodySplitMode mode);
   void localSplitFunc(neutu::EBodySplitMode mode);
   void runFullSplitFunc(neutu::EBodySplitMode mode);
+
+  ZIntCuboidObj* makeSplitRoi(ZRect2d *rect) const;
 
   /*
   ZIntCuboid estimateSplitRoi();

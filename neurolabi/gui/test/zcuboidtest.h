@@ -51,6 +51,33 @@ TEST(ZIntCuboid, Basic)
   ASSERT_EQ(ZPoint(51, 101.5, 152), box.getExactCenter());
 }
 
+TEST(ZCuboid, Make)
+{
+  {
+    ZCuboid box = ZCuboid::MakeFromCorner({-1, -2, -3}, {3, 4, 5});
+    ASSERT_EQ(ZPoint(-1, -2, -3), box.getMinCorner());
+    ASSERT_EQ(ZPoint(3, 4, 5), box.getMaxCorner());
+  }
+
+  {
+    ZCuboid box = ZCuboid::MakeFromCorner({3, 4, 5}, {-1, -2, -3});
+    ASSERT_EQ(ZPoint(-1, -2, -3), box.getMinCorner());
+    ASSERT_EQ(ZPoint(3, 4, 5), box.getMaxCorner());
+  }
+
+  {
+    ZCuboid box = ZCuboid::MakeFromCorner({3, -2, -3}, {-1, 4, 5});
+    ASSERT_EQ(ZPoint(-1, -2, -3), box.getMinCorner());
+    ASSERT_EQ(ZPoint(3, 4, 5), box.getMaxCorner());
+  }
+
+  {
+    ZCuboid box = ZCuboid::MakeFromCorner({3, 4, -3}, {-1, -2, 5});
+    ASSERT_EQ(ZPoint(-1, -2, -3), box.getMinCorner());
+    ASSERT_EQ(ZPoint(3, 4, 5), box.getMaxCorner());
+  }
+}
+
 TEST(ZIntCuboid, Set)
 {
   ZIntCuboid box;

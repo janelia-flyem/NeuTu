@@ -75,6 +75,7 @@
 #include "roi/zroiprovider.h"
 #include "roi/zdvidroifactory.h"
 
+#include "zflyemutilities.h"
 #include "zflyembookmark.h"
 #include "zsynapseannotationarray.h"
 #include "zflyemproofdockeyprocessor.h"
@@ -5733,6 +5734,24 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
         ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource()));
 }
 
+ZIntCuboidObj* ZFlyEmProofDoc::makeSplitRoi(ZRect2d *rect) const
+{
+  ZIntCuboidObj *roi = nullptr;
+  if (!rect->isEmpty()) {
+    roi = new ZIntCuboidObj;
+    roi->setColor(QColor(255, 255, 255));
+    roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+    //  roi->addVisualEffect(neutube::display::Box::VE_GRID); //For testing
+    roi->clear();
+
+    roi->setRole(ZStackObjectRole::ROLE_ROI);
+    rect->updateZSpanWithRadius();
+    roi->setCuboid(rect->getIntBoundBox());
+  }
+
+  return roi;
+}
+
 bool ZFlyEmProofDoc::isSplitRunning() const
 {
   return m_futureMap.isAlive(THREAD_SPLIT);
@@ -6001,52 +6020,56 @@ void ZFlyEmProofDoc::runSplitFunc(
 }
 
 void ZFlyEmProofDoc::processRectRoiUpdate(
-    ZRect2d *rect, ERoiRole role, bool appending)
+    ZRect2d *rect, const neutu::mvc::RectState &state)
 {
-  if (role == ERoiRole::SPLIT) {
-    updateSplitRoi(rect, appending);
+  if (state.role == neutu::mvc::ERoiRole::SPLIT &&
+      state.target == neutu::mvc::ERectTarget::CUBOID_ROI) {
+    updateSplitRoi(rect, state.appending);
   }
 }
 
 void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 {
 //  ZRect2d rect = getRect2dRoi();
-
-  ZUndoCommand *command = new ZUndoCommand("Update ROI");
-
   beginObjectModifiedMode(ZStackDoc::EObjectModifiedMode::CACHE);
-  /*
-  ZIntCuboidObj* roi = ZFlyEmProofDoc::getSplitRoi();
-  if (roi == NULL) {
-  */
-  ZIntCuboidObj* roi = new ZIntCuboidObj;
-  roi->setColor(QColor(255, 255, 255));
-  roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
-//  roi->addVisualEffect(neutube::display::Box::VE_GRID); //For testing
-  roi->clear();
 
-  roi->setRole(ZStackObjectRole::ROLE_ROI);
-  new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
-//    addObject(roi);
-//  }
-  rect->updateZSpanWithRadius();
+  ZUndoCommand *command = nullptr;
 
-  roi->setCuboid(rect->getIntBoundBox());
-
-  if (appending) {
-    ZIntCuboidObj *oldRoi = getSplitRoi();
-    if (oldRoi != NULL) {
-      roi->join(oldRoi->getCuboid());
+  ZIntCuboidObj *oldRoi = getSplitRoi();
+  bool roiChanged = false;
+//  ZIntCuboidObj *roi = makeSplitRoi(rect);
+  auto prepareRectForBox = [=](ZRect2d *rect) {
+    if (appending && rect->isEmpty()) {
+      rect->setSize(1, 1);
+      rect->setZSpan(1);
+    } else {
+      rect->updateZSpanWithRadius();
     }
+  };
+  ZIntCuboidObj *roi = flyem::MakeSplitRoi(rect, prepareRectForBox);
+  if (roi) {
+    if (appending) {
+      if (oldRoi != NULL) {
+        roi->join(oldRoi->getCuboid());
+      }
+    }
+    command = new ZUndoCommand("Update ROI");
+    new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
+    roiChanged = true;
+  } else if (oldRoi) {
+    roiChanged = true;
   }
 
-  deprecateSplitSource();
-
-  executeRemoveObjectCommand(getSplitRoi());
+  if (roiChanged) {
+    deprecateSplitSource();
+    executeRemoveObjectCommand(oldRoi);
+  }
 
   removeObject(rect, true);
 
-  pushUndoCommand(command);
+  if (command) {
+    pushUndoCommand(command);
+  }
 
   endObjectModifiedMode();
   processObjectModified();

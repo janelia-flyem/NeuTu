@@ -631,7 +631,9 @@ void ZMouseEventMoveMapper::mapLeftButtonOperation(
     const ZMouseEvent &event, ZStackOperator &op) const
  {
    if (event.getModifiers() == Qt::ShiftModifier) {
-     if (hasMode(ZInteractiveContext::INTERACT_OBJECT_MOVE) ||
+     if (hasMode(ZInteractiveContext::INTERACT_RECT_DRAW)) {
+       op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
+     } else if (hasMode(ZInteractiveContext::INTERACT_OBJECT_MOVE) ||
          hasMode(ZInteractiveContext::INTERACT_SWC_MOVE_NODE)) {
        op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
      } else if (m_context->getSliceAxis(event.getViewId()) == neutu::EAxis::ARB) {

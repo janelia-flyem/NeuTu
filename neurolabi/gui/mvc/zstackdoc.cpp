@@ -9745,6 +9745,7 @@ ZIntPoint ZStackDoc::getDataCoord(int x, int y, int z)
                 z + getStackOffset().getZ());
 }
 
+#if 0
 void ZStackDoc::mapToDataCoord(ZPoint *pt)
 {
   if (pt != NULL) {
@@ -9767,6 +9768,7 @@ void ZStackDoc::mapToDataCoord(double *x, double *y, double *z)
     *z += getStackOffset().getZ();
   }
 }
+#endif
 
 void ZStackDoc::mapToStackCoord(ZPoint *pt)
 {
@@ -9855,7 +9857,7 @@ void ZStackDoc::reloadData(ZStackDocReader &reader)
   addData(reader);
 }
 
-
+#if 0
 ZStackArray ZStackDoc::createWatershedMask(bool selectedOnly) const
 {
   ZStackArray maskArray;
@@ -9950,6 +9952,7 @@ ZStackArray ZStackDoc::createWatershedMask(bool selectedOnly) const
 
   return maskArray;
 }
+#endif
 
 void ZStackDoc::toggleVisibility(ZStackObjectRole::TRole role)
 {
@@ -10686,6 +10689,16 @@ ZRect2d* ZStackDoc::getRect2dRoi() const
           ZStackObjectSourceFactory::MakeRectRoiSource()));
 }
 
+bool ZStackDoc::hasValidRect2dRoi() const
+{
+  ZRect2d *rectRoi = getRect2dRoi();
+  if (rectRoi) {
+    return (!rectRoi->isEmpty());
+  }
+
+  return false;
+}
+
 void ZStackDoc::setKeyProcessor(ZStackDocKeyProcessor *processor)
 {
   m_keyProcessor = processor;
@@ -11060,7 +11073,7 @@ void ZStackDoc::processRectRoiUpdateSlot()
 */
 
 void ZStackDoc::processRectRoiUpdate(
-    ZRect2d *rect, ERoiRole /*role*/, bool /*appending*/)
+    ZRect2d *rect, const neutu::mvc::RectState &/*state*/)
 {
   if (rect != NULL) {
     rect->setRole(ZStackObjectRole::ROLE_ROI);

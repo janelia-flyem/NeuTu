@@ -132,6 +132,14 @@ public:
   bool contains(const ZPoint &pt) const;
   bool contains(const ZCuboid &box) const;
 
+  /*!
+   * \brief Make a cuboid from two corners
+   *
+   * It assumes that \a c1 and \a c2 are two diagonal corners without a specific
+   * order.
+   */
+  static ZCuboid MakeFromCorner(const ZPoint &c1, const ZPoint &c2);
+
 private:
   static double computeDistance(double minX1, double maxX1,
                                 double minX2, double maxX2);

@@ -753,3 +753,16 @@ bool ZCuboid::contains(const ZCuboid &box) const
 {
   return contains(box.getMinCorner()) && contains(box.getMaxCorner());
 }
+
+ZCuboid ZCuboid::MakeFromCorner(const ZPoint &c1, const ZPoint &c2)
+{
+  ZCuboid box;
+  box.setMinCorner({std::min(c1.getX(), c2.getX()),
+                    std::min(c1.getY(), c2.getY()),
+                    std::min(c1.getZ(), c2.getZ())});
+  box.setMaxCorner({std::max(c1.getX(), c2.getX()),
+                    std::max(c1.getY(), c2.getY()),
+                    std::max(c1.getZ(), c2.getZ())});
+
+  return box;
+}

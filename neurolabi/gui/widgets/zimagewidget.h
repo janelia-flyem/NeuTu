@@ -350,6 +350,9 @@ private:
   void blockTransformSyncSignal(bool blocking);
   void notifyTransformChanged();
 
+  double getScaleHintFromRange(
+      double w, double h, neutu::data3d::ESpace space) const;
+
 private:
   ZImage *m_image = nullptr;
   QVector<ZImage*> m_mask;

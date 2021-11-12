@@ -1758,26 +1758,30 @@ bool ZFlyEmProofPresenter::showingData() const
   return m_showingData;
 }
 
-void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
+void ZFlyEmProofPresenter::processRectRoiUpdate(
+    ZRect2d *rect, const neutu::mvc::RectState &state)
 {
-  if (!rect->isEmpty()) {
-    ZStackDoc::ERoiRole roiRole = ZStackDoc::ERoiRole::GENERAL;
-    if (isSplitOn()) {
-      roiRole =  (rect->getZSpan() > 0)
-          ? ZStackDoc::ERoiRole::SPLIT
-          : ZStackDoc::ERoiRole::NONE;
-    }
+//  ZStackDoc::ERoiRole roiRole = ZStackDoc::ERoiRole::GENERAL;
+  neutu::mvc::RectState newState = state;
+  if (isSplitOn()) {
+//      roiRole = ZStackDoc::ERoiRole::SPLIT;
+    newState.role =  (state.target == neutu::mvc::ERectTarget::CUBOID_ROI)
+        ? neutu::mvc::ERoiRole::SPLIT
+        : neutu::mvc::ERoiRole::NONE;
+  }
 #ifdef _DEBUG_
-    std::cout << OUTPUT_HIGHTLIGHT_2
-              << "Process rect with role " << neutu::ToString(roiRole) << std::endl;
+  std::cout << OUTPUT_HIGHTLIGHT_2
+            << "Process rect with role " << neutu::ToString(newState.role) << std::endl;
 #endif
-    if (roiRole == ZStackDoc::ERoiRole::NONE) {
-      rect->setSize(0, 0);
-      buddyDocument()->processObjectModified(rect);
-    }
+  if (newState.role == neutu::mvc::ERoiRole::NONE) {
+    rect->setSize(0, 0);
+    buddyDocument()->processObjectModified(rect);
+  }
 
-    buddyDocument()->processRectRoiUpdate(rect, roiRole, appending);
-    if (roiRole == ZStackDoc::ERoiRole::GENERAL) {
+  buddyDocument()->processRectRoiUpdate(rect, newState);
+
+  if (newState.role == neutu::mvc::ERoiRole::GENERAL) {
+    if (buddyDocument()->hasValidRect2dRoi()) {
       interactiveContext().setAcceptingRect(true);
       QMenu *menu = getContextMenu();
       if (!menu->isEmpty()) {

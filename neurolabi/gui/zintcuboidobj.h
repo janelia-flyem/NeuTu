@@ -44,7 +44,7 @@ public:
   int getDepth() const;
 
   bool hit(double x, double y, neutu::EAxis axis) override;
-  bool hit(double x, double y, double z) override;
+//  bool hit(double x, double y, double z) override;
 
   inline const ZIntCuboid& getCuboid() const { return m_cuboid; }
 

@@ -59,7 +59,8 @@ public:
     m_splitMode = mode;
   }
 
-  void processRectRoiUpdate(ZRect2d *rect, bool appending) override;
+  void processRectRoiUpdate(
+      ZRect2d *rect, const neutu::mvc::RectState &state) override;
 
   ZKeyOperationConfig* getKeyConfig() override;
   void configKeyMap() override;
