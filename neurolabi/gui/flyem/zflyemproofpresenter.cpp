@@ -1769,7 +1769,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(
         ? neutu::mvc::ERoiRole::SPLIT
         : neutu::mvc::ERoiRole::NONE;
   }
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << OUTPUT_HIGHTLIGHT_2
             << "Process rect with role " << neutu::ToString(newState.role) << std::endl;
 #endif

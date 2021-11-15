@@ -845,8 +845,8 @@ bool ZDvidLabelSlice::consume(
     ZArray *array, const ZStackViewParam &viewParam, int zoom,
     int centerCutX, int centerCutY, bool usingCenterCut)
 {
-#ifdef _DEBUG_
-  std::cout << OUTPUT_HIGHTLIGHT_1 << __FUNCTION__ << std::endl;
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHLIGHT_1 << __FUNCTION__ << std::endl;
 #endif
   bool succ = false;
   if (array != NULL) {

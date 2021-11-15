@@ -111,6 +111,7 @@
 #include "test/zstacksourcetest.h"
 #include "test/commandtest.h"
 #include "test/z3dwindowtest.h"
+#include "test/maintest.h"
 
 #include "bigdata/tests/zitemchunktest.h"
 #include "bigdata/tests/zdatachunktest.h"

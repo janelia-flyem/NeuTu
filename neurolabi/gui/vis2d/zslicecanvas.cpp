@@ -8,7 +8,7 @@
 ZSliceCanvas::ZSliceCanvas()
 {
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "ZSliceCanvas ref count: " << getRefCount() << std::endl;
 #endif
 
@@ -20,7 +20,7 @@ ZSliceCanvas::ZSliceCanvas(int width, int height)
   m_pixmap.fill(Qt::transparent);
   setCanvasStatus(ECanvasStatus::CLEAN);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "ZSliceCanvas ref count: " << getRefCount() << std::endl;
 #endif
 }

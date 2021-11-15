@@ -603,7 +603,7 @@ void ZFlyEmBodySplitProject::result3dQuickFunc()
 }
 #endif
 
-void ZFlyEmBodySplitProject::showSplit3d()
+void ZFlyEmBodySplitProject::showSplit3d(const ZStackViewParam &viewParam)
 {
   ZStackDoc *mainDoc = getDocument();
 
@@ -648,9 +648,13 @@ void ZFlyEmBodySplitProject::showSplit3d()
 //        boxGraph->boundBox(&box);
         ZStackDocAccessor::AddObject(
               m_splitVis3dDoc.get(), boxGraph);
+        flyem::Decorate3dBodyWindowPlane(
+              m_splitVis3dWindow, m_dvidInfo, viewParam, true);
+        /*
         ZStackDocAccessor::AddObject(
               m_splitVis3dDoc.get(),
               flyem::MakePlaneGraph(getDocument(), m_dvidInfo));
+              */
         m_splitVis3dWindow->setYZView();
 //        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
@@ -3313,12 +3317,13 @@ void ZFlyEmBodySplitProject::emitWarn(const QString &msg, bool appending)
 }
 
 
-void ZFlyEmBodySplitProject::update3DViewPlane()
+void ZFlyEmBodySplitProject::update3DViewPlane(const ZStackViewParam &viewParam)
 {
   if (m_splitVis3dWindow) {
     if (m_dvidInfo.isValid()) {
-      Z3DGraph *graph = flyem::MakePlaneGraph(getDocument(), m_dvidInfo);
-      m_splitVis3dWindow->getDocument()->addObject(graph, true);
+      flyem::Decorate3dBodyWindowPlane(m_splitVis3dWindow, m_dvidInfo, viewParam);
+//      Z3DGraph *graph = flyem::MakePlaneGraph(getDocument(), m_dvidInfo);
+//      m_splitVis3dWindow->getDocument()->addObject(graph, true);
     }
   }
 }

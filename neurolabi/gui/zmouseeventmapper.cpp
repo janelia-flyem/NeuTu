@@ -629,35 +629,35 @@ bool ZMouseEventMoveMapper::isMouseMovedSignficantly(
 
 void ZMouseEventMoveMapper::mapLeftButtonOperation(
     const ZMouseEvent &event, ZStackOperator &op) const
- {
-   if (event.getModifiers() == Qt::ShiftModifier) {
-     if (hasMode(ZInteractiveContext::INTERACT_RECT_DRAW)) {
-       op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
-     } else if (hasMode(ZInteractiveContext::INTERACT_OBJECT_MOVE) ||
-         hasMode(ZInteractiveContext::INTERACT_SWC_MOVE_NODE)) {
-       op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
-     } else if (m_context->getSliceAxis(event.getViewId()) == neutu::EAxis::ARB) {
-       if (m_context->isExploreModeOff()) {
-         if (isMouseMovedSignficantly(event)) {
-           op.setOperation(ZStackOperator::OP_START_ROTATE_VIEW);
-         }
-       } else if (m_context->exploreMode() ==
-                  ZInteractiveContext::EXPLORE_ROTATE_IMAGE) {
-         op.setOperation(ZStackOperator::OP_ROTATE_VIEW);
-       }
-     }
-   } else {
-     if (hasMode(ZInteractiveContext::INTERACT_MOVE_CROSSHAIR)) {
-       op.setOperation(ZStackOperator::OP_CROSSHAIR_MOVE);
-     } else if (hasMode(ZInteractiveContext::INTERACT_STROKE_DRAW)) {
-       op.setOperation(ZStackOperator::OP_PAINT_STROKE);
-     } else if (hasMode(ZInteractiveContext::INTERACT_RECT_DRAW)) {
-       op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
-     } else {
-       mapToImageMove(event, op);
-     }
-   }
- }
+{
+  if (hasMode(ZInteractiveContext::INTERACT_MOVE_CROSSHAIR)) {
+    op.setOperation(ZStackOperator::OP_CROSSHAIR_MOVE);
+  } if (hasMode(ZInteractiveContext::INTERACT_STROKE_DRAW)) {
+    op.setOperation(ZStackOperator::OP_PAINT_STROKE);
+  } else if (hasMode(ZInteractiveContext::INTERACT_RECT_DRAW)) {
+    op.setOperation(ZStackOperator::OP_RECT_ROI_UPDATE);
+  }
+
+  if (op.isNull()) {
+    if (event.getModifiers() == Qt::ShiftModifier) {
+      if (hasMode(ZInteractiveContext::INTERACT_OBJECT_MOVE) ||
+          hasMode(ZInteractiveContext::INTERACT_SWC_MOVE_NODE)) {
+        op.setOperation(ZStackOperator::OP_MOVE_OBJECT);
+      } else if (m_context->getSliceAxis(event.getViewId()) == neutu::EAxis::ARB) {
+        if (m_context->isExploreModeOff()) {
+          if (isMouseMovedSignficantly(event)) {
+            op.setOperation(ZStackOperator::OP_START_ROTATE_VIEW);
+          }
+        } else if (m_context->exploreMode() ==
+                   ZInteractiveContext::EXPLORE_ROTATE_IMAGE) {
+          op.setOperation(ZStackOperator::OP_ROTATE_VIEW);
+        }
+      }
+    } else {
+      mapToImageMove(event, op);
+    }
+  }
+}
 
 void ZMouseEventMoveMapper::mapRightButtonOperation(const ZMouseEvent &event,
     ZStackOperator &op) const

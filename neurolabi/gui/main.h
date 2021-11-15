@@ -78,26 +78,35 @@ std::string get_machine_info()
 
 void sync_log_dir(const std::string &srcDir, const std::string &destDir)
 {
-    if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
-        QDir dir(srcDir.c_str());
-        dir.setFilter(QDir::Files | QDir::NoSymLinks);
-        QFileInfoList infoList =
-                dir.entryInfoList(QStringList() << "*.txt.*" << "*.txt");
+  if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
+    QDir dir(srcDir.c_str());
+    dir.setFilter(QDir::Files | QDir::NoSymLinks);
+    QFileInfoList infoList =
+        dir.entryInfoList(QStringList() << "*.txt.*" << "*.txt");
 
-        foreach (const QFileInfo &info, infoList) {
-            QString command =
-                    ("rsync -uv " + srcDir + "/" + info.fileName().toStdString() +
-                     " " + destDir + "/").c_str();
-            std::cout << command.toStdString() << std::endl;
-            QProcess process;
-            process.start(command);
-            process.waitForFinished(-1);
-            QString errorOutput = process.readAllStandardError();
-            QString standardOutout = process.readAllStandardOutput();
-            std::cout << errorOutput.toStdString() << std::endl;
-            std::cout << standardOutout.toStdString() << std::endl;
+    foreach (const QFileInfo &info, infoList) {
+      QString command =
+          ("rsync -uv " + srcDir + "/" + info.fileName().toStdString() +
+           " " + destDir + "/").c_str();
+      std::cout << command.toStdString() << std::endl;
+      QProcess process;
+      process.start(command);
+      if (process.waitForStarted()) {
+        process.waitForFinished(-1);
+        QString errorOutput = process.readAllStandardError();
+        QString standardOutout = process.readAllStandardOutput();
+        std::cout << errorOutput.toStdString() << std::endl;
+        std::cout << standardOutout.toStdString() << std::endl;
+        if (process.exitCode() != 0) {
+          std::cout << "WARNING: failed to sync log files from "
+                    << srcDir << " to " << destDir << std::endl;
         }
+      } else {
+        std::cout << "WARNING: Cannot start rsync to sync log files from "
+                  << srcDir << " to " << destDir << std::endl;
+      }
     }
+  }
 }
 
 std::string get_main_config_path(const std::string &configDir)
@@ -320,9 +329,6 @@ MainConfig get_program_config(int argc, char *argv[])
       }
     }
   }
-//  if (config.debugging || config.runCommandLine) {
-//    config.guiEnabled = false;
-//  }
 
   return config;
 }

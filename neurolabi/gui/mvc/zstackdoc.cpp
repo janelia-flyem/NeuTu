@@ -10899,6 +10899,7 @@ Z3DWindow* ZStackDoc::getParent3DWindow()
         static_cast<const ZStackDoc&>(*this).getParent3DWindow());
 }
 
+/*
 const ZStackMvc* ZStackDoc::getParentMvc() const
 {
   return getFirstUserByType<ZStackMvc>();
@@ -10909,6 +10910,7 @@ ZStackMvc* ZStackDoc::getParentMvc()
   return const_cast<ZStackMvc*>(
         static_cast<const ZStackDoc&>(*this).getParentMvc());
 }
+*/
 
 QString ZStackDoc::getTitle() const
 {

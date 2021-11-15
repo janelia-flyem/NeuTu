@@ -1,5 +1,7 @@
 #include "zinteractionengine.h"
 #include <QMouseEvent>
+
+#include "common/debug.h"
 #include "z3dinteractionhandler.h"
 #include "zstackoperator.h"
 #include "zstackdockeyprocessor.h"
@@ -62,6 +64,10 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
 
   if (m_interactiveContext.strokeEditMode() ==
       ZInteractiveContext::STROKE_DRAW) {
+#ifdef _DEBUG_0
+    std::cout << OUTPUT_HIGHTLIGHT_2 << "Extend stroke: "
+              << event->x() << ", " << event->y() << std::endl;
+#endif
     if (m_mouseLeftButtonPressed == true){
       m_stroke.append(event->x(), event->y());
       event->accept();
@@ -273,6 +279,11 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 
 void ZInteractionEngine::enterPaintStroke()
 {
+#ifdef _DEBUG_0
+    std::cout << OUTPUT_HIGHTLIGHT_2 << "Activate stroke paint: "
+              << m_mouseMovePosition[0] << ", "
+              << m_mouseMovePosition[1] << std::endl;
+#endif
   exitEditMode();
 
   m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
@@ -441,6 +452,9 @@ void ZInteractionEngine::saveStroke()
   if (m_stroke.isVisible() && !m_stroke.isEmpty()) {
     ZStroke2d *stroke = new ZStroke2d;
     *stroke = m_stroke;
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_2 << __FUNCTION__ << std::endl;
+#endif
     //m_dataBuffer->addStroke(stroke);
     emit strokePainted(stroke);
   }

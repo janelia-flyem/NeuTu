@@ -418,8 +418,8 @@ public:
   const Z3DWindow *getParent3DWindow() const;
   Z3DWindow* getParent3DWindow();
 
-  const ZStackMvc *getParentMvc() const;
-  ZStackMvc* getParentMvc();
+//  const ZStackMvc *getParentMvc() const;
+//  ZStackMvc* getParentMvc();
 
   template<typename T>
   QList<T*> getUserList() const;

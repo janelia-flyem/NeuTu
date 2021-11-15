@@ -4,6 +4,7 @@ HEADERS += \
   $$PWD/flyembodyannotationiotest.h \
   $$PWD/flyembodyannotationmanagertest.h \
     $$PWD/flyemutilitiestest.h \
+  $$PWD/maintest.h \
     $$PWD/miscutilitytest.h \
     $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \

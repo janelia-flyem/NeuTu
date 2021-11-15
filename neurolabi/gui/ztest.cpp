@@ -67,6 +67,7 @@
 
 #include "neulib/core/stringbuilder.h"
 #include "ext/QFunctionUtils/src/QFunctionUtils"
+#include "common/debug.h"
 #include "geometry/zaffinerect.h"
 #include "filesystem/utilities.h"
 #include "tr1_header.h"
@@ -32480,7 +32481,7 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 1
+#if 0
   ZStack *stack = new ZStack;
   stack->load(GET_TEST_DATA_DIR + "/_system/emstack2.tif");
 //  ZStack *stack = ZStackFactory::MakeVirtualStack(512, 512, 512);
@@ -33213,6 +33214,15 @@ void ZTest::test(MainWindow *host)
   ZStack *dest = ZStackFactory::MakeZeroStack(512, 512, 512);
   std::vector<int> blockCoords{4, 3, 3};
   reader->readGrayScaleBlock(blockCoords, 5, dest);
+#endif
+
+#if 1
+  HLDebug("test") << "test" << std::endl;
+  HLDebug("test2") << "test" << std::endl;
+  HLDebug("test3") << "test" << std::endl;
+  HLDebug("test4") << "test" << std::endl;
+  HLDebug("test") << "test" << std::endl;
+  HLDebug("test") << "test" << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

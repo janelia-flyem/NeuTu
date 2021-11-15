@@ -721,10 +721,19 @@ void ZStackPresenter::updateMouseCursorGlyphPos()
 {
   ZPoint dataPos = getCurrentMousePosition(neutu::data3d::ESpace::MODEL);
   if (dataPos.isValid()) {
-    auto postProc = [=](ZStackObject *obj) {
+    auto postProc = [&](ZStackObject *obj) {
+      ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
+      if (stroke) {
+        stroke->toggleLabel(
+              m_mouseEventProcessor.getLatestMouseEvent().getModifiers() ==
+              Qt::ShiftModifier);
+      }
       buddyDocument()->processObjectModified(obj);
     };
     if (paintingStroke()) {
+#ifdef _DEBUG_0
+      std::cout << OUTPUT_HIGHTLIGHT_2 << "Extend stroke: " << dataPos << std::endl;
+#endif
       m_mouseCursorGlyph->appendActiveGlyphPosition(dataPos, postProc);
     } else {
       m_mouseCursorGlyph->setActiveGlyphPosition(dataPos, postProc);
@@ -1909,7 +1918,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event, int viewId)
     return;
   }
 
-  updateMouseCursorGlyphPos();
+//  updateMouseCursorGlyphPos();
 
 #ifdef _DEBUG_2
   std::cout << "Recorder address: " << &(m_mouseEventProcessor.getRecorder())
@@ -1920,6 +1929,11 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event, int viewId)
   ZStackOperator op = m_mouseEventProcessor.getOperator();
 
   process(op);
+
+#ifdef _DEBUG_
+  std::cout << "Mouse move processed: " << event->x() << ", " << event->y()
+            << std::endl;
+#endif
 }
 
 #if 0
@@ -3018,6 +3032,7 @@ void ZStackPresenter::enterSwcMoveMode()
 {
   const Swc_Tree_Node *tn = getSelectedSwcNode();
   if (tn != NULL) {
+    exitEdit();
     interactiveContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_MOVE_NODE);
     notifyUser("Hold the Shift key and then move the mouse with left button pressed "
@@ -3241,6 +3256,10 @@ void ZStackPresenter::enterDrawStrokeMode(double /*x*/, double /*y*/)
 {
 //  buddyDocument()->mapToDataCoord(&x, &y, NULL);
 
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_2 << "enterDrawStrokeMode" << std::endl;
+#endif
+
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
   m_mouseCursorGlyph->activate(ZMouseCursorGlyph::ERole::ROLE_STROKE);
   updateMouseCursorGlyphPos();
@@ -3315,6 +3334,9 @@ void ZStackPresenter::exitStrokeEdit()
 {
   turnOffActiveObject();
 //  turnOffStroke();
+#ifdef _DEBUG_0
+  std::cout << OUTPUT_HIGHTLIGHT_2 << "Exit stroke edit" << std::endl;
+#endif
   interactiveContext().setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
   updateCursor();
 
@@ -3773,7 +3795,7 @@ void ZStackPresenter::acceptRectRoi(bool appending)
         ZStackObjectSourceFactory::MakeRectRoiSource());
   ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
   if (rect) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << OUTPUT_HIGHTLIGHT_2
               << "Update rect " << rect->getSource() << " " << rect->getWidth()
               << "x" << rect->getHeight() << std::endl;
@@ -3782,7 +3804,7 @@ void ZStackPresenter::acceptRectRoi(bool appending)
 
     if (interactiveContext().getRectTarget() == neutu::mvc::ERectTarget::CUBOID_ROI) {
       rect->updateZSpanWithRadius();
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << OUTPUT_HIGHTLIGHT_2
               << "Update rect span: " << rect->getZSpan() << std::endl;
 #endif
@@ -4612,7 +4634,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     rect->setZ(view->getCurrentDepth());
     rect->setColor(255, 128, 128);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << OUTPUT_HIGHTLIGHT_2 << "Adding roi: " << rect << " "
               << rect->getX0() << ", " << rect->getY0() << ", " << rect->getZ()
               << std::endl;
@@ -4640,7 +4662,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   }
     break;
   case ZStackOperator::OP_RECT_ROI_APPEND:
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << OUTPUT_HIGHTLIGHT_2
               << "OP_RECT_ROI_APPEND: Accept rect roi with appending" << std::endl;
 #endif
@@ -4648,7 +4670,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     exitRectEdit();
     break;
   case ZStackOperator::OP_RECT_ROI_ACCEPT:
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << OUTPUT_HIGHTLIGHT_2
               << "OP_RECT_ROI_ACCEPT: Accept rect roi" << std::endl;
 #endif

@@ -20,9 +20,12 @@ CONFIG(neu3) | CONFIG(neutu) | CONFIG(flyem)  { #flyem CONFIG is an outdated opt
   DEFINES += _NEUTUBE_
 }
 
+CONFIG(flyem) {
+  warning("config(flyem) is obsolete.")
+}
+
 DEFINES *= _ENABLE_LOWTIS_
 DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
-#DEFINES += _GLIBCXX_USE_CXX11_ABI=0
 
 #This may result in many 'Cannot create directory' warnings. Just ignore it.
 CONFIG += object_parallel_to_source
@@ -65,15 +68,12 @@ CONFIG(debug, debug|release) {
     CONFIG(neu3) {
         app_name = neu3_d
     } else {
-      contains(DEFINES, _FLYEM_) {
+      CONFIG(flyem) | CONFIG(neutu) {
         app_name = neutu_d
       }
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
-#    CONFIG(debug_info) {
-#      QMAKE_CXXFLAGS += -g
-#    }
     DEFINES += NDEBUG
     app_name = neuTube
     CONFIG(neu3) {
@@ -254,6 +254,7 @@ include(flyem/flyem.pri)
 include(tracing/tracing.pri)
 include(dialogs/dialogs.pri)
 include(movie/movie.pri)
+include(dvid/dvid.pri)
 
 # Input
 win32 {
@@ -276,10 +277,6 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
     dialogs/zparameterdialog.h \
-    dvid/zdviddataslicehighrestask.h \
-    dvid/zdvidglobal.h \
-    dvid/zdvidstacksource.h \
-  dvid/zdvidtargetbuilder.h \
     neuapp.h \
     protocols/protocolassignment.h \
     protocols/protocolassignmentdialog.h \
@@ -633,11 +630,6 @@ FORMS += mainwindow.ui \
 SOURCES += main.cpp \
     concurrent/zworkerwrapper.cpp \
     dialogs/zparameterdialog.cpp \
-    dvid/zdviddataslicehighrestask.cpp \
-    dvid/zdvidglobal.cpp \
-    dvid/zdvidstacksource.cpp \
-    dvid/zdvidtargetbuilder.cpp \
-    dvid/zdvidtargetfactory.cpp \
     mainwindow.cpp \
     neuapp.cpp \
     zimage.cpp \

@@ -1193,10 +1193,10 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
 
 void ZFlyEmProofMvc::prepareWindow(Z3DWindow *window)
 {
-  if (window && m_doc->getParentMvc()) {
+  if (window/* && m_doc->getParentMvc()*/) {
     flyem::Decorate3dBodyWindow(
-          window, getDvidInfo(),
-          m_doc->getParentMvc()->getMainView()->getViewParameter());
+          window, getDvidInfo(), getMainView()->getViewParameter());
+//          m_doc->getParentMvc()->getMainView()->getViewParameter());
     window->initRoiView(getCompleteDocument()->initRoiProvider());
     /*
     if(m_ROILoaded) {
@@ -3505,7 +3505,7 @@ void ZFlyEmProofMvc::testBodySplit()
           }
 
           runSplit();
-          m_splitProject.showSplit3d();
+          m_splitProject.showSplit3d(getMainView()->getViewParameter());
           m_splitProject.waitSplitVis3d();
         }
       } else {
@@ -5141,7 +5141,7 @@ void ZFlyEmProofMvc::showBodyQuickView()
 
 void ZFlyEmProofMvc::showSplitQuickView()
 {
-  m_splitProject.showSplit3d();
+  m_splitProject.showSplit3d(getMainView()->getViewParameter());
 }
 
 void ZFlyEmProofMvc::showBody3d()
@@ -6452,7 +6452,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
   if (m_currentViewParam != viewParam) {
 //    m_mergeProject.update3DBodyViewPlane(viewParam);
     if (is3DEnabled()) {
-      m_splitProject.update3DViewPlane();
+      m_splitProject.update3DViewPlane(viewParam);
 
       updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
       updateBodyWindowPlane(m_bodyWindow, viewParam);

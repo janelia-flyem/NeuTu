@@ -198,7 +198,7 @@ public slots:
   void showDataFrame() const;
   void showDataFrame3d();
 //  void showResult3d();
-  void showSplit3d();
+  void showSplit3d(const ZStackViewParam &viewParam);
 //  void showBookmark(bool visible);
   void runSplit();
   void runFullSplit();
@@ -224,7 +224,7 @@ public slots:
   void shallowClearQuickViewWindow();
   //void shallowClearBodyWindow();
 
-  void update3DViewPlane();
+  void update3DViewPlane(const ZStackViewParam &viewParam);
 
   void updateSplitDocument();
   void uploadSplitList();
