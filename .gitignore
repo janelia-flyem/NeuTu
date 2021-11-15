@@ -21,6 +21,9 @@ TAGS
 devnull
 doc/doxfiles/
 ~*
+*.db
+*.autosave
+test_build.sh
 
 !/neurolabi/lib/Mingw/*.zip
 /neurolabi/lib/*.tar
@@ -78,13 +81,16 @@ neurolabi/lib/msvc/
 neurolabi/c/lib/
 neutube_win64_*/
 
-/neurolabi/gui/gui.pro.user*
-/neurolabi/c/c_lib.creator.user*
-/neurolabi/c/Makefile-def
-/neurolabi/c/config.status
-/neurolabi/c/include/neurolabi_config.h
-/neurolabi/lib/genelib/src/config.status
-/neurolabi/c/lib/
+neurolabi/gui/gui.pro.user*
+neurolabi/gui/build
+neurolabi/c/c_lib.creator.user*
+neurolabi/c/Makefile-def
+neurolabi/c/config.status
+neurolabi/c/include/neurolabi_config.h
+neurolabi/lib/genelib/src/config.status
+neurolabi/c/build
+neurolabi/c/sanitize
+neurolabi/python/notebook
 
 # gen file
 /neurolabi/c/tz_darray.c
