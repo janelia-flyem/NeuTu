@@ -577,7 +577,7 @@ bool TaskBodyCleave::skip(QString &reason)
   }
 #endif
 
-  LKINFO << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
+  LKINFO(neutu::TOPIC_NULL) << QString("TaskBodyCleave::skip() HEAD took %1 ms to decide to %2 body %3").
             arg(timer.elapsed()).arg((m_skip ? "skip" : "not skip")).arg(m_bodyId);
 
   // Add to the auxiliary output a mention that this task was skipped.
@@ -585,13 +585,13 @@ bool TaskBodyCleave::skip(QString &reason)
   ZDvidReader reader;
   reader.setVerbose(false);
   if (!reader.open(m_bodyDoc->getDvidTarget())) {
-    LKERROR << "TaskBodyCleave::skip() could not open DVID target for reading";
+    LKERROR(neutu::TOPIC_NULL) << "TaskBodyCleave::skip() could not open DVID target for reading";
     return m_skip;
   }
 
   ZDvidWriter writer;
   if (!writer.open(m_bodyDoc->getDvidTarget())) {
-    LKERROR << "TaskBodyCleave::skip() could not open DVID target for writing";
+    LKERROR(neutu::TOPIC_NULL) << "TaskBodyCleave::skip() could not open DVID target for writing";
     return m_skip;
   }
 
@@ -698,7 +698,7 @@ void TaskBodyCleave::beforeLoading()
     }
 
     if (owner == overridableOwner) {
-      LKINFO << "TaskBodyCleave overriding checkout by " + owner;
+      LKINFO(neutu::TOPIC_NULL) << "TaskBodyCleave overriding checkout by " + owner;
       m_supervisor->checkInAdmin(m_bodyId);
       m_checkedOut = m_supervisor->checkOut(m_bodyId, neutu::EBodySplitMode::NONE);
     }
@@ -706,7 +706,7 @@ void TaskBodyCleave::beforeLoading()
 
   flyem::LogBodyOperation("start cleaving", m_bodyId, neutu::EBodyLabelType::BODY);
   /*
-  KLOG << ZLog::Info()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
        << ZLog::Action("start cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
        */
@@ -779,7 +779,7 @@ void TaskBodyCleave::beforeDone()
 
   flyem::LogBodyOperation("end cleavng", m_bodyId, neutu::EBodyLabelType::BODY);
   /*
-  KLOG << ZLog::Info()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
        << ZLog::Action("end cleaving")
        << ZLog::Object("body", "", std::to_string(m_bodyId));
        */
@@ -814,7 +814,7 @@ void TaskBodyCleave::onShowCleavingChanged(int state)
   bool colorBySupervoxels = m_colorSupervoxelsButton->isChecked();
   applyColorMode(show, colorBySupervoxels);
 
-  KINFO << QString("Show cleaving: %1").arg(show);
+  KINFO(neutu::TOPIC_NULL) << QString("Show cleaving: %1").arg(show);
 }
 
 void TaskBodyCleave::onToggleShowCleaving()
@@ -834,7 +834,7 @@ void TaskBodyCleave::onShowSeedsOnlyChanged(int)
 
   updateColors();
 
-  KINFO << QString("Show seeds only: %1").arg(m_showSeedsOnlyCheckBox->isChecked());
+  KINFO(neutu::TOPIC_NULL) << QString("Show seeds only: %1").arg(m_showSeedsOnlyCheckBox->isChecked());
 }
 
 void TaskBodyCleave::onToggleShowSeedsOnly()
@@ -856,7 +856,7 @@ void TaskBodyCleave::onCleaveIndexShortcut()
     int i = m_actionToComboBoxIndex[action];
     m_cleaveIndexComboBox->setCurrentIndex(i);
 
-    KINFO << QString("Set cleave index to %1").arg(i);
+    KINFO(neutu::TOPIC_NULL) << QString("Set cleave index to %1").arg(i);
   }
 }
 
@@ -881,7 +881,7 @@ void TaskBodyCleave::onSelectBody()
   bodiesForCleaveIndex(toSelect, chosenCleaveIndex());
   selectBodies(toSelect);
 
-  KINFO << QString("Select %1 bodies").arg(toSelect.size());
+  KINFO(neutu::TOPIC_NULL) << QString("Select %1 bodies").arg(toSelect.size());
 }
 
 void TaskBodyCleave::onShowBodyChanged(int state)
@@ -903,7 +903,7 @@ void TaskBodyCleave::onShowBodyChanged(int state)
 
   updateVisibility();
 
-  KINFO << QString("Show body: %1").arg(state);
+  KINFO(neutu::TOPIC_NULL) << QString("Show body: %1").arg(state);
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
@@ -922,7 +922,7 @@ void TaskBodyCleave::updateChosenCleaveBody(bool toggle)
     return;
   }
 
-  KINFO << QString("Toggle chosen cleave body: %1").arg(toggle);
+  KINFO(neutu::TOPIC_NULL) << QString("Toggle chosen cleave body: %1").arg(toggle);
 
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
@@ -1149,7 +1149,7 @@ void TaskBodyCleave::onHideSelected()
     return;
   }
 
-  KINFO << "Hide selected bodies";
+  KINFO(neutu::TOPIC_NULL) << "Hide selected bodies";
 
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::EType::MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
@@ -1171,7 +1171,7 @@ void TaskBodyCleave::onClearHidden()
     return;
   }
 
-  KINFO << "Clear hidden bodies";
+  KINFO(neutu::TOPIC_NULL) << "Clear hidden bodies";
 
   selectBodies(m_hiddenIds);
   m_hiddenIds.clear();
@@ -1192,7 +1192,7 @@ void TaskBodyCleave::onChooseCleaveMethod()
       m_cleaveMethod = text;
     }
 
-    KINFO << "Choose cleaving method: " + text;
+    KINFO(neutu::TOPIC_NULL) << "Choose cleaving method: " + text;
   }
 }
 
@@ -1997,7 +1997,7 @@ void TaskBodyCleave::cleave(unsigned int requestNumber)
   m_cleaveRepliesPending++;
   m_networkManager->post(request, requestData);
 
-  KINFO << QString("Cleave posted: ") + QString(requestData);
+  KINFO(neutu::TOPIC_NULL) << QString("Cleave posted: ") + QString(requestData);
 }
 
 QString TaskBodyCleave::getInfo() const

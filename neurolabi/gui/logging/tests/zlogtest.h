@@ -10,8 +10,9 @@ namespace zlogtest {
 
 class TestLog : public ZLog {
 public:
-  TestLog() {
-    m_dest = ZLog::EDestination::KAFKA;
+  TestLog(const std::string &topic, EDestination dest = EDestination::KAFKA) :
+    ZLog(topic, dest)
+  {
   }
 
   ~TestLog() {
@@ -49,12 +50,12 @@ private:
 TEST(ZLog, Tag)
 {
   {
-    ZLog log;
+    ZLog log("topic");
     log << ZLog::Description("test");
   }
 
   {
-    zlogtest::TestLog log;
+    zlogtest::TestLog log("topic");
     log << ZLog::Description("test");
     log.end();
 //    std::cout << log.getResult() << std::endl;

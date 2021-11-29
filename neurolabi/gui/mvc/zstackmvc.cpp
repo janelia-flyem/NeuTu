@@ -12,7 +12,6 @@
 #include "common/math.h"
 #include "logging/zlog.h"
 
-//#include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
 #include "zprogresssignal.h"
@@ -23,36 +22,29 @@
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
 #include "dialogs/zstresstestoptiondialog.h"
-//#include "zstackdochelper.h"
 #include "zstackdocutil.h"
+#include "widgets/zh3widget.h"
+
+static const char* MVC_TOPIC = "mvc";
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
 {
   m_presenter = NULL;
   m_layout = new QVBoxLayout(this);
-  m_topLayout = new QHBoxLayout();
-  m_layout->addLayout(m_topLayout);
-  m_secondLayout = new QHBoxLayout();
-  m_layout->addLayout(m_secondLayout);
+  m_topWidget = new ZH3Widget(this);
+  m_layout->addWidget(m_topWidget);
+
+  m_secondTopWidget = new ZH3Widget(this);
+  m_layout->addWidget(m_secondTopWidget);
+
   m_viewLayout = new QGridLayout();
   m_layout->addLayout(m_viewLayout);
   m_progressSignal = new ZProgressSignal(this);
   setAcceptDrops(true);
 
-//  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
-
   m_testTimer = new QTimer(this);
   m_role = ERole::ROLE_WIDGET;
-
-#ifdef _DEBUG_2
-  QShortcut *shortcut = new QShortcut(this);
-//  shortcut->setKey(QKeySequence(Qt::Key_T, Qt::Key_R));
-  shortcut->setKey(Qt::Key_G);
-  shortcut->setContext(Qt::WindowShortcut);
-//  shortcut->setEnabled(false);
-  connect(shortcut, SIGNAL(activated()), this, SLOT(shortcutTest()));
-#endif
 }
 
 ZStackMvc::~ZStackMvc()
@@ -130,6 +122,7 @@ void ZStackMvc::construct(
 
   forEachView([](ZStackView*view) {
     view->setHoverFocus(true);
+    view->enableCustomCheckBox(0, "axes", true, view, SLOT(showAxes(bool)));
   });
 
   customInit();
@@ -440,10 +433,12 @@ void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 //                m_presenter, SLOT(processSliceChangeEvent(int)));
 }
 
+/*
 void ZStackMvc::disconnectAll()
 {
   updateSignalSlot(disconnectFunc);
 }
+*/
 
 void ZStackMvc::dropDocument(ztr1::shared_ptr<ZStackDoc> doc)
 {
@@ -484,7 +479,7 @@ bool ZStackMvc::processKeyEvent(QKeyEvent *event)
 
 void ZStackMvc::keyPressEvent(QKeyEvent *event)
 {
-  KINFO << QString("Key %1 pressed in ZStackMvc").arg(event->key());
+  KINFO(MVC_TOPIC) << QString("Key %1 pressed in ZStackMvc").arg(event->key());
 
   processKeyEvent(event);
 }

@@ -142,6 +142,15 @@ TEST(common, utilities)
   ASSERT_LE(0ull, neutu::ToUint64("-123456"));
   ASSERT_EQ(18446744073709550592ull, neutu::ToUint64("18446744073709550592"));
   ASSERT_EQ(-1844674407370955059, neutu::ToInt64("-1844674407370955059"));
+
+  {
+    int state = 5;
+    {
+      neutu::ApplyOnce ao([&]() { state = 3; }, [&]() { state = 5;});
+      ASSERT_EQ(3, state);
+    }
+    ASSERT_EQ(5, state);
+  }
 }
 
 TEST(common, math)

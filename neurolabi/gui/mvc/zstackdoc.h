@@ -536,7 +536,7 @@ public: //Image processing
   int findLoop(int minLoopSize = 100);
   void bwthin();
   bool bwperim();
-  void runSeededWatershed();
+  void runSeededWatershed(std::function<void(const std::string&)> logger = nullptr);
   void runLocalSeededWatershed();
 
 public: /* tracing routines */

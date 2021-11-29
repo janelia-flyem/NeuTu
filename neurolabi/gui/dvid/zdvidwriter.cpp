@@ -68,7 +68,7 @@ bool ZDvidWriter::startService()
           getDvidTarget().getRootUrl());
   } catch (std::exception &e) {
     m_service.reset();
-    LKWARN << e.what();
+    LKWARN(neutu::TOPIC_NULL) << e.what();
     return false;
   }
 #endif
@@ -467,7 +467,7 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
   ZJsonArray mergeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
   mergeArray.append(jsonArray);
 */
-  KINFO << "Merging" + jsonArray.dumpString(0);
+  KINFO(neutu::TOPIC_NULL) << "Merging" + jsonArray.dumpString(0);
 
   ZDvidUrl dvidUrl(getDvidTarget(), m_admin);
   writeJson(dvidUrl.getMergeUrl(dataName), jsonArray, "[]");
@@ -949,13 +949,13 @@ std::string ZDvidWriter::request(
     const std::string &url, const std::string &method, const RequestParam &param)
 {
   if (url.empty()) {
-    KWARN << "Requesting an empty url: " + method;
+    KWARN(neutu::TOPIC_NULL) << "Requesting an empty url: " + method;
     return "";
   }
 
   neutu::LogUrlIO(method.c_str(), url.c_str());
 
-//  LKINFO << "HTTP " + method + ": " + url;
+//  LKINFO(neutu::TOPIC_NULL) << "HTTP " + method + ": " + url;
 
   m_statusCode = 0;
   m_statusErrorMessage.clear();
@@ -1004,7 +1004,7 @@ std::string ZDvidWriter::request(
     response = data->get_data();
   } catch (libdvid::DVIDException &e) {
     std::cout << e.what() << std::endl;
-    LKWARN << QString("HTTP %1 exception (%2): %3").
+    LKWARN(neutu::TOPIC_NULL) << QString("HTTP %1 exception (%2): %3").
              arg(method.c_str()).arg(e.getStatus()).arg(e.what());
     m_statusCode = e.getStatus();
     m_statusErrorMessage = e.what();
@@ -1025,13 +1025,13 @@ std::string ZDvidWriter::request(
     int length, bool isJson)
 {
   if (url.empty()) {
-    KWARN << "Requesting an empty url: " + method;
+    KWARN(neutu::TOPIC_NULL) << "Requesting an empty url: " + method;
     return "";
   }
 
   neutu::LogUrlIO(method.c_str(), url.c_str());
 
-//  LKINFO << "HTTP " + method + ": " + url;
+//  LKINFO(neutu::TOPIC_NULL) << "HTTP " + method + ": " + url;
 
   m_statusCode = 0;
   m_statusErrorMessage.clear();
@@ -1077,7 +1077,7 @@ std::string ZDvidWriter::request(
     response = data->get_data();
   } catch (libdvid::DVIDException &e) {
     std::cout << e.what() << std::endl;
-    LKWARN << QString("HTTP %1 exception (%2): %3").
+    LKWARN(neutu::TOPIC_NULL) << QString("HTTP %1 exception (%2): %3").
              arg(method.c_str()).arg(e.getStatus()).arg(e.what());
     m_statusCode = e.getStatus();
     m_statusErrorMessage = e.what();
@@ -1143,7 +1143,7 @@ std::string ZDvidWriter::post(
     if (msg.size() > 100) {
       msg += "...";
     }
-    KINFO << msg;
+    KINFO(neutu::TOPIC_NULL) << msg;
   }
 
   return post(url, payload.c_str(), payload.length(), isJson);
@@ -1400,7 +1400,7 @@ void ZDvidWriter::uploadRoiMesh(
     writeJson(ZDvidData::GetName(ZDvidData::ERole::ROI_KEY), name, roiJson);
     */
   } else {
-    LKWARN << "Failed to upload mesh. No data found in " + meshPath;
+    LKWARN(neutu::TOPIC_NULL) << "Failed to upload mesh. No data found in " + meshPath;
   }
 }
 
@@ -1591,7 +1591,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
     if (reader.isReady()) {
       dvidInfo = reader.readGrayScaleInfo();
     } else {
-      LKERROR << "DVID connection error.";
+      LKERROR(neutu::TOPIC_NULL) << "DVID connection error.";
       return 0;
     }
 
@@ -1613,7 +1613,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
 
       std::cout << "Coarse time: " << timer.elapsed() << std::endl;
       if (newBodyId == 0) {
-        LKERROR << "Failed to write coarse split.";
+        LKERROR(neutu::TOPIC_NULL) << "Failed to write coarse split.";
         return 0;
       }
 
@@ -1683,7 +1683,7 @@ uint64_t ZDvidWriter::writePartition(
     if (reader.isReady()) {
       dvidInfo = reader.readLabelInfo();
     } else {
-      LKERROR << "DVID connection error.";
+      LKERROR(neutu::TOPIC_NULL) << "DVID connection error.";
       return 0;
     }
 
@@ -1710,17 +1710,17 @@ uint64_t ZDvidWriter::writePartition(
             arg(NeutubeConfig::getInstance().getPath(
                   NeutubeConfig::EConfigItem::TMP_DATA).c_str()).
             arg(oldLabel);
-        LKINFO << "Saving " + tmpPath + " for debugging.";
+        LKINFO(neutu::TOPIC_NULL) << "Saving " + tmpPath + " for debugging.";
         Bsc.exportDvidObject(tmpPath.toStdString());
 
         tmpPath = QString("%1/%2_bm.dvid").
             arg(NeutubeConfig::getInstance().getPath(
                   NeutubeConfig::EConfigItem::TMP_DATA).c_str()).
             arg(oldLabel);
-        LKINFO << "Saving " + tmpPath + " for debugging.";
+        LKINFO(neutu::TOPIC_NULL) << "Saving " + tmpPath + " for debugging.";
         bm.exportDvidObject(tmpPath.toStdString());
 
-        LKERROR << "Failed to write coarse split.";
+        LKERROR(neutu::TOPIC_NULL) << "Failed to write coarse split.";
         return 0;
       }
 
@@ -2021,7 +2021,7 @@ void ZDvidWriter::writeToDoItem(const ZFlyEmToDoItem &item)
   ZJsonArray itemJson;
   itemJson.append(item.toJsonObject());
 
-  LKINFO << itemJson.dumpString(0);
+  LKINFO(neutu::TOPIC_NULL) << itemJson.dumpString(0);
 
 #ifdef _DEBUG_
   std::cout << "Todo query url: "
@@ -2371,7 +2371,7 @@ void ZDvidWriter::writeMasterNode(const std::string &uuid)
     dvidUrl.setUuid(uuid);
     std::string url = dvidUrl.getApiUrl() + "/node/" + uuid +
         "/branches/key/master";
-    LKINFO << "Master url: " + url;
+    LKINFO(neutu::TOPIC_NULL) << "Master url: " + url;
     reader.read(url.c_str());
     ZJsonArray branchJson;
     branchJson.append(uuid);

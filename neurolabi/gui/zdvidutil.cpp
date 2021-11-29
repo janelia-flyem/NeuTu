@@ -178,7 +178,7 @@ bool dvid::HasHead(const std::string &url)
 std::shared_ptr<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const std::string &web_addr, const std::string &uuid)
 {
-  ZINFO << "Make DVIDNodeService: " + web_addr;
+  ZINFO(neutu::TOPIC_NULL) << "Make DVIDNodeService: " + web_addr;
 
   return std::shared_ptr<libdvid::DVIDNodeService>(
         new libdvid::DVIDNodeService(
@@ -197,7 +197,7 @@ std::shared_ptr<libdvid::DVIDNodeService> dvid::MakeDvidNodeService(
     const libdvid::DVIDNodeService *service)
 {
   if (service != NULL) {
-    ZINFO << "Copy DVIDNodeService";
+    ZINFO(neutu::TOPIC_NULL) << "Copy DVIDNodeService";
     return std::shared_ptr<libdvid::DVIDNodeService>(
           new libdvid::DVIDNodeService(*service));
   }
@@ -209,7 +209,7 @@ std::shared_ptr<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const std::string &address, const std::string &user, const std::string &app)
 {
   try {
-    ZINFO << "Make DVIDConnection: " + address;
+    ZINFO(neutu::TOPIC_NULL) << "Make DVIDConnection: " + address;
     return std::shared_ptr<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(address, user, app));
   } catch (std::exception &e) {
@@ -222,7 +222,7 @@ std::shared_ptr<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const std::string &address)
 {
   try {
-    ZINFO << "Make DVIDConnection: " + address;
+    ZINFO(neutu::TOPIC_NULL) << "Make DVIDConnection: " + address;
     return std::shared_ptr<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(
             address, GET_FLYEM_CONFIG.getUserName(),
@@ -237,7 +237,7 @@ std::shared_ptr<libdvid::DVIDConnection> dvid::MakeDvidConnection(
     const libdvid::DVIDConnection *conn)
 {
   if (conn != NULL) {
-    ZINFO << "Copy DVIDConnection";
+    ZINFO(neutu::TOPIC_NULL) << "Copy DVIDConnection";
     return std::shared_ptr<libdvid::DVIDConnection>(
           new libdvid::DVIDConnection(*conn));
   }
@@ -249,7 +249,7 @@ std::shared_ptr<libdvid::DVIDConnection> dvid::MakeDvidConnection(
 #if defined(_ENABLE_LOWTIS_)
 std::shared_ptr<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget &target)
 {
-  ZINFO << "Make lowtis::ImageService: " + target.getSourceString();
+  ZINFO(neutu::TOPIC_NULL) << "Make lowtis::ImageService: " + target.getSourceString();
 
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();
@@ -263,7 +263,7 @@ std::shared_ptr<lowtis::ImageService> dvid::MakeLowtisService(const ZDvidTarget 
 
 lowtis::ImageService* dvid::MakeLowtisServicePtr(const ZDvidTarget &target)
 {
-  ZINFO << "Make lowtis::ImageService: " + target.getSourceString();
+  ZINFO(neutu::TOPIC_NULL) << "Make lowtis::ImageService: " + target.getSourceString();
 
   lowtis::DVIDLabelblkConfig config;
   config.username = neutu::GetCurrentUserName();

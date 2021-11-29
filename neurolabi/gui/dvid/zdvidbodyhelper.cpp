@@ -131,7 +131,7 @@ ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
   QElapsedTimer timer;
   timer.start();
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
-  KLog() << ZLog::Profile()
+  KLog(neutu::TOPIC_NULL) << ZLog::Profile()
          << ZLog::Diagnostic(
               "High res reading time for " +
               std::to_string(bodyId) + "@" + std::to_string(m_zoom))
@@ -143,7 +143,7 @@ ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
       result.emplace_back(highResObj);
     } else {
       delete highResObj;
-      ZWARN << "Failed to read highres object";
+      ZWARN(neutu::TOPIC_NULL) << "Failed to read highres object";
     }
   }
 
@@ -162,7 +162,7 @@ ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
         lowResHelper.setZoom(m_lowresZoom);
         timer.restart();
         lowResObj = lowResHelper.readBody(bodyId);
-        KLOG << ZLog::Profile() << ZLog::Description(
+        KLOG(neutu::TOPIC_NULL) << ZLog::Profile() << ZLog::Description(
                   QString("Low res reading time: %1 ms").
                   arg(timer.elapsed()).toStdString());
 //        LINFO() << "Low res reading time:" << timer.elapsed() << "ms";
@@ -178,7 +178,7 @@ ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
       box.expand(-1, -1, -1);
       timer.restart();
       lowResObj->remove(box);
-      KLOG << ZLog::Profile() << ZLog::Description(
+      KLOG(neutu::TOPIC_NULL) << ZLog::Profile() << ZLog::Description(
                 QString("Low res cropping time: %1 ms").
                 arg(timer.elapsed()).toStdString());
 //      LINFO() << "Low res cropping time:" << timer.elapsed() << "ms";

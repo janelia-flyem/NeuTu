@@ -1,4 +1,5 @@
 HEADERS += \
+    $$PWD/defs.h \
     $$PWD/qthelper.h \
     $$PWD/zexception.h \
     $$PWD/zsortfilterproxymodel.h \

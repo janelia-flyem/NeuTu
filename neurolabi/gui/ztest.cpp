@@ -387,7 +387,8 @@
 #include "flyem/flyembodyannotationproofdocio.h"
 #include "flyem/widgets/flyembodysupplywidget.h"
 #include "flyem/dialogs/flyemcleaveunassigneddialog.h"
-
+#include "widgets/zcheckboxgroup.h"
+#include "widgets/zh3widget.h"
 /*
 #include "ext/http/HTTPRequest.hpp"
 #define CPPHTTPLIB_OPENSSL_SUPPORT
@@ -29715,16 +29716,16 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  KINFO << "Test: to kafka only";
-  LKINFO << "Test: to both local and kafka";
+  KINFO(neutu::TOPIC_NULL) << "Test: to kafka only";
+  LKINFO(neutu::TOPIC_NULL) << "Test: to both local and kafka";
   ZINFO << "Test: auto logging";
 
-  KWARN << "Test: to kafka only";
-  LKWARN << "Test: to both local and kafka";
+  KWARN(neutu::TOPIC_NULL) << "Test: to kafka only";
+  LKWARN(neutu::TOPIC_NULL) << "Test: to both local and kafka";
   ZWARN << "Test: auto logging";
 
-  KERROR << "Test: to kafka only";
-  LKERROR << "Test: to both local and kafka";
+  KERROR(neutu::TOPIC_NULL) << "Test: to kafka only";
+  LKERROR(neutu::TOPIC_NULL) << "Test: to both local and kafka";
   ZERROR << "Test: auto logging";
 
   neutu::LogMessage(
@@ -29790,17 +29791,17 @@ void ZTest::test(MainWindow *host)
           ZWidgetMessage::TARGET_KAFKA |
           ZWidgetMessage::TARGET_LOG_FILE));
 
-  KINFO << "Test:" << " to kafka only";
-  LKINFO << "Test:" <<  " to both local and kafka" << " " << 0;
+  KINFO(neutu::TOPIC_NULL) << "Test:" << " to kafka only";
+  LKINFO(neutu::TOPIC_NULL) << "Test:" <<  " to both local and kafka" << " " << 0;
 
-  KWARN << "Test:" << " to kafka only";
-  LKWARN << "Test:" <<  " to both local and kafka" << " " << 0;
+  KWARN(neutu::TOPIC_NULL) << "Test:" << " to kafka only";
+  LKWARN(neutu::TOPIC_NULL) << "Test:" <<  " to both local and kafka" << " " << 0;
 
-  KERROR << "Test:" << " to kafka only";
-  LKERROR << "Test:" <<  " to both local and kafka" << " " << 0;
+  KERROR(neutu::TOPIC_NULL) << "Test:" << " to kafka only";
+  LKERROR(neutu::TOPIC_NULL) << "Test:" <<  " to both local and kafka" << " " << 0;
 
-  KLOG << ZLog::Info() << ZLog::Info() << ZLog::Description("test");
-  KLOG << ZLog::Info() << ZLog::Warn() << ZLog::Description("test")
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info() << ZLog::Info() << ZLog::Description("test");
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info() << ZLog::Warn() << ZLog::Description("test")
        << ZLog::Description("warn");
 
 #endif
@@ -33216,13 +33217,142 @@ void ZTest::test(MainWindow *host)
   reader->readGrayScaleBlock(blockCoords, 5, dest);
 #endif
 
-#if 1
+#if 0
   HLDebug("test") << "test" << std::endl;
   HLDebug("test2") << "test" << std::endl;
   HLDebug("test3") << "test" << std::endl;
   HLDebug("test4") << "test" << std::endl;
   HLDebug("test") << "test" << std::endl;
   HLDebug("test") << "test" << std::endl;
+#endif
+
+#if 0
+  ZH3Widget *widget = new ZH3Widget;
+  widget->addWidget(new QPushButton("click"), neutu::EH3Layout::LEFT);
+  widget->show();
+#endif
+
+#if 0
+  ZH3Widget *widget = new ZH3Widget;
+  widget->addWidget(new QPushButton("click"), neutu::EH3Layout::LEFT);
+
+  ZCheckBoxGroup *group = new ZCheckBoxGroup();
+  group->setCheckBox(0, ZCheckBoxGroup::CheckBoxConfigBuilder("test"));
+  group->setCheckBox(
+        1, ZCheckBoxGroup::CheckBoxConfigBuilder("test2").checkedByDefault(true));
+  group->setCheckBox(2, ZCheckBoxGroup::CheckBoxConfigBuilder("test3"));
+
+  widget->addWidget(group, neutu::EH3Layout::RIGHT);
+
+  widget->show();
+#endif
+
+#if 1
+  QDialog dlg;
+  dlg.setLayout(new QVBoxLayout);
+  ZH3Widget *widget = new ZH3Widget;
+  QPushButton *button = new QPushButton("toggle");
+  QPushButton *button2 = new QPushButton("toggle label");
+  QPushButton *button3 = new QPushButton("remove label");
+  QPushButton *button4 = new QPushButton("add label");
+  QPushButton *button5 = new QPushButton("add checkbox");
+
+  QLabel *label = new QLabel("test");
+  widget->addWidget(label, neutu::EH3Layout::CENTER);
+
+//  QLabel *label2 = new QLabel("test2");
+//  widget->addWidget(label2, neutu::EH3Layout::CENTER);
+
+  ZCheckBoxGroup *group = new ZCheckBoxGroup;
+  widget->addWidget(group, neutu::EH3Layout::RIGHT);
+
+  dlg.layout()->addWidget(button);
+  dlg.layout()->addWidget(button2);
+  dlg.layout()->addWidget(button3);
+  dlg.layout()->addWidget(button4);
+  dlg.layout()->addWidget(button5);
+  dlg.layout()->addWidget(widget);
+
+  dlg.connect(button, &QAbstractButton::clicked, widget, [=]() {
+    widget->setVisible(!widget->isVisible());
+  });
+
+  dlg.connect(button2, &QAbstractButton::clicked, widget, [=]() {
+    widget->setWidgetVisible(label, !widget->assumingVisible(label));
+    widget->updateVisibility();
+  });
+
+  dlg.connect(button3, &QAbstractButton::clicked, widget, [=]() {
+    widget->removeWidget(label);
+    widget->updateVisibility();
+  });
+
+  dlg.connect(button4, &QAbstractButton::clicked, widget, [=]() {
+    widget->addWidget(label, neutu::EH3Layout::CENTER);
+    widget->updateVisibility();
+  });
+
+  dlg.connect(button5, &QAbstractButton::clicked, widget, [=]() {
+    group->setCheckBox(
+          0, ZCheckBoxGroup::CheckBoxConfigBuilder("test").checkedByDefault(true));
+    widget->updateVisibility();
+  });
+
+  dlg.exec();
+
+#endif
+
+
+#if 0
+  auto printVisibility = [](const QWidget *widget) {
+    std::cout << widget->metaObject()->className() << " is "
+              << (widget->isVisible() ? "" : "NOT ") << "visible"
+              << std::endl;
+  };
+
+  QDialog dlg;
+  dlg.setLayout(new QVBoxLayout);
+  ZH3Widget *widget = new ZH3Widget;
+//  widget->setVisible(true);
+//  std::cout << widget->isVisible() << std::endl;
+  printVisibility(widget);
+  QPushButton *button = new QPushButton("hide ");
+//  button->setVisible(true);
+  printVisibility(button);
+  widget->addWidget(button, neutu::EH3Layout::LEFT);
+//  widget->updateVisibility();
+  printVisibility(button);
+  printVisibility(widget);
+
+  ZCheckBoxGroup *group = new ZCheckBoxGroup();
+  group->setCheckBox(0, ZCheckBoxGroup::CheckBoxConfigBuilder("hide 1"));
+  group->setCheckBox(
+        1, ZCheckBoxGroup::CheckBoxConfigBuilder("test2").checkedByDefault(true));
+  group->setCheckBox(2, ZCheckBoxGroup::CheckBoxConfigBuilder("test3"));
+  std::cout << "group " << group->isVisible() << std::endl;
+  widget->addWidget(group, neutu::EH3Layout::RIGHT);
+  std::cout << "group " << group->isVisible() << std::endl;
+//  widget->updateVisibility();
+  std::cout << widget->isVisible() << std::endl;
+  QPushButton *button2 = new QPushButton("hide all");
+  printVisibility(button2);
+  dlg.layout()->addWidget(button2);
+  printVisibility(button2);
+  dlg.layout()->addWidget(widget);
+
+  dlg.connect(button2, &QAbstractButton::clicked, group, [&]() {
+    widget->setVisible(!widget->isVisible());
+  });
+
+  auto toggleCheckBoxVisibility = [&](QCheckBox *box) {
+    box->setVisible(!box->isVisible());
+  };
+
+  dlg.connect(button, &QAbstractButton::clicked, group, [&]() {
+    group->processCheckBox(0, toggleCheckBoxVisibility);
+  });
+
+  dlg.exec();
 #endif
 
   std::cout << "Done." << std::endl;

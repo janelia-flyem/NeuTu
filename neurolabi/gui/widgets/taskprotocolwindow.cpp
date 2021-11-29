@@ -1202,7 +1202,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
           QString msg =
               "Task protocol: json loaded from DVID:" + instance + "," + key;
           emitInfo(msg);
-//          KINFO << msg;
+//          KINFO(neutu::TOPIC_NULL) << msg;
 //          emit messageGenerated(ZWidgetMessage(msg));
 
           return doc.object();

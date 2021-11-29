@@ -113,7 +113,7 @@ std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
       uuid = uuid.substr(0, uuidBrief);
     } else if (uuid.size() < uuidBrief) {
 #if defined(_QT_APPLICATION_)
-      ZWARN << "Out-of-bound uuid brief (" + std::to_string(uuidBrief) +
+      ZWARN("dvid") << "Out-of-bound uuid brief (" + std::to_string(uuidBrief) +
                ") for " + uuid;
 #endif
     }
@@ -405,7 +405,7 @@ void ZDvidNode::setFromSourceString(const std::string &sourceString)
 
   if (setFromSourceToken(tokens)) {
 #if defined(_QT_APPLICATION_)
-    ZWARN << "Invalid source string for dvid target: " + sourceString;
+    ZWARN("dvid") << "Invalid source string for dvid target: " + sourceString;
 #endif
   }
 }

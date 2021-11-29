@@ -14,6 +14,7 @@
 #include <QKeyEvent>
 
 #include "common/neutudefs.h"
+#include "qt/core/defs.h"
 #include "zviewproj.h"
 #include "data3d/zsliceviewtransform.h"
 #include "vis2d/zslicecanvas.h"
@@ -89,17 +90,17 @@ public:
   const ZSliceViewTransform& getSliceViewTransform() const;
   ZPoint transform(
       const ZPoint &pt, neutu::data3d::ESpace src, neutu::data3d::ESpace dst) const;
-  void setSliceViewTransform(const ZSliceViewTransform &t);
-  void setCutPlane(neutu::EAxis axis);
+  void setSliceViewTransform(const ZSliceViewTransform &t, neutu::ESignalControl signaling);
+  void setCutPlane(neutu::EAxis axis, neutu::ESignalControl signaling);
   void setRightHanded(bool r);
-  void setCutPlane(const ZPoint &v1, const ZPoint &v2);
-  void setCutPlane(const ZAffinePlane &plane);
+  void setCutPlane(const ZPoint &v1, const ZPoint &v2, neutu::ESignalControl signaling);
+  void setCutPlane(const ZAffinePlane &plane, neutu::ESignalControl signaling);
   ZPlane getCutOrientation() const;
 
-  void setCutCenter(double x, double y, double z);
-  void setCutCenter(const ZPoint &center);
-  void setCutCenter(const ZIntPoint &center);
-  void moveCutDepth(double dz);
+  void setCutCenter(double x, double y, double z, neutu::ESignalControl signaling);
+  void setCutCenter(const ZPoint &center, neutu::ESignalControl signaling);
+  void setCutCenter(const ZIntPoint &center, neutu::ESignalControl signaling);
+  void moveCutDepth(double dz, neutu::ESignalControl signaling);
 
   ZPoint getCutCenter() const;
 
@@ -125,7 +126,7 @@ public:
    * \brief Get viewport in the model space
    */
   ZAffineRect getViewPort() const;
-  void setViewPort(const ZAffineRect &rect);
+  void setViewPort(const ZAffineRect &rect, neutu::ESignalControl signaling);
 
 //  void setViewPort(const QRect &rect);
 //  void setProjRegion(const QRectF &rect);
@@ -148,36 +149,37 @@ public:
    * Move the current viewport so that the offset between its first corner and
    * the first corner of the canvas is (\a dx, \a dy).
    */
-  void moveViewPort(int dx, int dy);
-  void moveViewPort(const QPoint &src, const QPointF &dst);
+  void moveViewPort(int dx, int dy, neutu::ESignalControl signaling);
+  void moveViewPort(const QPoint &src, const QPointF &dst, neutu::ESignalControl signaling);
 
   /*!
    * \brief Move viewport
    *
    * Move \a src in the model space to a widget point \a dst.
    */
-  void moveViewPort(const ZPoint &src, const QPointF &dst);
-  void moveViewPortToCenter(const ZPoint &src);
+  void moveViewPort(const ZPoint &src, const QPointF &dst, neutu::ESignalControl signaling);
+  void moveViewPortToCenter(const ZPoint &src, neutu::ESignalControl signaling);
 
-  void setZoomRatio(double zoomRatio);
+  void setZoomRatio(double zoomRatio, neutu::ESignalControl signaling);
   //inline int zoomRatio() const { return m_zoomRatio; }
-  void increaseZoomRatio();
-  void decreaseZoomRatio();
+  void increaseZoomRatio(neutu::ESignalControl signaling);
+  void decreaseZoomRatio(neutu::ESignalControl signaling);
 
-  void increaseZoomRatio(int x, int y, bool usingRef = true);
-  void decreaseZoomRatio(int x, int y, bool usingRef = true);
+  void increaseZoomRatio(int x, int y, bool usingRef, neutu::ESignalControl signaling);
+  void decreaseZoomRatio(int x, int y, bool usingRef, neutu::ESignalControl signaling);
 
-  void zoom(double zoomRatio);
+  void zoom(double zoomRatio, neutu::ESignalControl signaling);
   void zoom(double zoomRatio, EViewPortAdjust option);
 
-  void zoomTo(const QPoint &center, int w, int h);
-  void zoomTo(const ZPoint &pt, double w, double h, neutu::data3d::ESpace space);
-  void zoomTo(const ZPoint &pt);
+  void zoomTo(const QPoint &center, int w, int h, neutu::ESignalControl signaling);
+  void zoomTo(const ZPoint &pt, double w, double h,
+              neutu::data3d::ESpace space, neutu::ESignalControl signaling);
+  void zoomTo(const ZPoint &pt, neutu::ESignalControl signaling);
 
-  void rotate(double au, double av, double rad);
-  void rotate(double da, double db);
+  void rotate(double au, double av, double rad, neutu::ESignalControl signaling);
+  void rotate(double da, double db, neutu::ESignalControl signaling);
 
-  void setViewPort(const QRect &rect);
+//  void setViewPort(const QRect &rect, neutu::ESignalControl signaling);
 
   bool restoreFromBadView(const ZIntCuboid &worldRange);
 
@@ -232,7 +234,7 @@ public:
     return m_paintBlocked;
   }
 
-  void setSliceAxis(neutu::EAxis axis);
+  void setSliceAxis(neutu::EAxis axis, neutu::ESignalControl signaling);
 
   neutu::EAxis getSliceAxis() const;
 
@@ -246,10 +248,11 @@ public:
 
   void hideZoomHint();
 
+  void showAxes(bool on);
   void showCrossHair(bool on);
   void updateCrossHair(int x, int y);
 
-  void maximizeViewPort(const ZIntCuboid &worldRange);
+  void maximizeViewPort(const ZIntCuboid &worldRange, neutu::ESignalControl signaling);
 
   void enableOffsetAdjustment(bool on);
 //  bool paintWidgetCanvas(ZImage *canvas);
@@ -266,6 +269,14 @@ public:
   void resetView(double defaultScale = 0.0);
   void setReady(bool ready);
   bool isReady() const;
+
+  /*!
+   * \brief Take a screenshot of the current scene
+   *
+   * It tries to save the screenshot in \a filename and returns true iff the
+   * screenshot is saved successfully.
+   */
+  bool takeScreenshot(const QString &filename);
 
 //  void paintWidgetObject();
 
@@ -298,6 +309,7 @@ signals:
   void transformSyncNeeded();
   void transformControlSyncNeeded();
   void sliceAxisChanged();
+  void sceneUpdated();
 
 protected:
 //  int getMaxZoomRatio() const;
@@ -348,7 +360,7 @@ private:
   bool isModelWithinWidget() const;
 
   void blockTransformSyncSignal(bool blocking);
-  void notifyTransformChanged();
+  void notifyTransformChanged(neutu::ESignalControl signaling);
 
   double getScaleHintFromRange(
       double w, double h, neutu::data3d::ESpace space) const;
@@ -389,7 +401,8 @@ private:
   bool m_isReady = false;
   bool m_offsetAdjustment = false;
   bool m_signalingTransformSync = true;
-  QPoint m_hairCenter;
+  bool m_showingAxes = true;
+//  QPoint m_hairCenter;
 };
 
 #endif

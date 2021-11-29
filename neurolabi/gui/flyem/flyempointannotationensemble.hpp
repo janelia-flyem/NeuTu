@@ -144,6 +144,7 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_inner(
   }, 1.5);
 
   neutu::LogProfileInfo(
+        "view2d",
         timer.elapsed(),
         "display point annotation",
         neulib::StringBuilder("Display point annotation: ").

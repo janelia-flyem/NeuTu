@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cmath>
 #include <functional>
+#include <vector>
 
 #include "neulib/core/utilities.h"
 
@@ -228,10 +229,10 @@ const static auto NullFunction = std::function<void()>();
 class ApplyOnce {
 public:
   ApplyOnce(std::function<void()> startFunc, std::function<void()> endFunc) {
+    m_endFunc = endFunc;
     if (startFunc) {
       startFunc();
     }
-    m_endFunc = endFunc;
   }
 
   ~ApplyOnce() {

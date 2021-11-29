@@ -116,7 +116,7 @@ ZFlyEmProofDoc::~ZFlyEmProofDoc()
     delete p.second;
   }
 
-  KDEBUG << ZLog::Info() << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
+  KDEBUG(neutu::TOPIC_NULL) << ZLog::Info() << ZLog::Diagnostic("ZFlyEmProofDoc destroyed");
 //  LDEBUG() << "ZFlyEmProofDoc destroyed";
 }
 
@@ -717,7 +717,7 @@ void ZFlyEmProofDoc::clearBodyAnnotationMap(QMap<uint64_t, T> &annotationMap) co
   for (auto iter = annotationMap.begin(); iter != annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
     if (selected.count(bodyId) == 0) {
-//      KWARN << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
+//      KWARN(neutu::TOPIC_NULL) << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
       keysToRemove.push_back(bodyId);
     }
   }
@@ -743,7 +743,7 @@ void ZFlyEmProofDoc::clearBodyAnnotationMap()
        iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
     uint64_t bodyId = iter.key();
     if (selected.count(bodyId) == 0) {
-//      KWARN << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
+//      KWARN(neutu::TOPIC_NULL) << QString("Inconsistent body selection: %1").arg(bodyId).toStdString();
       keysToRemove.push_back(bodyId);
     }
   }
@@ -1704,7 +1704,7 @@ ZDvidReader& ZFlyEmProofDoc::getBookmarkReader()
   return getBookmarkWriter().getDvidReader();
   /*
   if (!m_bookmarkReader.isReady()) {
-    KINFO << "Open bookmark reader";
+    KINFO(neutu::TOPIC_NULL) << "Open bookmark reader";
     m_bookmarkReader.openRaw(getDvidReader().getDvidTarget());
   }
 
@@ -1893,7 +1893,7 @@ void ZFlyEmProofDoc::prepareGrayscaleReader(
         }
       }
     } else {
-      LKWARN << "Invalid grayscale target: " + key;
+      LKWARN(neutu::TOPIC_NULL) << "Invalid grayscale target: " + key;
       delete reader;
     }
     ++index;
@@ -1921,7 +1921,7 @@ void ZFlyEmProofDoc::prepareGrayscaleReader()
         m_mainGrayscaleReader = reader;
       }
     } else {
-      LKWARN << "Invalid grayscale target: " + key;
+      LKWARN(neutu::TOPIC_NULL) << "Invalid grayscale target: " + key;
       delete reader;
     }
     ++index;
@@ -1944,7 +1944,7 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     target.clearGrayScale();
     m_dvidEnv.setMainTarget(target);
 
-    KINFO << "Setting dvid env in ZFlyEmProofDoc";
+    KINFO(neutu::TOPIC_NULL) << "Setting dvid env in ZFlyEmProofDoc";
     QElapsedTimer timer;
     timer.start();
 
@@ -2050,9 +2050,9 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
 
 //    initRoiProvider();
 
-    KDEBUG << ZLog::Diagnostic(flowInfo.str());
+    KDEBUG(neutu::TOPIC_NULL) << ZLog::Diagnostic(flowInfo.str());
 
-    KLog() << ZLog::Profile() << ZLog::Duration(timer.elapsed())
+    KLog(neutu::TOPIC_NULL) << ZLog::Profile() << ZLog::Duration(timer.elapsed())
            << ZLog::Diagnostic(std::string("Time cost to call ") + __FUNCTION__);
 
 //    LDEBUG() << flowInfo.str();
@@ -2087,7 +2087,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
   env.set(target);
   setDvid(env);
 #if 0
-  KINFO << "Setting dvid env in ZFlyEmProofDoc";
+  KINFO(neutu::TOPIC_NULL) << "Setting dvid env in ZFlyEmProofDoc";
   QElapsedTimer timer;
   timer.start();
   if (m_dvidWriter.open(target)) {
@@ -2353,7 +2353,7 @@ void ZFlyEmProofDoc::readInfo()
   updateMaxLabelZoom();
 //  updateMaxGrayscaleZoom();
 
-  KINFO << startLog;
+  KINFO(neutu::TOPIC_NULL) << startLog;
 }
 
 void ZFlyEmProofDoc::updateSegmentationOpacity(double opacity)
@@ -2667,7 +2667,7 @@ ZDvidLabelSlice* ZFlyEmProofDoc::addDvidLabelSlice(neutu::EAxis axis, bool sv)
     labelSlice->setDvidTarget(getDvidTarget());
   }
 
-  KINFO << QString("Max label zoom: %1").arg(getDvidTarget().getMaxLabelZoom());
+  KINFO(neutu::TOPIC_NULL) << QString("Max label zoom: %1").arg(getDvidTarget().getMaxLabelZoom());
 
   labelSlice->setSource(
         ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis, sv));
@@ -3053,7 +3053,7 @@ void ZFlyEmProofDoc::annotateTodoItem(
 
 void ZFlyEmProofDoc::checkTodoItem(bool checking)
 {
-  KINFO << "Check to do items";
+  KINFO(neutu::TOPIC_NULL) << "Check to do items";
 
   annotateTodoItem(
         [checking](ZFlyEmToDoItem &item) {
@@ -3065,7 +3065,7 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
 
 void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
 {
-  KINFO << "Set action of to do items";
+  KINFO(neutu::TOPIC_NULL) << "Set action of to do items";
 
   annotateTodoItem(
         [action, checked](ZFlyEmToDoItem &item) {
@@ -3078,7 +3078,7 @@ void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
 
 void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action)
 { //Duplicated code with checkTodoItem
-  KINFO << "Set action of to do items";
+  KINFO(neutu::TOPIC_NULL) << "Set action of to do items";
 
   annotateTodoItem(
         [action](ZFlyEmToDoItem &item) { item.setAction(action); },
@@ -4051,7 +4051,7 @@ void ZFlyEmProofDoc::clearData()
 
 bool ZFlyEmProofDoc::isSplittable(uint64_t bodyId) const
 {
-  ZOUT(KINFO, 3) << QString("Checking splittable: %1").arg(bodyId);
+  ZOUT(KINFO(neutu::TOPIC_NULL), 3) << QString("Checking splittable: %1").arg(bodyId);
 
   if (getDvidReader().isReady()) {
     if (ZFlyEmBodyAnnotation::IsFinalized(
@@ -5029,12 +5029,12 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
     timer.start();
     std::vector<ZDvidSynapse> synapseArray =
         reader.readSynapse(bodyId, dvid::EAnnotationLoadMode::PARTNER_LOCATION);
-    KINFO << "Synapse loading time: " + std::to_string(timer.restart());
+    KINFO(neutu::TOPIC_NULL) << "Synapse loading time: " + std::to_string(timer.restart());
 
     std::unordered_map<ZIntPoint, uint64_t> labelMap =
         FlyEmDataReader::ReadSynapseLabel(reader, synapseArray);
 #ifdef _DEBUG_
-    KINFO << "Synapse label reading time: " + std::to_string(timer.restart());
+    KINFO(neutu::TOPIC_NULL) << "Synapse label reading time: " + std::to_string(timer.restart());
     std::cout << "Label map size: " << labelMap.size() << std::endl;
 #endif
 
@@ -5284,7 +5284,7 @@ void ZFlyEmProofDoc::exportUserBookmark(const QString &filePath)
 QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
     const std::string &filePath)
 {
-  KINFO << "Importing flyem bookmarks";
+  KINFO(neutu::TOPIC_NULL) << "Importing flyem bookmarks";
 
   QList<ZFlyEmBookmark*> bookmarkList;
 
@@ -5294,7 +5294,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
   if (!filePath.empty()) {
     //    removeObject(ZStackObject::EType::TYPE_FLYEM_BOOKMARK, true);
     TStackObjectList objList = getObjectList(ZStackObject::EType::FLYEM_BOOKMARK);
-    KINFO << QString("%1 bookmarks").arg(objList.size());
+    KINFO(neutu::TOPIC_NULL) << QString("%1 bookmarks").arg(objList.size());
 //    std::vector<ZStackObject*> removed;
 
     for (TStackObjectList::iterator iter = objList.begin();
@@ -5331,7 +5331,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
         bookmark->setHitProtocal(ZStackObject::EHitProtocol::HIT_NONE);
         bookmark->setCustom(false);
         //            addCommand->addBookmark(bookmark);
-//        KINFO << "Adding bookmark:" << neutu::ToString(bookmark);
+//        KINFO(neutu::TOPIC_NULL) << "Adding bookmark:" << neutu::ToString(bookmark);
         bookmarkList.append(bookmark);
         if (bookmark->getBodyId() <= 0) {
           nullIdBookmarkList.append(bookmark);
@@ -5361,7 +5361,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
 
   m_loadingAssignedBookmark = false;
 
-  KINFO << "Bookmark imported";
+  KINFO(neutu::TOPIC_NULL) << "Bookmark imported";
 
   return bookmarkList;
 
@@ -5624,7 +5624,7 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
       processObjectModified();
     }
   } else {
-    KDEBUG << ZLog::Info()
+    KDEBUG(neutu::TOPIC_NULL) << ZLog::Info()
            << ZLog::Description("Updating contrast: " +
                                 std::to_string(highContrast));
 //    LDEBUG() << "Updating contrast:" << highContrast;
@@ -5701,7 +5701,7 @@ void ZFlyEmProofDoc::processAssignedInfo(int x, int y, int z)
           bodyId, dvid::ELabelIndexType::ALL_SYN);
     msg += QString(" (#synapses: %1)").arg(count);
   }
-  KINFO << msg;
+  KINFO(neutu::TOPIC_NULL) << msg;
 }
 
 void ZFlyEmProofDoc::setLabelSliceHittable(bool on)

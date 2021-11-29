@@ -186,7 +186,7 @@ void ZFlyEmOrthoMvc::updateStack(const ZIntPoint &center)
 {
   ZFlyEmOrthoDoc *doc = getCompleteDocument();
   if (doc != NULL) {
-    KINFO << QString("orthogonal view: update data at (%1, %2, %3)").
+    KINFO(neutu::TOPIC_NULL) << QString("orthogonal view: update data at (%1, %2, %3)").
              arg(center.getX()).arg(center.getY()).arg(center.getZ());
 
     doc->updateStack(center);

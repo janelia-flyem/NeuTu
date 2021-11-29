@@ -61,6 +61,9 @@ class ZStackObjectPainter;
 class ZStackViewRecorder;
 class ZStackViewRecordDialog;
 class ZSliceCanvas;
+class ZCheckBoxGroup;
+class ZH3Widget;
+class ZHWidget;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -311,9 +314,8 @@ public:
   void blockViewChangeEvent(bool state);
 
   void zoomTo(int x, int y, int z);
-  void zoomTo(const ZIntPoint &pt);
-
   void zoomTo(int x, int y, int z, int w);
+  void zoomTo(const ZIntPoint &pt);
   void zoomTo(const ZIntPoint &pt, int w);
   void zoomTo(const ZPoint &pt, int w, bool showingHint);
 
@@ -379,13 +381,6 @@ public:
   void setViewPortCenter(int x, int y, int z, neutu::EAxisSystem system);
   void setViewPortCenter(const ZIntPoint &center, neutu::EAxisSystem system);
 
-  /*
-  void setViewProj(int x0, int y0, double zoom);
-  void setViewProj(const QPoint &pt, double zoom);
-  void setViewProj(const ZViewProj &vp);
-  */
-//  void updateViewParam(const ZStackViewParam &param);
-//  void updateViewParam(const ZArbSliceViewParam &param);
   void resetViewParam(const ZArbSliceViewParam &param);
 
   ZIntPoint getViewCenter() const;
@@ -393,8 +388,8 @@ public:
   void paintMultiresImageTest(int resLevel);
   void customizeWidget();
 
-  void addHorizontalWidget(QWidget *widget);
-  void addHorizontalWidget(QSpacerItem *spacer);
+//  void addHorizontalWidget(QWidget *widget);
+//  void addHorizontalWidget(QSpacerItem *spacer);
 
 //  void notifyViewPortChanged();
 
@@ -424,6 +419,9 @@ public:
   void removeToolButton(QPushButton *button);
   void setWidgetReady(bool ready);
 
+  void toggleAllControls();
+
+  size_t getFrameCount() const;
 
 public: //Change view parameters
   void moveViewPort(const QPoint& src, const QPointF &dst);
@@ -598,7 +596,8 @@ public slots:
   void resetViewProj();
 
   void enableCustomCheckBox(
-      int index, const QString &text, QObject *receiver, const char *slot);
+      int index, const QString &text, bool defaultValue,
+      QObject *receiver, const char *slot);
 
   void processCanvasUpdate(
       neutu::data3d::ETarget target, std::shared_ptr<ZSliceCanvas> canvas);
@@ -611,6 +610,7 @@ public slots:
   void notifySliceSliderReleased();
 
   void setBlinking(bool on);
+  void showAxes(bool on);
 
 signals:
 //  void currentSliceChanged(int);
@@ -711,6 +711,7 @@ private:
 
 private slots:
   void processTransformChange();
+  void processSceneUpdate();
 
 protected:
   int m_viewId;
@@ -727,21 +728,25 @@ protected:
 //  ZSliceCanvas *m_tileCanvas = NULL;
   ZImageWidget *m_imageWidget;
   ZLabeledSpinBoxWidget *m_depthSpinBox;
+  ZCheckBoxGroup *m_checkBoxControl;
 
-  QVBoxLayout *m_layout;
-  QHBoxLayout *m_topLayout;
-  QHBoxLayout *m_secondTopLayout;
-  QHBoxLayout *m_channelControlLayout;
+  QVBoxLayout *m_layout = nullptr;
+//  QHBoxLayout *m_topLayout;
+//  QHBoxLayout *m_secondTopLayout;
+  ZH3Widget *m_topWidget = nullptr;
+  ZH3Widget *m_secondTopWidget = nullptr;
+  QHBoxLayout *m_channelControlLayout = nullptr;
   QHBoxLayout *m_toolLayout = nullptr;
-  QHBoxLayout *m_ctrlLayout;
-  QHBoxLayout *m_zControlLayout;
+  QHBoxLayout *m_ctrlLayout = nullptr;
+//  QHBoxLayout *m_zControlLayout;
+  ZHWidget *m_bottomWidget = nullptr;
   bool m_scrollEnabled;
 
-  QProgressBar *m_progress;
-  ZSlider *m_thresholdSlider;
-  QPushButton *m_autoThreButton;
+  QProgressBar *m_progress = nullptr;
+  ZSlider *m_thresholdSlider = nullptr;
+  QPushButton *m_autoThreButton = nullptr;
 
-  QVector<QCheckBox*> m_customCheckBoxList;
+//  QVector<QCheckBox*> m_customCheckBoxList;
 
   // used to turn on or off each channel
   std::vector<ZBoolParameter*> m_chVisibleState;
@@ -763,6 +768,7 @@ protected:
   bool m_ignoringScroll = false;
   bool m_blinking = false;
   int64_t m_scrollPausedTime = 0;
+  size_t m_frameCount = 0;
 
   ZScrollSliceStrategy *m_sliceStrategy;
 

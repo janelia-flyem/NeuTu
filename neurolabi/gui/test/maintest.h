@@ -10,6 +10,8 @@
 TEST(main, util)
 {
 //  std::cout << get_main_config_path("test") << std::endl;
+  MainConfig config = get_program_config(0, nullptr);
+  ASSERT_EQ(false, config.debugging);
   ASSERT_EQ("test/json/config.json", get_main_config_path("test"));
 }
 

@@ -113,6 +113,24 @@ void ClearLayout(
 void ClearLayout(QLayout *layout);
 void PrintLayoutInfo(QLayout *layout, int indent = 0);
 
+/*!
+ * \brief Check if any widget in a layout satisfies a certain condition
+ */
+bool AnyWidgetInLayout(
+    const QLayout *layout, std::function<bool(const QWidget* widget)> pred);
+
+/*!
+ * \brief Check if any widget in a layout is visible
+ */
+bool AnyWidgetInLayoutVisible(const QLayout *layout);
+
+/*!
+ * \brief Process each widget in layout
+ *
+ * It applies \a f on each widget in \a layout.
+ */
+void ForEachWidgetInLayout(
+    const QLayout *layout, std::function<void (QWidget *)> f);
 }
 
 #endif // UTILITIES_H

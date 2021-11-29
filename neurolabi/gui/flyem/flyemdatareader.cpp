@@ -497,7 +497,7 @@ ZDvidSynapse FlyEmDataReader::ReadSynapse(
       FlyEmDataReader::ReadSynapse(reader, ZIntCuboid(x, y, z, x, y, z), mode);
   if (!synapseArray.empty()) {
     if (synapseArray.size() > 1) {
-      KWARN << QString("Duplicated synapses at (%1, %2, %3)").arg(x).arg(y).arg(z);
+      KWARN(neutu::TOPIC_NULL) << QString("Duplicated synapses at (%1, %2, %3)").arg(x).arg(y).arg(z);
       synapseArray[0].setStatus(ZDvidAnnotation::EStatus::STATUS_DUPLICATED);
     }
     return synapseArray[0];

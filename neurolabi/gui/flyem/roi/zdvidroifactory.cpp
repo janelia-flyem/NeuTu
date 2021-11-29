@@ -51,7 +51,7 @@ ZMesh* ZDvidRoiFactory::makeRoiMesh(const std::string &name) const
     case ESource::MESH:
       mesh = FlyEmDataReader::ReadRoiMesh(
             *m_reader, name,
-            [](const std::string &msg) { LKWARN << msg; });
+            [](const std::string &msg) { LKWARN(neutu::TOPIC_NULL) << msg; });
       break;
     }
   }

@@ -440,13 +440,6 @@ HEADERS += mainwindow.h \
     zstackviewparam.h \
     zflyemdataloader.h \
     zprogressmanager.h \
-    dvid/zdvidrequest.h \
-    dvid/zdviddataslicetaskfactory.h \
-    dvid/zdviddataslicetask.h \
-    dvid/zdvidtile.h \
-    dvid/zdvidresolution.h \
-    dvid/zdvidtileinfo.h \
-    dvid/zdvidversionmodel.h \
     zmessagemanager.h \
     zmessageprocessor.h \
     zmessage.h \
@@ -458,6 +451,13 @@ HEADERS += mainwindow.h \
     zmessagemanagermodel.h \
     zflyemcontrolform.h \
     zpixmap.h \
+    dvid/zdvidrequest.h \
+    dvid/zdviddataslicetaskfactory.h \
+    dvid/zdviddataslicetask.h \
+    dvid/zdvidtile.h \
+    dvid/zdvidresolution.h \
+    dvid/zdvidtileinfo.h \
+    dvid/zdvidversionmodel.h \
     dvid/zdvidgrayslice.h \
     dvid/zdvidsparsestack.h \
     dvid/zdvidsparsevolslice.h \

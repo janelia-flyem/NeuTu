@@ -40,7 +40,7 @@ ZPunctum::ZPunctum(const ZIntPoint &center, double r)
 ZPunctum::~ZPunctum()
 {
 #ifdef _DEBUG_
-  LKINFO << "Deconstructing " + neutu::ToString(this) + ": " + getTypeName() + ", "
+  LKINFO(neutu::TOPIC_NULL) << "Deconstructing " + neutu::ToString(this) + ": " + getTypeName() + ", "
             + getSource();
 #endif
 }

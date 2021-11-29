@@ -146,14 +146,14 @@ void Z3DCanvas::mouseMoveEvent(QMouseEvent*  e)
 void Z3DCanvas::mouseDoubleClickEvent(QMouseEvent* e)
 {
   neutu::LogMouseEvent(e, "double click", "Z3DCanvas");
-//  KINFO << "Mouse double clicked in Z3DCanvas";
+//  KINFO(neutu::TOPIC_NULL) << "Mouse double clicked in Z3DCanvas";
 
   broadcastEvent(e, width(), height());
 }
 
 void Z3DCanvas::wheelEvent(QWheelEvent* e)
 {
-//  KINFO << "Mouse scrolled in Z3DCanvas";
+//  KINFO(neutu::TOPIC_NULL) << "Mouse scrolled in Z3DCanvas";
   neutu::LogMouseEvent(e, "Z3DCanvas");
 
   broadcastEvent(e, width(), height());

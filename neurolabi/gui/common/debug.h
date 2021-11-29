@@ -43,4 +43,14 @@ private:
 
 HighligthDebug& HLDebug(const std::string &key);
 
+#ifdef _DEBUG_
+#  define HLDEBUG(key) HLDebug(key)
+#  define HLDEBUG_FUNC(key) HLDebug(key) << __PRETTY_FUNCTION__
+#  define HLDEBUG_FUNC_LN(key) HLDEBUG_FUNC(key) << std::endl
+#else
+#  define HLDEBUG(key) if (1) {} else std::cout
+#  define HLDEBUG_FUNC(key) HLDebug(key) if (1) {} else std::cout
+#  define HLDEBUG_FUNC_LN(key) if (1) {} else std::cout
+#endif
+
 #endif // DEBUG_H

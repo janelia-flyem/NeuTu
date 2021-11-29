@@ -32,7 +32,7 @@ BodyPrefetchQueue::BodyPrefetchQueue(QObject *parent) : QObject(parent)
 
 BodyPrefetchQueue::~BodyPrefetchQueue()
 {
-  ZINFO << "Destroying BodyPrefetchQueue";
+  ZINFO(neutu::TOPIC_NULL) << "Destroying BodyPrefetchQueue";
 }
 
 /*

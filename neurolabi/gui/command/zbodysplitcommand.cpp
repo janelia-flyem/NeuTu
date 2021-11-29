@@ -122,9 +122,9 @@ ZBodySplitCommand::parseSignalPath(
       ZDvidTarget target;
       target.setFromUrl_deprecated(signalPath);
 
-      KINFO << signalPath;
-//      KINFO << QString("Start splitting %1").arg(m_bodyId);
-      KLOG << ZLog::Info()
+      KINFO("split") << signalPath;
+//      KINFO(neutu::TOPIC_NULL) << QString("Start splitting %1").arg(m_bodyId);
+      KLOG("split") << ZLog::Info()
            << ZLog::Object(getLabelTypeName(), target.getSourceString(), std::to_string(m_bodyId))
            << ZLog::Action("start split");
 
@@ -156,6 +156,7 @@ ZBodySplitCommand::parseSignalPath(
           timer.start();
           spStack = reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
           neutu::LogProfileInfo(
+                "split",
                 timer.elapsed(), "read sparsevol",
                 QString("read sparse volume: %1 with blocks").
                 arg(m_bodyId).arg(blockCount).toStdString());
@@ -295,7 +296,12 @@ int ZBodySplitCommand::run(
 
 
   ZStackWatershedContainer container(data);
-  container.setProfileLogger(neutu::LogProfileInfo);
+  container.setProfileLogger([](
+                             int64_t duration,
+                             const std::string &title,
+                             const std::string &info) {
+    neutu::LogProfileInfo("split", duration, title, info);
+  });
 
   container.setRefiningBorder(true);
   container.setCcaPost(true);
@@ -334,10 +340,10 @@ int ZBodySplitCommand::run(
     }
 
     if (m_bodyId > 0) {
-      KLOG << ZLog::Info()
+      KLOG("split") << ZLog::Info()
            << ZLog::Object(getLabelTypeName(), "", std::to_string(m_bodyId))
            << ZLog::Action("end split");
-//      KINFO << QString("End splitting %1").arg(m_bodyId);
+//      KINFO(neutu::TOPIC_NULL) << QString("End splitting %1").arg(m_bodyId);
     }
 
 #ifdef _DEBUG_2

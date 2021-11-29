@@ -2113,7 +2113,7 @@ void MainWindow::createWorkDir()
         if (!warningMsg.isEmpty()) {
           QMessageBox::warning(NULL, warningMsg, "Initialization Error",
                                QMessageBox::Ok);
-          KWARN << warningMsg;
+          KWARN(neutu::TOPIC_NULL) << warningMsg;
 //          qWarning() << warningMsg;
         }
       }
@@ -3777,7 +3777,7 @@ void MainWindow::on_actionUpdate_Configuration_triggered()
 {
   NeutubeConfig &config = NeutubeConfig::getInstance();
   if (config.load(config.getConfigPath()) == false) {
-    KWARN << "Unable to load configuration: " + config.getConfigPath();
+    KWARN(neutu::TOPIC_NULL) << "Unable to load configuration: " + config.getConfigPath();
 //    RECORD_WARNING_UNCOND("Unable to load configuration: " + config.getConfigPath());
   } else {
     customizeActions();

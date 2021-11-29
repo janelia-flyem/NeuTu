@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QString>
 
+#include "logging/defs.h"
 #include "neuopentracing.h"
 
 
@@ -20,7 +21,7 @@ public:
     KAFKA_AND_LOCAL //Kafka if it's available; local logging as well
   };
 
-  ZLog(EDestination dest = EDestination::AUTO);
+  ZLog(const std::string &topic, EDestination dest = EDestination::AUTO);
   virtual ~ZLog();
 
   virtual void start();
@@ -160,6 +161,7 @@ private:
 protected:
   bool m_started = false;
   QJsonObject m_tags;
+  std::string m_topic;
   EDestination m_dest = EDestination::AUTO;
 //  bool m_localLogging = true;
 };
@@ -167,7 +169,7 @@ protected:
 class KLog : public ZLog
 {
 public:
-  KLog(EDestination dest = EDestination::KAFKA);
+  KLog(const std::string &topic, EDestination dest = EDestination::KAFKA);
   ~KLog() override;
 
   void start() override;
@@ -223,22 +225,22 @@ public:
 };
 
 
-#define KLOG KLog()
-#define KINFO KInfo()
-#define KWARN KWarn()
-#define KERROR KError()
+#define KLOG(topic) KLog(topic)
+#define KINFO(topic) KInfo(topic)
+#define KWARN(topic) KWarn(topic)
+#define KERROR(topic) KError(topic)
 
 //Send to both kafka and local file
-#define LKLOG KLog(ZLog::EDestination::KAFKA_AND_LOCAL)
-#define LKINFO KInfo(ZLog::EDestination::KAFKA_AND_LOCAL)
-#define LKWARN KWarn(ZLog::EDestination::KAFKA_AND_LOCAL)
-#define LKERROR KError(ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKLOG(topic) KLog(topic, ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKINFO(topic) KInfo(topic, ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKWARN(topic) KWarn(topic, ZLog::EDestination::KAFKA_AND_LOCAL)
+#define LKERROR(topic) KError(topic, ZLog::EDestination::KAFKA_AND_LOCAL)
 
 //Auto
-#define ZLOG KLog(ZLog::EDestination::AUTO)
-#define ZINFO KInfo(ZLog::EDestination::AUTO)
-#define ZWARN KWarn(ZLog::EDestination::AUTO)
-#define ZERROR KError(ZLog::EDestination::AUTO)
+#define ZLOG(topic) KLog(topic, ZLog::EDestination::AUTO)
+#define ZINFO(topic) KInfo(topic, ZLog::EDestination::AUTO)
+#define ZWARN(topic) KWarn(topic, ZLog::EDestination::AUTO)
+#define ZERROR(topic) KError(topic, ZLog::EDestination::AUTO)
 #if defined(_DEBUG_)
 #  define ZDEBUG ZINFO
 #else
@@ -246,9 +248,9 @@ public:
 #endif
 
 #if defined(_DEBUG_)
-#  define KDEBUG KLog()
+#  define KDEBUG(topic) KLog(topic)
 #else
-#  define KDEBUG if (1) {} else KLog()
+#  define KDEBUG(topic) if (1) {} else KLog(topic)
 #endif
 
 #endif // ZLOG_H

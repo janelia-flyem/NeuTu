@@ -15,7 +15,7 @@ bool NeuApp::notify(QObject* receiver, QEvent* event)
   try {
     done = QApplication::notify(receiver, event);
   } catch (const std::exception& e) {
-    ZERROR << e.what();
+    ZERROR(neutu::TOPIC_NULL) << e.what();
     ZDialogFactory::Error(
           "Fatal Error",
           QString("You'd better restart %1 after saving your work in progress.").arg(GET_SOFTWARE_NAME.c_str()),

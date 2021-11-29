@@ -447,7 +447,7 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(KLog(), 5) << ZLog::Profile()
+    ZOUT(KLog(neutu::TOPIC_NULL), 5) << ZLog::Profile()
                     << ZLog::Diagnostic("Body reading time")
                     << ZLog::Duration(timer.elapsed());
 //    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
@@ -490,7 +490,7 @@ ZObject3dScan *ZDvidReader::readBody(
     QElapsedTimer timer;
     timer.start();
     reader.read(url.c_str(), isVerbose());
-    ZOUT(KLog(), 5) << ZLog::Profile()
+    ZOUT(KLog(neutu::TOPIC_NULL), 5) << ZLog::Profile()
                     << ZLog::Diagnostic("Body reading time")
                     << ZLog::Duration(timer.elapsed());
 //    ZOUT(LTRACE(), 5) << "Reading time:" << url << timer.elapsed() << "ms";
@@ -883,14 +883,14 @@ ZObject3dScan *ZDvidReader::readBody(
             with_source_query(dvidUrl.getSparsevolUrl(config)));
 
       if (buffer.isEmpty()) {
-        LKINFO << "Failed to read body data.";
+        LKINFO(neutu::TOPIC_NULL) << "Failed to read body data.";
         size_t nvoxels = 0;
         size_t nblocks = 0;
         ZIntCuboid newBox;
         std::tie(nvoxels, nblocks, newBox) = readBodySizeInfo(bodyId, labelType);
 
         if (nvoxels > 0) {
-          LKINFO<< QString("Try to read %1 with partitions").arg(bodyId);
+          LKINFO(neutu::TOPIC_NULL) << QString("Try to read %1 with partitions").arg(bodyId);
 
           int zoomScale = zgeom::GetZoomScale(zoom);
           int npart = nblocks / 500 / zoomScale / zoomScale / zoomScale;
@@ -1030,7 +1030,7 @@ ZObject3dScan *ZDvidReader::readBodyDs(
 
     auto parsingTime = timer.elapsed();
 
-    KLog() << ZLog::Profile()
+    KLog(neutu::TOPIC_NULL) << ZLog::Profile()
            << ZLog::Duration(readingTime + parsingTime)
            << ZLog::Description(
                 QString("Read %1: reading time = %2 ms; parsing time = %3 ms").
@@ -2557,7 +2557,7 @@ ZStack* ZDvidReader::readGrayScale(
   }
 #endif
 
-  ZOUT(KLOG, 5) << ZLog::Profile() << ZLog::Description("grayscale reading time")
+  ZOUT(KLOG(neutu::TOPIC_NULL), 5) << ZLog::Profile() << ZLog::Description("grayscale reading time")
          << ZLog::Duration(m_readingTime);
 
   return stack;
@@ -3960,7 +3960,7 @@ ZArray* ZDvidReader::readLabels64(
       libdvid::Labels3D labels = m_service->get_labels3D(
             dataName, dims, offset, channels, false, true);
       m_readingTime = timer.elapsed();
-      KLOG << ZLog::Profile() <<
+      KLOG(neutu::TOPIC_NULL) << ZLog::Profile() <<
               ZLog::Description("label reading time: " + dvidUrl.getLabels64Url(
                                   dataName, width, height, depth, x0, y0, z0))
            << ZLog::Duration(m_readingTime);
@@ -3978,7 +3978,7 @@ ZArray* ZDvidReader::readLabels64(
       array->setStartCoordinate(2, z0);
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
-      KLOG << ZLog::Error() << ZLog::Description(e.what());
+      KLOG(neutu::TOPIC_NULL) << ZLog::Error() << ZLog::Description(e.what());
 //      LERROR() << e.what();
       setStatusCode(e.getStatus());
     }
@@ -4117,7 +4117,7 @@ void LogReadingTime(int64_t time, int64_t thre, const std::string &name)
 {
   bool logging = (NeutubeConfig::GetVerboseLevel() >= 5) || (time > thre);
   if (logging) {
-    KLOG << ZLog::Info() << ZLog::Description(name) << ZLog::Duration(time);
+    KLOG(neutu::TOPIC_NULL) << ZLog::Info() << ZLog::Description(name) << ZLog::Duration(time);
 //    LINFO() << name + " reading time: " << time;
   }
 }
@@ -4228,11 +4228,11 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     m_readingTime = timer.elapsed();
     if (NeutubeConfig::GetVerboseLevel() < 5) {
       if (m_readingTime > 10) {
-        KLOG << ZLog::Profile() << ZLog::Description("grayscale reading time")
+        KLOG(neutu::TOPIC_NULL) << ZLog::Profile() << ZLog::Description("grayscale reading time")
                << ZLog::Duration(m_readingTime);
       }
     } else {
-      KLOG << ZLog::Profile() << ZLog::Description("grayscale reading time")
+      KLOG(neutu::TOPIC_NULL) << ZLog::Profile() << ZLog::Description("grayscale reading time")
              << ZLog::Duration(m_readingTime);
     }
   }
@@ -4632,7 +4632,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     }
 
     m_readingTime = timer.elapsed();
-    KLOG << ZLog::Profile() << ZLog::Description("label reading time")
+    KLOG(neutu::TOPIC_NULL) << ZLog::Profile() << ZLog::Description("label reading time")
          << ZLog::Duration(m_readingTime);
 //    LINFO() << "label reading time: " << m_readingTime;
   }
@@ -4706,7 +4706,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     }
 
     m_readingTime = timer.elapsed();
-    KLOG << ZLog::Profile() << ZLog::Description("label reading time")
+    KLOG(neutu::TOPIC_NULL) << ZLog::Profile() << ZLog::Description("label reading time")
          << ZLog::Duration(m_readingTime);
 //    LINFO() << "label reading time: " << m_readingTime;
   }
@@ -6361,7 +6361,7 @@ std::string ZDvidReader::GetMasterUrl(const ZDvidUrl &dvidUrl)
   if (!dvid::HasHead(url)) {
     url = dvidUrl.getOldMasterUrl();
   }
-  LKINFO << "Master url: " + url;
+  LKINFO(neutu::TOPIC_NULL) << "Master url: " + url;
 
   return url;
 }

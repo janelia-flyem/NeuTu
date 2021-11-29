@@ -11,6 +11,7 @@
 #include "zobject3dscan.h"
 
 #include "logging/utilities.h"
+#include "logging/defs.h"
 
 #include "z3dview.h"
 #include "z3dvolumefilter.h"
@@ -200,7 +201,7 @@ void ZStackDoc3dHelper::updateDecorationData(Z3DView *view)
         timer.start();
         ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
         neutu::LogProfileInfo(
-              timer.elapsed(), "mesh generation", "extracting mesh decoration");
+              neutu::TOPIC_NULL, timer.elapsed(), "mesh generation", "extracting mesh decoration");
 
         if (mesh != NULL) {
           mesh->setLabel(obj->getLabel());

@@ -625,7 +625,7 @@ void ZStackDoc::autoSave()
 
 void ZStackDoc::autoSaveSlot()
 {
-  LKINFO << "Autosave triggered.";
+  LKINFO("document") << "Autosave triggered.";
   if (m_autoSaving) {
     autoSave();
   }
@@ -10013,7 +10013,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
           obj->setProjectionVisible(false);
           obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
           obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
-          LKINFO << QString("Adding %1 %2").arg(neutu::ToString(obj).c_str())
+          LKINFO(neutu::TOPIC_NULL) << QString("Adding %1 %2").arg(neutu::ToString(obj).c_str())
                     .arg(obj->getSource().c_str());
           //              addObject(obj, true);
           m_dataBuffer->addUpdate(
@@ -10267,14 +10267,17 @@ void ZStackDoc::runLocalSeededWatershed()
 //  endProgress();
 }
 
-void ZStackDoc::runSeededWatershed()
+void ZStackDoc::runSeededWatershed(std::function<void (const std::string &)> logger)
 {
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
 
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
 
-  ZOUT(LKINFO, 3) << "Retrieving label set";
+  if (logger) {
+    logger("Retrieving label set");
+  }
+//  ZOUT(LKINFO, 3) << "Retrieving label set";
 
   QSet<int> labelSet;
   foreach (const ZDocPlayer *player, playerList) {

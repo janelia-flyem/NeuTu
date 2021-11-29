@@ -9,19 +9,20 @@ namespace neutu {
 
 void LogUrlIO(const QString &action, const QString &url)
 {
-  KLOG << ZLog::Info() << ZLog::Tag("action", action.toStdString())
+  // FIXME
+  KLOG("") << ZLog::Info() << ZLog::Tag("action", action.toStdString())
        << ZLog::Tag("url", url.toStdString())
        << ZLog::Level(2);
 }
 
-void LogUrlIO(
+void LogUrlIO(const QString &topic,
     const QString &action, const QString &url,  const QByteArray &payload)
 {
-  KLOG << ZLog::Info() << ZLog::Tag("action", action.toStdString())
+  KLOG(topic.toStdString()) << ZLog::Info() << ZLog::Tag("action", action.toStdString())
        << ZLog::Tag("url", url.toStdString())
        << ZLog::Level(2);
   if (!payload.isEmpty()) {
-    KLOG << ZLog::Info()
+    KLOG(topic.toStdString()) << ZLog::Info()
          << ZLog::Description(
               QString("Payload length: %1").arg(payload.length()).toStdString())
          << ZLog::Level(2);
@@ -30,7 +31,7 @@ void LogUrlIO(
 //void LogBodyOperation(
 //    const QString &action, uint64_t bodyId, EBodyLabelType labelType)
 //{
-//  KLOG << ZLog::Info()
+//  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
 //       << ZLog::Action(action.toStdString())
 //       << ZLog::Object(neutu::ToString(labelType), "", std::to_string(bodyId));
 //}
@@ -60,22 +61,22 @@ void LogLocalMessage(const ZWidgetMessage &msg)
   }
 }
 
-void LogKafkaMessage(const ZWidgetMessage &msg)
+void LogKafkaMessage(const std::string &topic, const ZWidgetMessage &msg)
 {
   if (msg.hasTarget(ZWidgetMessage::TARGET_KAFKA)) {
     std::string plainStr = msg.toPlainString().toStdString();
     switch (msg.getType()) {
     case neutu::EMessageType::INFORMATION:
-      KINFO << plainStr;
+      KINFO(topic) << plainStr;
       break;
     case neutu::EMessageType::WARNING:
-      KWARN << plainStr;
+      KWARN(topic) << plainStr;
       break;
     case neutu::EMessageType::ERROR:
-      KERROR << plainStr;
+      KERROR(topic) << plainStr;
       break;
     case neutu::EMessageType::DEBUG:
-      KDEBUG << ZLog::Debug() << ZLog::Description(plainStr);
+      KDEBUG(topic) << ZLog::Debug() << ZLog::Description(plainStr);
       break;
     }
   }
@@ -83,30 +84,31 @@ void LogKafkaMessage(const ZWidgetMessage &msg)
 
 }
 
-void LogMessage(const ZWidgetMessage &msg)
+void LogMessage(const std::string &topic, const ZWidgetMessage &msg)
 {
   LogLocalMessage(msg);
-  LogKafkaMessage(msg);
+  LogKafkaMessage(topic, msg);
 }
 
-void LogMessageF(const std::string &str, neutu::EMessageType type)
+void LogMessageF(const std::string &topic, const std::string &str, neutu::EMessageType type)
 {
   ZWidgetMessage msg(str, type);
   msg.setTarget(ZWidgetMessage::TARGET_LOG_FILE | ZWidgetMessage::TARGET_KAFKA);
-  LogMessage(msg);
+  LogMessage(topic, msg);
 }
 
 void LogProfileInfo(
+    const std::string &topic,
     int64_t duration, const std::string &title, const std::string &info)
 {
-  KLOG << ZLog::Profile() << ZLog::Duration(duration)
+  KLOG(topic) << ZLog::Profile() << ZLog::Duration(duration)
        << ZLog::Title(title)
        << ZLog::Description(info);
 }
 
-void LogError(const std::string &msg)
+void LogError(const std::string &topic, const std::string &msg)
 {
-  ZLOG << ZLog::Error() << ZLog::Description(msg);
+  ZLOG(topic) << ZLog::Error() << ZLog::Description(msg);
 }
 
 }

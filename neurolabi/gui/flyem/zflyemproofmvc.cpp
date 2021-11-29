@@ -17,6 +17,7 @@
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
+#include "qt/core/defs.h"
 
 #include "zjsondef.h"
 #include "zflyemproofdoc.h"
@@ -67,7 +68,7 @@
 
 #include "widgets/zcolorlabel.h"
 #include "widgets/zimagewidget.h"
-
+#include "widgets/zh3widget.h"
 
 #include "widgets/zflyembookmarkview.h"
 #include "widgets/z3dtabwidget.h"
@@ -162,7 +163,9 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
 
 void ZFlyEmProofMvc::init()
 {
-  setLogger(neutu::LogMessageF);
+  setLogger([](const std::string &str, neutu::EMessageType type){
+    neutu::LogMessageF(neutu::TOPIC_NULL, str, type);
+  });
 
   setFocusPolicy(Qt::ClickFocus);
 
@@ -212,7 +215,7 @@ void ZFlyEmProofMvc::init()
 void ZFlyEmProofMvc::recordEnd()
 {
   if (getDvidTarget().isValid()) {
-    LKLOG << ZLog::Info()
+    LKLOG(neutu::TOPIC_NULL) << ZLog::Info()
           << ZLog::Description(
                QString("End using %1@%2").arg(getDvidTarget().getUuid().c_str()).
                arg(getDvidTarget().getAddressWithPort().c_str()).toStdString())
@@ -542,10 +545,12 @@ void ZFlyEmProofMvc::initBodyWindow()
 void ZFlyEmProofMvc::prepareTopLayout()
 {
   initViewButton();
-  m_topLayout->addStretch();
+//  m_topLayout->addStretch();
 //  m_topLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
   m_infoLabel = new QLabel(this);
-  m_topLayout->addWidget(m_infoLabel);
+//  m_topLayout->addWidget(m_infoLabel);
+  m_topWidget->addWidget(m_infoLabel, neutu::EH3Layout::RIGHT);
+  m_topWidget->updateVisibility();
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
@@ -1071,7 +1076,7 @@ void ZFlyEmProofMvc::syncBodySelectionFromOrthoWindow()
 void ZFlyEmProofMvc::log3DWindowEvent(
     const std::string &windowName, const std::string &action)
 {
-  KLOG << ZLog::Info()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
        << ZLog::Window("ZFlyEmProofMvc")
        << ZLog::Action(action)
        << ZLog::Object("Z3DWindow", windowName);
@@ -1079,7 +1084,7 @@ void ZFlyEmProofMvc::log3DWindowEvent(
 
 void ZFlyEmProofMvc::makeOrthoWindow(int width, int height, int depth)
 {
-  KLOG << ZLog::Info()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
        << ZLog::Window("ZFlyEmProofMvc")
        << ZLog::Action("make")
        << ZLog::Object("ZFlyEmOrthoWindow");
@@ -1984,7 +1989,7 @@ void ZFlyEmProofMvc::setDvidFromJsonObject(const std::string &str)
       setDvid(env);
     }
   } else {
-    LKWARN << "Invalid DVID json: " + str;
+    LKWARN(neutu::TOPIC_NULL) << "Invalid DVID json: " + str;
   }
 }
 
@@ -2094,7 +2099,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
   }
 
   addLog("Setting dvid env in ZFlyEmProofMvc");
-//  KINFO << "Setting dvid env in ZFlyEmProofMvc";
+//  KINFO(neutu::TOPIC_NULL) << "Setting dvid env in ZFlyEmProofMvc";
 
   getProgressSignal()->startProgress("Loading data ...");
 
@@ -2129,7 +2134,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
     for (ZStackView *view : m_viewList) {
       view->setWidgetReady(false);
 
-      KINFO << "Init grayslice";
+      KINFO(neutu::TOPIC_NULL) << "Init grayslice";
       if (slice != NULL) {
         //      slice->updateContrast(getCompletePresenter()->highTileContrast());
         ZDvidGraySliceScrollStrategy *scrollStrategy =
@@ -2140,7 +2145,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
       }
     }
 
-    KINFO << "Init tiles";
+    KINFO(neutu::TOPIC_NULL) << "Init tiles";
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
@@ -2166,7 +2171,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
 
   if (getRole() == ERole::ROLE_WIDGET) {
     if (getDvidTarget().isValid()) {
-      KINFO << "Download annotations";
+      KINFO(neutu::TOPIC_NULL) << "Download annotations";
       getCompleteDocument()->downloadSynapse();
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
@@ -2184,7 +2189,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
   }
 
   if (m_dlgManager->isRoiDlgReady()) {
-    KINFO << "Set ROI dialog";
+    KINFO(neutu::TOPIC_NULL) << "Set ROI dialog";
     ZFlyEmRoiToolDialog *dlg = m_dlgManager->getRoiDlg();
     dlg->clear();
     dlg->updateDvidTarget();
@@ -2202,7 +2207,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
           neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
 
-  KINFO << "DVID Ready";
+  KINFO(neutu::TOPIC_NULL) << "DVID Ready";
   m_sessionTimer.start();
   emit dvidReady();
 //  updateRoiWidget();
@@ -2234,7 +2239,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
-  KINFO << "Setting dvid env in ZFlyEmProofMvc";
+  KINFO(neutu::TOPIC_NULL) << "Setting dvid env in ZFlyEmProofMvc";
 
   getProgressSignal()->startProgress("Loading data ...");
 
@@ -2269,7 +2274,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 //    ZJsonObject contrastObj = reader.readContrastProtocal();
 //    getPresenter()->setHighContrastProtocal(contrastObj);
 
-    KINFO << "Init grayslice";
+    KINFO(neutu::TOPIC_NULL) << "Init grayslice";
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice(
           getView()->getSliceAxis());
     if (slice != NULL) {
@@ -2282,7 +2287,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       getView()->setScrollStrategy(scrollStrategy);
     }
 
-    KINFO << "Init tiles";
+    KINFO(neutu::TOPIC_NULL) << "Init tiles";
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
@@ -2304,7 +2309,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   if (getRole() == ERole::ROLE_WIDGET) {
     if (getDvidTarget().isValid()) {
-      KINFO << "Download annotations";
+      KINFO(neutu::TOPIC_NULL) << "Download annotations";
       getCompleteDocument()->downloadSynapse();
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
@@ -2328,7 +2333,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   }
 
   if (m_dlgManager->isRoiDlgReady()) {
-    KINFO << "Set ROI dialog";
+    KINFO(neutu::TOPIC_NULL) << "Set ROI dialog";
     ZFlyEmRoiToolDialog *dlg = m_dlgManager->getRoiDlg();
     dlg->clear();
     dlg->updateDvidTarget();
@@ -2346,7 +2351,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
           neutu::EMessageType::INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
 
-  KINFO << "DVID Ready";
+  KINFO(neutu::TOPIC_NULL) << "DVID Ready";
   emit dvidReady();
 
   if (getRole() == ERole::ROLE_WIDGET) {
@@ -2404,7 +2409,7 @@ void ZFlyEmProofMvc::updateContrast(const ZJsonObject &protocolJson, bool hc)
 
 void ZFlyEmProofMvc::updateContrast()
 {
-  KINFO << "Set contrast";
+  KINFO(neutu::TOPIC_NULL) << "Set contrast";
 
   getPresenter()->setHighContrastProtocal(
         getCompleteDocument()->getContrastProtocol().toJsonObject());
@@ -2415,7 +2420,7 @@ void ZFlyEmProofMvc::updateContrast()
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
 
   if (reader.isReady()) {
-    KINFO << "Set contrast";
+    KINFO(neutu::TOPIC_NULL) << "Set contrast";
     ZJsonObject contrastObj =reader.readContrastProtocal();
     getPresenter()->setHighContrastProtocal(contrastObj);
 
@@ -2423,7 +2428,7 @@ void ZFlyEmProofMvc::updateContrast()
                    getCompletePresenter()->highTileContrast());
   }
   */
-//  KINFO << "Init grayslice";
+//  KINFO(neutu::TOPIC_NULL) << "Init grayslice";
 
 }
 
@@ -2710,6 +2715,10 @@ void ZFlyEmProofMvc::diagnose()
     }
   }
 
+#ifdef _DEBUG_
+  neutu::PrintLayoutInfo(layout());
+#endif
+
   getDocument()->diagnose();
 }
 
@@ -2850,7 +2859,9 @@ void ZFlyEmProofMvc::customInit()
   prepareTopLayout();
 
   m_paintLabelWidget = new ZPaintLabelWidget();
-  m_secondLayout->addWidget(m_paintLabelWidget);
+//  m_secondLayout->addWidget(m_paintLabelWidget);
+  m_secondTopWidget->addWidget(m_paintLabelWidget, neutu::EH3Layout::LEFT);
+  m_secondTopWidget->updateVisibility();
 //  view->addHorizontalWidget(m_paintLabelWidget);
   m_paintLabelWidget->setSizePolicy(
         QSizePolicy::Preferred, QSizePolicy::Minimum);
@@ -2893,7 +2904,8 @@ void ZFlyEmProofMvc::handleDvidTargetChange(const ZDvidTarget &target)
   if (getRole() == ERole::ROLE_WIDGET) {
     for (ZStackView *view : m_viewList) {
       if (getDvidTarget().hasSegmentation()) {
-        view->enableCustomCheckBox(0, "blinking", view, SLOT(setBlinking(bool)));
+        view->enableCustomCheckBox(
+              1, "blinking", false, view, SLOT(setBlinking(bool)));
       }
     }
     updateViewButton(EViewButton::GOTO_POSITION);
@@ -4043,7 +4055,7 @@ void ZFlyEmProofMvc::notifySplitTriggered()
 
 void ZFlyEmProofMvc::exitHighlightMode()
 {
-  KINFO << "Exiting highlight mode";
+  KINFO(neutu::TOPIC_NULL) << "Exiting highlight mode";
 
   getCompletePresenter()->setHighlightMode(false);
   highlightSelectedObject(false);
@@ -4057,7 +4069,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::getCachedBodyForSplit(uint64_t bodyId)
 ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
     uint64_t bodyId, ZDvidReader &reader)
 {
-  KINFO << QString("Reading sparse stack async: %1").arg(bodyId);
+  KINFO(neutu::TOPIC_NULL) << QString("Reading sparse stack async: %1").arg(bodyId);
   ZDvidSparseStack *body = FlyEmDataReader::ReadDvidSparseStack(
         reader.getDvidTarget(),
         getCompleteDocument()->getCurrentBodyGrayscaleReader(),
@@ -4076,7 +4088,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
     body->setColor(getCompleteDocument()->getBodyColor(bodyId));
     body->setVisible(true);
     body->setProjectionVisible(false);
-    KINFO << QString("Adding body: %1").arg(bodyId);
+    KINFO(neutu::TOPIC_NULL) << QString("Adding body: %1").arg(bodyId);
     getDocument()->addObject(body, true);
   }
 
@@ -5711,7 +5723,7 @@ void ZFlyEmProofMvc::clearUserBookmarkModel()
 
 void ZFlyEmProofMvc::loadBookmarkFunc(const QString &filePath)
 {
-  KINFO << "Importing bookmarks from " + filePath + " ...";
+  KINFO(neutu::TOPIC_NULL) << "Importing bookmarks from " + filePath + " ...";
 
   getProgressSignal()->startProgress("Importing bookmarks ...");
   //  m_splitProject.loadBookmark(filePath);
@@ -6274,7 +6286,7 @@ void ZFlyEmProofMvc::reportBodyCorruption()
         arg(ZDvidUrl(getDvidTarget()).getSparsevolUrl(0).c_str()).
         arg(pt.toString().c_str());
 
-    KINFO << message + "; Comment: " + text;
+    KINFO(neutu::TOPIC_NULL) << message + "; Comment: " + text;
   }
 }
 
@@ -7042,7 +7054,7 @@ void ZFlyEmProofMvc::loadRoi(
       timer.start();
       mesh = reader.readMesh(
             ZDvidData::GetName(ZDvidData::ERole::ROI_DATA_KEY), key);
-      KLOG << ZLog::Profile()
+      KLOG(neutu::TOPIC_NULL) << ZLog::Profile()
            << ZLog::Description(QString("ROI (%1) mesh reading time")
                                 .arg(roiName.c_str()).arg(timer.elapsed())
                                 .toStdString())
@@ -7181,7 +7193,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
   );
 
   if (mesh) {
-    KLOG << ZLog::Profile()
+    KLOG(neutu::TOPIC_NULL) << ZLog::Profile()
          << ZLog::Description(QString("ROI (%1) mesh loading time")
                               .arg(roiName.c_str())
                               .toStdString())
@@ -7330,7 +7342,7 @@ void ZFlyEmProofMvc::retrieveRois()
   const QString threadId = "ZFlyEmProofMvc::loadROIFunc()";
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
-    KINFO << "Loading ROIs";
+    KINFO(neutu::TOPIC_NULL) << "Loading ROIs";
     QFuture<void> future =
         QtConcurrent::run(this, &ZFlyEmProofMvc::loadROIFunc);
     m_futureMap[threadId] = future;
@@ -7376,18 +7388,20 @@ void ZFlyEmProofMvc::makeViewButtons()
   makeViewButton(EViewButton::ANNOTATE_TRACED);
   makeViewButton(EViewButton::GOTO_BODY);
   makeViewButton(EViewButton::GOTO_POSITION);
+  makeViewButton(EViewButton::TOGGLE_VIEW_CONTROL);
 }
 
 void ZFlyEmProofMvc::initViewButton()
 {
   makeViewButtons();
   for (auto b : m_viewButtons) {
-    m_topLayout->addWidget(b.second);
+    m_topWidget->addWidget(b.second, neutu::EH3Layout::LEFT);
 //    for (ZStackView *view : m_viewList) {
 //      view->addToolButton(b.second);
 //    }
     b.second->hide();
   }
+  getViewButton(EViewButton::TOGGLE_VIEW_CONTROL)->setVisible(true);
 }
 
 void ZFlyEmProofMvc::updateViewButton(EViewButton option)
@@ -7469,6 +7483,9 @@ void ZFlyEmProofMvc::makeViewButton(
 void ZFlyEmProofMvc::makeViewButton(EViewButton option)
 {
   switch (option) {
+  case EViewButton::TOGGLE_VIEW_CONTROL:
+    makeViewButton(option, "Toggle Controls", SLOT(toggleViewControls()));
+    break;
   case EViewButton::GOTO_BODY:
     makeViewButton(option, "Go to Body", SLOT(goToBody()));
     break;
@@ -7491,6 +7508,13 @@ QPushButton* ZFlyEmProofMvc::getViewButton(EViewButton option)
   }
 
   return m_viewButtons[option];
+}
+
+void ZFlyEmProofMvc::toggleViewControls()
+{
+  forEachView([](ZStackView *view) {
+    view->toggleAllControls();
+  });
 }
 
 namespace {

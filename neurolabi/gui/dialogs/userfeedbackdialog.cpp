@@ -39,9 +39,10 @@ bool UserFeedbackDialog::send(
 {
   QString fb = getFeedback();
   if (!fb.isEmpty()) {
-    KLog() << ZLog::Feedback() << ZLog::Action(getAction().toStdString())
-           << ZLog::Description(fb.toStdString())
-           << (isAnonymous() ? ZLog::AnonymousUser() : ZLog::Tag());
+    KLog(neutu::TOPIC_FEEDBACK)
+        << ZLog::Feedback() << ZLog::Action(getAction().toStdString())
+        << ZLog::Description(fb.toStdString())
+        << (isAnonymous() ? ZLog::AnonymousUser() : ZLog::Tag());
 
     msgHandler(isAnonymous() ? "Thank you for your anonymous feedback!" :
                                "Thank you for your feedback!");

@@ -564,7 +564,7 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
 bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event, int viewId)
 {
   neutu::LogKeyPressEvent(event, "ZFlyEmProofMvc");
-//  KINFO << QString("Key %1 pressed in ZFlyEmProofMvc").
+//  KINFO(neutu::TOPIC_NULL) << QString("Key %1 pressed in ZFlyEmProofMvc").
 //           arg(QKeySequence(event->key()).toString());
 
   bool processed = false;

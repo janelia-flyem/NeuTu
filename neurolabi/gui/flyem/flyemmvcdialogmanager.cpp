@@ -59,7 +59,7 @@ template <typename T>
 bool FlyEmMvcDialogManager::createIfNecessary(T* &dlg)
 {
   if (isNull(dlg)) {
-    KINFO << "Creating" << typeid(T).name(); //Not necessary works (compiler dependent), but seems good enough for debugging
+    KINFO(neutu::TOPIC_NULL) << "Creating" << typeid(T).name(); //Not necessary works (compiler dependent), but seems good enough for debugging
     dlg = new T(m_parent);
 
     return true;
@@ -78,7 +78,7 @@ bool FlyEmMvcDialogManager::creationRequired(void *dlg) const
 ZDvidTargetProviderDialog* FlyEmMvcDialogManager::getDvidDlg()
 {
   if (isNull(m_dvidDlg)) {
-    KINFO << "Creating ZDvidTargetProviderDialog";
+    KINFO(neutu::TOPIC_NULL) << "Creating ZDvidTargetProviderDialog";
     m_dvidDlg = ZDialogFactory::makeDvidDialog(m_parent);
   }
 
@@ -113,7 +113,7 @@ bool FlyEmMvcDialogManager::isSplitUploadDlgReady() const
 ZContrastProtocalDialog* FlyEmMvcDialogManager::getContrastDlg()
 {
   if (createIfNecessary(m_contrastDlg)) {
-//    KINFO << "ZContrastProtocalDialog created";
+//    KINFO(neutu::TOPIC_NULL) << "ZContrastProtocalDialog created";
     m_contrastDlg = new ZContrastProtocalDialog(m_parent);
     m_parent->configureContrastDlg(m_contrastDlg);
     //    m_contrastDlg->setContrastProtocol(getPresenter()->getHighContrastProtocal());
@@ -245,7 +245,7 @@ ZStackViewRecordDialog* FlyEmMvcDialogManager::getRecordDlg()
 FlyEmBodyAnnotationDialog *FlyEmMvcDialogManager::getAnnotationDlg()
 {
   if (isNull(m_annotationDlg)) {
-    KINFO << "Creating FlyEmBodyAnnotationDialog";
+    KINFO(neutu::TOPIC_NULL) << "Creating FlyEmBodyAnnotationDialog";
     m_annotationDlg = FlyEmDialogFactory::MakeBodyAnnotationDialog(
           m_parent->getCompleteDocument(), m_parent);
   }
@@ -273,7 +273,7 @@ template<typename T>
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(
     const T &flag, bool initTarget)
 {
-//  KINFO << "Creating FlyEmBodyInfoDialog";
+//  KINFO(neutu::TOPIC_NULL) << "Creating FlyEmBodyInfoDialog";
   FlyEmBodyInfoDialog *dlg = new FlyEmBodyInfoDialog(flag, m_parent);
   dlg->setNeuprintDataset(m_neuprintDataset);
   if (initTarget) {
@@ -316,7 +316,7 @@ void FlyEmMvcDialogManager::detachNeuprintBodyDlg()
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
 {
   if (isNull(m_bodyInfoDlg)) {
-    KINFO << "Creating sequencer dialog";
+    KINFO(neutu::TOPIC_NULL) << "Creating sequencer dialog";
     m_bodyInfoDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::SEQUENCER, false);
     connect(m_bodyInfoDlg, SIGNAL(destroyed()), this, SLOT(detachBodyInfoDlg()));
   }
@@ -326,7 +326,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyInfoDlg()
 
 TipDetectorDialog* FlyEmMvcDialogManager::getTipDetectorDlg() {
     if (isNull(m_tipDetectorDlg)) {
-      KINFO << "Creating tip detector dialog";
+      KINFO(neutu::TOPIC_NULL) << "Creating tip detector dialog";
       m_tipDetectorDlg = new TipDetectorDialog(m_parent);
     }
 
@@ -368,7 +368,7 @@ void FlyEmMvcDialogManager::showSynpasePropertyDlg()
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getBodyQueryDlg()
 {
   if (isNull(m_bodyQueryDlg)) {
-    KINFO << "Creating body query dialog";
+    KINFO(neutu::TOPIC_NULL) << "Creating body query dialog";
     m_bodyQueryDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::QUERY, true);
     QObject::connect(m_bodyQueryDlg, SIGNAL(refreshing()),
             m_parent, SLOT(showBodyConnection()));
@@ -438,7 +438,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::getNeuprintBodyDlg()
       }
 
       if (status == neutu::EServerStatus::NORMAL) {
-        KINFO << "Creating NeuPrint dialog";
+        KINFO(neutu::TOPIC_NULL) << "Creating NeuPrint dialog";
         m_neuprintBodyDlg = makeBodyInfoDlg(FlyEmBodyInfoDialog::EMode::NEUPRINT);
         m_neuprintBodyDlg->setNeuprintDataset(m_neuprintDataset);
       }

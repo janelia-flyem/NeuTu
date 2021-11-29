@@ -103,7 +103,7 @@ void ZDvidBufferReader::read(
     qDebug() << "Reading " << url;
   }
 
-  neutu::LogUrlIO("read", url, payload);
+  neutu::LogUrlIO((neutu::TOPIC_NULL), "read", url, payload);
 
   m_buffer.clear();
 
@@ -150,7 +150,7 @@ void ZDvidBufferReader::read(
       m_status = neutu::EReadStatus::OK;
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
-      KWARN << e.what();
+      KWARN(neutu::TOPIC_NULL) << e.what();
       m_status = neutu::EReadStatus::FAILED;
       m_statusCode = e.getStatus();
     }
@@ -186,7 +186,7 @@ void ZDvidBufferReader::readFromPath(const QString &path, bool outputingUrl)
     m_status = neutu::EReadStatus::OK;
     m_statusCode = 200;
   } catch (libdvid::DVIDException &e) {
-    KWARN << e.what();
+    KWARN(neutu::TOPIC_NULL) << e.what();
     m_statusCode = e.getStatus();
     m_status = neutu::EReadStatus::FAILED;
   }
@@ -243,7 +243,7 @@ void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
       }
 
       neutu::LogUrlIO("reading done", url);
-//      KINFO << "Reading done:" << url;
+//      KINFO(neutu::TOPIC_NULL) << "Reading done:" << url;
 
       if (data->length() > 0) {
         m_buffer.append(data->get_data().c_str(), data->length());
@@ -251,11 +251,11 @@ void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
       m_status = neutu::EReadStatus::OK;
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
-      KWARN << "Exception:" << e.what();
+      KWARN(neutu::TOPIC_NULL) << "Exception:" << e.what();
       m_statusCode = e.getStatus();
       m_status = neutu::EReadStatus::FAILED;
     } catch (std::exception &e) {
-      KWARN << "Any exception:" << e.what();
+      KWARN(neutu::TOPIC_NULL) << "Any exception:" << e.what();
       m_statusCode = 0;
       m_status = neutu::EReadStatus::FAILED;
     }
@@ -314,7 +314,7 @@ void ZDvidBufferReader::read(const QString &inputUrl, bool outputingUrl)
 #endif
 #endif
 
-  KLOG << ZLog::Info()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
        << ZLog::Description("Exiting ZDvidBufferReader::read")
        << ZLog::Level(2);
 }

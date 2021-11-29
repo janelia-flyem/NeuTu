@@ -10,6 +10,8 @@
 
 #include <librdkafka/rdkafkacpp.h>
 
+#include "common/debug.h"
+
 namespace neuopentracing {
 
 Value::Value()
@@ -279,13 +281,14 @@ void Tracer::reportSpan(const Span &span) const
   bool kafkaSucceeded = false;
   if (m_impl->m_kafkaProducer) {
     QJsonObject json;
-    for (auto it : span.tags()) {
+    for (auto &it : span.tags()) {
       json[it.first.c_str()] = it.second.toJson();
     }
     QJsonDocument jsonDoc(json);
     std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
 
     std::string topic = m_impl->m_serviceName + "-" + span.operationName();
+    HLDEBUG("kafka") << "Topic: " << topic << std::endl;
     RdKafka::ErrorCode resp = m_impl->m_kafkaProducer->
         produce(topic, m_impl->m_config.kafkaPartition(),
                 RdKafka::Producer::RK_MSG_COPY,

@@ -62,7 +62,7 @@ QWidget* ZIntParameter::actualCreateWidget(QWidget* parent)
   } else {
     if (!m_style.isEmpty() && m_style != "SPINBOXWITHSCROLLBAR"
         && m_style != "DEFAULT") {
-      ZWARN << "Unknown widget style: " + m_style + ". Fall back to default style.";
+      ZWARN(neutu::TOPIC_NULL) << "Unknown widget style: " + m_style + ". Fall back to default style.";
     }
     ZSpinBoxWithSlider* sbws = new ZSpinBoxWithSlider(
           m_value, m_min, m_max, m_step, m_tracking, m_prefix, m_suffix, parent);

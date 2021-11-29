@@ -37,7 +37,9 @@ Z3DFilter::Z3DFilter(QObject* parent)
   , m_state(State::AllResultInvalid)
   , m_invalidationVisited(false)
 {
-  setLogger(neutu::LogMessageF);
+  setLogger([](const std::string &str, neutu::EMessageType type){
+    neutu::LogMessageF("view3d", str, type);
+  });
 }
 
 ZParameter* Z3DFilter::parameter(const QString& name) const

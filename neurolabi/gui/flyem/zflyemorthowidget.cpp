@@ -255,7 +255,7 @@ void ZFlyEmOrthoWidget::locateMainWindow()
 
 void ZFlyEmOrthoWidget::reloadStack()
 {
-  KLOG << ZLog::Info()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
        << ZLog::Description("orthogonal view: reload stack from crosshair")
        << ZLog::Window("ZFlyEmOrthoWidget");
 

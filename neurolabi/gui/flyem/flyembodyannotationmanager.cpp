@@ -34,7 +34,7 @@ ZJsonObject FlyEmBodyAnnotationManager::getAnnotation(
     try {
       m_annotationCache[bodyId] = m_io->readBodyAnnotation(bodyId);
     } catch (std::exception &e) {
-      KWARN << std::string("Failed to read body annotation: ") + e.what();
+      KWARN(neutu::TOPIC_NULL) << std::string("Failed to read body annotation: ") + e.what();
     }
   }
 
@@ -68,7 +68,7 @@ void FlyEmBodyAnnotationManager::saveAnnotation(
       m_io->writeBodyAnnotation(bodyId, newAnnotation);
       m_annotationCache[bodyId] = newAnnotation;
     }  catch (std::exception &e) {
-      KWARN << std::string("Failed to write body annotation: ") + e.what();
+      KWARN(neutu::TOPIC_NULL) << std::string("Failed to write body annotation: ") + e.what();
     }
   } else {
     m_annotationCache[bodyId] = obj.clone();
@@ -82,7 +82,7 @@ void FlyEmBodyAnnotationManager::removeAnnotation(uint64_t bodyId)
       m_io->deleteBodyAnnotation(bodyId);
       invalidateCache(bodyId);
     }  catch (std::exception &e) {
-      KWARN << std::string("Failed to write body annotation: ") + e.what();
+      KWARN(neutu::TOPIC_NULL) << std::string("Failed to write body annotation: ") + e.what();
     }
   } else {
     invalidateCache(bodyId);

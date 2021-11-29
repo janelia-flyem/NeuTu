@@ -6,11 +6,12 @@
 #include <QGraphicsBlurEffect>
 #include <QMouseEvent>
 #include <QElapsedTimer>
+#include <QImageWriter>
 
+//#include "tz_rastergeom.h"
 #include "neulib/math/utilities.h"
 #include "common/utilities.h"
-//#include "common/math.h"
-#include "tz_rastergeom.h"
+#include "common/debug.h"
 #include "misc/miscutility.h"
 #include "geometry/2d/rectangle.h"
 
@@ -24,9 +25,9 @@
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
+#include "common/utilities.h"
 #include "vis2d/zslicepainter.h"
 #include "data3d/displayconfig.h"
-
 
 ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 {
@@ -133,12 +134,13 @@ void ZImageWidget::setCanvasVisible(neutu::data3d::ETarget target, bool visible)
   }
 }
 
-void ZImageWidget::maximizeViewPort(const ZIntCuboid &worldRange)
+void ZImageWidget::maximizeViewPort(
+    const ZIntCuboid &worldRange, neutu::ESignalControl signaling)
 {
   qDebug() << "ZImageWidget::maximizeViewPort";
 //  m_viewProj.maximizeViewPort();
   m_sliceViewTransform.fitModelRange(worldRange, width(), height());
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
 void ZImageWidget::enableOffsetAdjustment(bool on)
@@ -164,24 +166,24 @@ ZAffineRect ZImageWidget::getViewPort() const
 //  return m_sliceViewTransform.inverseTransformRect(0, 0, width(), height());
 }
 
-void ZImageWidget::setViewPort(const ZAffineRect &rect)
+void ZImageWidget::setViewPort(const ZAffineRect &rect, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setScale(
         std::min(width() / rect.getWidth(), height() / rect.getHeight()));
   m_sliceViewTransform.setCutPlane(rect.getAffinePlane());
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
-#ifdef _DEBUG_0
-  std::cout << "ZImageWidget::paintEvent" << std::endl;
+#ifdef _DEBUG_
+  HLDEBUG_FUNC_LN("2D View");
 #endif
 
   QWidget::paintEvent(event);
 
   if (m_sliceViewTransform.getScale() > 0.0 && !isPaintBlocked()) {
-    ZPainter painter;
+    QPainter painter;
 
     if (!painter.begin(this)) {
       std::cout << "......failed to begin painter" << std::endl;
@@ -203,7 +205,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
                      bgBrush);
 
-    for (auto canvas : m_canvasList) {
+    for (auto &canvas : m_canvasList) {
       if (canvas && canvas->isVisible() && canvas->isPainted()) {
 #ifdef _DEBUG_2
         canvas->save(GET_TEST_DATA_DIR + "/_test.png");
@@ -220,98 +222,12 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       paintCrossHair();
     }
 
-    paintAxis();
+    if (m_showingAxes) {
+      paintAxis();
+    }
+
+    emit sceneUpdated();
   }
-//    painter.restore();
-//    QSize size = projectSize();
-
-#if 0
-    if (m_image != NULL) {
-      painter.drawImage(m_viewProj, *m_image);
-#ifdef _DEBUG_2
-      m_image->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-    }
-
-    //tic();
-    if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_2
-      m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-#ifdef _DEBUG_2
-      qDebug() << "Paint tile:" << m_viewProj.getViewPort() << m_viewProj.getProjRect();
-#endif
-      painter.drawPixmap(m_viewProj, *m_tileCanvas);
-//      painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
-    }
-    //std::cout << "paint tile canvas: " << toc() << std::endl;
-
-
-    //tic();
-    for (int i = 0; i < m_mask.size(); ++i) {
-      if (m_mask[i] != NULL) {
-        painter.drawImage(m_viewProj, *(m_mask[i]));
-      }
-    }
-    //std::cout << "paint object canvas: " << toc() << std::endl;
-
-    if (m_dynamicObjectCanvas != NULL) {
-      if (m_dynamicObjectCanvas->isVisible()) {
-        m_dynamicObjectCanvas->updateProjTransform(viewPort(), projectRegion());
-#ifdef _DEBUG_2
-    m_dynamicObjectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-        painter.drawPixmap(*m_dynamicObjectCanvas);
-      }
-    }
-
-    /*
-    if (m_widgetCanvas) {
-      if (m_widgetCanvas->isVisible()) {
-        painter.drawPixmap(*m_widgetCanvas);
-      }
-    }
-    */
-
-    //tic();
-    if (m_objectCanvas != NULL) {
-#ifdef _DEBUG_2
-      m_objectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-      if (m_objectCanvas->isVisible()) {
-        painter.drawPixmap(m_viewProj, *m_objectCanvas);
-      }
-    }
-    //std::cout << "paint object canvas: " << toc() << std::endl;
-
-    if (m_activeDecorationCanvas != NULL) {
-      if (m_activeDecorationCanvas->isVisible()) {
-#if 0
-        QRectF targetRect = projectRegion();
-        if (m_activeDecorationCanvas->getTransform().getSx() != 1.0) {
-          targetRect.setSize(m_activeDecorationCanvas->size());
-        }
-        painter.drawPixmap(targetRect, *m_activeDecorationCanvas);
-#endif
-        painter.drawPixmap(*m_activeDecorationCanvas);
-//        painter.drawPixmapNt(*m_activeDecorationCanvas);
-//        painter.drawPixmap(m_projRegion, *m_activeDecorationCanvas, m_viewPort);
-      }
-    }
-
-    painter.end();
-
-    paintObject();
-//    paintDynamicObject();
-
-    if (m_showingZoomHint) {
-      paintZoomHint();
-    } else {
-      paintCrossHair();
-    }
-    //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
-  }
-#endif
 }
 
 
@@ -335,12 +251,13 @@ void ZImageWidget::setMask(ZImage *mask, int channel)
   }
 }
 
-void ZImageWidget::zoomTo(const QPoint &center, int w, int h)
+void ZImageWidget::zoomTo(
+    const QPoint &center, int w, int h, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.zoomToViewRect(
         center.x() - w, center.y() - h,
         center.x() + w, center.y() + h, width(), height());
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 //  m_viewProj.zoomTo(center, width);
 //  updateView();
 }
@@ -365,7 +282,7 @@ double ZImageWidget::getScaleHintFromRange(
 }
 
 void ZImageWidget::zoomTo(
-    const ZPoint &pt, double w, double h, neutu::data3d::ESpace space)
+    const ZPoint &pt, double w, double h, neutu::data3d::ESpace space, neutu::ESignalControl signaling)
 {
   if (space == neutu::data3d::ESpace::CANVAS) {
     m_sliceViewTransform.setScale(
@@ -374,10 +291,10 @@ void ZImageWidget::zoomTo(
     m_sliceViewTransform.setScale(std::min(width() / w, height() / h));
   }
   m_sliceViewTransform.setCutCenter(pt);
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::zoomTo(const ZPoint &pt)
+void ZImageWidget::zoomTo(const ZPoint &pt, neutu::ESignalControl signaling)
 {
   if (m_detailScale > 0.0) {
     if (m_sliceViewTransform.getScale() < m_detailScale) {
@@ -385,7 +302,7 @@ void ZImageWidget::zoomTo(const ZPoint &pt)
     }
   }
   m_sliceViewTransform.setCutCenter(pt);
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
 bool ZImageWidget::isBadView() const
@@ -406,14 +323,16 @@ bool ZImageWidget::isBadView() const
   */
 }
 
-void ZImageWidget::setSliceAxis(neutu::EAxis axis)
+void ZImageWidget::setSliceAxis(neutu::EAxis axis, neutu::ESignalControl signaling)
 {
   if (axis != m_sliceViewTransform.getSliceAxis()) {
     m_sliceViewTransform.setCutPlane(axis);
     m_sliceViewTransform.setRightHanded(
           axis == neutu::EAxis::Z || axis == neutu::EAxis::ARB);
-    notifyTransformChanged();
-    emit sliceAxisChanged();
+    notifyTransformChanged(signaling);
+    if (signaling == neutu::ESignalControl::BROADCASTING) {
+      emit sliceAxisChanged();
+    }
   }
 }
 
@@ -448,7 +367,7 @@ bool ZImageWidget::isModelWithinWidget() const
 bool ZImageWidget::restoreFromBadView(const ZIntCuboid &worldRange)
 {
   if (isBadView()) {
-    maximizeViewPort(worldRange);
+    maximizeViewPort(worldRange, neutu::ESignalControl::BROADCASTING);
     return true;
   }
 
@@ -463,6 +382,7 @@ void ZImageWidget::resetTransform()
 }
 */
 
+/*
 void ZImageWidget::setViewPort(const QRect &rect)
 {
   m_sliceViewTransform.zoomToViewRect(
@@ -471,6 +391,7 @@ void ZImageWidget::setViewPort(const QRect &rect)
 //  m_viewProj.setViewPort(rect);
   updateView();
 }
+*/
 
 void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
 {
@@ -507,10 +428,10 @@ void ZImageWidget::setViewPortCenterQuitely(int cx, int cy)
 }
 #endif
 
-void ZImageWidget::setZoomRatio(double zoomRatio)
+void ZImageWidget::setZoomRatio(double zoomRatio, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setScale(zoomRatio);
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 
 //  m_viewProj.setZoom(zoomRatio);
 //  updateView();
@@ -540,7 +461,7 @@ QRect ZImageWidget::canvasRegion() const
 
 #define VIEW_PORT_AREA_THRESHOLD 25000000
 
-void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
+void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef, neutu::ESignalControl signaling)
 {
   if (m_sliceViewTransform.getScale() < m_sliceViewTransform.getMaxScale()) {
     double newScale =
@@ -551,11 +472,11 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
       m_sliceViewTransform.setScale(newScale);
     }
 
-    notifyTransformChanged();
+    notifyTransformChanged(signaling);
   }
 }
 
-void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
+void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef, neutu::ESignalControl signaling)
 {
   if (m_sliceViewTransform.getScale() > m_sliceViewTransform.getMinScale()) {
     double newScale =
@@ -567,75 +488,76 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
       m_sliceViewTransform.setScale(newScale);
     }
 
-    notifyTransformChanged();
+    notifyTransformChanged(signaling);
   }
 //  updateView();
 }
 
-void ZImageWidget::increaseZoomRatio()
+void ZImageWidget::increaseZoomRatio(neutu::ESignalControl signaling)
 {
-  increaseZoomRatio(0, 0, false);
+  increaseZoomRatio(0, 0, false, signaling);
 }
 
-void ZImageWidget::decreaseZoomRatio()
+void ZImageWidget::decreaseZoomRatio(neutu::ESignalControl signaling)
 {
-  decreaseZoomRatio(0, 0, false);
+  decreaseZoomRatio(0, 0, false, signaling);
 }
 
-void ZImageWidget::moveViewPort(const QPoint &src, const QPointF &dst)
+void ZImageWidget::moveViewPort(const QPoint &src, const QPointF &dst, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(
         ZPoint(src.x(), src.y(), 0), ZPoint(dst.x(), dst.y(), 0),
         ZSliceViewTransform::EPointMatchPolicy::CANVAS_TO_CANVAS);
 //  m_viewProj.move(src, dst);
 //  updateView();
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::moveViewPort(int dx, int dy)
+void ZImageWidget::moveViewPort(int dx, int dy, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(
         ZPoint(0, 0, 0), ZPoint(dx, dy, 0),
         ZSliceViewTransform::EPointMatchPolicy::CANVAS_TO_CANVAS);
 //  m_viewProj.move(x, y);
 //  updateView();
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::moveViewPort(const ZPoint &src, const QPointF &dst)
+void ZImageWidget::moveViewPort(const ZPoint &src, const QPointF &dst, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(src, dst.x(), dst.y());
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::moveViewPortToCenter(const ZPoint &src)
+void ZImageWidget::moveViewPortToCenter(const ZPoint &src, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(
         src, width() * 0.5, height() * 0.5);
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::zoom(double zoomRatio)
+void ZImageWidget::zoom(double zoomRatio, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setScale(zoomRatio);
 //  m_viewProj.setZoom(zoomRatio);
 //  updateView();
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::rotate(double au, double av, double rad)
+void ZImageWidget::rotate(
+    double au, double av, double rad, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.rotate(au, av, rad);
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::rotate(double da, double db)
+void ZImageWidget::rotate(double da, double db, neutu::ESignalControl signaling)
 {
   double au = db;
   double av = -da;
   double rad = std::sqrt(da * da + db * db) / 180.0;
 
-  rotate(au, av, rad);
-  notifyTransformChanged();
+  rotate(au, av, rad, signaling);
 }
 
 template<typename ZStackObjectPtr>
@@ -1025,6 +947,14 @@ void ZImageWidget::showCrossHair(bool on)
   m_showingCrossHair = on;
 }
 
+void ZImageWidget::showAxes(bool on)
+{
+  if (m_showingAxes != on) {
+    m_showingAxes = on;
+    update();
+  }
+}
+
 void ZImageWidget::paintZoomHint()
 {
   QPainter painter;
@@ -1050,23 +980,6 @@ void ZImageWidget::paintZoomHint()
 
   if (!viewPort.contains(fullViewPort) &&m_isViewHintVisible) {
     painter.setPen(QPen(QColor(0, 0, 255, 128)));
-
-    /*
-    double ratio = std::min(
-          m_viewProj.getWidgetRect().width() * 0.2 / canvasSize().width(),
-          m_viewProj.getWidgetRect().height() * 0.2 / canvasSize().height());
-
-    //Canvas hint
-    painter.drawRect(
-          0, 0, ratio * canvasSize().width(), ratio * canvasSize().height());
-
-    painter.setPen(QPen(QColor(0, 255, 0, 128)));
-
-    //Viewport hint
-    painter.drawRect(ratio * (viewPort().left() - canvasRegion().left()),
-                     ratio * (viewPort().top() - canvasRegion().top()),
-                     ratio * viewPort().width(), ratio * viewPort().height());
-                     */
   }
 }
 
@@ -1355,7 +1268,7 @@ void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
         m_pressedButtons, event->modifiers(), "ZImageWidget");
 
 //  neutu::LogMouseEvent(event, "release", "ZImageWidget");
-//  KINFO << "Mouse released in ZImageWidget";
+//  KINFO(neutu::TOPIC_NULL) << "Mouse released in ZImageWidget";
 
   m_pressedButtons = Qt::NoButton;
 
@@ -1365,11 +1278,11 @@ void ZImageWidget::mouseReleaseEvent(QMouseEvent *event)
 void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
 //  if (event->buttons() == Qt::LeftButton) {
-//    KINFO << "Mouse (left) dragged in ZImageWidget";
+//    KINFO(neutu::TOPIC_NULL) << "Mouse (left) dragged in ZImageWidget";
 //  } else if (event->buttons() == Qt::RightButton) {
-//    KINFO << "Mouse (right) dragged in ZImageWidget";
+//    KINFO(neutu::TOPIC_NULL) << "Mouse (right) dragged in ZImageWidget";
 //  } else if (event->buttons() == (Qt::RightButton | Qt::LeftButton)) {
-//    KINFO << "Mouse (right+right) dragged in ZImageWidget";
+//    KINFO(neutu::TOPIC_NULL) << "Mouse (right+right) dragged in ZImageWidget";
 //  }
 
   neutu::LogMouseDragEvent(event, "ZImageWidget");
@@ -1382,7 +1295,7 @@ void ZImageWidget::mouseMoveEvent(QMouseEvent *event)
 
 void ZImageWidget::mousePressEvent(QMouseEvent *event)
 {
-//  KINFO << "Mouse pressed in ZImageWidget";
+//  KINFO(neutu::TOPIC_NULL) << "Mouse pressed in ZImageWidget";
 
   neutu::LogMouseEvent(event, "press", "ZImageWidget");
 
@@ -1394,7 +1307,7 @@ void ZImageWidget::mousePressEvent(QMouseEvent *event)
 void ZImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
   neutu::LogMouseEvent(event, "double click", "ZImageWidget");
-//  KINFO << "Mouse double clicked in ZImageWidget";
+//  KINFO(neutu::TOPIC_NULL) << "Mouse double clicked in ZImageWidget";
 
   emit mouseDoubleClicked(event);
 }
@@ -1402,7 +1315,7 @@ void ZImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 void ZImageWidget::wheelEvent(QWheelEvent *event)
 {
   neutu::LogMouseEvent(event, "ZImageWidget");
-//  KINFO << "Mouse scrolled in ZImageWidget";
+//  KINFO(neutu::TOPIC_NULL) << "Mouse scrolled in ZImageWidget";
 
   /*
   int numSteps = -event->delta();
@@ -1471,7 +1384,7 @@ void ZImageWidget::resetView(double defaultScale)
       m_sliceViewTransform.fitModelRange(m_modelRange, width(), height());
     }
 //    blockTransformSyncSignal(true);
-    notifyTransformChanged();
+    notifyTransformChanged(neutu::ESignalControl::BROADCASTING);
 //    blockTransformSyncSignal(false);
   }
 }
@@ -1631,21 +1544,23 @@ void ZImageWidget::blockTransformSyncSignal(bool blocking)
   m_signalingTransformSync = !blocking;
 }
 
-void ZImageWidget::notifyTransformChanged()
+void ZImageWidget::notifyTransformChanged(neutu::ESignalControl signaling)
 {
-  if (m_isReady) {
-    emit transformChanged();
-  }
+  if (signaling == neutu::ESignalControl::BROADCASTING) {
+    if (m_isReady) {
+      emit transformChanged();
+    }
 
-  if (m_signalingTransformSync) {
-    emit transformSyncNeeded();
-  }
+    if (m_signalingTransformSync) {
+      emit transformSyncNeeded();
+    }
 
-  emit transformControlSyncNeeded();
+    emit transformControlSyncNeeded();
 
 #ifdef _DEBUG_
-  std::cout << "Transform: " << m_sliceViewTransform << std::endl;
+    std::cout << "Transform: " << m_sliceViewTransform << std::endl;
 #endif
+  }
 }
 
 ZPlane ZImageWidget::getCutOrientation() const
@@ -1653,11 +1568,12 @@ ZPlane ZImageWidget::getCutOrientation() const
   return m_sliceViewTransform.getCutOrientation();
 }
 
-void ZImageWidget::setSliceViewTransform(const ZSliceViewTransform &t)
+void ZImageWidget::setSliceViewTransform(
+    const ZSliceViewTransform &t, neutu::ESignalControl signaling)
 {
   if (m_sliceViewTransform != t) {
     m_sliceViewTransform = t;
-    notifyTransformChanged();
+    notifyTransformChanged(signaling);
   }
 }
 
@@ -1666,7 +1582,8 @@ void ZImageWidget::setRightHanded(bool r)
   m_sliceViewTransform.setRightHanded(r);
 }
 
-void ZImageWidget::setCutPlane(neutu::EAxis axis)
+void ZImageWidget::setCutPlane(
+    neutu::EAxis axis, neutu::ESignalControl signaling)
 {
   if (axis != m_sliceViewTransform.getSliceAxis()) {
     if (m_sliceViewTransform.getSliceAxis() == neutu::EAxis::ARB) {
@@ -1691,40 +1608,42 @@ void ZImageWidget::setCutPlane(neutu::EAxis axis)
     m_sliceViewTransform.setCutPlane(axis);
     m_sliceViewTransform.setRightHanded(
           axis == neutu::EAxis::Z || axis == neutu::EAxis::ARB);
-    notifyTransformChanged();
-    emit sliceAxisChanged();
+    notifyTransformChanged(signaling);
+    if (signaling == neutu::ESignalControl::BROADCASTING) {
+      emit sliceAxisChanged();
+    }
   }
 }
 
-void ZImageWidget::setCutPlane(const ZPoint &v1, const ZPoint &v2)
+void ZImageWidget::setCutPlane(const ZPoint &v1, const ZPoint &v2, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setCutPlane(v1, v2);
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::setCutPlane(const ZAffinePlane &plane)
+void ZImageWidget::setCutPlane(const ZAffinePlane &plane, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setCutPlane(plane);
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::setCutCenter(double x, double y, double z)
+void ZImageWidget::setCutCenter(double x, double y, double z, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setCutCenter(x, y, z);
-  notifyTransformChanged();
+  notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::setCutCenter(const ZPoint &center)
+void ZImageWidget::setCutCenter(const ZPoint &center, neutu::ESignalControl signaling)
 {
-  setCutCenter(center.getX(), center.getY(), center.getZ());
+  setCutCenter(center.getX(), center.getY(), center.getZ(), signaling);
 }
 
-void ZImageWidget::setCutCenter(const ZIntPoint &center)
+void ZImageWidget::setCutCenter(const ZIntPoint &center, neutu::ESignalControl signaling)
 {
-  setCutCenter(center.getX(), center.getY(), center.getZ());
+  setCutCenter(center.getX(), center.getY(), center.getZ(), signaling);
 }
 
-void ZImageWidget::moveCutDepth(double dz)
+void ZImageWidget::moveCutDepth(double dz, neutu::ESignalControl signaling)
 {
   double z = 0.0;
   double minZ = 0.0;
@@ -1751,7 +1670,7 @@ void ZImageWidget::moveCutDepth(double dz)
 
   if (dz != 0.0) {
     m_sliceViewTransform.addCutDepth(dz);
-    notifyTransformChanged();
+    notifyTransformChanged(signaling);
   }
 }
 
@@ -1779,6 +1698,35 @@ void ZImageWidget::setModelRange(const ZIntCuboid &range)
 ZIntCuboid ZImageWidget::getModelRange() const
 {
   return m_modelRange;
+}
+
+bool ZImageWidget::takeScreenshot(const QString &filename)
+{
+  if (!filename.isEmpty()) {
+    QImageWriter writer(filename);
+    writer.setCompression(1);
+
+    QImage image(width(), height(), QImage::Format_ARGB32);
+
+    bool isViewHintVisibleOld = m_isViewHintVisible;
+    bool showingAxesOld = m_showingAxes;
+    neutu::ApplyOnce ao([&](){
+      m_showingAxes = false;
+      m_isViewHintVisible = false;
+      blockSignals(true);
+    }, [&](){
+      m_isViewHintVisible = isViewHintVisibleOld;
+      m_showingAxes = showingAxesOld;
+      blockSignals(false);
+    });
+
+//    setViewHintVisible(false);
+    render(&image);
+//    setViewHintVisible(true);
+    return ZImage::writeImage(image, filename);
+  }
+
+  return false;
 }
 
 void ZImageWidget::reset()

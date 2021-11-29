@@ -1930,7 +1930,7 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event, int viewId)
 
   process(op);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "Mouse move processed: " << event->x() << ", " << event->y()
             << std::endl;
 #endif
@@ -2218,7 +2218,7 @@ void ZStackPresenter::setZoomRatio(ZStackView *view, double ratio)
   //CLIP_VALUE(m_zoomRatio, 1, 16);
   //buddyView()->imageWidget()->setZoomRatio(m_zoomRatio);
   if (view) {
-    view->imageWidget()->setZoomRatio(ratio);
+    view->imageWidget()->setZoomRatio(ratio, neutu::ESignalControl::BROADCASTING);
   }
 }
 
@@ -2943,10 +2943,12 @@ void ZStackPresenter::processObjectModified(const ZStackObjectInfoSet &objSet)
 {
   auto viewList = getViewList();
   for (ZStackView *view : viewList) {
-    if (objSet.hasObjectAddedOrRemoved()) {
-      view->invalidateObjectSorter();
+    if (view->isVisible()) {
+      if (objSet.hasObjectAddedOrRemoved()) {
+        view->invalidateObjectSorter();
+      }
+      view->paintObject(objSet.getTarget());
     }
-    view->paintObject(objSet.getTarget());
   }
 }
 

@@ -493,7 +493,7 @@ void FlyEmBodyInfoDialog::onDoubleClickBodyTable(QModelIndex modelIndex)
 
 void FlyEmBodyInfoDialog::logInfo(const QString &msg) const
 {
-  KLOG << ZLog::Info()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Info()
        << ZLog::Description(msg.toStdString())
        << ZLog::Window("FlyEmBodyInfoDialog");
 }

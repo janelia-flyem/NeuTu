@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     ZGlobal::InitKafkaTracer();
 
     uint64_t timestamp = neutu::GetTimestamp();
-    KLog() << ZLog::Info() //<< ZLog::Time(timestamp)
+    KLog(neutu::TOPIC_MAIN) << ZLog::Info() //<< ZLog::Time(timestamp)
            << ZLog::Description("BEGIN " + get_machine_info())
            << ZLog::Diagnostic("config:" + mainConfig.configPath.toStdString());
     LINFO() << "Start " + get_machine_info();
@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
                      NeutubeConfig::EConfigItem::LOG_DEST_DIR));
     }
 
-    KLog() << ZLog::Info()
+    KLog(neutu::TOPIC_MAIN) << ZLog::Info()
            << ZLog::Description("END " + get_machine_info())
            << ZLog::Tag("start_time", timestamp)
            << ZLog::Duration(appTimer.elapsed());

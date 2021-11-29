@@ -2545,7 +2545,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
 
 void Z3DWindow::updateSettingsDockWidget()
 {
-  KINFO << "Updating dock widgets";
+  KINFO(neutu::TOPIC_NULL) << "Updating dock widgets";
   //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
@@ -2586,7 +2586,7 @@ void Z3DWindow::updateSettingsDockWidget()
       delete old;
     }
   }
-  KINFO << "Dock widget updated";
+  KINFO(neutu::TOPIC_NULL) << "Dock widget updated";
 }
 
 void Z3DWindow::toogleAddSwcNodeMode(bool checked)
@@ -2732,7 +2732,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   }
 
   neutu::LogKeyPressEvent(event, "Z3DWindow");
-//  KINFO << QString("Key %1 pressed in Z3DWindow").
+//  KINFO(neutu::TOPIC_NULL) << QString("Key %1 pressed in Z3DWindow").
 //           arg(neutu::GetKeyString(event->key(), event->modifiers()));
 
   ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
@@ -4326,7 +4326,7 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
     ZDialogFactory::PromptMessage(msg, this);
   }
 
-  neutu::LogMessage(msg);
+  neutu::LogMessage(neutu::TOPIC_NULL, msg);
 
 #if 0
   if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
@@ -4848,13 +4848,13 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
     obj = createPolyplaneFrom3dPaintForMesh(stroke);
   }
 
-  KINFO << "Paint stroke in 3D";
+  KINFO(neutu::TOPIC_NULL) << "Paint stroke in 3D";
 
   if (obj != NULL) {
     if (!obj->isEmpty()) {
       obj->setLabel(stroke->getLabel());
 
-      KINFO << QString("Add seed from 3D: %1").arg(obj->getLabel());
+      KINFO(neutu::TOPIC_NULL) << QString("Add seed from 3D: %1").arg(obj->getLabel());
 
       ZLabelColorTable colorTable;
       obj->setColor(colorTable.getColor(obj->getLabel()));

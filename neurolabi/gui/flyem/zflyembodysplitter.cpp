@@ -105,7 +105,12 @@ void ZFlyEmBodySplitter::runSplit(
           doc->getObjectList(ZStackObjectRole::ROLE_SEED);
       if (seedList.size() > 1) {
         ZStackWatershedContainer container(NULL, NULL);
-        container.setProfileLogger(&neutu::LogProfileInfo);
+        container.setProfileLogger([](
+                                   int64_t duration,
+                                   const std::string &title,
+                                   const std::string &info) {
+          neutu::LogProfileInfo("split", duration, title, info);
+        });
         foreach (ZStackObject *seed, seedList) {
           container.addSeed(seed);
         }
@@ -136,7 +141,7 @@ void ZFlyEmBodySplitter::runSplit(
             std::vector<ZStackWatershedContainer*> containerList =
                 container.makeLocalSeedContainer(256);
 
-            KINFO << QString("%1 watershed containers").arg(containerList.size());
+            KINFO(neutu::TOPIC_NULL) << QString("%1 watershed containers").arg(containerList.size());
             for (ZStackWatershedContainer *subcontainer : containerList) {
               subcontainer->run();
               ZStackDocAccessor::ParseWatershedContainer(doc, subcontainer);
@@ -163,7 +168,7 @@ void ZFlyEmBodySplitter::runSplit(
     doc->releaseBody(getBodyId(), getLabelType());
   }
 
-  LKINFO << QString("Splitting time for %1 (%2) with range %3: %4ms")
+  LKINFO(neutu::TOPIC_NULL) << QString("Splitting time for %1 (%2) with range %3: %4ms")
             .arg(getBodyId()).arg(neutu::ToString(getLabelType()).c_str())
             .arg(neutu::EnumValue(rangeOption)).arg(timer.elapsed());
 //  LINFO() << "Splitting time:" << timer.elapsed() << "ms";
@@ -232,6 +237,7 @@ ZSparseStack* ZFlyEmBodySplitter::getBodyForSplit()
     timer.start();
     spStack = m_reader.readSparseStackOnDemand(m_bodyId, m_labelType, NULL);
     neutu::LogProfileInfo(
+          "split",
           timer.elapsed(),
           "body split",
           "Load body for split: " + std::to_string(m_bodyId) + " " +

@@ -530,3 +530,52 @@ void neutu::PrintLayoutInfo(QLayout *layout, int indent)
     }
   }
 }
+
+bool neutu::AnyWidgetInLayout(
+    const QLayout *layout, std::function<bool(const QWidget* widget)> pred)
+{
+  if (layout) {
+    for (int i = 0; i < layout->count(); ++i) {
+      QLayoutItem *item = layout->itemAt(i);
+      QWidget *widget = item->widget();
+      if (widget) {
+        if (pred(widget)) {
+          return true;
+        }
+      }
+      QLayout *layout = item->layout();
+      if (layout) {
+        if (AnyWidgetInLayout(layout, pred)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+bool neutu::AnyWidgetInLayoutVisible(const QLayout *layout)
+{
+  return AnyWidgetInLayout(layout, [](const QWidget* widget) {
+    return widget->isVisible();
+  });
+}
+
+void neutu::ForEachWidgetInLayout(
+    const QLayout *layout, std::function<void(QWidget* widget)> f)
+{
+  if (layout && f) {
+    for (int i = 0; i < layout->count(); ++i) {
+      QLayoutItem *item = layout->itemAt(i);
+      QWidget *widget = item->widget();
+      if (widget) {
+        f(widget);
+      }
+      QLayout *layout = item->layout();
+      if (layout) {
+        ForEachWidgetInLayout(layout, f);
+      }
+    }
+  }
+}

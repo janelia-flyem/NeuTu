@@ -52,26 +52,26 @@ TEST(ZImageWidget, Basic)
   ZSliceViewTransform transform = widget.getSliceViewTransform();
   std::cout << transform << std::endl;
 
-  widget.setCutCenter(10, 20, 30);
+  widget.setCutCenter(10, 20, 30, neutu::ESignalControl::SLIENT);
   ASSERT_EQ(ZPoint(10, 20, 30), widget.getCutCenter());
 
-  widget.setSliceAxis(neutu::EAxis::X);
+  widget.setSliceAxis(neutu::EAxis::X, neutu::ESignalControl::SLIENT);
   ASSERT_EQ(ZPoint(10, 20, 30), widget.getCutCenter());
 
-  widget.setCutCenter(10.5, 20, 30);
-  widget.setSliceAxis(neutu::EAxis::ARB);
+  widget.setCutCenter(10.5, 20, 30, neutu::ESignalControl::SLIENT);
+  widget.setSliceAxis(neutu::EAxis::ARB, neutu::ESignalControl::SLIENT);
   ASSERT_EQ(ZPoint(10.5, 20, 30), widget.getCutCenter());
 
-  widget.setCutPlane(neutu::EAxis::X);
+  widget.setCutPlane(neutu::EAxis::X, neutu::ESignalControl::SLIENT);
   ASSERT_EQ(ZPoint(10, 20, 30), widget.getCutCenter());
 
-  widget.setCutCenter(3.5, 4.5, 5.5);
+  widget.setCutCenter(3.5, 4.5, 5.5, neutu::ESignalControl::SLIENT);
   ASSERT_EQ(ZPoint(3.5, 4.5, 5.5), widget.getCutCenter());
 
-  widget.setCutPlane(neutu::EAxis::Y);
+  widget.setCutPlane(neutu::EAxis::Y, neutu::ESignalControl::SLIENT);
   ASSERT_EQ(ZPoint(3.5, 5, 5.5), widget.getCutCenter());
 
-  widget.moveCutDepth(1.0);
+  widget.moveCutDepth(1.0, neutu::ESignalControl::SLIENT);
   ASSERT_EQ(ZPoint(3.5, 6, 5.5), widget.getCutCenter());
 
   qDebug() << widget.getAnchorPoint();
@@ -82,7 +82,7 @@ TEST(ZImageWidget, viewport)
   ZImageWidget widget(nullptr);
   widget.setModelRange({1, 2, 3, 10, 20, 30});
   widget.resetView(1.0);
-  widget.setCutCenter(5, 6, 7);
+  widget.setCutCenter(5, 6, 7, neutu::ESignalControl::SLIENT);
 
   ZAffineRect rect = widget.getViewPort();
   ASSERT_EQ(ZPoint(5, 6, 7), rect.getCenter());

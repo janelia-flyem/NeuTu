@@ -130,6 +130,8 @@
 #include "mvc/tests/zstackmvctest.h"
 
 #include "widgets/tests/zimagewidgettest.h"
+#include "widgets/tests/zgroupviswidgettest.h"
+#include "widgets/tests/zhwidgettest.h"
 
 #include "flyem/tests/zflyemmisctest.h"
 #include "flyem/tests/flyemtodoblockgridtest.h"

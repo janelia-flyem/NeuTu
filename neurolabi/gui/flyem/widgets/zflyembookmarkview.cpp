@@ -51,7 +51,7 @@ void ZFlyEmBookmarkView::processSingleClick(const QModelIndex &index)
 {
   const ZFlyEmBookmark *bookmark = getBookmark(index);
   if (bookmark != NULL) {
-    KINFO << bookmark->toLogString() + " is clicked";
+    KINFO(neutu::TOPIC_NULL) << bookmark->toLogString() + " is clicked";
     if (QGuiApplication::keyboardModifiers() == Qt::AltModifier) {
       QList<ZIntPoint> posList;
       posList.append(bookmark->getCenter().roundToIntPoint());
@@ -194,9 +194,9 @@ void ZFlyEmBookmarkView::checkBookmark(ZFlyEmBookmark *bookmark, bool checking)
   if (bookmark != NULL) {
     bookmark->setChecked(checking);
     if (checking) {
-      KINFO << bookmark->toLogString() + " is checked";
+      KINFO(neutu::TOPIC_NULL) << bookmark->toLogString() + " is checked";
     } else {
-      KINFO << bookmark->toLogString() + " is unchecked";
+      KINFO(neutu::TOPIC_NULL) << bookmark->toLogString() + " is unchecked";
     }
   }
 }

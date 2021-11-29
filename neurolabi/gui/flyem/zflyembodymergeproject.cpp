@@ -1139,7 +1139,8 @@ void ZFlyEmBodyMergeProject::logSynapseInfo(uint64_t bodyId)
   if (bodyId > 0 && getDvidReader().getDvidTarget().hasSynapseLabelsz()) {
     int count = getDvidReader().readSynapseLabelszBody(
           bodyId, dvid::ELabelIndexType::ALL_SYN);
-    KINFO << QString("Merge target: %1 (#synapses: %2)").arg(bodyId).arg(count);
+    KINFO(neutu::TOPIC_NULL)
+        << QString("Merge target: %1 (#synapses: %2)").arg(bodyId).arg(count);
   }
 }
 
@@ -1213,7 +1214,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(
           ++targetUploadedCount;
           lastTarget = newTargetId;
 
-          KINFO << QString("%1 bodies are merged into %2")
+          KINFO(neutu::TOPIC_NULL) << QString("%1 bodies are merged into %2")
                    .arg(merged.size()).arg(newTargetId);
           //            anyMergeUploaded = true;
         }

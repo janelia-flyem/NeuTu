@@ -61,7 +61,7 @@ int ZGenericBodyAnnotationDialog::exec()
     if (param) {
       param->setEnabled(m_isAdmin);
     } else {
-      ZWARN << "Unexpected null parameter.";
+      ZWARN(neutu::TOPIC_NULL) << "Unexpected null parameter.";
     }
   }
 

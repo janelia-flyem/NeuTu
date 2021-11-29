@@ -74,7 +74,7 @@ void neutu::LogMouseEvent(
 
   append_mouse_button(name, event->buttons());
 
-  KLOG << ZLog::Interact()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Interact()
        << ZLog::Window(window.toStdString())
        << ZLog::Action(action.toStdString())
        << ZLog::Object("mouse", name)
@@ -86,7 +86,7 @@ void neutu::LogMouseEvent(QWheelEvent *event, const QString &window)
   std::string name = get_modifier_prefix(event->modifiers());
   append_mouse_button(name, "wheel");
 
-  KLOG << ZLog::Interact()
+  KLOG(neutu::TOPIC_NULL) << ZLog::Interact()
        << ZLog::Window(window.toStdString())
        << ZLog::Action("scroll")
        << ZLog::Tag("value", event->delta())
@@ -108,7 +108,7 @@ void neutu::LogMouseReleaseEvent(
     std::string name = get_modifier_prefix(modifiers);
     append_mouse_button(name, buttons);
 
-    KLOG << ZLog::Interact()
+    KLOG(neutu::TOPIC_NULL) << ZLog::Interact()
          << ZLog::Window(window.toStdString())
          << ZLog::Action("release")
          << ZLog::Object("mouse", name)
@@ -123,7 +123,7 @@ void neutu::LogKeyEvent(QKeyEvent *event, const QString &action, const QString &
     std::string name = get_modifier_prefix(event->modifiers());
     append_key(name, QKeySequence(event->key()).toString().toStdString());
 
-    KLOG << ZLog::Interact()
+    KLOG(neutu::TOPIC_NULL) << ZLog::Interact()
          << ZLog::Window(window.toStdString())
          << ZLog::Action(action.toStdString())
          << ZLog::Object("key", name)

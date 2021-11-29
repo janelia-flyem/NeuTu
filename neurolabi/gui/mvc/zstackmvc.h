@@ -28,6 +28,7 @@ class ZAffineRect;
 class ZStackObjectInfoSet;
 class ZPlane;
 class ZAffinePlane;
+class ZH3Widget;
 
 /*!
  * \brief The MVC class for stack operation
@@ -81,7 +82,7 @@ public:
   QRect getViewGeometry(int viewId) const;
 
   virtual void connectSignalSlot();
-  void disconnectAll();
+//  void disconnectAll();
 
   ZProgressSignal* getProgressSignal() const {
     return m_progressSignal;
@@ -216,8 +217,10 @@ protected:
   std::vector<ZStackView*> m_viewList;
   std::vector<int> m_viewLayoutIndices;
   QVBoxLayout *m_layout;
-  QHBoxLayout *m_topLayout;
-  QHBoxLayout *m_secondLayout;
+  ZH3Widget *m_topWidget = nullptr;
+  ZH3Widget *m_secondTopWidget = nullptr;
+//  QHBoxLayout *m_topLayout;
+//  QHBoxLayout *m_secondLayout;
   QGridLayout *m_viewLayout;
   QLabel *m_infoLabel = nullptr;
   ZProgressSignal *m_progressSignal;

@@ -118,7 +118,7 @@ void ZParameterDialog::setLabel(const QString &label)
     m_label->setText(label);
     m_label->setVisible(!label.isEmpty());
   } else {
-    ZWARN << "Cannot set uninitialized label.";
+    ZWARN(neutu::TOPIC_NULL) << "Cannot set uninitialized label.";
   }
 }
 

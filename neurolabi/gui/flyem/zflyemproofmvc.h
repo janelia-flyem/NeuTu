@@ -329,6 +329,7 @@ public slots:
   void enhanceTileContrast(bool state);
   void smoothDisplay(bool state);
 
+  void toggleViewControls();
   void goToBody();
   void goToBodyBottom();
   void goToBodyTop();
@@ -519,7 +520,8 @@ protected slots:
 
 protected:
   enum class EViewButton {
-    GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED, ANNOTATE_TRACED
+    TOGGLE_VIEW_CONTROL, GOTO_BODY, GOTO_POSITION, ANNOTATE_ROUGHLY_TRACED,
+    ANNOTATE_TRACED
   };
 
   virtual void makeViewButtons();

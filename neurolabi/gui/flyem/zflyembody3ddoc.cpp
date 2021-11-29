@@ -354,7 +354,7 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
   QMutexLocker locker(&m_garbageMutex);
 
   if (!m_garbageMap.isEmpty()) {
-    ZOUT(LKINFO, 5) << QString("Clear garbage objects: %1 ...").
+    ZOUT(LKINFO(neutu::TOPIC_NULL), 5) << QString("Clear garbage objects: %1 ...").
                        arg(m_garbageMap.size());
   }
 
@@ -370,18 +370,18 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
      } else if (force || dt > OBJECT_GARBAGE_LIFE){
        ZStackObject *obj = iter.key();
        if (obj->getType() == ZStackObject::EType::SWC) {
-         ZOUT(LKINFO, 5) << QString("Deleting SWC object: %1 %2").
+         ZOUT(LKINFO(neutu::TOPIC_NULL), 5) << QString("Deleting SWC object: %1 %2").
                             arg(neutu::ToString(obj).c_str()).
                             arg(obj->getSource().c_str());
        } else {
 #ifdef _DEBUG_
-         LKINFO << QString("Deleting %1 %2").arg(neutu::ToString(obj).c_str()).
+         LKINFO(neutu::TOPIC_NULL) << QString("Deleting %1 %2").arg(neutu::ToString(obj).c_str()).
                    arg(obj->getSource().c_str());
 #endif
        }
 
        if (obj != iter.key()) {
-         ZOUT(LKINFO, 5) << "Deleting failed";
+         ZOUT(LKINFO(neutu::TOPIC_NULL), 5) << "Deleting failed";
        }
 
        delete iter.key();
@@ -389,13 +389,13 @@ void ZFlyEmBody3dDoc::clearGarbage(bool force)
        ++count;
 
        if (m_garbageMap.contains(obj)) {
-         ZOUT(LKINFO, 5) << "Deleting failed";
+         ZOUT(LKINFO(neutu::TOPIC_NULL), 5) << "Deleting failed";
        }
      }
    }
 
    if (count > 0) {
-     ZOUT(LKINFO, 5) << QString("Garbage update: %1 removed; %2 left")
+     ZOUT(LKINFO(neutu::TOPIC_NULL), 5) << QString("Garbage update: %1 removed; %2 left")
                         .arg(count)
                         .arg(m_garbageMap.size());
    }
@@ -1370,7 +1370,7 @@ void ZFlyEmBody3dDoc::deactivateSplit()
 
 void ZFlyEmBody3dDoc::showMeshForSplitOnly(bool on)
 {
-  KINFO << QString("Toggle meshes for split: %1").arg(on);
+  KINFO(neutu::TOPIC_NULL) << QString("Toggle meshes for split: %1").arg(on);
 
   if (on) {
     hideNoSplitMesh();
@@ -3044,7 +3044,7 @@ void ZFlyEmBody3dDoc::killObject(ZStackObject *obj)
 
 void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 {
-  KINFO << QString("Remove body: %1").arg(bodyId);
+  KINFO(neutu::TOPIC_NULL) << QString("Remove body: %1").arg(bodyId);
 
   QString threadId = QString("removeBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
@@ -3061,21 +3061,21 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
          ++iter) {
 //      removeObject(*iter, false);
 //      dumpGarbageUnsync(*iter, true);
-      KINFO << "Put " + (*iter)->getSource() + " in recycle";
+      KINFO(neutu::TOPIC_NULL) << "Put " + (*iter)->getSource() + " in recycle";
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::EAction::RECYCLE);
     }
 
     if (!objList.isEmpty()) {
       emit bodyRemoved(bodyId);
     } else {
-      KWARN << QString("No object found for %1").arg(bodyId);
+      KWARN(neutu::TOPIC_NULL) << QString("No object found for %1").arg(bodyId);
 #ifdef _DEBUG_
-      KINFO << "Current sources:";
+      KINFO(neutu::TOPIC_NULL) << "Current sources:";
 
       TStackObjectList objList = getObjectGroup().getObjectList(
             getBodyObjectType());
       for (const ZStackObject *obj : objList) {
-        KINFO << obj->getObjectClass() + " " + obj->getSource();
+        KINFO(neutu::TOPIC_NULL) << obj->getObjectClass() + " " + obj->getSource();
       }
 #endif
     }
@@ -3145,7 +3145,7 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 //    notifyObjectModified(true);
   }
 
-  KINFO << QString("Body removed: %1").arg(bodyId);
+  KINFO(neutu::TOPIC_NULL) << QString("Body removed: %1").arg(bodyId);
 }
 
 ZStackObject* ZFlyEmBody3dDoc::retrieveBodyObject(
@@ -3868,6 +3868,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         }
 
         neutu::LogProfileInfo(
+              neutu::TOPIC_NULL,
               timer.elapsed(),
               "mesh generation",
               QString("Mesh generating time for %1 with zoom %2~%3").
@@ -4355,7 +4356,7 @@ void ZFlyEmBody3dDoc::runSplitFunc()
 
 void ZFlyEmBody3dDoc::runLocalSplit()
 {
-  LKINFO << "Trying local split ...";
+  LKINFO(neutu::TOPIC_NULL) << "Trying local split ...";
 
   uint64_t bodyId = protectBodyForSplit();
 
@@ -4376,7 +4377,7 @@ void ZFlyEmBody3dDoc::runLocalSplit()
 
 void ZFlyEmBody3dDoc::runSplit()
 {
-  LKINFO << "Trying split ...";
+  LKINFO(neutu::TOPIC_NULL) << "Trying split ...";
 
   if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
     removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
@@ -4390,7 +4391,7 @@ void ZFlyEmBody3dDoc::runSplit()
 
 void ZFlyEmBody3dDoc::runFullSplit()
 {
-  LKINFO << "Trying full split ...";
+  LKINFO(neutu::TOPIC_NULL) << "Trying full split ...";
 
   if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
     removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
@@ -4428,7 +4429,7 @@ void ZFlyEmBody3dDoc::retrieveSegmentationMesh(QMap<std::string, ZMesh *> *meshM
       if (mesh->hasRole(ZStackObjectRole::ROLE_SEGMENTATION) &&
           !obj->getObjectId().empty()) {
         if (meshMap->contains(obj->getObjectId())) {
-          LKWARN << QString("Unexpected object ID detected: %1").
+          LKWARN(neutu::TOPIC_NULL) << QString("Unexpected object ID detected: %1").
                     arg(obj->getObjectId().c_str());
         } else {
           (*meshMap)[obj->getObjectId()] = mesh;
@@ -4675,13 +4676,14 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     sparseStack->setObjectMask(remainObj);
   }
   */
-//  LKINFO << summary;
+//  LKINFO(neutu::TOPIC_NULL) << summary;
 
   notifyWindowMessageUpdated(summary);
 
   undoStack()->clear();
 
   neutu::LogProfileInfo(
+        (neutu::TOPIC_NULL),
         timer.elapsed(),
         "body split",
         QString("commit split (uploading: %1ms; subtraction: %2ms; "
@@ -5071,7 +5073,7 @@ void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 
   m_garbageJustDumped = true;
 
-  ZOUT(KLOG, 5) << ZLog::Profile()
+  ZOUT(KLOG(neutu::TOPIC_NULL), 5) << ZLog::Profile()
        << ZLog::Description(QString("Object (%1) dump time").
                             arg(obj->getSource().c_str()).toStdString())
        << ZLog::Duration(timer.elapsed());
@@ -5220,19 +5222,19 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycling)
   beginObjectModifiedMode(EObjectModifiedMode::CACHE);
 
 #ifdef _DEBUG_
-  LKINFO << "Dump puncta";
+  LKINFO(neutu::TOPIC_NULL) << "Dump puncta";
 #endif
 //  ZOUT(LTRACE(), 5) << "Dump puncta";
   removeBodyObject<ZPunctum>(recycling);
 
 #ifdef _DEBUG_
-  LKINFO << "Dump todo list";
+  LKINFO(neutu::TOPIC_NULL) << "Dump todo list";
 #endif
 
   removeBodyObject<ZFlyEmToDoItem>(recycling);
 
 #ifdef _DEBUG_
-  LKINFO << "Dump swc";
+  LKINFO(neutu::TOPIC_NULL) << "Dump swc";
 #endif
   removeBodyObject<ZSwcTree>(recycling);
 //  QList<ZSwcTree*> treeList = getSwcList();
@@ -5244,7 +5246,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycling)
 //  }
 
 #ifdef _DEBUG_
-  LKINFO << "Dump meshes";
+  LKINFO(neutu::TOPIC_NULL) << "Dump meshes";
 #endif
   QList<ZMesh*> meshList = ZStackDocProxy::GetNonRoiMeshList(this);
   for (ZMesh *mesh : meshList) {

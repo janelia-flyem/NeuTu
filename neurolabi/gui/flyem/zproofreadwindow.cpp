@@ -838,7 +838,7 @@ void ZProofreadWindow::dumpError(const QString &message, bool appending)
 
 void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 {
-  neutu::LogMessage(msg);
+  neutu::LogMessage(neutu::TOPIC_NULL, msg);
 
   if (msg.hasTargetIn(
         ZWidgetMessage::TARGET_TEXT | ZWidgetMessage::TARGET_TEXT_APPENDING)) {
@@ -994,13 +994,13 @@ void ZProofreadWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void ZProofreadWindow::logMessage(const QString &msg)
 {
-  KLog() << ZLog::Info() << ZLog::Description(msg.toStdString());
+  KLog(neutu::TOPIC_NULL) << ZLog::Info() << ZLog::Description(msg.toStdString());
 //  LINFO() << msg;
 }
 
 void ZProofreadWindow::logError(const QString &msg)
 {
-  KLog() << ZLog::Error() << ZLog::Description(msg.toStdString());
+  KLog(neutu::TOPIC_NULL) << ZLog::Error() << ZLog::Description(msg.toStdString());
 //  LINFO() << msg;
 }
 

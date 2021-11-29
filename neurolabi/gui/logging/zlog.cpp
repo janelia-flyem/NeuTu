@@ -22,7 +22,8 @@
  * in a local log file.
  */
 
-ZLog::ZLog(EDestination dest) : m_dest(dest)
+ZLog::ZLog(const std::string &topic, EDestination dest) :
+  m_topic(topic), m_dest(dest)
 {
 }
 
@@ -144,7 +145,7 @@ void KLog::ResetOperationName()
   m_operationName = DEFAULT_OPERATION_NAME;
 }
 
-KLog::KLog(EDestination dest) : ZLog(dest)
+KLog::KLog(const std::string &topic, EDestination dest) : ZLog(topic, dest)
 {
 }
 
@@ -161,7 +162,13 @@ KLog::~KLog()
 void KLog::start()
 {
   if (neuopentracing::Tracer::Global()) {
-    m_span = neuopentracing::Tracer::Global()->StartSpan(m_operationName);
+    // Kafka topic naming:
+    //   * Lower case only
+    //   * Use - to separate domains. Although using . seems more readable, it
+    //     complicates topic regex specification on the consumer side. Another
+    // Example: neutu-app-proofreading-merge.
+    m_span = neuopentracing::Tracer::Global()->StartSpan(
+          m_operationName + (m_topic.empty() ? "" : ("-" + m_topic)));
 
     if (m_span) {
       neutu::UserInfo userInfo = NeutubeConfig::GetUserInfo();

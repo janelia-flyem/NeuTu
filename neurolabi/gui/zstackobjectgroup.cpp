@@ -356,7 +356,7 @@ ZStackObject* ZStackObjectGroup::takeUnsync(ZStackObject *obj)
     //remove_p(getSet(obj->getType()), obj);
 
 #ifdef _DEBUG_
-    LKINFO << neutu::ToString(obj) + " removed from objectgroup selection";
+    LKINFO(neutu::TOPIC_NULL) << neutu::ToString(obj) + " removed from objectgroup selection";
 #endif
     getSelectedSetUnsync(obj->getType()).remove(obj);
 
@@ -486,7 +486,7 @@ TStackObjectList ZStackObjectGroup::takeSameClass(
 TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)
 {
 #ifdef _DEBUG_
-  LKINFO << "Taking object by type";
+  LKINFO(neutu::TOPIC_NULL) << "Taking object by type";
 #endif
 
   TStackObjectList objSet = getObjectListUnsync(type);
@@ -502,7 +502,7 @@ TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)
   getObjectListUnsync(type).clear();
 
 #ifdef _DEBUG_
-  LKINFO << std::string(__FUNCTION__) + " objectgroup selelection clear: " +
+  LKINFO(neutu::TOPIC_NULL) << std::string(__FUNCTION__) + " objectgroup selelection clear: " +
             ZStackObject::GetTypeName(type);
 #endif
   getSelectedSetUnsync(type).clear();
@@ -587,7 +587,7 @@ bool ZStackObjectGroup::removeObjectUnsync(
         miter.remove();
         getObjectListUnsync(obj->getType()).removeOne(obj);
 #ifdef _DEBUG_
-        LKINFO << neutu::ToString(obj) + " removed from objectgroup selection";
+        LKINFO(neutu::TOPIC_NULL) << neutu::ToString(obj) + " removed from objectgroup selection";
 #endif
         getSelectedSetUnsync(obj->getType()).remove(obj);
         getSelector()->removeObject(obj);
@@ -1257,7 +1257,7 @@ TStackObjectList ZStackObjectGroup::takeSelectedUnsync(ZStackObject::EType type)
 
   getObjectListUnsync(type).clear();
 #ifdef _DEBUG_
-    LKINFO << "objectgroup selection cleared";
+    LKINFO(neutu::TOPIC_NULL) << "objectgroup selection cleared";
 #endif
   getSelectedSetUnsync(type).clear();
   getSelector()->removeObjectByType(type);

@@ -80,7 +80,7 @@ void ZNetBufferReader::read(const QString &url, bool outputingUrl)
   }
 
   neutu::LogUrlIO("GET", url);
-//  KINFO << "Reading " + url;
+//  KINFO(neutu::TOPIC_NULL) << "Reading " + url;
 
   startReading();
 
@@ -104,7 +104,7 @@ void ZNetBufferReader::readPartial(
   }
 
   neutu::LogUrlIO("GETP", url);
-//  KINFO << "Reading partial: " + url;
+//  KINFO(neutu::TOPIC_NULL) << "Reading partial: " + url;
 
   startReading();
 
@@ -193,7 +193,7 @@ bool ZNetBufferReader::hasOptions(const QString &url, int timeout)
 
 void ZNetBufferReader::post(const QString &url, const QByteArray &data)
 {
-//  KINFO << "POST " + url;
+//  KINFO(neutu::TOPIC_NULL) << "POST " + url;
   neutu::LogUrlIO("POST", url);
 
   startReading();
@@ -204,7 +204,7 @@ void ZNetBufferReader::post(const QString &url, const QByteArray &data)
     headInfo += p.first + ":" + p.second.left(10) + "; ";
   }
   if (!headInfo.isEmpty()) {
-    KINFO << "HEADER:" << headInfo;
+    KINFO(neutu::TOPIC_NULL) << "HEADER:" << headInfo;
   }
 
   resetNetworkReply();
@@ -223,9 +223,9 @@ bool ZNetBufferReader::isReadable(const QString &url)
 
   startReading();
 
-//  KINFO << "ZNetBufferReader::isReadable:" << url;
+//  KINFO(neutu::TOPIC_NULL) << "ZNetBufferReader::isReadable:" << url;
 
-//  KINFO << "Check readable: " + url;
+//  KINFO(neutu::TOPIC_NULL) << "Check readable: " + url;
   neutu::LogUrlIO("Check readable", url);
 
   resetNetworkReply();
@@ -311,7 +311,7 @@ void ZNetBufferReader::endReading(neutu::EReadStatus status)
 
       m_statusCode = statusCode.toInt();
       if (m_statusCode < 200 || m_statusCode >= 300) {
-        KWARN << QString("Status code: %1").arg(m_statusCode);
+        KWARN(neutu::TOPIC_NULL) << QString("Status code: %1").arg(m_statusCode);
         m_status = neutu::EReadStatus::BAD_RESPONSE;
       } else if (m_statusCode == 204) {
         m_status = neutu::EReadStatus::NO_CONTENT;
@@ -350,7 +350,7 @@ void ZNetBufferReader::waitForReading()
 void ZNetBufferReader::handleError(QNetworkReply::NetworkError /*error*/)
 {
   if (m_networkReply != NULL) {
-    KWARN << m_networkReply->errorString();
+    KWARN(neutu::TOPIC_NULL) << m_networkReply->errorString();
 #ifdef _DEBUG_0
     std::cout << __func__ << ": " << m_networkReply->errorString().toStdString() << std::endl;
 #endif

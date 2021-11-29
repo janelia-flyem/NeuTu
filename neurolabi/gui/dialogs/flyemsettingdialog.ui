@@ -377,7 +377,7 @@
      <item>
       <widget class="QCheckBox" name="scollCooldownAdaptiveCheckBox">
        <property name="text">
-        <string>Acaptive</string>
+        <string>Adaptive</string>
        </property>
        <property name="checked">
         <bool>true</bool>

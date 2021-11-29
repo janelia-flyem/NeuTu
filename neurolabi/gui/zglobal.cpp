@@ -218,7 +218,7 @@ QString ZGlobal::getNeuPrintToken(const std::string &key) const
       token = ZJsonParser::stringValue(obj["token"]);
     }
   } else {
-    LKERROR << "Invalid token: " + key;
+    LKERROR(neutu::TOPIC_NULL) << "Invalid token: " + key;
   }
 
   return QString::fromStdString(token);

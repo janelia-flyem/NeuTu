@@ -2,6 +2,7 @@
 #define ZSTACKVIEWRECORDER_H
 
 #include <QString>
+#include <QMap>
 
 class ZStackView;
 
@@ -26,6 +27,7 @@ public:
 private:
   EMode m_mode = EMode::MANUAL;
 
+  QMap<int, size_t> m_lastRecordedFrame;
   QString m_prefix;
   int m_currentIndex = 1;
 };
