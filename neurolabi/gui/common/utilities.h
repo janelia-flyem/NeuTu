@@ -200,6 +200,13 @@ inline bool WithinCloseOpenRange(const T &x, const T &minv, const T &maxv)
 }
 
 std::string GetRootUrl(const std::string &url);
+/*!
+ * \brief Get a part of a url by excluding its query string
+ *
+ * It simply treats anything following ? as a query a string and does not check
+ * the validity of \a url.
+ */
+std::string WithoutQueryString(const std::string &url);
 
 uint64_t ToUint64(const std::string &s);
 int64_t ToInt64(const std::string &s);

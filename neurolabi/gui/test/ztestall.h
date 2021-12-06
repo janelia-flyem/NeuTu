@@ -137,5 +137,7 @@
 #include "flyem/tests/flyemtodoblockgridtest.h"
 #include "flyem/tests/flyemtodochunktest.h"
 #include "flyem/tests/flyemtodoensembletest.h"
+#include "flyem/tests/flyembodyconfigtest.h"
+#include "flyem/tests/flyembodymeshfactorytest.h"
 
 #endif // ZTESTALL_H

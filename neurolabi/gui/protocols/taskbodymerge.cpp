@@ -5,7 +5,7 @@
 #include "dvid/zdvidurl.h"
 
 #include "flyem/zflyembody3ddoc.h"
-#include "flyem/zflyembodyconfig.h"
+#include "flyem/flyembodyconfig.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "misc/miscutility.h"

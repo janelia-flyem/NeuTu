@@ -1361,14 +1361,15 @@ std::tuple<QByteArray, std::string> ZDvidReader::readMeshBufferFromUrl(
   }
 
   std::string format = "";
-  if (ZString(url).endsWith(".ngmesh", ZString::CASE_INSENSITIVE)) {
+  ZString trimmedUrl = neutu::WithoutQueryString(url);
+  if (trimmedUrl.endsWith(".ngmesh", ZString::CASE_INSENSITIVE)) {
     format = "ngmesh";
-  } else if (ZString(url).endsWith(".drc", ZString::CASE_INSENSITIVE)) {
+  } else if (trimmedUrl.endsWith(".drc", ZString::CASE_INSENSITIVE)) {
     format = "drc";
-  } else if (ZString(url).endsWith(".obj", ZString::CASE_INSENSITIVE)) {
+  } else if (trimmedUrl.endsWith(".obj", ZString::CASE_INSENSITIVE)) {
     format = "obj";
   } else {
-    ZJsonObject infoJson = readJsonObject(ZDvidUrl::GetMeshInfoUrl(url));
+    ZJsonObject infoJson = readJsonObject(ZDvidUrl::GetMeshInfoUrl(trimmedUrl));
     if (infoJson.hasKey("format")) {
       format = ZJsonParser::stringValue(infoJson["format"]);
     }
@@ -3797,6 +3798,22 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
   return pt;
 }
 
+ZIntCuboid ZDvidReader::readBodyBoundBox(
+    uint64_t bodyId, neutu::EBodyLabelType type) const
+{
+  ZIntCuboid box = ZIntCuboid::Empty();
+
+  if (getDvidTarget().getSegmentationType() == ZDvidData::EType::LABELMAP) {
+    size_t voxelCount;
+    size_t blockCount;
+    std::tie(voxelCount, blockCount, box) = readBodySizeInfo(bodyId, type);
+  } else if (type == neutu::EBodyLabelType::BODY) {
+    box = readBodyBoundBox(bodyId);
+  }
+
+  return box;
+}
+
 ZIntCuboid ZDvidReader::readBodyBoundBox(uint64_t bodyId) const
 {
   ZIntCuboid box;
@@ -4352,7 +4369,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(const ZJsonArray &queryObj) cons
 
   QString queryForm = queryObj.dumpString(0).c_str();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "Payload: " << queryForm.toStdString() << std::endl;
 #endif
 
@@ -4876,7 +4893,7 @@ std::vector<size_t> ZDvidReader::readBodySize(
     }
     queryForm += "]";
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << "Payload: " << queryForm.toStdString() << std::endl;
 #endif
 
@@ -5785,7 +5802,7 @@ std::vector<uint64_t> ZDvidReader::readBodyIdAt(
 
     QString queryForm = queryObj.dumpString(0).c_str();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     STD_COUT << "Payload: " << queryForm.toStdString() << std::endl;
 #endif
 

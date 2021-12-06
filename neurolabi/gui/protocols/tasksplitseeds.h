@@ -35,12 +35,18 @@ private slots:
     void onNoSplitStateChanged(int state);
 
 private:
+    uint64_t getEncodedBodyId() const;
+    QString getBodyKey() const;
+
+private:
     static const QString KEY_TASKTYPE;
     static const QString VALUE_TASKTYPE;
     static const QString KEY_BODYID;
+    static const QString KEY_SVID;
     static const QString TAG_SEEDS_ADDED;
     ZFlyEmBody3dDoc * m_bodyDoc;
-    uint64_t m_bodyID;
+    uint64_t m_bodyID = 0;
+    neutu::EBodyLabelType m_bodyType = neutu::EBodyLabelType::BODY;
     QWidget * m_widget;
     QCheckBox * m_noSplitCheck;
 

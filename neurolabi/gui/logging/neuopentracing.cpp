@@ -288,7 +288,7 @@ void Tracer::reportSpan(const Span &span) const
     std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
 
     std::string topic = m_impl->m_serviceName + "-" + span.operationName();
-    HLDEBUG("kafka") << "Topic: " << topic << std::endl;
+//    HLDEBUG("kafka") << "Topic: " << topic << std::endl;
     RdKafka::ErrorCode resp = m_impl->m_kafkaProducer->
         produce(topic, m_impl->m_config.kafkaPartition(),
                 RdKafka::Producer::RK_MSG_COPY,

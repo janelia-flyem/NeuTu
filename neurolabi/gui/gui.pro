@@ -801,13 +801,17 @@ SOURCES += main.cpp \
     dvid/zdvidlabelslice.cpp \
     dvid/zdvidgrayslice.cpp \
     dvid/zdvidsparsestack.cpp \
+    dvid/zdvidsparsevolslice.cpp \
+    dvid/zdvidpatchdatafetcher.cpp \
+    dvid/zdvidpatchdataupdater.cpp \
+    dvid/zdviddatafetcher.cpp \
+    dvid/zdviddataupdater.cpp \
     zwidgetmessage.cpp \
     zprogresssignal.cpp \
     zkeyeventstrokemapper.cpp \
     zkeyoperation.cpp \
     zkeyoperationmap.cpp \
     zkeyoperationconfig.cpp \
-    dvid/zdvidsparsevolslice.cpp \
     ztextmessage.cpp \
     ztextmessagefactory.cpp \
     z3dgraphfactory.cpp \
@@ -848,10 +852,6 @@ SOURCES += main.cpp \
     zcrosshair.cpp \
     zapplication.cpp \
     zdvidutil.cpp \
-    dvid/zdvidpatchdatafetcher.cpp \
-    dvid/zdvidpatchdataupdater.cpp \
-    dvid/zdviddatafetcher.cpp \
-    dvid/zdviddataupdater.cpp \
     zcubearraymovieactor.cpp \
     dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \

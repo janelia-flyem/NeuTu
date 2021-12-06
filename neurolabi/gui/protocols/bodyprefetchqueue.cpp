@@ -83,7 +83,7 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
                   mesh, ZStackDocObjectUpdate::EAction::ADD_BUFFER);
           }
         } else{
-          ZFlyEmBodyConfig config(bodyID);
+          FlyEmBodyConfig config(bodyID);
           config.setAddBuffer();
           m_doc->addBody(config);
         }

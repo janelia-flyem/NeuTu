@@ -4,7 +4,7 @@
 #include <QSet>
 #include <QMap>
 
-#include "zflyembodyconfig.h"
+#include "flyembodyconfig.h"
 
 /*!
  * \brief The class of managing a set of bodies for 3d display
@@ -140,9 +140,9 @@ public:
    * registered, unless the ID is 0. Deregistering a body will remove its config
    * as well.
    */
-  void addBodyConfig(const ZFlyEmBodyConfig &config);
+  void addBodyConfig(const FlyEmBodyConfig &config);
 
-  ZFlyEmBodyConfig getBodyConfig(uint64_t bodyId) const;
+  FlyEmBodyConfig getBodyConfig(uint64_t bodyId) const;
 
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
   // uses the body's identifier in multiple ways: for multiple meshes, at different
@@ -180,7 +180,7 @@ private:
 
 private:
   QMap<uint64_t, QSet<uint64_t>> m_bodyMap;
-  QMap<uint64_t, ZFlyEmBodyConfig> m_bodyConfigMap; //Hints for body update
+  QMap<uint64_t, FlyEmBodyConfig> m_bodyConfigMap; //Hints for body update
   QSet<uint64_t> m_todoLoaded;
   QSet<uint64_t> m_synapseLoaded;
   QMap<uint64_t, QSet<uint64_t>> m_bufferedBodyMap;

@@ -108,6 +108,18 @@ std::string neutu::GetRootUrl(const std::string &url)
   return "";
 }
 
+std::string neutu::WithoutQueryString(const std::string &url)
+{
+  auto pos = std::string::npos;
+  for (std::string::size_type i = 0; i < url.size(); ++i) {
+    if (url.at(i) == '?') {
+      pos = i;
+      break;
+    }
+  }
+  return url.substr(0, pos);
+}
+
 uint64_t neutu::ToUint64(const std::string &s)
 {
   char *se;

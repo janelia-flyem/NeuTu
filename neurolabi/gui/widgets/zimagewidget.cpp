@@ -176,7 +176,7 @@ void ZImageWidget::setViewPort(const ZAffineRect &rect, neutu::ESignalControl si
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   HLDEBUG_FUNC_LN("2D View");
 #endif
 

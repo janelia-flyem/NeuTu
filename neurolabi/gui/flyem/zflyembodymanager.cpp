@@ -311,7 +311,7 @@ bool ZFlyEmBodyManager::isSynapseLoaded(uint64_t bodyId) const
   return m_synapseLoaded.contains(bodyId);
 }
 
-void ZFlyEmBodyManager::addBodyConfig(const ZFlyEmBodyConfig &config)
+void ZFlyEmBodyManager::addBodyConfig(const FlyEmBodyConfig &config)
 {
   uint64_t bodyId = Decode(config.getBodyId());
 
@@ -320,14 +320,14 @@ void ZFlyEmBodyManager::addBodyConfig(const ZFlyEmBodyConfig &config)
   }
 }
 
-ZFlyEmBodyConfig ZFlyEmBodyManager::getBodyConfig(uint64_t bodyId) const
+FlyEmBodyConfig ZFlyEmBodyManager::getBodyConfig(uint64_t bodyId) const
 {
   bodyId = Decode(bodyId);
   if (m_bodyConfigMap.contains(bodyId)) {
     return m_bodyConfigMap[bodyId];
   }
 
-  return ZFlyEmBodyConfig();
+  return FlyEmBodyConfig();
 }
 
 QSet<uint64_t> ZFlyEmBodyManager::getSupervoxelToAdd(

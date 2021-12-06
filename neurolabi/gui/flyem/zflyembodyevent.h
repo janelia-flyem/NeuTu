@@ -1,7 +1,9 @@
 #ifndef ZFLYEMBODYEVENT_H
 #define ZFLYEMBODYEVENT_H
 
-#include "zflyembodyconfig.h"
+#include <iostream>
+
+#include "flyembodyconfig.h"
 
 class ZFlyEmBodyEvent
 {
@@ -15,7 +17,7 @@ public:
 
   ZFlyEmBodyEvent(EAction action, uint64_t bodyId) :
     m_action(action), m_config(bodyId) {}
-  ZFlyEmBodyEvent(EAction action, const ZFlyEmBodyConfig &config);
+  ZFlyEmBodyEvent(EAction action, const FlyEmBodyConfig &config);
 
 public:
   struct ComparePriority {
@@ -67,6 +69,7 @@ public:
   void decDsLevel();
 
   void setLocalDsLevel(int level);
+  void setCoarseLevel(int level);
 
   bool isOneTime() const;
   void setOneTime(bool on);
@@ -75,16 +78,19 @@ public:
 
   void print() const;
 
+  friend std::ostream& operator<< (
+      std::ostream &stream, const ZFlyEmBodyEvent &event);
+
   int getPriority() const { return m_priority; }
 
-  ZFlyEmBodyConfig getBodyConfig() const;
-  void setBodyConfig(const ZFlyEmBodyConfig &config);
+  FlyEmBodyConfig getBodyConfig() const;
+  void setBodyConfig(const FlyEmBodyConfig &config);
 
   ZFlyEmBodyEvent makeHighResEvent(int minDsLevel) const;
   ZFlyEmBodyEvent makeHighResEvent(
-      const ZFlyEmBodyConfig &config, int minDsLevel) const;
+      const FlyEmBodyConfig &config, int minDsLevel) const;
   static ZFlyEmBodyEvent MakeHighResEvent(
-      const ZFlyEmBodyConfig &config, int minDsLevel);
+      const FlyEmBodyConfig &config, int minDsLevel);
 
 public:
   static const TUpdateFlag UPDATE_NULL;
@@ -98,7 +104,7 @@ public:
 private:
   EAction m_action = EAction::NONE;
 
-  ZFlyEmBodyConfig m_config;
+  FlyEmBodyConfig m_config;
 //    bool m_refreshing;
   TUpdateFlag m_updateFlag = UPDATE_NULL;
   bool m_oneTimeEvent = false;

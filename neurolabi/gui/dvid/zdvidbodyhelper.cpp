@@ -4,29 +4,35 @@
 
 #include "logging/zqslog.h"
 #include "logging/zlog.h"
-#include "zdvidreader.h"
+//#include "zdvidreader.h"
 #include "zobject3dscan.h"
 #include "misc/miscutility.h"
 #include "logging/zlog.h"
+#include "flyem/flyembodysource.h"
 
-ZDvidBodyHelper::ZDvidBodyHelper(const ZDvidReader *reader) : m_reader(reader)
+ZDvidBodyHelper::ZDvidBodyHelper(std::shared_ptr<FlyEmBodySource> source) :
+  m_bodySource(source)
 {
 }
 
+/*
 const ZDvidReader *ZDvidBodyHelper::getDvidReader() const
 {
-  return m_reader;
+  return m_bodySource->getReader();
 }
+*/
 
 void ZDvidBodyHelper::setCanonizing(bool on)
 {
   m_canonizing = on;
 }
 
+/*
 void ZDvidBodyHelper::setLabelType(neutu::EBodyLabelType type)
 {
   m_labelType = type;
 }
+*/
 
 void ZDvidBodyHelper::setRange(const ZIntCuboid &box)
 {
@@ -49,18 +55,22 @@ void ZDvidBodyHelper::setLowresZoom(int zoom)
   m_lowresZoom = zoom;
 }
 
-ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId, ZObject3dScan *result)
+ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId)
 {
   ZObject3dScan *out = nullptr;
 
   if (!m_coarseVol) {
+    out = m_bodySource->getSparsevol(bodyId, m_zoom, m_range);
+    /*
     out = getDvidReader()->readBody(
           bodyId, m_labelType, m_zoom, m_range, m_canonizing, result);
     if (out) {
       out->setDsIntv(zgeom::GetZoomScale(m_zoom) - 1);
     }
+    */
   } else {
-    out = getDvidReader()->readCoarseBody(bodyId, m_labelType, m_range, result);
+    out = m_bodySource->getCoarseSparsevol(bodyId, m_range);
+//    out = getDvidReader()->readCoarseBody(bodyId, m_labelType, m_range, result);
     if (out && m_canonizing) {
       out->canonize();
     }
@@ -70,7 +80,7 @@ ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId, ZObject3dScan *result)
 }
 
 namespace {
-int AdjustMinCorner(int x, int s)
+int adjust_min_corner(int x, int s)
 {
   if (x % s >= s / 2) {
     x = (x / s) * s + s / 2;
@@ -81,7 +91,7 @@ int AdjustMinCorner(int x, int s)
   return x;
 }
 
-int AdjustMaxCorner(int x, int s)
+int adjust_max_corner(int x, int s)
 {
   if (x % s <= s / 2) {
     x = (x / s) * s + s / 2;
@@ -97,20 +107,21 @@ ZIntCuboid ZDvidBodyHelper::getAdjustedRange() const
 {
   ZIntCuboid range = m_range;
   if (!m_range.isEmpty() && (m_coarseVol || (m_lowresZoom < m_zoom))) { //hybrid
-    ZDvidInfo dvidInfo = getDvidReader()->readLabelInfo();
-    ZIntPoint scale = dvidInfo.getBlockSize();
+//    ZDvidInfo dvidInfo = getDvidReader()->readLabelInfo();
+//    ZIntPoint scale = dvidInfo.getBlockSize();
+    ZIntPoint scale = m_bodySource->getBlockSize();
 
     int s = zgeom::GetZoomScale(m_zoom);
     range.scaleDown(s);
     range.scaleUp(s);
 
     range.set(
-          ZIntPoint(AdjustMinCorner(range.getMinCorner().getX(), scale.getX()),
-                    AdjustMinCorner(range.getMinCorner().getY(), scale.getY()),
-                    AdjustMinCorner(range.getMinCorner().getZ(), scale.getZ())),
-          ZIntPoint(AdjustMaxCorner(range.getMaxCorner().getX(), scale.getX()),
-                    AdjustMaxCorner(range.getMaxCorner().getY(), scale.getY()),
-                    AdjustMaxCorner(range.getMaxCorner().getZ(), scale.getZ())));
+          ZIntPoint(adjust_min_corner(range.getMinCorner().getX(), scale.getX()),
+                    adjust_min_corner(range.getMinCorner().getY(), scale.getY()),
+                    adjust_min_corner(range.getMinCorner().getZ(), scale.getZ())),
+          ZIntPoint(adjust_max_corner(range.getMaxCorner().getX(), scale.getX()),
+                    adjust_max_corner(range.getMaxCorner().getY(), scale.getY()),
+                    adjust_max_corner(range.getMaxCorner().getZ(), scale.getZ())));
   }
 
   return range;
@@ -155,8 +166,9 @@ ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
     ZIntPoint scale;
     if (m_coarseVol) {
       lowResObj = lowResHelper.readBody(bodyId);
-      ZDvidInfo dvidInfo = getDvidReader()->readLabelInfo();
-      scale = dvidInfo.getBlockSize();
+//      ZDvidInfo dvidInfo = getDvidReader()->readLabelInfo();
+//      scale = dvidInfo.getBlockSize();
+      scale = m_bodySource->getBlockSize();
     } else {
       if (m_lowresZoom > m_zoom) {
         lowResHelper.setZoom(m_lowresZoom);

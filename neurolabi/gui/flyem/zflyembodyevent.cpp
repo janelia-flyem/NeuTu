@@ -26,7 +26,7 @@ ZFlyEmBodyEvent::ZFlyEmBodyEvent()
 
 }
 
-ZFlyEmBodyEvent::ZFlyEmBodyEvent(EAction action, const ZFlyEmBodyConfig &config)
+ZFlyEmBodyEvent::ZFlyEmBodyEvent(EAction action, const FlyEmBodyConfig &config)
   : m_action(action), m_config(config)
 {
 
@@ -51,6 +51,11 @@ void ZFlyEmBodyEvent::decDsLevel()
 void ZFlyEmBodyEvent::setLocalDsLevel(int level)
 {
   m_config.setLocalDsLevel(level);
+}
+
+void ZFlyEmBodyEvent::setCoarseLevel(int level)
+{
+  m_config.setCoarseLevel(level);
 }
 
 bool ZFlyEmBodyEvent::isOneTime() const
@@ -146,12 +151,12 @@ void ZFlyEmBodyEvent::setBodyId(uint64_t id)
   m_config.setBodyId(id);
 }
 
-ZFlyEmBodyConfig ZFlyEmBodyEvent::getBodyConfig() const
+FlyEmBodyConfig ZFlyEmBodyEvent::getBodyConfig() const
 {
   return m_config;
 }
 
-void ZFlyEmBodyEvent::setBodyConfig(const ZFlyEmBodyConfig &config)
+void ZFlyEmBodyEvent::setBodyConfig(const FlyEmBodyConfig &config)
 {
   m_config = config;
 }
@@ -172,7 +177,7 @@ bool ZFlyEmBodyEvent::isValid() const
 }
 
 ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(
-    const ZFlyEmBodyConfig &config, int minDsLevel) const
+    const FlyEmBodyConfig &config, int minDsLevel) const
 {
   if (!isOneTime()) {
     if (getAction() == EAction::ADD ||
@@ -190,7 +195,7 @@ ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(int minDsLevel) const
 }
 
 ZFlyEmBodyEvent ZFlyEmBodyEvent::MakeHighResEvent(
-    const ZFlyEmBodyConfig &config, int minDsLevel)
+    const FlyEmBodyConfig &config, int minDsLevel)
 {
   ZFlyEmBodyEvent event(EAction::UPDATE, config);
 
@@ -205,8 +210,39 @@ ZFlyEmBodyEvent ZFlyEmBodyEvent::MakeHighResEvent(
   return event;
 }
 
+std::ostream& operator<< (std::ostream &stream, const ZFlyEmBodyEvent &event)
+{
+  switch (event.m_action) {
+  case ZFlyEmBodyEvent::EAction::UPDATE:
+    stream << "Update: ";
+    break;
+  case ZFlyEmBodyEvent::EAction::ADD:
+    stream << "Add: ";
+    break;
+  case ZFlyEmBodyEvent::EAction::REMOVE:
+    stream << "Remove: ";
+    break;
+  case ZFlyEmBodyEvent::EAction::FORCE_ADD:
+    stream << "Force add: ";
+    break;
+  case ZFlyEmBodyEvent::EAction::NONE:
+    stream << "No action: ";
+    break;
+  case ZFlyEmBodyEvent::EAction::CACHE:
+    stream << "Cache: ";
+    break;
+  }
+
+  stream << event.getBodyId() << "  x" << event.getDsLevel()
+         << "; flag: " << event.getUpdateFlag();
+
+  return stream;
+}
+
 void ZFlyEmBodyEvent::print() const
 {
+  std::cout << *this << std::endl;
+  /*
   switch (m_action) {
   case EAction::UPDATE:
     std::cout << "Update: ";
@@ -231,4 +267,5 @@ void ZFlyEmBodyEvent::print() const
   std::cout << getBodyId() << std::endl;
   std::cout << "  resolution: " << getDsLevel() << std::endl;
   std::cout << "  flag: " << getUpdateFlag() << std::endl;
+  */
 }

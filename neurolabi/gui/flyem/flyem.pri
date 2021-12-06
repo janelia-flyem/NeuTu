@@ -27,11 +27,21 @@ HEADERS += \
     $$PWD/flyembodyannotationlocalio.h \
     $$PWD/flyembodyannotationmanager.h \
     $$PWD/flyembodyannotationproofdocio.h \
+    $$PWD/flyembodyconfig.h \
+    $$PWD/flyembodyconfigbuilder.h \
+    $$PWD/flyembodymesh.h \
+    $$PWD/flyembodymeshfactory.h \
+    $$PWD/flyembodysource.h \
+    $$PWD/flyemchainedbodymeshfactory.h \
     $$PWD/flyemdataframeoptiondialog.h \
     $$PWD/flyemdef.h \
+    $$PWD/flyemdvidbodysource.h \
+    $$PWD/flyemdvidpullbodymeshfactory.h \
+    $$PWD/flyemfunctionbodymeshfactory.h \
     $$PWD/flyemorthocontrolform.h \
     $$PWD/flyempointannotationensemble.hpp \
     $$PWD/flyemproofcontrolform.h \
+    $$PWD/flyemsparsevolbodymeshfactory.h \
     $$PWD/flyemsplitcontrolform.h \
     $$PWD/flyemsynapseblockgrid.h \
     $$PWD/flyemsynapsechunk.h \
@@ -59,7 +69,6 @@ HEADERS += \
     $$PWD/zflyembodyannotationprotocol.h \
     $$PWD/zflyembodycoloroption.h \
     $$PWD/zflyembodycolorscheme.h \
-    $$PWD/zflyembodyconfig.h \
     $$PWD/zflyembodyenv.h \
     $$PWD/zflyembodyevent.h \
     $$PWD/zflyembodyidcolorscheme.h \
@@ -174,9 +183,19 @@ SOURCES += \
     $$PWD/flyembodyannotationlocalio.cpp \
     $$PWD/flyembodyannotationmanager.cpp \
     $$PWD/flyembodyannotationproofdocio.cpp \
+    $$PWD/flyembodyconfig.cpp \
+    $$PWD/flyembodyconfigbuilder.cpp \
+    $$PWD/flyembodymesh.cpp \
+    $$PWD/flyembodymeshfactory.cpp \
+    $$PWD/flyembodysource.cpp \
+    $$PWD/flyemchainedbodymeshfactory.cpp \
     $$PWD/flyemdataframeoptiondialog.cpp \
+    $$PWD/flyemdvidbodysource.cpp \
+    $$PWD/flyemdvidpullbodymeshfactory.cpp \
+    $$PWD/flyemfunctionbodymeshfactory.cpp \
     $$PWD/flyemorthocontrolform.cpp \
     $$PWD/flyemproofcontrolform.cpp \
+    $$PWD/flyemsparsevolbodymeshfactory.cpp \
     $$PWD/flyemsplitcontrolform.cpp \
     $$PWD/flyemsynapseblockgrid.cpp \
     $$PWD/flyemsynapsechunk.cpp \
@@ -204,7 +223,6 @@ SOURCES += \
     $$PWD/zflyembodyannotationprotocol.cpp \
     $$PWD/zflyembodycoloroption.cpp \
     $$PWD/zflyembodycolorscheme.cpp \
-    $$PWD/zflyembodyconfig.cpp \
     $$PWD/zflyembodyenv.cpp \
     $$PWD/zflyembodyevent.cpp \
     $$PWD/zflyembodyidcolorscheme.cpp \

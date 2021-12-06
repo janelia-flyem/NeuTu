@@ -239,6 +239,7 @@
 #include "flyem/zflyembookmarkarray.h"
 #include "flyem/flyemdatareader.h"
 #include "flyem/zpaintlabelwidget.h"
+#include "flyem/flyemdvidbodysource.h"
 
 //#include "zcircle.h"
 
@@ -387,6 +388,11 @@
 #include "flyem/flyembodyannotationproofdocio.h"
 #include "flyem/widgets/flyembodysupplywidget.h"
 #include "flyem/dialogs/flyemcleaveunassigneddialog.h"
+#include "flyem/flyembodyconfigbuilder.h"
+#include "flyem/flyemdvidpullbodymeshfactory.h"
+#include "flyem/flyemsparsevolbodymeshfactory.h"
+#include "flyem/flyemchainedbodymeshfactory.h"
+
 #include "widgets/zcheckboxgroup.h"
 #include "widgets/zh3widget.h"
 /*
@@ -33247,7 +33253,7 @@ void ZTest::test(MainWindow *host)
   widget->show();
 #endif
 
-#if 1
+#if 0
   QDialog dlg;
   dlg.setLayout(new QVBoxLayout);
   ZH3Widget *widget = new ZH3Widget;
@@ -33353,6 +33359,135 @@ void ZTest::test(MainWindow *host)
   });
 
   dlg.exec();
+#endif
+
+#if 0
+  auto reader = ZGlobal::GetDvidReader("local_test");
+  if (reader) {
+    QElapsedTimer timer;
+    timer.start();
+    ZObject3dScan obj;
+    uint64_t bodyId = 5901284581llu;
+    reader->readBody(bodyId, true, &obj);
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    std::cout << timer.elapsed() << " ms" << std::endl;
+
+    timer.restart();
+    QByteArray buffer = mesh->writeToMemory("drc");
+    std::cout << "Writing to draco buffer: "
+              << timer.elapsed() << " ms" << std::endl;
+
+    auto writer = ZGlobal::GetDvidWriter("local_test");
+    timer.restart();
+    writer->writeDataToKeyValue(
+          "segmentation_meshes",
+          neulib::StringBuilder("[$].drc").arg(bodyId), buffer);
+    std::cout << "Saving draco buffer: " << timer.elapsed() << " ms" << std::endl;
+  }
+
+#endif
+
+#if 0
+  auto reader = ZGlobal::GetDvidReader("local_test");
+  if (reader) {
+    uint64_t bodyId = 5901284581llu;
+    QElapsedTimer timer;
+    timer.start();
+    ZMesh *mesh = reader->readMesh(
+          "segmentation_meshes", neulib::StringBuilder("[$].drc").arg(bodyId));
+    std::cout << "Reading mesh: " << timer.elapsed() << " ms" << std::endl;
+  }
+#endif
+
+#if 0
+  auto reader = ZGlobal::GetDvidReader("hemi");
+
+  FlyEmDvidPullBodyMeshFactory factory;
+  factory.setReader(reader, nullptr);
+
+  FlyEmBodyConfig config = FlyEmBodyConfigBuilder(1134107162).withDsLevel(2);
+
+  QElapsedTimer timer;
+  timer.start();
+  FlyEmBodyMesh bodyMesh{factory.make(config)};
+  std::cout << "Reading mesh: " << timer.elapsed() << " ms" << std::endl;
+  ZMesh *mesh = bodyMesh.releaseData();
+//  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+  std::cout << "ds level: " << bodyMesh.getBodyConfig().getDsLevel() << std::endl;
+
+#endif
+
+#if 0
+  auto reader = ZGlobal::GetDvidReader("local_test");
+  auto source = std::shared_ptr<FlyEmDvidBodySource>(new FlyEmDvidBodySource);
+  source->setDvidTarget(reader->getDvidTarget());
+  ZObject3dScan *obj = source->getSparsevol(
+        5901284581, 1, {1007, 1183, 982, 1300, 1409, 1059});
+  if (obj) {
+    std::cout << obj->getVoxelNumber() << std::endl;
+    std::cout << obj->getIntBoundBox() << std::endl;
+  } else {
+    std::cout << "No data found" << std::endl;
+  }
+  std::cout << source->getCoarseSparsevolScale() << std::endl;
+
+  FlyEmSparsevolBodyMeshFactory factory;
+  factory.setBodySource(source);
+  auto mesh = factory.make(
+        FlyEmBodyConfigBuilder(5901284581)
+        .withCoarseLevel(source->getCoarseSparsevolScale())
+        .withDsLevel(10)
+        .within({1007, 1183, 982, 1300, 1409, 1059}));
+  if (mesh.hasData()) {
+    mesh.getData()->save(GET_TEST_DATA_DIR + "/_testc.obj");
+  } else {
+    std::cout << "No mesh generated." << std::endl;
+  }
+#endif
+
+#if 0
+  auto reader = ZGlobal::GetDvidReader("local_test");
+  auto source = std::shared_ptr<FlyEmDvidBodySource>(new FlyEmDvidBodySource);
+  source->setDvidTarget(reader->getDvidTarget());
+  ZObject3dScan *obj = source->getSparsevol(
+        5901313858, 0);
+  if (obj) {
+    std::cout << obj->getVoxelNumber() << std::endl;
+    std::cout << obj->getIntBoundBox() << std::endl;
+  } else {
+    std::cout << "No data found" << std::endl;
+  }
+#endif
+
+#if 1
+  auto reader = ZGlobal::GetDvidReader("local_test");
+  auto bodySource = std::make_shared<FlyEmDvidBodySource>();
+  bodySource->setDvidTarget(reader->getDvidTarget());
+
+  FlyEmSparsevolBodyMeshFactory *sparsevolFactory =
+      new FlyEmSparsevolBodyMeshFactory;
+  sparsevolFactory->setBodySource(
+        std::dynamic_pointer_cast<FlyEmBodySource>(bodySource));
+
+  FlyEmDvidPullBodyMeshFactory *dvidPullFactory =
+      new FlyEmDvidPullBodyMeshFactory;
+  dvidPullFactory->setReader(
+        bodySource->getReader(), bodySource->getIoMutex(), nullptr);
+  dvidPullFactory->useNgMesh(true);
+  dvidPullFactory->useObjMesh(true);
+
+  FlyEmChainedBodyMeshFactory *factory = new FlyEmChainedBodyMeshFactory;
+  factory->append(dvidPullFactory);
+  factory->append(sparsevolFactory);
+
+  auto mesh = factory->make(
+        FlyEmBodyConfigBuilder(5901313858).within({400, 1127, 970, 450, 1181, 1066}));
+  if (mesh.hasData()) {
+    mesh.getData()->save(GET_TEST_DATA_DIR + "/_test.obj");
+  } else {
+    std::cout << "No mesh generated." << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

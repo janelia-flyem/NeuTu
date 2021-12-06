@@ -62,6 +62,7 @@ TaskSplitSeeds::TaskSplitSeeds(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)
 const QString TaskSplitSeeds::KEY_TASKTYPE = "task type";
 const QString TaskSplitSeeds::VALUE_TASKTYPE = "split seeds";
 const QString TaskSplitSeeds::KEY_BODYID = "body ID";
+const QString TaskSplitSeeds::KEY_SVID = "supervoxel ID";
 const QString TaskSplitSeeds::TAG_SEEDS_ADDED = "seeds added";
 
 QString TaskSplitSeeds::taskTypeStatic()
@@ -126,12 +127,25 @@ void TaskSplitSeeds::updateSeedsTag() {
     }
 }
 
+uint64_t TaskSplitSeeds::getEncodedBodyId() const
+{
+  return (m_bodyType == neutu::EBodyLabelType::SUPERVOXEL)
+      ? ZFlyEmBodyManager::EncodeSupervoxel(m_bodyID)
+      : m_bodyID;
+}
+
+QString TaskSplitSeeds::getBodyKey() const
+{
+  return (m_bodyType == neutu::EBodyLabelType::SUPERVOXEL)
+      ? KEY_SVID : KEY_BODYID;
+}
+
 QJsonObject TaskSplitSeeds::addToJson(QJsonObject taskJson) {
     // see note in loadJson() re: precision; because we
     //  know the source of the body IDs, the conversions
     //  below should be OK
 
-    taskJson[KEY_BODYID] = static_cast<double>(m_bodyID);
+    taskJson[getBodyKey()] = static_cast<double>(m_bodyID);
     taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
 
     return taskJson;
@@ -139,12 +153,19 @@ QJsonObject TaskSplitSeeds::addToJson(QJsonObject taskJson) {
 
 bool TaskSplitSeeds::loadSpecific(QJsonObject json) {
 
-    if (!json.contains(KEY_BODYID)) {
+    if (!json.contains(KEY_BODYID) && !json.contains(KEY_SVID)) {
         return false;
     }
 
     // see note on body IDs in base class loadStandard() method
-    m_bodyID = json[KEY_BODYID].toDouble();
+    if (json.contains(KEY_SVID)) {
+      m_bodyID = json[KEY_SVID].toDouble();
+      m_bodyType = neutu::EBodyLabelType::SUPERVOXEL;
+    } else {
+      m_bodyID = json[KEY_BODYID].toDouble();
+      m_bodyType = neutu::EBodyLabelType::BODY;
+    }
+
     if (m_bodyID == 0) {
         // 0 indicates a conversion failure; we don't
         //  anticipate reviewing body 0
@@ -158,7 +179,7 @@ bool TaskSplitSeeds::loadSpecific(QJsonObject json) {
     }
 
     // if it's OK, put it in visible set:
-    m_visibleBodies.insert(m_bodyID);
+    m_visibleBodies.insert(getEncodedBodyId());
 
 
     // update the "no split" check box, but only on completed tasks; you

@@ -11,6 +11,7 @@
 #include <sstream>
 
 #include "common/utilities.h"
+#include "common/debug.h"
 #include "logging/zlog.h"
 
 #include "neutubeconfig.h"
@@ -666,12 +667,17 @@ bool ZFlyEmProofDoc::hasBodySelected() const
 std::set<uint64_t> ZFlyEmProofDoc::getSelectedBodySet(
     neutu::ELabelSource labelType) const
 {
+  // A temporary fix for selecting bodies in neu3
+#ifdef _NEU3_
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+#else
   QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
+#endif
 
   std::set<uint64_t> finalSet;
-  for (QList<ZDvidLabelSlice*>::const_iterator iter = sliceList.begin();
-       iter != sliceList.end(); ++iter) {
-    const ZDvidLabelSlice *labelSlice = *iter;
+  foreach (auto labelSlice, sliceList) {
+    HLDEBUG("body selection") << "Get selection from "
+                              << labelSlice->getSource() << std::endl;
     const std::set<uint64_t> &selected = labelSlice->getSelectedOriginal();
     finalSet.insert(selected.begin(), selected.end());
   }
@@ -6515,7 +6521,14 @@ bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
   }
   uint64_t decodedBody = ZFlyEmBodyManager::Decode(bodyId);
   if (getDvidReader().hasBody(decodedBody, bodyType)) {
+    // A temporary fix for selecting bodies in neu3
+#ifdef _NEU3_
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+#else
     QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
+#endif
+    HLDEBUG("body selection") << "Select " << bodyId << " in "
+                              << sliceList.size() << " slices" << std::endl;
     //  ZDvidLabelSlice *slice = getDvidLabelSlice();
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
          iter != sliceList.end(); ++iter) {
@@ -6540,7 +6553,11 @@ void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
     bodyType = neutu::EBodyLabelType::SUPERVOXEL;
   }
 //  uint64_t decodedBody = ZFlyEmBodyManager::Decode(bodyId);
+#ifdef _NEU3_
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+#else
   QList<ZDvidLabelSlice*> sliceList = getFrontDvidLabelSliceList();
+#endif
   for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;

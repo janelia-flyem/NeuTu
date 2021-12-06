@@ -663,6 +663,11 @@ std::ostream& operator<< (std::ostream &stream, const ZIntCuboid &box)
   return stream << "(" << box.m_minCorner << ", " << box.m_maxCorner << ")";
 }
 
+ZIntCuboid ZIntCuboid::Empty()
+{
+  return {0, 0, 0, -1, -1, -1};
+}
+
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {

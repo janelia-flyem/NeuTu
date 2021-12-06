@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QSet>
 
+#include "common/neutudefs.h"
 #include "protocols/taskprotocoltask.h"
 
 class ZFlyEmBody3dDoc;
@@ -26,10 +27,16 @@ public:
     QString targetString();
 
 private:
+    uint64_t getEncodedBodyId() const;
+    QString getBodyKey() const;
+
+private:
     static const QString KEY_TASKTYPE;
     static const QString VALUE_TASKTYPE;
     static const QString KEY_BODYID;
-    uint64_t m_bodyID;
+    static const QString KEY_SVID;
+    uint64_t m_bodyID = 0;
+    neutu::EBodyLabelType m_bodyType = neutu::EBodyLabelType::BODY;
 
     bool loadSpecific(QJsonObject json);
     QJsonObject addToJson(QJsonObject json);

@@ -286,6 +286,7 @@ T* ZGlobal::getIODevice(
       if (target.isValid()) {
         io = new T;
         if (!io->open(target)) {
+          LWARN() << "Failed to open" << target.getSourceString();
           delete io;
           io = NULL;
         }
@@ -307,6 +308,10 @@ T* ZGlobal::getIODevice(
           }
         }
       }
+    }
+
+    if (!io) {
+      LWARN() << "No io device found for" << nameKey;
     }
 
     ioMap[nameKey] = io;

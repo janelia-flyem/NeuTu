@@ -1,5 +1,5 @@
-#ifndef ZFLYEMBODYCONFIG_H
-#define ZFLYEMBODYCONFIG_H
+#ifndef FLYEMBODYCONFIG_H
+#define FLYEMBODYCONFIG_H
 
 #include <cstdint>
 
@@ -18,16 +18,16 @@
  *
  * Example of configuring a hybrid body of ID 1:
  *
- *   ZFlyEmBodyConfig config(1);
+ *   FlyEmBodyConfig config(1);
  *   config.setRange(ZIntCuboid(ZIntPoint(10, 20, 30), ZIntPoint(100, 200, 300));
  *   config.setLocalDsLevel(0); //High res in the box (10, 20, 30)->(100, 200, 300)
  *   config.setDsLevel(5); //Low res for the rest part
  */
-class ZFlyEmBodyConfig
+class FlyEmBodyConfig
 {
 public:
-  ZFlyEmBodyConfig();
-  explicit ZFlyEmBodyConfig(uint64_t bodyId);
+  FlyEmBodyConfig();
+  explicit FlyEmBodyConfig(uint64_t bodyId);
 
   int getDsLevel() const {
     return m_dsLevel;
@@ -40,6 +40,7 @@ public:
 
   void setDsLevel(int level);
   void setLocalDsLevel(int level);
+  void setCoarseLevel(int level);
 
   /*!
    * \brief Decrement downsample level.
@@ -59,6 +60,11 @@ public:
   }
   uint64_t getDecodedBodyId() const;
 
+  /*!
+   * \brief Set body ID
+   *
+   * It can recongnize an encoded body ID.
+   */
   void setBodyId(uint64_t bodyId);
 
   QColor getBodyColor() const;
@@ -82,18 +88,28 @@ public:
   void setAddBuffer(bool addBuffer = true);
   bool getAddBuffer() const;
 
+  /*!
+   * \brief The ds level has reached the level for coarse representation.
+   *
+   * This assumes that the body data has a coarse represetation, such as the
+   * block representation in DVID.
+   */
+  bool usingCoarseLevel() const;
+
 private:
   uint64_t m_bodyId = 0;
   QColor m_bodyColor;
   flyem::EBodyType m_bodyType = flyem::EBodyType::DEFAULT;
-  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
+//  neutu::EBodyLabelType m_labelType = neutu::EBodyLabelType::BODY;
 
   ZIntCuboid m_range;
   int m_dsLevel = 0;
   int m_nextDsLevel = -1; //-1 means normal decrement, -2 means no level for next
   int m_localDsLevel = 0;
+  int m_coarseLevel = -1; // Expecting coarse sparsevol if m_dsLevel is not greater than m_coarseLevel
+                         // -1 means no coarse level
 
   bool m_addBuffer = false;
 };
 
-#endif // ZFLYEMBODYCONFIG_H
+#endif // FLYEMBODYCONFIG_H

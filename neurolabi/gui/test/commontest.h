@@ -32,6 +32,18 @@ TEST(common, utilities)
   ASSERT_FALSE(neutu::UsingLocalHost("http://localhost2/127.0.0.11"));
   ASSERT_FALSE(neutu::UsingLocalHost("http://127.0.0.2/localhost"));
 
+  ASSERT_EQ("http://127.0.0.2/localhost",
+            neutu::WithoutQueryString("http://127.0.0.2/localhost"));
+  ASSERT_EQ("", neutu::WithoutQueryString(""));
+  ASSERT_EQ("", neutu::WithoutQueryString("?"));
+  ASSERT_EQ("http://127.0.0.2/localhost",
+            neutu::WithoutQueryString("http://127.0.0.2/localhost?test"));
+  ASSERT_EQ("http://127.0.0.2/localhost",
+            neutu::WithoutQueryString("http://127.0.0.2/localhost??test"));
+  ASSERT_EQ("",
+            neutu::WithoutQueryString("?http://127.0.0.2/localhost?"));
+
+
   ASSERT_TRUE(neutu::IsIntegerValue(0.0));
   ASSERT_TRUE(neutu::IsIntegerValue(10.0));
   ASSERT_TRUE(neutu::IsIntegerValue(100.0f));

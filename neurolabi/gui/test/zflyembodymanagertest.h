@@ -3,7 +3,7 @@
 
 #include "ztestheader.h"
 #include "flyem/zflyembodymanager.h"
-#include "flyem/zflyembodyconfig.h"
+#include "flyem/flyembodyconfig.h"
 
 #ifdef _USE_GTEST_
 
@@ -70,7 +70,7 @@ TEST(ZFlyEmBodyManager, Basic)
   ASSERT_FALSE(bm.isTodoLoaded(1));
   ASSERT_FALSE(bm.isSynapseLoaded(1));
 
-  ZFlyEmBodyConfig config(1);
+  FlyEmBodyConfig config(1);
   bm.addBodyConfig(config);
   ASSERT_EQ(1, (int) bm.getBodyConfig(1).getBodyId());
 
@@ -81,7 +81,7 @@ TEST(ZFlyEmBodyManager, Basic)
   ASSERT_TRUE(bm.contains(1));
   ASSERT_FALSE(bm.hasMapping(1));
 
-  ZFlyEmBodyConfig config2(ZFlyEmBodyManager::Encode(1, 0, true));
+  FlyEmBodyConfig config2(ZFlyEmBodyManager::Encode(1, 0, true));
   bm.addBodyConfig(config2);
   ASSERT_EQ(ZFlyEmBodyManager::Encode(1, 0, true),
             bm.getBodyConfig(1).getBodyId());

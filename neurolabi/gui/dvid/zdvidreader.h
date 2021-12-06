@@ -606,6 +606,7 @@ public:
   ZIntPoint readBodyBottom(uint64_t bodyId) const;
   ZIntPoint readBodyTop(uint64_t bodyId) const;
   ZIntCuboid readBodyBoundBox(uint64_t bodyId) const;
+  ZIntCuboid readBodyBoundBox(uint64_t bodyId, neutu::EBodyLabelType type) const;
   ZIntPoint readBodyPosition(uint64_t bodyId) const;
 
   ZJsonObject readSkeletonConfig() const;

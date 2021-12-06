@@ -18,10 +18,10 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
 #include "mvc/zstackdoc.h"
+#include "protocols/protocoltaskconfig.h"
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
 #include "zflyembodymanager.h"
-#include "protocols/protocoltaskconfig.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -38,6 +38,8 @@ class ZFlyEmBodyEnv;
 class ZFlyEmTodoAnnotationDialog;
 class ZFlyEmTodoFilterDialog;
 class ZFlyEmBodyAnnotationProtocol;
+class FlyEmDvidBodySource;
+class FlyEmBodyMeshFactory;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -104,8 +106,8 @@ public:
   bool isAgglo(uint64_t bodyId) const;
   QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
 
-  void addBody(const ZFlyEmBodyConfig &config);
-  void updateBody(ZFlyEmBodyConfig &config);
+  void addBody(const FlyEmBodyConfig &config);
+  void updateBody(FlyEmBodyConfig &config);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
   void updateBody(uint64_t bodyId, const QColor &color, flyem::EBodyType type);
@@ -162,10 +164,12 @@ public:
 //  bool isAdmin() const;
   const ZFlyEmBodyAnnotationProtocol& getBodyStatusProtocol() const;
 
+  /*
   ZDvidGraySlice* getArbGraySlice() const;
 //  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
   void hideArbGrayslice();
   void setArbGraySliceVisible(bool v);
+*/
 
   void printEventQueue() const;
 
@@ -209,10 +213,10 @@ public:
   void enableGarbageLifetimeLimit(bool on);
   bool garbageLifetimeLimitEnabled() const;
 
-  ZMesh *readMesh(const ZDvidReader &reader, ZFlyEmBodyConfig &config);
+  ZMesh *readMesh(const ZDvidReader &reader, FlyEmBodyConfig &config);
   ZMesh *readMesh(
       const ZDvidReader &reader, uint64_t bodyId, int zoom);
-  ZMesh *readMesh(ZFlyEmBodyConfig &config);
+  ZMesh *readMesh(FlyEmBodyConfig &config);
 //  ZMesh *readSupervoxelMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
 #if 0
@@ -334,7 +338,7 @@ public:
    * Initial update of the body in \a config will follow the specification in
    * \a config.
    */
-  void addBodyConfig(const ZFlyEmBodyConfig &config);
+  void addBodyConfig(const FlyEmBodyConfig &config);
 
   bool isSupervoxel(uint64_t bodyId);
   size_t getSupervoxelSize(uint64_t svId) const;
@@ -448,7 +452,7 @@ private:
   std::vector<ZMesh*> getTarCachedMeshes(uint64_t bodyId);
 
   std::vector<ZMesh*> getCachedMeshes(uint64_t bodyId, int zoom);
-  std::vector<ZMesh *> makeBodyMeshModels(ZFlyEmBodyConfig &config);
+  std::vector<ZMesh *> makeBodyMeshModels(FlyEmBodyConfig &config);
   std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t, bool showProgress = true);
   std::vector<ZMesh*> makeTarMeshModels(
       const ZDvidReader &reader, uint64_t bodyId, int t, bool showProgress = true);
@@ -471,14 +475,14 @@ private:
   void annotateTodoItem(std::function<void(ZFlyEmToDoItem*)> f,
                         std::function<bool(const ZFlyEmToDoItem*)> pred);
 
-  void addBodyFunc(ZFlyEmBodyConfig &config);
-  void addBodyMeshFunc(ZFlyEmBodyConfig &config);
+  void addBodyFunc(FlyEmBodyConfig &config);
+  void addBodyMeshFunc(FlyEmBodyConfig &config);
 //  void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
 //  void addBodyMeshFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
   void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
   void updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject);
-  void updateMeshFunc(ZFlyEmBodyConfig &config, const std::vector<ZMesh*> meshes);
+  void updateMeshFunc(FlyEmBodyConfig &config, const std::vector<ZMesh*> meshes);
 //  void updateBodyMeshFunc(uint64_t bodyId, ZMesh *mesh);
 
   void connectSignalSlot();
@@ -583,6 +587,8 @@ private:
   template<typename InputIterator>
   void invalidateBodyCache(InputIterator first, InputIterator last);
 
+  void prepareBodyMeshFactory();
+
 private:
   ZFlyEmBodyManager m_bodyManager;
 //  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
@@ -629,6 +635,8 @@ private:
 
   ZSharedPointer<ZStackDoc> m_dataDoc;
   ZSharedPointer<ZStackDoc3dHelper> m_helper;
+  std::shared_ptr<FlyEmDvidBodySource> m_bodySource;
+  std::shared_ptr<FlyEmBodyMeshFactory> m_bodyMeshFactory;
 
   ProtocolTaskConfig m_taskConfig;
 
@@ -656,6 +664,8 @@ private:
 
   bool m_limitGarbageLifetime = true;
   bool m_splitTaskLoadingEnabled = true;
+
+  int m_goodEnoughBodyDsLevel = 2;
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;

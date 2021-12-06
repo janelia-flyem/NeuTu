@@ -249,6 +249,8 @@ public:
 
   friend std::ostream& operator<< (std::ostream &stream, const ZIntCuboid &box);
 
+  static ZIntCuboid Empty();
+
 private:
   ZIntPoint m_minCorner;
   ZIntPoint m_maxCorner;

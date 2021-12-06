@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "logging/zqslog.h"
+#include "flyem/zflyembodymanager.h"
 
 TaskBodyReview::TaskBodyReview(QJsonObject json)
 {
@@ -27,6 +28,7 @@ TaskBodyReview::TaskBodyReview(QJsonObject json)
 const QString TaskBodyReview::KEY_TASKTYPE = "task type";
 const QString TaskBodyReview::VALUE_TASKTYPE = "body review";
 const QString TaskBodyReview::KEY_BODYID = "body ID";
+const QString TaskBodyReview::KEY_SVID = "supervoxel ID";
 
 QString TaskBodyReview::taskTypeStatic()
 {
@@ -47,8 +49,21 @@ QString TaskBodyReview::actionString() {
     return "Review body:";
 }
 
+uint64_t TaskBodyReview::getEncodedBodyId() const
+{
+  return (m_bodyType == neutu::EBodyLabelType::SUPERVOXEL)
+      ? ZFlyEmBodyManager::EncodeSupervoxel(m_bodyID)
+      : m_bodyID;
+}
+
 QString TaskBodyReview::targetString() {
-    return QString::number(m_bodyID);
+    return QString::number(getEncodedBodyId());
+}
+
+QString TaskBodyReview::getBodyKey() const
+{
+  return (m_bodyType == neutu::EBodyLabelType::SUPERVOXEL)
+      ? KEY_SVID : KEY_BODYID;
 }
 
 QJsonObject TaskBodyReview::addToJson(QJsonObject taskJson) {
@@ -56,7 +71,7 @@ QJsonObject TaskBodyReview::addToJson(QJsonObject taskJson) {
     //  know the source of the body IDs, the conversions
     //  below should be OK
 
-    taskJson[KEY_BODYID] = static_cast<double>(m_bodyID);
+    taskJson[getBodyKey()] = static_cast<double>(m_bodyID);
     taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
 
     return taskJson;
@@ -64,18 +79,25 @@ QJsonObject TaskBodyReview::addToJson(QJsonObject taskJson) {
 
 bool TaskBodyReview::loadSpecific(QJsonObject json) {
 
-    if (!json.contains(KEY_BODYID)) {
+    if (!json.contains(KEY_BODYID) && !json.contains(KEY_SVID)) {
         return false;
     }
 
     // see note on body IDs in base class loadStandard() method
-    m_bodyID = json[KEY_BODYID].toDouble();
+    if (json.contains(KEY_SVID)) {
+      m_bodyID = json[KEY_SVID].toDouble();
+      m_bodyType = neutu::EBodyLabelType::SUPERVOXEL;
+    } else {
+      m_bodyID = json[KEY_BODYID].toDouble();
+      m_bodyType = neutu::EBodyLabelType::BODY;
+    }
     if (m_bodyID == 0) {
         // 0 indicates a conversion failure; we don't
         //  anticipate reviewing body 0
         LINFO() << "error converting task json; body ID = 0 not allowed";
         return false;
     }
+
     if (m_bodyID > 4503599627370496) {
         // that number is 2^52
         LINFO() << "error converting task json; found body ID > 2^52";
@@ -83,7 +105,7 @@ bool TaskBodyReview::loadSpecific(QJsonObject json) {
     }
 
     // if it's OK, put it in visible set:
-    m_visibleBodies.insert(m_bodyID);
+    m_visibleBodies.insert(getEncodedBodyId());
 
     return true;
 }
