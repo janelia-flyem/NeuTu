@@ -128,6 +128,7 @@
 #include "mvc/tests/zmousecursorglyphtest.h"
 #include "mvc/tests/zstackviewtest.h"
 #include "mvc/tests/zstackmvctest.h"
+#include "mvc/tests/zsegmentannotationstoretest.h"
 
 #include "widgets/tests/zimagewidgettest.h"
 #include "widgets/tests/zgroupviswidgettest.h"

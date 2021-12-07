@@ -86,7 +86,6 @@ signals:
 
 private:
   std::shared_ptr<FlyEmBodyAnnotationIO> m_io;
-  QMap<uint64_t, ZJsonObject> m_annotationCache;
   ZFlyEmBodyAnnotationProtocol m_bodyStatusProtocol;
   ZJsonObject m_bodyAnnotationSchema;
   bool m_isAdmin = false;

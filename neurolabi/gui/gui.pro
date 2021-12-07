@@ -483,6 +483,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidgrayscale.h \
     dvid/zdvidneurontracer.h \
     dvid/zdvidresultservice.h \
+    dvid/zdvidgraysliceensemble.h \
+    dvid/zdvidenv.h \
     zwidgetmessage.h \
     zprogresssignal.h \
     zkeyeventstrokemapper.h \
@@ -602,8 +604,6 @@ HEADERS += mainwindow.h \
     protocols/taskprotocoltaskfactory.h \
     protocols/taskmergereview.h \
     main.h \
-    dvid/zdvidgraysliceensemble.h \
-    dvid/zdvidenv.h \
     protocols/taskutils.h
 
 FORMS += mainwindow.ui \
