@@ -3786,6 +3786,7 @@ void ZStackDoc::activateLocationHint(double x, double y, double z)
   ZStackBall *obj = getObject<ZStackBall>(source);
   if (obj == nullptr) {
     obj = new ZStackBall;
+    obj->setTarget(neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS);
     obj->useCosmeticPen(true);
     obj->setRadius(10);
     obj->setColor(255, 255, 255, 128);
@@ -3801,13 +3802,16 @@ void ZStackDoc::activateLocationHint(double x, double y, double z)
     processObjectModified(obj);
   }
 
-  QTimer::singleShot(2000, this, [=](){ hideLocationObject(obj, x, y, z); } );
+  int64_t t = neutu::GetTimestamp();
+  obj->setTimestamp(t);
+  QTimer::singleShot(4000, this, [=](){ hideLocationObject(obj, x, y, z, t); } );
 }
 
-void ZStackDoc::hideLocationObject(ZStackBall *obj, double x, double y, double z)
+void ZStackDoc::hideLocationObject(
+    ZStackBall *obj, double x, double y, double z, int64_t t)
 {
   if (obj) {
-    if (obj->getCenter() == ZPoint(x, y, z)) {
+    if ((obj->getCenter() == ZPoint(x, y, z)) && (t == obj->getTimestamp())) {
       obj->setVisible(false);
       processObjectModified(obj);
     }

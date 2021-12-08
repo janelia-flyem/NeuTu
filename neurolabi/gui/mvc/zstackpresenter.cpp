@@ -1117,6 +1117,7 @@ void ZStackPresenter::createBodyActions()
 }
 #endif
 
+/*
 void ZStackPresenter::flashHighlight(int x, int y, int z)
 {
   setHighlight(true);
@@ -1132,6 +1133,7 @@ void ZStackPresenter::flashHighlight(int x, int y, int z)
     }
   });
 }
+*/
 
 void ZStackPresenter::highlight(int x, int y, int z)
 {

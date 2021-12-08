@@ -1462,7 +1462,7 @@ private:
   template <class C, class T>
   void setObjectSelectedP(const C &objList, bool select);
 
-  void hideLocationObject(ZStackBall *obj, double x, double y, double z);
+  void hideLocationObject(ZStackBall *obj, double x, double y, double z, int64_t t);
 
 private slots:
   void shortcutTest();

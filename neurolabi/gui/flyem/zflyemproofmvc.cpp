@@ -2845,7 +2845,7 @@ void ZFlyEmProofMvc::customInit()
     connect(this, &ZFlyEmProofMvc::dvidTargetChanged,
             this, &ZFlyEmProofMvc::handleDvidTargetChange);
     connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
-            this, SLOT(zoomToL1(int,int,int)));
+            this, SLOT(zoomTo(int,int,int)));
     connect(m_protocolSwitcher, SIGNAL(requestDisplayBody(uint64_t)),
             this, SLOT(locateBody(uint64_t)));
     connect(m_protocolSwitcher, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),

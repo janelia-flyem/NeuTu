@@ -2505,8 +2505,10 @@ void ZStackView::updateObjectBuffer(
     const QList<ZStackObject*> &objList)
 {
   if (neutu::data3d::IsNonblocking(target)) {
+    HLDEBUG("canvas") << "Updating non-blocking object buffer" << std::endl;
     addNonblockCanvasTask(canvas, target, objList);
   } else {
+    HLDEBUG("canvas") << "Updating blocking object buffer: " << canvas.get() << std::endl;
     updateObjectBuffer(canvas, objList);
   }
 }
@@ -2518,6 +2520,8 @@ void ZStackView::updateObjectBuffer(
     ZSliceCanvasPaintHelper p(*canvas);
     QPainter *painter = p.getPainter();
     updateObjectBuffer(canvas, painter, objList);
+  } else {
+    HLDEBUG("canvas") << "Update skipped: " << canvas.get() << std::endl;
   }
 }
 
@@ -2537,6 +2541,8 @@ void ZStackView::updateObjectBuffer(
       }
 #endif
 
+    HLDEBUG("canvas") << "Displaying objects in canvas " << canvas.get() << std::endl;
+
     for (ZStackObject *obj : objList) {
 #ifdef _DEBUG_0
       if (m_viewId == 2) {
@@ -2554,22 +2560,14 @@ void ZStackView::updateObjectBuffer(
 void ZStackView::updateObjectBuffer(
     neutu::data3d::ETarget target, const QList<ZStackObject *> &objList)
 {
+  updateObjectBuffer(
+        neutu::data3d::IsNonblocking(target) ? nullptr : getClearCanvas(target),
+        target, objList);
+  /*
   if (neutu::data3d::IsNonblocking(target)) {
     addNonblockCanvasTask(nullptr, target, objList);
   } else {
-    std::shared_ptr<ZSliceCanvas> canvas = getClearCanvas(target);
-    if (canvas && canvas->updateNeeded()) {
-      updateObjectBuffer(canvas, objList);
-    }
-  }
-  /*
-  std::shared_ptr<ZSliceCanvas> canvas = getClearCanvas(target);
-  if (canvas && canvas->updateNeeded()) {
-    if (neutu::data3d::IsNonblocking(target)) {
-      addNonblockCanvasTask(canvas, target, objList);
-    } else {
-      updateObjectBuffer(canvas, objList);
-    }
+    updateObjectBuffer(getClearCanvas(target), objList);
   }
   */
 }
@@ -2615,8 +2613,9 @@ void ZStackView::addNonblockCanvasTask(
   if (imageWidget()->hasCanvas(canvas, target)) {
     //Ignore the managed canvas, but stil try to update the screen
     updateImageScreen(EUpdateOption::QUEUED);
-  } else {
+  } else if (buddyPresenter()->isObjectVisible()) {
     if (!objList.isEmpty()) {
+      HLDEBUG("canvas") << "Add nonblock canvas task" << std::endl;
       ZTask *task = new ZFunctionTask([=]() {
         std::shared_ptr<ZSliceCanvas> bufferCanvas = canvas;
         if (!bufferCanvas) {
@@ -4211,6 +4210,7 @@ void ZStackView::dump(const QString &msg)
   m_stackLabel->setText(msg);
 }
 
+/*
 void ZStackView::highlightPosition(const ZIntPoint &pt)
 {
   highlightPosition(pt.getX(), pt.getY(), pt.getZ());
@@ -4230,3 +4230,4 @@ void ZStackView::highlightPosition(int x, int y, int z)
 
   updateImageScreen(EUpdateOption::QUEUED);
 }
+*/

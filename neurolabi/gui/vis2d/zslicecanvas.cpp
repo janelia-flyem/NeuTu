@@ -283,7 +283,7 @@ bool ZSliceCanvas::isVisible() const
 
 bool ZSliceCanvas::updateNeeded() const
 {
-  return !isVisible() || !isEmpty();
+  return isVisible() && !isEmpty();
 }
 
 bool ZSliceCanvas::isEmpty() const

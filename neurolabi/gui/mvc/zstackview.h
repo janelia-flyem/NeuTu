@@ -438,8 +438,8 @@ public: //Change view parameters
 //  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
-  void highlightPosition(int x, int y, int z);
-  void highlightPosition(const ZIntPoint &pt);
+//  void highlightPosition(int x, int y, int z);
+//  void highlightPosition(const ZIntPoint &pt);
 
   void updateContrastProtocal();
 

@@ -150,7 +150,7 @@ public:
   bool hightlightOn() const { return m_highlight; }
   void setHighlight(bool state) { m_highlight = state; }
   void highlight(int x, int y, int z);
-  void flashHighlight(int x, int y, int z);
+//  void flashHighlight(int x, int y, int z);
 
   void setSliceAxis(int viewId, neutu::EAxis axis);
   void setMainSliceAxis(neutu::EAxis axis);

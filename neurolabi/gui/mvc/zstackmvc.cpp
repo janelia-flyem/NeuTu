@@ -939,6 +939,7 @@ void ZStackMvc::zoomWithHeightAligned(const ZStackView */*view*/)
 
 }
 
+/*
 void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 {
   bool depthChanged = (pt.getZ() == getMainView()->getCurrentDepth());
@@ -957,6 +958,7 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
 
 //  getView()->notifyViewChanged();
 }
+*/
 
 /*
 void ZStackMvc::zoomTo(const ZStackViewParam &param)
@@ -985,7 +987,7 @@ void ZStackMvc::zoomTo(int x, int y, int z, int width)
   getView()->setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
 #endif
 
-  getMainView()->highlightPosition(x, y, z);
+//  getMainView()->highlightPosition(x, y, z);
 }
 
 
@@ -1009,7 +1011,7 @@ void ZStackMvc::stepSlice(int dz)
 void ZStackMvc::zoomTo(int x, int y, int z)
 {
   getMainView()->zoomTo(x, y, z);
-  getMainView()->highlightPosition(x, y, z);
+//  getMainView()->highlightPosition(x, y, z);
 }
 
 void ZStackMvc::zoomToL1(int x, int y, int z)
