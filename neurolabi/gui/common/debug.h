@@ -54,7 +54,7 @@ HighligthDebug& HLDebug(const std::string &key);
 #  define HLDEBUG_FUNC_LN(key) HLDEBUG_FUNC(key) << std::endl
 #else
 #  define HLDEBUG(key) if (1) {} else std::cout
-#  define HLDEBUG_FUNC(key) HLDebug(key) if (1) {} else std::cout
+#  define HLDEBUG_FUNC(key) if (1) {} else std::cout
 #  define HLDEBUG_FUNC_LN(key) if (1) {} else std::cout
 #endif
 
