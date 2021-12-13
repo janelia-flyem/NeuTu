@@ -64,7 +64,7 @@
      <item>
       <widget class="QLabel" name="typeLabel">
        <property name="text">
-        <string>Type:</string>
+        <string>Type/Class:</string>
        </property>
       </widget>
      </item>

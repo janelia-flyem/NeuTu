@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <mutex>
 #include <vector>
 
@@ -32,12 +33,16 @@ public:
   HighligthDebug& operator <<(std::ostream& (*os)(std::ostream&));
 
 private:
+  bool topicDisabled(const std::string &key) const;
+
+private:
   mutable std::mutex m_mutex;
   std::vector<std::string> m_iconList{
     OUTPUT_HIGHLIGHT_1, OUTPUT_HIGHLIGHT_2, OUTPUT_HIGHLIGHT_3,
     OUTPUT_HIGHLIGHT_4
   };
   mutable std::unordered_map<std::string, std::string> m_iconMap;
+  std::unordered_set<std::string> m_disabledTopicSet;
 };
 
 

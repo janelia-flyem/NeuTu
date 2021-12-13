@@ -24,7 +24,7 @@ void ZGenericBodyAnnotationDialog::updateStatusParameter()
     if (statusParam) {
       updateOptions(statusParam, m_defaultStatusList, "");
     } else {
-      addStringParameter("status", m_defaultStatusList);
+      addStringParameter("status", m_defaultStatusList, false);
     }
   }, true);
 

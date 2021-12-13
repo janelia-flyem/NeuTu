@@ -13,11 +13,12 @@ public:
   FlyEmBodyAnnotationGenericDlgBuilder();
 
   FlyEmBodyAnnotationGenericDlgBuilder& getDialogFrom(
-      std::function<ZGenericBodyAnnotationDialog*()> f);
+      std::function<ZGenericBodyAnnotationDialog*()> f, bool ready);
 
   ZSegmentAnnotationBuilder& fromOldAnnotation(const ZJsonObject &obj) override;
 
 protected:
+  bool m_dlgReady = true;
   std::function<ZGenericBodyAnnotationDialog*()> m_dlgGetter;
 };
 

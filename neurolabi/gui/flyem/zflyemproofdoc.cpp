@@ -405,6 +405,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
 
   connect(this, SIGNAL(segmentAnnotated(uint64_t, ZJsonObject)),
           this, SLOT(processBodyAnnotationUpdate(uint64_t, ZJsonObject)));
+  connect(this, SIGNAL(segmentAnnotated(QList<uint64_t>)),
+          this, SLOT(processBodyAnnotationUpdate(QList<uint64_t>)));
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
@@ -1133,6 +1135,12 @@ ZJsonObject ZFlyEmProofDoc::getBodyAnnotation(uint64_t bodyId) const
         */
 }
 
+std::vector<std::pair<uint64_t, ZJsonObject>> ZFlyEmProofDoc::getBodyAnnotations(
+    const std::vector<uint64_t> &bodyIdArray) const
+{
+  return getSegmentAnnotations(bodyIdArray, neutu::ECacheOption::SOURCE_ONLY);
+}
+
 void ZFlyEmProofDoc::invalidateBodyAnnotationCache()
 {
   m_bodyAnnotationManager->invalidateCache();
@@ -1419,164 +1427,18 @@ void ZFlyEmProofDoc::annotateBody(
     uint64_t bodyId, const ZJsonObject &annotation)
 {
   annotateSegment(bodyId, annotation);
-//  ZJsonObject newAnnotation = annotation.clone();
-
-//  try {
-//    ZJsonObject oldAnnotation = m_bodyAnnotationManager->getAnnotation(bodyId);
-//    std::vector<std::string> keysToRemove;
-//    newAnnotation.forEachValue([&](const std::string &key, ZJsonValue value) {
-//      if (!oldAnnotation.hasKey(key)) {
-//        if (value.isString()) {
-//          if (value.toString().empty()) {
-//            keysToRemove.push_back(key);
-//          }
-//        }
-//      }
-//    });
-//    for (const auto &key : keysToRemove) {
-//      newAnnotation.removeKey(key.c_str());
-//    }
-//    m_bodyAnnotationManager->saveAnnotation(bodyId, annotation);
-//    annotateSegment(bodyId, annotation);
-
-//    processBodyAnnotationUpdate(bodyId, annotation);
-
-//    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
-
-//    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-//         iter != sliceList.end(); ++iter) {
-//      ZDvidLabelSlice *slice = *iter;
-//      if (slice->hasCustomColorMap()) {
-//        ZFlyEmNameBodyColorScheme *colorMap =
-//            dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
-//        if (colorMap != NULL) {
-//          colorMap->updateNameMap(
-//                bodyId, ZFlyEmBodyAnnotation::GetName(annotation).c_str());
-////          colorMap->updateNameMap(annotation);
-//          slice->assignColorMap();
-//          processObjectModified(slice);
-//        }
-//      }
-//    }
-
-//    processObjectModified();
-//    std::string color = getBodyStatusProtocol().getColorCode(
-//          ZFlyEmBodyAnnotation::GetStatus(annotation));
-//    setBodyColorFromStatus(bodyId, color);
-
-//    emit messageGenerated(
-//          ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
-//  } catch (std::exception &e) {
-//    emit messageGenerated(
-//          ZWidgetMessage("Cannot save annotation.", neutu::EMessageType::ERROR));
-//  }
-
-#if 0
-  ZDvidWriter &writer = m_dvidWriter;
-  if (writer.good()) {
-    ZJsonObject oldAnnotation = m_bodyAnnotationManager->getAnnotation(bodyId);
-        writer.getDvidReader().readBodyAnnotationJson(bodyId);
-
-    std::vector<std::string> keysToRemove;
-    newAnnotation.forEachValue([&](const std::string &key, ZJsonValue value) {
-      if (!oldAnnotation.hasKey(key)) {
-        if (value.isString()) {
-          if (value.toString().empty()) {
-            keysToRemove.push_back(key);
-          }
-        }
-      }
-    });
-    for (const auto &key : keysToRemove) {
-      newAnnotation.removeKey(key.c_str());
-    }
-    writer.writeAnnotation(bodyId, newAnnotation);
-
-    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
-
-    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-         iter != sliceList.end(); ++iter) {
-      ZDvidLabelSlice *slice = *iter;
-      if (slice->hasCustomColorMap()) {
-        ZFlyEmNameBodyColorScheme *colorMap =
-            dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
-        if (colorMap != NULL) {
-          colorMap->updateNameMap(
-                bodyId, ZFlyEmBodyAnnotation::GetName(newAnnotation).c_str());
-//          colorMap->updateNameMap(annotation);
-          slice->assignColorMap();
-          processObjectModified(slice);
-        }
-      }
-    }
-
-    processObjectModified();
-  }
-
-  if (writer.getStatusCode() == 200) {
-    if (getSelectedBodySet(neutu::ELabelSource::ORIGINAL).count(bodyId) > 0) {
-      m_bodyAnnotationManager->invalidateCache(bodyId);
-//      recordBodyAnnotation(bodyId, newAnnotation);
-//      m_annotationMap[bodyId] = annotation;
-    }
-
-    std::string color = getBodyStatusProtocol().getColorCode(
-          ZFlyEmBodyAnnotation::GetStatus(newAnnotation));
-    setBodyColorFromStatus(bodyId, color);
-
-    emit messageGenerated(
-          ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
-  } else {
-    ZOUT(LTRACE(), 5) << writer.getStandardOutput();
-    emit messageGenerated(
-          ZWidgetMessage("Cannot save annotation.", neutu::EMessageType::ERROR));
-  }
-#endif
 }
 
 void ZFlyEmProofDoc::annotateBody(
     uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation)
 {
-//  ZDvidWriter &writer = m_dvidWriter;
-
   annotateBody(bodyId, annotation.toJsonObject());
+}
 
-#if 0
-  try {
-    m_bodyAnnotationManager->saveAnnotation(bodyId, annotation.toJsonObject());
-    //    writer.writeAnnotation(bodyId, annotation.toJsonObject());
-
-    QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
-
-    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-         iter != sliceList.end(); ++iter) {
-      ZDvidLabelSlice *slice = *iter;
-      if (slice->hasCustomColorMap()) {
-        ZFlyEmNameBodyColorScheme *colorMap =
-            dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
-        if (colorMap != NULL) {
-          colorMap->updateNameMap(bodyId, annotation.getName().c_str());
-          //          colorMap->updateNameMap(annotation);
-          slice->assignColorMap();
-          processObjectModified(slice);
-        }
-      }
-    }
-
-    processObjectModified();
-
-    std::string color = getBodyStatusProtocol().getColorCode(
-          annotation.getStatus());
-    setBodyColorFromStatus(bodyId, color);
-
-    emit messageGenerated(
-          ZWidgetMessage(QString("Body %1 is annotated.").arg(bodyId)));
-  } catch (std::exception &e) {
-    //    ZOUT(LTRACE(), 5) << writer.getStandardOutput();
-    emit messageGenerated(
-          ZWidgetMessage("Cannot save annotation.", neutu::EMessageType::ERROR));
-  }
-#endif
+void ZFlyEmProofDoc::annotateBodies(
+    const std::vector<std::pair<uint64_t, ZJsonObject>> &annotations)
+{
+  annotateSegments(annotations);
 }
 
 void ZFlyEmProofDoc::initData(
@@ -1961,6 +1823,7 @@ bool ZFlyEmProofDoc::setDvid(const ZDvidEnv &env)
     getDvidReader().updateDataStatus();
 
     m_bodyAnnotationSchema = getDvidReader().readBodyAnnotationSchema();
+    m_bodyAnnotationBatchSchema = getDvidReader().readBodyAnnotationBatchSchema();
 //    m_dvidReader.updateDataStatus();
 
     flowInfo << "->Prepare DVID readers";
@@ -2206,9 +2069,19 @@ bool ZFlyEmProofDoc::usingGenericBodyAnnotation() const
   return !m_bodyAnnotationSchema.isEmpty();
 }
 
+bool ZFlyEmProofDoc::allowingBatchBodyAnnotation() const
+{
+  return !m_bodyAnnotationBatchSchema.isEmpty();
+}
+
 ZJsonObject ZFlyEmProofDoc::getBodyAnnotationSchema() const
 {
   return m_bodyAnnotationSchema;
+}
+
+ZJsonObject ZFlyEmProofDoc::getBodyAnnotationBatchSchema() const
+{
+  return m_bodyAnnotationBatchSchema;
 }
 
 void ZFlyEmProofDoc::enableBodySelectionMessage(bool enable)
@@ -6394,7 +6267,7 @@ void ZFlyEmProofDoc::setBodyColorT(
 {
   if (bodyList.size() == colorList.size() && !bodyList.empty()) {
     QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
-    for (auto slice : sliceList) {
+    foreach (auto slice, sliceList) {
       bool changed = false;
       for (size_t i = 0; i < bodyList.size(); ++i) {
         changed = slice->setLabelColor(bodyList[i], colorList[i], rank);
@@ -6433,7 +6306,7 @@ void ZFlyEmProofDoc::setBodyColorR(
     uint64_t bodyId, const std::string &colorCode, size_t rank)
 {
   QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
-  for (auto slice : sliceList) {
+  foreach (auto slice, sliceList) {
     if (slice->setLabelColor(bodyId, QString::fromStdString(colorCode), rank)) {
       slice->paintAllBuffer();
       processObjectModified(slice);
@@ -7550,6 +7423,66 @@ void ZFlyEmProofDoc::processBodyMergeUploaded()
   refreshDvidLabelBuffer(2000);
   undoStack()->clear();
   emit bodyMergeUploaded();
+}
+
+void ZFlyEmProofDoc::processBodyAnnotationUpdate(
+    const QList<uint64_t> &annotations)
+{
+  if (annotations.empty()) {
+    return;
+  }
+
+  if (annotations.size() == 1) {
+    uint64_t bodyId = *annotations.begin();
+    processBodyAnnotationUpdate(bodyId, getSegmentAnnotation(bodyId));
+    return;
+  }
+
+  HLDEBUG("annotate body")
+      << "Process body annotation update for " << annotations.size()
+      << " bodies" << std::endl;
+
+  QList<ZDvidLabelSlice*> sliceList = getDvidBodySliceList();
+
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
+    if (slice->hasCustomColorMap()) {
+      ZFlyEmNameBodyColorScheme *colorMap =
+          dynamic_cast<ZFlyEmNameBodyColorScheme*>(m_activeBodyColorMap.get());
+      if (colorMap != NULL) {
+        for (auto iter = annotations.constBegin();
+             iter != annotations.constEnd(); ++iter) {
+          HLDEBUG("annotate body")
+              << "Updating name map: " << *iter << " -> "
+              << ZFlyEmBodyAnnotation::GetName(getSegmentAnnotation(*iter))
+              << std::endl;
+          colorMap->updateNameMap(
+                *iter, ZFlyEmBodyAnnotation::GetName(
+                  getSegmentAnnotation(*iter)).c_str());
+        }
+//          colorMap->updateNameMap(annotation);
+        slice->assignColorMap();
+        bufferObjectModified(slice);
+      }
+    }
+  }
+
+  beginObjectModifiedMode(EObjectModifiedMode::CACHE);
+  for (auto iter = annotations.constBegin();
+       iter != annotations.constEnd(); ++iter) {
+    std::string color = getBodyStatusProtocol().getColorCode(
+          ZFlyEmBodyAnnotation::GetStatus(getSegmentAnnotation(*iter)));
+    HLDEBUG("annotate body")
+        << "Updating status color: " << *iter << " -> " << color << std::endl;
+    setBodyColorFromStatus(*iter, color);
+  }
+  endObjectModifiedMode();
+  processObjectModified();
+
+  emit messageGenerated(
+        ZWidgetMessage(QString("Annotions of %1 bodies are updated.").
+                       arg(annotations.size())));
 }
 
 void ZFlyEmProofDoc::processBodyAnnotationUpdate(

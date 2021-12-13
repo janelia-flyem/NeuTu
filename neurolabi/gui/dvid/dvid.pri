@@ -1,10 +1,95 @@
 HEADERS += $$PWD/zdviddataslicehighrestask.h \
     $$PWD/zdvidglobal.h \
     $$PWD/zdvidstacksource.h \
-    $$PWD/zdvidtargetbuilder.h
+    $$PWD/zdvidtargetbuilder.h \
+    $$PWD/zdvidstackblockfactory.h \
+    $$PWD/zdvidblockstream.h \
+    $$PWD/zdvidreader.h \
+    $$PWD/zdvidtargetfactory.h \
+    $$PWD/zdvidwriter.h \
+    $$PWD/zdvidbufferreader.h \
+    $$PWD/libdvidheader.h \
+    $$PWD/zdvidrequest.h \
+    $$PWD/zdviddataslicetaskfactory.h \
+    $$PWD/zdviddataslicetask.h \
+    $$PWD/zdvidtile.h \
+    $$PWD/zdvidresolution.h \
+    $$PWD/zdvidtileinfo.h \
+    $$PWD/zdvidversionmodel.h \
+    $$PWD/zdvidgrayslice.h \
+    $$PWD/zdvidsparsestack.h \
+    $$PWD/zdvidsparsevolslice.h \
+    $$PWD/zdvidtileensemble.h \
+    $$PWD/zdvidlabelslice.h \
+    $$PWD/zdvidversiondag.h \
+    $$PWD/zdvidversion.h \
+    $$PWD/zdvidversionnode.h \
+    $$PWD/zdvidannotationcommand.h \
+    $$PWD/zflyembookmarkcommand.h \
+    $$PWD/zdvidannotation.h \
+    $$PWD/zdvidsynapse.h \
+    $$PWD/zdvidsynapseensenmble.h \
+    $$PWD/zdvidpath.h \
+    $$PWD/zdvidpatchdatafetcher.h \
+    $$PWD/zdvidpatchdataupdater.h \
+    $$PWD/zdviddatafetcher.h \
+    $$PWD/zdviddataupdater.h \
+    $$PWD/zdvidsynapsecommand.h \
+    $$PWD/zdvidannotation.hpp \
+    $$PWD/zdvidgrayslicescrollstrategy.h \
+    $$PWD/zdvidroi.h \
+    $$PWD/zdvidgrayscale.h \
+    $$PWD/zdvidneurontracer.h \
+    $$PWD/zdvidresultservice.h \
+    $$PWD/zdvidgraysliceensemble.h \
+    $$PWD/zdvidenv.h \
+    $$PWD/zdvidstore.h \
+    $$PWD/zdviddataslicehelper.h \
+    $$PWD/zdvidbodyhelper.h
 
 SOURCES += $$PWD/zdviddataslicehighrestask.cpp \
     $$PWD/zdvidglobal.cpp \
     $$PWD/zdvidstacksource.cpp \
     $$PWD/zdvidtargetbuilder.cpp \
-    $$PWD/zdvidtargetfactory.cpp
+    $$PWD/zdvidtargetfactory.cpp \
+    $$PWD/zdviddataslicehelper.cpp \
+    $$PWD/zdvidresultservice.cpp \
+    $$PWD/zdvidstore.cpp \
+    $$PWD/zdvidneurontracer.cpp \
+    $$PWD/zdvidgrayslicescrollstrategy.cpp \
+    $$PWD/zdvidgrayscale.cpp \
+    $$PWD/zdvidroi.cpp \
+    $$PWD/zdvidreader.cpp \
+    $$PWD/zdvidbufferreader.cpp \
+    $$PWD/zdvidwriter.cpp \
+    $$PWD/zdvidsynapsecommand.cpp \
+    $$PWD/zdvidannotationcommand.cpp \
+    $$PWD/zflyembookmarkcommand.cpp \
+    $$PWD/zdvidannotation.cpp \
+    $$PWD/zdvidsynapse.cpp \
+    $$PWD/zdvidsynapseensenmble.cpp \
+    $$PWD/zdvidbodyhelper.cpp \
+    $$PWD/zdviddataslicetaskfactory.cpp \
+    $$PWD/zdviddataslicetask.cpp \
+    $$PWD/zdvidstackblockfactory.cpp \
+    $$PWD/zdvidblockstream.cpp \
+    $$PWD/zdvidgraysliceensemble.cpp \
+    $$PWD/zdvidenv.cpp \
+    $$PWD/zdvidpath.cpp \
+    $$PWD/zdvidtile.cpp \
+    $$PWD/zdvidresolution.cpp \
+    $$PWD/zdvidtileinfo.cpp \
+    $$PWD/zdvidversionmodel.cpp \
+    $$PWD/zdvidversiondag.cpp \
+    $$PWD/zdvidversion.cpp \
+    $$PWD/zdvidversionnode.cpp \
+    $$PWD/zdvidtileensemble.cpp \
+    $$PWD/zdvidlabelslice.cpp \
+    $$PWD/zdvidgrayslice.cpp \
+    $$PWD/zdvidsparsestack.cpp \
+    $$PWD/zdvidsparsevolslice.cpp \
+    $$PWD/zdvidpatchdatafetcher.cpp \
+    $$PWD/zdvidpatchdataupdater.cpp \
+    $$PWD/zdviddatafetcher.cpp \
+    $$PWD/zdviddataupdater.cpp \
+    $$PWD/zdvidrequest.cpp

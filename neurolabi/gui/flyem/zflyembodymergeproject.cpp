@@ -878,8 +878,10 @@ void ZFlyEmBodyMergeProject::setBodyAnnotationSchema(const ZJsonObject &schema)
 void ZFlyEmBodyMergeProject::refreshBodyAnnotationCache()
 {
   if (getBodyAnnotationManager()) {
-    foreach (uint64_t targetId, m_mergeMap.keys()) {
-      std::vector<uint64_t> idArray = m_mergeMap[targetId];
+//    foreach (uint64_t targetId, m_mergeMap.keys()) {
+    for (auto iter = m_mergeMap.begin(); iter != m_mergeMap.end(); ++iter) {
+      uint64_t targetId = iter.key();
+      std::vector<uint64_t> idArray = iter.value();
       idArray.push_back(targetId);
       for (uint64_t bodyId : idArray) {
         getBodyAnnotationManager()->invalidateCache(bodyId);

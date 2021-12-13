@@ -11125,6 +11125,40 @@ bool ZStackDoc::hasSegmentation() const
   return false;
 }
 
+void ZStackDoc::annotateSegments(
+    const std::vector<std::pair<uint64_t, ZJsonObject>> &annotations)
+{
+  ZSegmentAnnotationStore *store = getSegmentAnnotationStore();
+
+  if (store) {
+//    QMap<uint64_t, ZJsonObject> savedAnnotations;
+    QSet<uint64_t> failedIds;
+    store->saveAnnotations(
+          annotations, [&](uint64_t bodyId, const std::string &error) {
+      if (bodyId > 0) {
+        failedIds.insert(bodyId);
+      }
+      if (!error.empty()) {
+        emit messageGenerated(
+              ZWidgetMessage(error.c_str(), neutu::EMessageType::ERROR));
+      }
+    });
+
+    QList<uint64_t> annotatedBodies;
+    for (const auto &annotation : annotations) {
+      if (!failedIds.contains(annotation.first)) {
+        annotatedBodies.append(annotation.first);
+      }
+    }
+    if (!annotatedBodies.isEmpty()) {
+      emit segmentAnnotated(annotatedBodies);
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage("Nothing is annotated", neutu::EMessageType::WARNING));
+    }
+  }
+}
+
 void ZStackDoc::annotateSegment(uint64_t sid, const ZJsonObject &annotation)
 {
   ZSegmentAnnotationStore *store = getSegmentAnnotationStore();
@@ -11148,6 +11182,18 @@ ZJsonObject ZStackDoc::getSegmentAnnotation(
   }
 
   return ZJsonObject();
+}
+
+std::vector<std::pair<uint64_t, ZJsonObject>>
+ZStackDoc::getSegmentAnnotations(
+    const std::vector<uint64_t> &ids, neutu::ECacheOption option) const
+{
+  ZSegmentAnnotationStore *store = getSegmentAnnotationStore();
+  if (store) {
+    return store->getAnnotations(ids, option);
+  }
+
+  return std::vector<std::pair<uint64_t, ZJsonObject>>();
 }
 
 template <class InputIterator>

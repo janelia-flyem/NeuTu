@@ -4,6 +4,19 @@
 # #####################################################################
 TEMPLATE = app
 
+#No longer support Qt4
+isEqual(QT_MAJOR_VERSION,4) {
+  error("Qt 4 is no longer supported")
+}
+
+#For Qt5, it must be >=5.4.0
+isEqual(QT_MAJOR_VERSION,5) {
+  lessThan(QT_MINOR_VERSION,4) {
+    message("Unstable Qt version $${QT_VERSION}.")
+    error("Use at least Qt 5.4.0.")
+  }
+}
+
 contains(TEMPLATE, app) {
   DEFINES += _QT_APPLICATION_
 } else {
@@ -109,7 +122,8 @@ CONFIG += static_gtest
 
 include(extlib.pri)
 
-QT += printsupport
+QT += printsupport concurrent gui widgets network xml
+CONFIG *= strict_c++ c++11
 CONFIG(WEBENGINE) {
   qtHaveModule(webenginewidgets) {
     QT += webenginewidgets
@@ -135,24 +149,15 @@ message("Defines: $${DEFINES}")
 
 include(add_itk.pri)
 
-#Qt4 (Obsolete)
-isEqual(QT_MAJOR_VERSION,4) {
-  QT += opengl xml network
-  warning("Obsolete setting: Qt 4")
-}
+##Qt4 (Obsolete)
+#isEqual(QT_MAJOR_VERSION,4) {
+#  QT += opengl xml network
+#  warning("Obsolete setting: Qt 4")
+#}
 
 #Qt5
-isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
-    isEqual(QT_MAJOR_VERSION,5) {
-      lessThan(QT_MINOR_VERSION,4) {
-        message("Unstable Qt version $${QT_VERSION}.")
-        error("Use at least Qt 5.4.0.")
-      }
-    }
-    message("Qt 5")
-    QT += concurrent gui widgets network xml
+isEqual(QT_MAJOR_VERSION,5) {
     DEFINES += _QT5_
-    CONFIG *= strict_c++ c++11
 }
 
 equals(SANITIZE_BUILD, "thread") {
@@ -196,17 +201,13 @@ unix {
             isEqual(QT_MINOR_VERSION, 12) {
               message("Forcing 10.12 SDK for Qt 5.12")
               QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.12
-              QMAKE_MAC_SDK = macosx10.14
+              # Setting QMAKE_MAC_SDK doesn't seem to be helpful for specifying
+              # sdk. Has to rely on the default sdk on the system.
+#              QMAKE_MAC_SDK = macosx10.14
             }
           }
         } else {
           message("No auto mac version check")
-          CONFIG(c++11) {
-            isEqual(QT_MAJOR_VERSION,4) {
-              message("Forcing deployment target: ")
-              QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
-            }
-          }
         }
 
 #        doc.files = doc
@@ -284,7 +285,6 @@ HEADERS += mainwindow.h \
     protocols/protocolchooseassignmentdialog.h \
     protocols/protocolassignmenttask.h \
     protocols/protocolassignmenturl.h \
-    dvid/zdvidtargetfactory.h \
     protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
@@ -383,7 +383,6 @@ HEADERS += mainwindow.h \
     zmultitaskmanager.h \
     zinteractionevent.h \
     zworkspacefactory.h \
-    dvid/zdvidreader.h \
     zflyemdvidreader.h \
     zstroke2darray.h \
     tilemanager.h \
@@ -401,7 +400,6 @@ HEADERS += mainwindow.h \
     zabstractmodelpresenter.h \
     zstackobjectarray.h \
     zwindowfactory.h \
-    dvid/zdvidwriter.h \
     zdialogfactory.h \
     zwidgetfactory.h \
     zlabelededitwidget.h \
@@ -412,13 +410,11 @@ HEADERS += mainwindow.h \
     zmouseeventmapper.h \
     zframefactory.h \
     zactionbutton.h \
-    dvid/zdvidbufferreader.h \
     zmouseevent.h \
     zmouseeventrecorder.h \
     zmouseeventprocessor.h \
     zstackoperator.h \
     zsleeper.h \
-    dvid/libdvidheader.h \
     zthreadfuturemap.h \
     zstackball.h \
     zstackdochittest.h \
@@ -451,40 +447,6 @@ HEADERS += mainwindow.h \
     zmessagemanagermodel.h \
     zflyemcontrolform.h \
     zpixmap.h \
-    dvid/zdvidrequest.h \
-    dvid/zdviddataslicetaskfactory.h \
-    dvid/zdviddataslicetask.h \
-    dvid/zdvidtile.h \
-    dvid/zdvidresolution.h \
-    dvid/zdvidtileinfo.h \
-    dvid/zdvidversionmodel.h \
-    dvid/zdvidgrayslice.h \
-    dvid/zdvidsparsestack.h \
-    dvid/zdvidsparsevolslice.h \
-    dvid/zdvidtileensemble.h \
-    dvid/zdvidlabelslice.h \
-    dvid/zdvidversiondag.h \
-    dvid/zdvidversion.h \
-    dvid/zdvidversionnode.h \
-    dvid/zdvidannotationcommand.h \
-    dvid/zflyembookmarkcommand.h \
-    dvid/zdvidannotation.h \
-    dvid/zdvidsynapse.h \
-    dvid/zdvidsynapseensenmble.h \
-    dvid/zdvidpath.h \
-    dvid/zdvidpatchdatafetcher.h \
-    dvid/zdvidpatchdataupdater.h \
-    dvid/zdviddatafetcher.h \
-    dvid/zdviddataupdater.h \
-    dvid/zdvidsynapsecommand.h \
-    dvid/zdvidannotation.hpp \
-    dvid/zdvidgrayslicescrollstrategy.h \
-    dvid/zdvidroi.h \
-    dvid/zdvidgrayscale.h \
-    dvid/zdvidneurontracer.h \
-    dvid/zdvidresultservice.h \
-    dvid/zdvidgraysliceensemble.h \
-    dvid/zdvidenv.h \
     zwidgetmessage.h \
     zprogresssignal.h \
     zkeyeventstrokemapper.h \
@@ -523,7 +485,6 @@ HEADERS += mainwindow.h \
     zscrollslicestrategy.h \
     zviewproj.h \
     zorthoviewhelper.h \
-    dvid/zdvidstore.h \
     zglobal.h \
     zstackgarbagecollector.h \
     neu3window.h \
@@ -560,7 +521,6 @@ HEADERS += mainwindow.h \
     ilastik/laplacian_smoothing.h \
     zarbsliceviewparam.h \
     zstackviewhelper.h \
-    dvid/zdviddataslicehelper.h \
     zstackdocnullmenufactory.h \
     zmenuconfig.h \
     zobjsmodelmanager.h \
@@ -568,12 +528,9 @@ HEADERS += mainwindow.h \
     concurrent/zworkthread.h \
     concurrent/zworker.h \
     concurrent/ztaskqueue.h \
-    dvid/zdvidbodyhelper.h \
     z3dwindowcontroller.h \
     zstackblockfactory.h \
-    dvid/zdvidstackblockfactory.h \
     zstackblocksource.h \
-    dvid/zdvidblockstream.h \
     imgproc/zstackmultiscalewatershed.h \
     protocols/protocolswitcher.h \
     protocols/protocolchooser.h \
@@ -699,7 +656,6 @@ SOURCES += main.cpp \
     zstackdocmenustore.cpp \
     zstackdocmenufactory.cpp \
     zpainter.cpp \
-    dvid/zdvidrequest.cpp \
     zmatlabprocess.cpp \
     zneuronseed.cpp \
     ztiledstackframe.cpp \
@@ -710,7 +666,6 @@ SOURCES += main.cpp \
     zmultitaskmanager.cpp \
     zinteractionevent.cpp \
     zworkspacefactory.cpp \
-    dvid/zdvidreader.cpp \
     zflyemdvidreader.cpp \
     zstroke2darray.cpp \
     tilemanager.cpp \
@@ -727,7 +682,6 @@ SOURCES += main.cpp \
     zabstractmodelpresenter.cpp \
     zstackobjectarray.cpp \
     zwindowfactory.cpp \
-    dvid/zdvidwriter.cpp \
     zdialogfactory.cpp \
     zwidgetfactory.cpp \
     zlabelededitwidget.cpp \
@@ -737,7 +691,6 @@ SOURCES += main.cpp \
     zmouseeventmapper.cpp \
     zframefactory.cpp \
     zactionbutton.cpp \
-    dvid/zdvidbufferreader.cpp \
     zmouseevent.cpp \
     zmouseeventrecorder.cpp \
     zmouseeventprocessor.cpp \
@@ -776,36 +729,6 @@ SOURCES += main.cpp \
     zmessagemanagermodel.cpp \
     zflyemcontrolform.cpp \
     zpixmap.cpp \
-    dvid/zdvidsynapsecommand.cpp \
-    dvid/zdvidannotationcommand.cpp \
-    dvid/zflyembookmarkcommand.cpp \
-    dvid/zdvidannotation.cpp \
-    dvid/zdvidsynapse.cpp \
-    dvid/zdvidsynapseensenmble.cpp \
-    dvid/zdvidbodyhelper.cpp \
-    dvid/zdviddataslicetaskfactory.cpp \
-    dvid/zdviddataslicetask.cpp \
-    dvid/zdvidstackblockfactory.cpp \
-    dvid/zdvidblockstream.cpp \
-    dvid/zdvidgraysliceensemble.cpp \
-    dvid/zdvidenv.cpp \
-    dvid/zdvidpath.cpp \
-    dvid/zdvidtile.cpp \
-    dvid/zdvidresolution.cpp \
-    dvid/zdvidtileinfo.cpp \
-    dvid/zdvidversionmodel.cpp \
-    dvid/zdvidversiondag.cpp \
-    dvid/zdvidversion.cpp \
-    dvid/zdvidversionnode.cpp \
-    dvid/zdvidtileensemble.cpp \
-    dvid/zdvidlabelslice.cpp \
-    dvid/zdvidgrayslice.cpp \
-    dvid/zdvidsparsestack.cpp \
-    dvid/zdvidsparsevolslice.cpp \
-    dvid/zdvidpatchdatafetcher.cpp \
-    dvid/zdvidpatchdataupdater.cpp \
-    dvid/zdviddatafetcher.cpp \
-    dvid/zdviddataupdater.cpp \
     zwidgetmessage.cpp \
     zprogresssignal.cpp \
     zkeyeventstrokemapper.cpp \
@@ -832,38 +755,17 @@ SOURCES += main.cpp \
     zcubearray.cpp \
     zroiwidget.cpp \
     zstackdocselector.cpp \
-    protocols/protocolswitcher.cpp \
-    protocols/protocolchooser.cpp \
-    protocols/protocolmetadata.cpp \
-    protocols/protocoldialog.cpp \
-    protocols/doNthingsprotocol.cpp \
-    protocols/synapsepredictionprotocol.cpp \
-    protocols/synapsepredictioninputdialog.cpp \
-    protocols/synapsepredictionbodyinputdialog.cpp \
-    protocols/synapsereviewprotocol.cpp \
-    protocols/synapsereviewinputdialog.cpp \
-    protocols/connectionvalidationprotocol.cpp \
-    protocols/todoreviewprotocol.cpp \
-    protocols/todoreviewinputdialog.cpp \
-    protocols/orphanlinkprotocol.cpp \
-    protocols/todosearcher.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
     zcrosshair.cpp \
     zapplication.cpp \
     zdvidutil.cpp \
     zcubearraymovieactor.cpp \
-    dvid/zdvidroi.cpp \
     z3dmainwindow.cpp \
-    dvid/zdvidgrayscale.cpp \
     zscrollslicestrategy.cpp \
-    dvid/zdvidgrayslicescrollstrategy.cpp \
     zviewproj.cpp \
-    dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
-    dvid/zdvidstore.cpp \
     zglobal.cpp \
-    dvid/zdvidresultservice.cpp \
     zstackgarbagecollector.cpp \
     zxmldoc.cpp \
     neu3window.cpp \
@@ -896,7 +798,6 @@ SOURCES += main.cpp \
     ilastik/laplacian_smoothing.cpp \
     zarbsliceviewparam.cpp \
     zstackviewhelper.cpp \
-    dvid/zdviddataslicehelper.cpp \
     zstackdocnullmenufactory.cpp \
     zmenuconfig.cpp \
     zobjsmodelmanager.cpp \
@@ -928,6 +829,21 @@ SOURCES += main.cpp \
     protocols/taskbodyhistory.cpp \
     protocols/taskbodycleave.cpp \
     protocols/taskbodymerge.cpp \
+    protocols/protocolswitcher.cpp \
+    protocols/protocolchooser.cpp \
+    protocols/protocolmetadata.cpp \
+    protocols/protocoldialog.cpp \
+    protocols/doNthingsprotocol.cpp \
+    protocols/synapsepredictionprotocol.cpp \
+    protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsepredictionbodyinputdialog.cpp \
+    protocols/synapsereviewprotocol.cpp \
+    protocols/synapsereviewinputdialog.cpp \
+    protocols/connectionvalidationprotocol.cpp \
+    protocols/todoreviewprotocol.cpp \
+    protocols/todoreviewinputdialog.cpp \
+    protocols/orphanlinkprotocol.cpp \
+    protocols/todosearcher.cpp \
     imgproc/zstackmultiscalewatershed.cpp
 
 DISTFILES += \
@@ -943,4 +859,5 @@ message("[[ TARGET ]]: $$app_name")
 message("[[ OUT_PWD ]]: $${OUT_PWD}")
 macx {
   message("[[ Mac Target ]]: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
+  message("[[ Mac SDK ]]: $$QMAKE_MAC_SDK")
 }

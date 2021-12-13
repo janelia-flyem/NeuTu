@@ -265,6 +265,7 @@ public slots:
   void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateSelectedBody();
+  void annotateAllSelectedBodies();
   void activateBodyMergeLink();
   void setExpertBodyStatus();
   void showBodyConnection();

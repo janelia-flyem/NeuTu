@@ -6007,12 +6007,42 @@ ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
         with_source_query(url.getBodyAnnotationUrl(bodyId)).c_str());
 }
 
+std::vector<ZJsonObject> ZDvidReader::readBodyAnnotationJsons(
+    const std::vector<uint64_t> &bodyIds) const
+{
+  std::vector<ZJsonObject> result;
+
+  if (!bodyIds.empty()) {
+    QStringList keyList;
+    for (uint64_t bodyId : bodyIds) {
+      keyList.append(QString::number(bodyId));
+    }
+    QList<QByteArray> data = readKeyValues(
+          getDvidTarget().getBodyAnnotationName().c_str(), keyList);
+    foreach (auto entry, data) {
+      ZJsonObject obj;
+      obj.decode(entry.data(), true);
+      result.push_back(obj);
+    }
+  }
+
+  return result;
+}
+
 ZJsonObject ZDvidReader::readBodyAnnotationSchema() const
 {
   ZDvidUrl url(getDvidTarget());
 
   return readJsonObject(
         with_source_query(url.getBodyAnnotationSchemaUrl()).c_str());
+}
+
+ZJsonObject ZDvidReader::readBodyAnnotationBatchSchema() const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readJsonObject(
+        with_source_query(url.getBodyAnnotationBatchSchemaUrl()).c_str());
 }
 
 namespace {

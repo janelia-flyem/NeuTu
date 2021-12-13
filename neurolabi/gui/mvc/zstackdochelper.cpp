@@ -3,6 +3,8 @@
 #include <string>
 #include <QColor>
 
+#include "common/debug.h"
+
 #include "zstackdoc.h"
 #include "zstackview.h"
 
@@ -222,6 +224,15 @@ bool ZStackDocHelper::AllowingBodyAnnotation(const ZStackDoc *doc)
 {
   return doc->getTag() == neutu::Document::ETag::FLYEM_PROOFREAD ||
       doc->getTag() == neutu::Document::ETag::FLYEM_ORTHO;
+}
+
+bool ZStackDocHelper::AllowingBatchBodyAnnotation(const ZStackDoc *doc)
+{
+  const ZFlyEmProofDoc *pdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
+  if (pdoc) {
+    return pdoc->allowingBatchBodyAnnotation();
+  }
+  return false;
 }
 
 bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)

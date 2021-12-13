@@ -20,6 +20,9 @@ public:
   void writeBodyAnnotation(uint64_t bodyId, const ZJsonObject &obj) override;
   bool hasBodyAnnotation(uint64_t bodyId) override;
 
+  std::vector<ZJsonObject> readBodyAnnotations(
+        const std::vector<uint64_t> &bodyIds) override;
+
 private:
   ZDvidWriter& getValidWriter();
 

@@ -209,6 +209,15 @@ public:
    */
   ZJsonObject getBodyAnnotation(uint64_t bodyId) const;
 
+  /*!
+   * \brief Get annotations for a list of bodies
+   *
+   * The returned result may only contain a part of the input IDs by excluding
+   * those without annotations.
+   */
+  std::vector<std::pair<uint64_t, ZJsonObject>> getBodyAnnotations(
+      const std::vector<uint64_t> &bodyIdArray) const;
+
   void invalidateBodyAnnotationCache();
 
   void mergeBodies(ZFlyEmSupervisor *supervisor);
@@ -253,6 +262,8 @@ public:
 
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
   void annotateBody(uint64_t bodyId, const ZJsonObject &annotation);
+  void annotateBodies(
+      const std::vector<std::pair<uint64_t, ZJsonObject>> &annotations);
 //  void useBodyNameMap(bool on);
 
   bool selectBody(uint64_t bodyId);
@@ -337,7 +348,9 @@ public:
       const ZIntCuboid &box, int dsIntv, const QString &fileName) const;
 
   bool usingGenericBodyAnnotation() const;
+  bool allowingBatchBodyAnnotation() const;
   ZJsonObject getBodyAnnotationSchema() const;
+  ZJsonObject getBodyAnnotationBatchSchema() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -930,6 +943,7 @@ private:
 private slots:
   void processBodyMergeUploaded();
   void processBodyAnnotationUpdate(uint64_t bodyId, ZJsonObject annotation);
+  void processBodyAnnotationUpdate(const QList<uint64_t> &annotations);
 
 protected:
   ZDvidEnv m_dvidEnv;
@@ -986,6 +1000,7 @@ protected:
   bool m_routineCheck;
   bool m_supervoxelMode = false;
   ZJsonObject m_bodyAnnotationSchema;
+  ZJsonObject m_bodyAnnotationBatchSchema;
 
   bool m_isAdmin = false;
 

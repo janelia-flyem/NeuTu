@@ -14,6 +14,8 @@
 #include <QMimeData>
 
 #include "common/utilities.h"
+#include "common/debug.h"
+
 #include "neutubeconfig.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
@@ -136,6 +138,7 @@
 #include "dialogs/neuprintdatasetdialog.h"
 #include "dialogs/neuroglancerlinkdialog.h"
 #include "dialogs/zgenericbodyannotationdialog.h"
+#include "dialogs/flyembatchbodyannotationdialog.h"
 
 #include "service/neuprintreader.h"
 #include "zactionlibrary.h"
@@ -3909,6 +3912,85 @@ void ZFlyEmProofMvc::activateBodyMergeLink()
   getPresenter()->enterSwcAddNodeMode(ZStackObjectRole::ROLE_MERGE_LINK);
 }
 
+void ZFlyEmProofMvc::annotateAllSelectedBodies()
+{
+  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+  if (!reader.isReady()) {
+    emit errorGenerated("Invalid DVID reader.");
+    return;
+  }
+
+  std::set<uint64_t> bodyIdArray =
+      getCurrentSelectedBodyId(neutu::ELabelSource::ORIGINAL);
+  if (bodyIdArray.size() > 1) {
+    HLDEBUG_FUNC("annotate body") << "Start batch annotation" << std::endl;
+    auto dlg = m_dlgManager->getBatchAnnotationDlg();
+    if (!dlg) {
+      emit errorGenerated("Failed to create dialog for batch body annotaiton.");
+      return;
+    }
+    if (dlg->exec()) {
+      if (dlg->toJsonObject().isEmpty()) {
+        emit messageGenerated(
+              ZWidgetMessage(
+                "Nothing is done because no annotation change is specified",
+                neutu::EMessageType::WARNING));
+        return;
+      }
+      // Screening body ids
+      std::vector<uint64_t> eligibleBodyIdArray;
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId > 0) {
+          if (getMappedBodyId(bodyId) == bodyId) {
+            if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
+              eligibleBodyIdArray.push_back(bodyId);
+            } else {
+              warnAbouBodyLockFail(bodyId);
+            }
+          } else {
+            emit messageGenerated(
+                  ZWidgetMessage(
+                    QString("Cannot annotate body under merge: %1").arg(bodyId),
+                    neutu::EMessageType::WARNING));
+          }
+        }
+      }
+
+      if (!eligibleBodyIdArray.empty()) {
+        HLDEBUG_FUNC("annotate body")
+            << "Fields to change: "
+            << dlg->toJsonObject().dumpString(0) << std::endl;
+        if (ZDialogFactory::Ask(
+              "Body Annotation",
+              QString("You're about to change the annotations of %1 bodies for "
+                      "the following fields: %2").
+              arg(eligibleBodyIdArray.size()).
+              arg(dlg->toJsonObject().dumpString(0).c_str()),
+              this)) {
+          std::vector<std::pair<uint64_t, ZJsonObject>> newAnnotations =
+              getCompleteDocument()->getBodyAnnotations(eligibleBodyIdArray);
+          //      std::vector<std::pair<uint64_t, ZJsonObject>> newAnnotations;
+          for (auto &newAnnotation : newAnnotations) {
+            ZJsonObject oldAnnotation = newAnnotation.second;
+            newAnnotation.second =
+                  FlyEmBodyAnnotationGenericDlgBuilder()
+                  .getDialogFrom([&](){ return dlg; }, true)
+                  .forBody(newAnnotation.first)
+                  .fromOldAnnotation(oldAnnotation);
+          }
+          getCompleteDocument()->annotateBodies(newAnnotations);
+        }
+      }
+
+      HLDEBUG_FUNC("annotate body") << "Unlocking " << eligibleBodyIdArray.size()
+                                    << " bodies" << std::endl;
+      for (uint64_t bodyId : eligibleBodyIdArray) {
+        checkInBodyWithMessage(bodyId, neutu::EBodySplitMode::NONE);
+      }
+    }
+  }
+}
+
 void ZFlyEmProofMvc::annotateSelectedBody()
 {
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
@@ -3929,46 +4011,13 @@ void ZFlyEmProofMvc::annotateSelectedBody()
         if (getCompleteDocument()->usingGenericBodyAnnotation()) {
           ZJsonObject newAnnotation =
               FlyEmBodyAnnotationGenericDlgBuilder()
-              .getDialogFrom([&](){ return m_dlgManager->getGenericAnnotationDlg(); })
+              .getDialogFrom(
+                [&](){ return m_dlgManager->getGenericAnnotationDlg(); }, false)
               .forBody(bodyId)
               .fromOldAnnotation(oldAnnotation);
           if (!newAnnotation.isNull()) {
             annotateBody(bodyId, newAnnotation, oldAnnotation);
           }
-#if 0
-        ZGenericBodyAnnotationDialog *genericDlg =
-            m_dlgManager->getGenericAnnotationDlg();
-        ZJsonObject oldAnnotation =
-            getCompleteDocument()->getBodyAnnotation(bodyId);
-        if (genericDlg) {
-
-//          ZJsonObject oldAnnotation = reader.readBodyAnnotationJson(bodyId);
-          genericDlg->loadJsonObject(oldAnnotation);
-          std::string lastModifiedBy =
-              ZFlyEmBodyAnnotation::GetLastModifiedBy(oldAnnotation);
-          std::string oldNamingUser =
-              ZFlyEmBodyAnnotation::GetNamingUser(oldAnnotation);
-          QString label = QString("Body ID: <b>%1</b>").arg(bodyId);
-          QString separator = "<br>";
-          if (!lastModifiedBy.empty()) {
-            label += separator +
-                QString("Previously annotated by <em>%1</em>").arg(
-                  lastModifiedBy.c_str());
-            separator = " ;  ";
-          }
-          if (!oldNamingUser.empty()) {
-            label += separator +
-                QString("Named by <em>%1</em>").arg(oldNamingUser.c_str());
-          }
-          genericDlg->setLabel(label);
-          if (genericDlg->exec()) {
-            ZJsonObject newAnnotation = genericDlg->toJsonObject();
-            std::string user = neutu::GetCurrentUserName();
-            ZFlyEmBodyAnnotation::UpdateUserFields(
-                  newAnnotation, user, oldAnnotation);
-            annotateBody(bodyId, newAnnotation, oldAnnotation);
-          }
-#endif
         } else {
           FlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
           dlg->updateStatusBox();
@@ -7546,13 +7595,20 @@ void ZFlyEmProofMvc::processAction(ZActionFactory::EAction action)
     break;
   case ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES:
     getCompleteDocument()->selectBodyOnMergeLink(true);
+    processed = true;
     break;
   case ZActionFactory::ACTION_MERGE_LINK_SELECT_BODIES_EXC:
     getCompleteDocument()->selectBodyOnMergeLink(false);
+    processed = true;
     break;
   case ZActionFactory::ACTION_BOOKMARK_SELECT_BODY:
     getCompleteDocument()->selectBodyUnderSelectedObject(
           ZStackObject::EType::FLYEM_BOOKMARK, true);
+    processed = true;
+    break;
+  case ZActionFactory::ACTION_BODY_ANNOTATION_BATCH:
+    annotateAllSelectedBodies();
+    processed = true;
     break;
   default:
     break;

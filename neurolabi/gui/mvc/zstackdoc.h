@@ -519,9 +519,15 @@ public:
 
   virtual bool hasSegmentation() const;
   void annotateSegment(uint64_t sid, const ZJsonObject &annotation);
+  void annotateSegments(
+      const std::vector<std::pair<uint64_t, ZJsonObject>> &annotations);
   ZJsonObject getSegmentAnnotation(
       uint64_t sid,
       neutu::ECacheOption option = neutu::ECacheOption::CACHE_FIRST) const;
+  std::vector<std::pair<uint64_t, ZJsonObject>>
+  getSegmentAnnotations(
+        const std::vector<uint64_t> &ids,
+        neutu::ECacheOption option = neutu::ECacheOption::CACHE_FIRST) const;
 
 public: //Image processing
   static int autoThreshold(Stack* getStack);
@@ -1407,6 +1413,7 @@ signals:
   void zoomingTo(int x, int y, int z);
   void updatingLatency(int);
   void segmentAnnotated(uint64_t segId, ZJsonObject obj);
+  void segmentAnnotated(const QList<uint64_t> &bodies);
 
   void hidingLocationObject(double x, double y, double z);
 

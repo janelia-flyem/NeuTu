@@ -1199,14 +1199,6 @@ std::string ZDvidUrl::getBodyAnnotationUrl(const std::string &bodyLabelName) con
                                        bodyLabelName));
 }
 
-std::string ZDvidUrl::getBodyAnnotationSchemaUrl(
-    const std::string &bodyLabelName) const
-{
-  return applyAdminToken(
-        GetFullUrl(
-          GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)), "schema"));
-}
-
 std::string ZDvidUrl::getBodyAnnotationUrl(
     uint64_t bodyId, const std::string &bodyLabelName) const
 {
@@ -1226,6 +1218,27 @@ std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
 std::string ZDvidUrl::getBodyAnnotationSchemaUrl() const
 {
   return getBodyAnnotationSchemaUrl(m_dvidTarget.getBodyLabelName());
+}
+
+std::string ZDvidUrl::getBodyAnnotationSchemaUrl(
+    const std::string &bodyLabelName) const
+{
+  return applyAdminToken(
+        GetFullUrl(
+          GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)), "schema"));
+}
+
+std::string ZDvidUrl::getBodyAnnotationBatchSchemaUrl(
+    const std::string &bodyLabelName) const
+{
+  return applyAdminToken(
+        GetFullUrl(GetKeyCommandUrl(
+                     getBodyAnnotationUrl(bodyLabelName)), "schema_batch"));
+}
+
+std::string ZDvidUrl::getBodyAnnotationBatchSchemaUrl() const
+{
+  return getBodyAnnotationBatchSchemaUrl(m_dvidTarget.getBodyLabelName());
 }
 
 std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const

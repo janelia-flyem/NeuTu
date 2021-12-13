@@ -1,6 +1,7 @@
 #include "flyembodyannotationmanager.h"
 
 #include "zstring.h"
+#include "common/debug.h"
 #include "logging/zlog.h"
 #include "flyembodyannotationio.h"
 #include "zflyembodyannotation.h"
@@ -45,6 +46,54 @@ ZJsonObject FlyEmBodyAnnotationManager::getAnnotation(
   return ZJsonObject();
 }
 
+std::vector<std::pair<uint64_t, ZJsonObject> >
+FlyEmBodyAnnotationManager::getAnnotations(
+    const std::vector<uint64_t> &ids, neutu::ECacheOption option)
+{
+  if (option == neutu::ECacheOption::SOURCE_ONLY) {
+    invalidateCache(ids);
+  }
+
+  std::vector<std::pair<uint64_t, ZJsonObject>>  result;
+
+  if (m_io) {
+    std::vector<uint64_t> bodiesToUpdate;
+    if (option == neutu::ECacheOption::SOURCE_FIRST) {
+      bodiesToUpdate = ids;
+    } else {
+      for (uint64_t body : ids) {
+        if (body > 0) {
+          if (!m_annotationCache.contains(body)) {
+            bodiesToUpdate.push_back(body);
+          }
+        }
+      }
+    }
+
+    std::vector<ZJsonObject> annotations;
+    if (!bodiesToUpdate.empty()) {
+      try {
+        annotations = m_io->readBodyAnnotations(bodiesToUpdate);
+      }  catch (std::exception &e) {
+        KWARN(neutu::TOPIC_NULL)
+            << std::string("Failed to read body annotation: ") + e.what();
+      }
+    }
+
+    for (size_t i = 0; i < annotations.size(); ++i) {
+      m_annotationCache[bodiesToUpdate[i]] = annotations[i];
+    }
+
+    for (uint64_t bodyId : ids) {
+      if (m_annotationCache.contains(bodyId)) {
+        result.emplace_back(bodyId, m_annotationCache.value(bodyId).clone());
+      }
+    }
+  }
+
+  return result;
+}
+
 void FlyEmBodyAnnotationManager::saveAnnotation(
     uint64_t bodyId, const ZJsonObject &obj)
 {
@@ -62,6 +111,9 @@ void FlyEmBodyAnnotationManager::saveAnnotation(
           }
         }
       });
+      HLDEBUG("annotate body")
+          << "Save annotation for " << bodyId << ": "
+          << newAnnotation << std::endl;
       for (const auto &key : keysToRemove) {
         newAnnotation.removeKey(key.c_str());
       }
@@ -92,6 +144,14 @@ void FlyEmBodyAnnotationManager::removeAnnotation(uint64_t bodyId)
 void FlyEmBodyAnnotationManager::invalidateCache(uint64_t bodyId)
 {
   m_annotationCache.remove(bodyId);
+}
+
+void FlyEmBodyAnnotationManager::invalidateCache(
+    const std::vector<uint64_t> &bodyIds)
+{
+  for (uint64_t bodyId : bodyIds) {
+    m_annotationCache.remove(bodyId);
+  }
 }
 
 void FlyEmBodyAnnotationManager::invalidateCache()

@@ -29,6 +29,7 @@ class NeuPrintQueryDialog;
 class ZSynapsePropertyDialog;
 class NeuroglancerLinkDialog;
 class ZGenericBodyAnnotationDialog;
+class FlyEmBatchBodyAnnotationDialog;
 //class ZStackViewRecordDialog;
 
 /*!
@@ -62,6 +63,7 @@ public:
   ZFlyEmProofSettingDialog* getSettingDlg();
   FlyEmBodyAnnotationDialog* getAnnotationDlg();
   ZGenericBodyAnnotationDialog* getGenericAnnotationDlg();
+  FlyEmBatchBodyAnnotationDialog* getBatchAnnotationDlg();
   NeuPrintQueryDialog* getNeuprintQueryDlg();
   NeuprintSetupDialog* getNeuprintSetupDlg();
   ZContrastProtocalDialog* getContrastDlg();
@@ -124,6 +126,7 @@ private:
   ZFlyEmProofSettingDialog *m_settingDlg = nullptr;
   FlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
   ZGenericBodyAnnotationDialog *m_genericAnnotationDlg = nullptr;
+  FlyEmBatchBodyAnnotationDialog *m_batchAnnotationDlg = nullptr;
   NeuPrintQueryDialog *m_neuprintQueryDlg = nullptr;
   NeuprintSetupDialog *m_neuprintSetupDlg = nullptr;
   ZContrastProtocalDialog *m_contrastDlg = nullptr;

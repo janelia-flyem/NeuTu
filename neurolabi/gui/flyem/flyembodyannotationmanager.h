@@ -35,6 +35,10 @@ public:
   void saveAnnotation(uint64_t bodyId, const ZJsonObject &obj) override;;
   void removeAnnotation(uint64_t bodyId) override;;
 
+  std::vector<std::pair<uint64_t, ZJsonObject>> getAnnotations(
+      const std::vector<uint64_t> &ids,
+      neutu::ECacheOption option = neutu::ECacheOption::CACHE_FIRST) override;
+
   ZFlyEmBodyAnnotation getParsedAnnotation(uint64_t bodyId);
   std::string getBodyStatus(uint64_t bodyId);
   std::string getBodyName(uint64_t bodyId);
@@ -77,8 +81,9 @@ public:
 
   QString toString() const;
 
-public slots:
+public:
   void invalidateCache(uint64_t bodyId);
+  void invalidateCache(const std::vector<uint64_t> &bodyIds);
   void invalidateCache();
 
 signals:

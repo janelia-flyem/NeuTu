@@ -392,6 +392,7 @@
 #include "flyem/flyemdvidpullbodymeshfactory.h"
 #include "flyem/flyemsparsevolbodymeshfactory.h"
 #include "flyem/flyemchainedbodymeshfactory.h"
+#include "flyem/dialogs/flyembatchbodyannotationdialog.h"
 
 #include "widgets/zcheckboxgroup.h"
 #include "widgets/zh3widget.h"
@@ -33018,6 +33019,9 @@ void ZTest::test(MainWindow *host)
   ZJsonObject config;
   config.load(GET_BENCHMARK_DIR + "/bnschema.json");
   dlg->configure(config);
+
+  dlg->addAuxWidget(new QLabel("extra widget"));
+
   if (dlg->exec()) {
     dlg->toJsonObject().print();
   }
@@ -33045,6 +33049,17 @@ void ZTest::test(MainWindow *host)
   dlg->exec();
   dlg->toJsonObject().print();
 
+#endif
+
+#if 1
+  FlyEmBatchBodyAnnotationDialog *dlg = new FlyEmBatchBodyAnnotationDialog(host);
+  ZJsonObject config;
+  config.load(GET_BENCHMARK_DIR + "/bnschema.json");
+  dlg->configure(config);
+  dlg->setDefaultStatusList({"test1", "test2"});
+
+  dlg->exec();
+  dlg->toJsonObject().print();
 #endif
 
 #if 0
@@ -33460,7 +33475,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   auto reader = ZGlobal::GetDvidReader("local_test");
   auto bodySource = std::make_shared<FlyEmDvidBodySource>();
   bodySource->setDvidTarget(reader->getDvidTarget());

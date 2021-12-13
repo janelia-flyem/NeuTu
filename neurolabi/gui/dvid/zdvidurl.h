@@ -165,6 +165,12 @@ public:
 
   std::string getBodyAnnotationSchemaUrl(const std::string &bodyLabelName) const;
   std::string getBodyAnnotationSchemaUrl() const;
+  /*!
+   * \brief Url for batch body annotation schema
+   */
+  std::string getBodyAnnotationBatchSchemaUrl(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationBatchSchemaUrl() const;
+
   std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
   std::string getBodyAnnotationUrl(
       uint64_t bodyId, const std::string &bodyLabelName) const;

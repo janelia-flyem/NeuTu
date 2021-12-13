@@ -534,7 +534,14 @@ public:
 
 //  ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
+  std::vector<ZJsonObject> readBodyAnnotationJsons(
+      const std::vector<uint64_t> &bodyIds) const;
   ZJsonObject readBodyAnnotationSchema() const;
+
+  /*!
+   * \brief Read schema for batch body annotation
+   */
+  ZJsonObject readBodyAnnotationBatchSchema() const;
 
   bool hasBodyAnnotation() const;
   bool hasBodyAnnotation(uint64_t bodyId) const;

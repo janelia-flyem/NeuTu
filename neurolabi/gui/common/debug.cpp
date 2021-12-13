@@ -6,7 +6,7 @@ HighligthDebug::HighligthDebug()
 
 std::string HighligthDebug::getIcon(const std::string &key) const
 {
-  if (!key.empty()) {
+  if (!topicDisabled(key)) {
     std::lock_guard<std::mutex> guard(m_mutex);
 
     if (m_iconMap.count(key) == 0) {
@@ -17,6 +17,11 @@ std::string HighligthDebug::getIcon(const std::string &key) const
   }
 
   return "";
+}
+
+bool HighligthDebug::topicDisabled(const std::string &key) const
+{
+  return key.empty() || (m_disabledTopicSet.count(key) > 0);
 }
 
 HighligthDebug& HLDebug(const std::string &key)

@@ -269,6 +269,22 @@ ZGenericBodyAnnotationDialog* FlyEmMvcDialogManager::getGenericAnnotationDlg()
   return m_genericAnnotationDlg;
 }
 
+FlyEmBatchBodyAnnotationDialog* FlyEmMvcDialogManager::getBatchAnnotationDlg()
+{
+  if (isNull(m_batchAnnotationDlg)) {
+    auto *doc = m_parent->getCompleteDocument();
+//    auto reader = doc->getDvidReader();
+
+    ZJsonObject schema = doc->getBodyAnnotationBatchSchema();
+    if (!schema.isEmpty()) {
+      m_batchAnnotationDlg = FlyEmDialogFactory::MakeBatchAnnotationDialog(
+            doc, schema, m_parent);
+    }
+  }
+
+  return m_batchAnnotationDlg;
+}
+
 template<typename T>
 FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(
     const T &flag, bool initTarget)

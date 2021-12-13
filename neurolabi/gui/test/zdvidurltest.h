@@ -216,8 +216,25 @@ TEST(ZDvidUrl, Basic)
             dvidUrl.getBodyAnnotationUrl("bodies2"));
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/annotations/key/1",
             dvidUrl.getBodyAnnotationUrl(1));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_annotations/key/1",
-            dvidUrl2.getBodyAnnotationUrl(1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/seg_annotations/key/schema",
+            dvidUrl2.getBodyAnnotationSchemaUrl("seg"));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/seg2_annotations/key/schema",
+            dvidUrl2.getBodyAnnotationSchemaUrl("seg2"));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_annotations/key/schema",
+            dvidUrl2.getBodyAnnotationSchemaUrl());
+
+  ASSERT_EQ(
+        "http://emdata.janelia.org/api/node/bf1/seg_annotations/key/schema_batch",
+        dvidUrl2.getBodyAnnotationBatchSchemaUrl("seg"));
+  ASSERT_EQ(
+        "http://emdata.janelia.org/api/node/bf1/seg2_annotations/key/schema_batch",
+        dvidUrl2.getBodyAnnotationBatchSchemaUrl("seg2"));
+  ASSERT_EQ(
+        "http://emdata.janelia.org/api/node/bf1/bodies2_annotations/key/schema_batch",
+        dvidUrl2.getBodyAnnotationBatchSchemaUrl());
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/annotations",
+            dvidUrl.getBodyAnnotationUrl("bodies"));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodyinfo",
             dvidUrl.getBodyInfoUrl("bodies"));

@@ -6,9 +6,11 @@
 #include <QLayoutItem>
 #include <QLabel>
 
+#include "common/debug.h"
 #include "logging/zlog.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
+#include "zstring.h"
 
 #include "zjsonobjectparser.h"
 #include "qt/gui/utilities.h"
@@ -20,7 +22,35 @@
 
 ZParameterDialog::ZParameterDialog(QWidget *parent) : QDialog(parent)
 {
-  m_layout = new QVBoxLayout(this);
+  m_mainLayout = new QVBoxLayout;
+  setLayout(m_mainLayout);
+  resetParameterLayout();
+
+  m_auxLayout = new QVBoxLayout;
+  m_mainLayout->addLayout(m_auxLayout);
+
+  QHBoxLayout *buttonLayout = new QHBoxLayout;
+  buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
+
+  QPushButton *cancelButton = new QPushButton(this);
+  buttonLayout->addWidget(cancelButton);
+  cancelButton->setText("Cancel");
+  cancelButton->setAutoDefault(false);
+  cancelButton->setDefault(false);
+
+  QPushButton *okButton = new QPushButton(this);
+  buttonLayout->addWidget(okButton);
+  okButton->setText("OK");
+  okButton->setAutoDefault(true);
+  okButton->setDefault(true);
+
+  m_mainLayout->addLayout(buttonLayout);
+
+//    m_layout->addSpacerItem(ZWidgetFactory::MakeVSpacerItem());
+
+  connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+
   m_label = new QLabel(this);
   m_label->setTextFormat(Qt::RichText);
   m_label->hide();
@@ -61,6 +91,13 @@ ZParameterDialog::Param ZParameterDialog::setParam(
 ZParameter* ZParameterDialog::getParameter(const QString &name) const
 {
   return m_parameterMap.value(name).parameter;
+}
+
+void ZParameterDialog::addAuxWidget(QWidget *widget)
+{
+  if (widget) {
+    m_auxLayout->addWidget(widget);
+  }
 }
 
 void ZParameterDialog::configure(const ZJsonObject &config)
@@ -122,6 +159,18 @@ void ZParameterDialog::setLabel(const QString &label)
   }
 }
 
+void ZParameterDialog::resetParameterLayout()
+{
+  if (m_parameterLayout) {
+    m_parameterLayout->removeWidget(m_label);
+    neutu::ClearLayout(m_parameterLayout);
+    delete m_parameterLayout;
+  }
+
+  m_parameterLayout = new QVBoxLayout;
+  m_mainLayout->insertLayout(0, m_parameterLayout);
+}
+
 void ZParameterDialog::build()
 {
   if (buildRequied()) {
@@ -131,13 +180,9 @@ void ZParameterDialog::build()
     std::cout << __FUNCTION__ << ": building dialog" << std::endl;
 #endif
 
-    m_layout->removeWidget(m_label);
+    resetParameterLayout();
 
-    neutu::ClearLayout(m_layout);
-    delete m_layout;
-    m_layout = new QVBoxLayout(this);
-
-    m_layout->addWidget(m_label);
+    m_parameterLayout->addWidget(m_label);
 
     foreach(const QString &name, m_shape) {
       ZParameter *param = getParameter(name);
@@ -146,31 +191,9 @@ void ZParameterDialog::build()
         layout->addWidget(param->createNameLabel(this));
         layout->addWidget(param->createWidget(this));
         layout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
-        m_layout->addLayout(layout);
+        m_parameterLayout->addLayout(layout);
       }
     }
-
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
-    buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
-
-    QPushButton *cancelButton = new QPushButton(this);
-    buttonLayout->addWidget(cancelButton);
-    cancelButton->setText("Cancel");
-    cancelButton->setAutoDefault(false);
-    cancelButton->setDefault(false);
-
-    QPushButton *okButton = new QPushButton(this);
-    buttonLayout->addWidget(okButton);
-    okButton->setText("OK");
-    okButton->setAutoDefault(true);
-    okButton->setDefault(true);
-
-    m_layout->addLayout(buttonLayout);
-
-//    m_layout->addSpacerItem(ZWidgetFactory::MakeVSpacerItem());
-
-    connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
   }
 }
 
@@ -182,7 +205,7 @@ void ZParameterDialog::addParameter(
 
     QString name = param->name();
 
-    if (appending || m_shape.indexOf(name) < 0) {
+    if (appending && m_shape.indexOf(name) >= 0) {
       removeParameter(name);
       m_shape.append(name);
     } else {
@@ -199,11 +222,11 @@ void ZParameterDialog::addParameter(
   }
 }
 
-void ZParameterDialog::addStringParameter(const QString &name)
+void ZParameterDialog::addStringParameter(const QString &name, bool appending)
 {
   if (!name.isEmpty()) {
     ZStringParameter *param = new ZStringParameter(name, this);
-    addParameter(param, "string");
+    addParameter(param, "string", appending);
     setDefaultValue(name, QString(""));
   }
 }
@@ -245,13 +268,13 @@ QStringList ZParameterDialog::updateOptions(
 }
 
 void ZParameterDialog::addStringParameter(
-    const QString &name, const QStringList &options)
+    const QString &name, const QStringList &options, bool appending)
 {
   if (!name.isEmpty()) {
     ZStringStringOptionParameter *param =
         new ZStringStringOptionParameter(name, this);
     auto newOptions = updateOptions(param, options, "");
-    addParameter(param, "string");
+    addParameter(param, "string", appending);
     if (!newOptions.isEmpty()) {
       setDefaultValue(name, newOptions[0]);
     }
@@ -394,6 +417,10 @@ void ZParameterDialog::setValue(const QString &name, const char *value)
   setValue(name, QString(value));
 }
 
+void ZParameterDialog::postProcess(ZJsonObject &/*obj*/) const
+{
+}
+
 ZJsonObject ZParameterDialog::toJsonObject() const
 {
   ZJsonObject json;
@@ -410,6 +437,10 @@ ZJsonObject ZParameterDialog::toJsonObject() const
       }
     }
   }
+
+  HLDEBUG_FUNC("annotate body")
+      << " Annotation before post process: "  <<json.dumpString(0) << std::endl;
+  postProcess(json);
 
   return json;
 }
@@ -434,7 +465,7 @@ void ZParameterDialog::loadJsonObject(const ZJsonObject &obj)
     const Param &p = m_parameterMap.value(name);
     if (p.parameter) {
       if (p.valueType == "string") {
-        setValue(name, v.toString().c_str());
+        setValue(name, ZString(v.toString()).trimmed().c_str());
       } else if (p.valueType == "int") {
         setValue(name, v.toInteger());
       } else if (p.valueType == "bool") {

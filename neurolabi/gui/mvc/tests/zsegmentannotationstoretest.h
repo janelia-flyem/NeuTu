@@ -89,10 +89,10 @@ TEST(ZSegmentAnnotationStore, Basic)
   auto annotations = store.getAnnotations({1, 2, 3});
   ASSERT_EQ(3, int(annotations.size()));
   ASSERT_EQ("test", ZJsonObjectParser::GetValue(
-              annotations[0], "status", ""));
+              annotations[0].second, "status", ""));
   ASSERT_EQ("test2", ZJsonObjectParser::GetValue(
-              annotations[1], "status", ""));
-  ASSERT_TRUE(annotations[2].isNull());
+              annotations[1].second, "status", ""));
+  ASSERT_TRUE(annotations[2].second.isNull());
 }
 
 #endif

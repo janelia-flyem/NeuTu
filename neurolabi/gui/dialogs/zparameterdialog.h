@@ -22,8 +22,8 @@ public:
 
   void addParameter(
       ZParameter *param, const QString &valueType, bool appending = true);
-  void addStringParameter(const QString &name);
-  void addStringParameter(const QString &name, const QStringList &options);
+  void addStringParameter(const QString &name, bool appending = true);
+  void addStringParameter(const QString &name, const QStringList &options, bool appending = true);
   void addIntParameter(const QString &name, int defaultValue, int min, int max);
   void addBoolParameter(const QString &name);
 
@@ -61,6 +61,8 @@ public:
 
   void setLabel(const QString &label);
 
+  void addAuxWidget(QWidget *widget);
+
 public slots:
   int exec() override;
 
@@ -90,10 +92,16 @@ protected:
 
   void updateGeneration();
 
+  void resetParameterLayout();
+
+  virtual void postProcess(ZJsonObject &obj) const;
+
 private:
   QList<QString> m_shape;
   QMap<QString, Param> m_parameterMap;
-  QVBoxLayout *m_layout = nullptr;
+  QVBoxLayout *m_mainLayout = nullptr;
+  QVBoxLayout *m_parameterLayout = nullptr;
+  QVBoxLayout *m_auxLayout = nullptr;
   QLabel *m_label = nullptr;
   int m_currentGeneration = 1;
   int m_prevGeneration = 0;

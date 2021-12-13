@@ -41,6 +41,24 @@ ZJsonObject FlyEmBodyAnnotationProofDocIO::readBodyAnnotation(uint64_t bodyId)
   }
 }
 
+std::vector<ZJsonObject> FlyEmBodyAnnotationProofDocIO::readBodyAnnotations(
+      const std::vector<uint64_t> &bodyIds)
+{
+  std::vector<ZJsonObject> result;
+  try {
+    ZDvidWriter &writer = getValidWriter();
+
+    result = writer.getDvidReader().readBodyAnnotationJsons(bodyIds);
+    for (size_t i = 0; i < result.size(); ++i) {
+      result[i].setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, bodyIds[i]);
+    }
+    return result;
+  } catch (...) {
+  }
+
+  return result;
+}
+
 void FlyEmBodyAnnotationProofDocIO::deleteBodyAnnotation(uint64_t bodyId)
 {
   ZDvidWriter &writer = getValidWriter();
@@ -62,8 +80,8 @@ void FlyEmBodyAnnotationProofDocIO::writeBodyAnnotation(
     writer.writeAnnotation(bodyId, obj);
     if (writer.getStatusCode() != 200) {
       throw std::runtime_error(
-            "Failed to delete body annotation with status code " +
-            std::to_string(writer.getStatusCode()));
+            "Failed to update body annotation for " + std::to_string(bodyId) +
+            ". Status code: " + std::to_string(writer.getStatusCode()));
     }
   }
 }

@@ -373,6 +373,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_ANNOTATION:
     action = new QAction("Annotate", parent);
     break;
+  case ACTION_BODY_ANNOTATION_BATCH:
+    action = new QAction("Annotate in Batch", parent);
+    break;
   case ACTION_BODY_EXPERT_STATUS:
     action = new QAction("Roughly Traced", parent);
     break;

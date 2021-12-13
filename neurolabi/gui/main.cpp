@@ -80,6 +80,9 @@ int main(int argc, char *argv[])
     init_gui();
   }
 
+  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+  QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
   // call first otherwise it will cause runtime warning:
   //   Please instantiate the QApplication object first
   NeuApp app(argc, argv/*, mainConfig.isGuiEnabled()*/);
@@ -97,8 +100,6 @@ int main(int argc, char *argv[])
     appTimer.start();
 
     QFontIcon::addFont(":/fontawesome.ttf");
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
 #if defined(__APPLE__)
     QPixmap pixmap(QString::fromStdString(GET_CONFIG_DIR + "/splash.png"));

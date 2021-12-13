@@ -58,6 +58,7 @@ public:
 
   static bool AllowingBodySplit(const ZStackDoc *doc);
   static bool AllowingBodyAnnotation(const ZStackDoc *doc);
+  static bool AllowingBatchBodyAnnotation(const ZStackDoc *doc);
   static bool AllowingBodyMerge(const ZStackDoc *doc);
   static bool AllowingBodyLock(const ZStackDoc *doc);
   static bool AllowingBodySelection(const ZFlyEmProofDoc *doc);

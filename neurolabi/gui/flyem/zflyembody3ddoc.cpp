@@ -4576,7 +4576,7 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(ZGenericBodyAnnotationDialog *dlg)
 
         ZJsonObject newAnnotation =
             FlyEmBodyAnnotationGenericDlgBuilder()
-              .getDialogFrom([&](){ return dlg; })
+              .getDialogFrom([&](){ return dlg; }, false)
               .forBody(bodyId)
               .fromOldAnnotation(oldAnnotation);
 

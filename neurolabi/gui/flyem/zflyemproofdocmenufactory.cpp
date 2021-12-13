@@ -3,7 +3,7 @@
 #include <QMenu>
 
 #include "neutubeconfig.h"
-
+#include "common/debug.h"
 #include "zintcuboidobj.h"
 
 #include "mvc/zstackpresenter.h"
@@ -166,6 +166,13 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 //            if (ZStackDocHelper::AllowingBodySplit(doc)) {
             if (presenter->allowingBodySplit()) {
               config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
+            }
+          } else if (selectedOriginal.size() > 1) {
+            HLDEBUG("annotate body") << "Checking batch annotation avaibility" << std::endl;
+            if (ZStackDocHelper::AllowingBatchBodyAnnotation(doc)) {
+              config.append(ZActionFactory::ACTION_BODY_ANNOTATION_BATCH);
+            } else {
+              HLDEBUG("annotate body") << "Batch annotation not allowed" << std::endl;
             }
           }
 
