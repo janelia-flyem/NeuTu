@@ -54,6 +54,25 @@ private slots:
     void onClickedTable(QModelIndex index);
 
 private:
+    // Task attribute control (prefixed with ac)
+    bool acReviewed() const;
+    void acSetReviewed(bool on);
+    bool acTbarGood() const;
+    void acSetTbarGood(bool on);
+    bool acPsdGood() const;
+    void acSetPsdGood(bool on);
+    bool acTbarSegGood() const;
+    void acSetTbarSegGood(bool on);
+    bool acPsdSegGood() const;
+    void acSetPsdSegGood(bool on);
+    bool acNotSure() const;
+    void acSetNotSure(bool on);
+    QString acComment() const;
+    void acSetComment(const QString &comment);
+
+    void updateTimestamp();
+
+private:
     static const std::string KEY_VERSION;
     static const int fileVersion;
 
@@ -64,6 +83,7 @@ private:
         bool psdGood = false;
         bool psdSegGood = false;
         bool notSure = false;
+        int64_t timestamp = 0;
         QString comment;
     };
 

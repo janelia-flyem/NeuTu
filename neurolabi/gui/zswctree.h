@@ -439,6 +439,8 @@ public:
   void selectAllNode();
   void deselectAllNode();
 
+  void deselectSub() override;
+
   void inverseSelection();
 
   void recordSelection();

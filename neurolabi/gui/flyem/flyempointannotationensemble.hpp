@@ -38,6 +38,26 @@ public:
     return m_blockGrid->getItem(pos);
   }
 
+  /*!
+   * \brief Get item reference.
+   *
+   * Be aware that using this function can cause race condition.
+   */
+  TItem& getItemRef(const ZIntPoint &pos) const
+  {
+    return m_blockGrid->getItemRef(pos);
+  }
+
+  /*!
+   * \brief Process an item.
+   *
+   * It applies \a f on a valid item at \a pos.
+   */
+  void processValidItem(const ZIntPoint &pos, std::function<void(TItem&)> f) const
+  {
+    m_blockGrid->processValidItem(pos, f);
+  }
+
   TItem getSingleSelectedItem() const;
 
   /*!
@@ -55,6 +75,18 @@ public:
   bool hasSelected() const;
 
   std::set<ZIntPoint> getSelectedPos() const;
+
+  /*!
+   * \brief Try to select/deselect an annotation at a certain postion.
+   *
+   * It tries to set an annotation at \a pos selected/unselected if it is available
+   * or \a selecting is true/false. It will try to load a annotation into cache
+   * first if it is not there. Nothing will be done if no annotation is available
+   * at \a pos.
+   *
+   * \return true iff a synapse at \a pos is found.
+   */
+  bool trySelectionAt(const ZIntPoint &pos, bool selecting);
 
 protected:
   void selectAt(const ZIntPoint &pos);
@@ -83,12 +115,11 @@ bool FlyEmPointAnnotationEnsemble<T, TChunk>::display_selected(
   bool painted =  false;
   std::set<ZIntPoint> selected = getSelectedPos();
   for (const ZIntPoint &pos : selected) {
-    auto item = getItem(pos);
-    if (item.isValid()) {
+    processValidItem(pos, [&](T& item) {
       if (item.display(painter, config)) {
         painted = true;
       }
-    }
+    });
   }
 
   return painted;
@@ -207,6 +238,19 @@ void FlyEmPointAnnotationEnsemble<T, TChunk>::setSelectionAt(
   m_selector.setSelection(pos, selecting);
   processDeselected();
   m_blockGrid->setSelectionForCached(pos, selecting);
+}
+
+template<typename T, typename TChunk>
+bool FlyEmPointAnnotationEnsemble<T, TChunk>::trySelectionAt(
+    const ZIntPoint &pos, bool selecting)
+{
+  T item =m_blockGrid->getItem(pos);
+  if (item.isValid()) {
+    setSelectionAt(pos, selecting);
+    return true;
+  }
+
+  return false;
 }
 
 template<typename T, typename TChunk>

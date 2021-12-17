@@ -423,6 +423,15 @@ public:
 
   size_t getFrameCount() const;
 
+  /*!
+   * \brief Update state of the view.
+   *
+   * Note: This is function related to general state update that is still under
+   * development. For now it has partial implementations to enable some
+   * features.
+   */
+  void updateState(QMap<QString, QVariant> config);
+
 public: //Change view parameters
   void moveViewPort(const QPoint& src, const QPointF &dst);
   void moveViewPort(const ZPoint &src, int a, int b);

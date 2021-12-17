@@ -12,25 +12,48 @@
 #define OUTPUT_HIGHLIGHT_3 "🙏 "
 #define OUTPUT_HIGHLIGHT_4 "👉 "
 
-class HighligthDebug {
+class HighlightDebug {
 public:
-  HighligthDebug();
+  HighlightDebug();
 
-  static HighligthDebug& GetInstance() {
-    static HighligthDebug hd;
+  static HighlightDebug& GetInstance() {
+    static HighlightDebug hd;
 
     return hd;
   }
 
-  std::string getIcon(const std::string &key) const;
+  std::string getIcon(const std::string &topic) const;
 
   template<typename T>
-  HighligthDebug& operator<< (T &&v) {
-    std::cout << std::forward<T>(v);
+  HighlightDebug& operator<< (T &&v) {
+    if (m_isActive) {
+      std::cout << std::forward<T>(v);
+    }
     return *this;
   }
 
-  HighligthDebug& operator <<(std::ostream& (*os)(std::ostream&));
+  HighlightDebug& operator <<(std::ostream& (*os)(std::ostream&));
+
+  /*!
+   * \brief Set topic filter
+   *
+   * It uses a simple format to set up a filter:
+   * 1. Topics are semi-colon separated;
+   * 2. If \a filter is prefixed with '~', then it means disabled topics.
+   *
+   * For simplicity, neither ';' nor '~' is expected in a topic.
+   *
+   * This function will clear cached icon mapping.
+   */
+  void setTopicFilter(const std::string &filter);
+
+  /*!
+   * \brief Activate output
+   *
+   * Debugging messages will not be output to the screen if the activation
+   * flag is off.
+   */
+  void activate(bool on);
 
 private:
   bool topicDisabled(const std::string &key) const;
@@ -43,10 +66,12 @@ private:
   };
   mutable std::unordered_map<std::string, std::string> m_iconMap;
   std::unordered_set<std::string> m_disabledTopicSet;
+  std::unordered_set<std::string> m_enabledTopicSet;
+  bool m_isActive = true;
 };
 
 
-HighligthDebug& HLDebug(const std::string &key);
+HighlightDebug& HLDebug(const std::string &key);
 
 #ifdef _DEBUG_
 #  define HLDEBUG(key) HLDebug(key)

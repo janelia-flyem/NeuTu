@@ -9,6 +9,7 @@
 #include <QMessageBox>
 
 #include "common/utilities.h"
+#include "common/debug.h"
 
 #include "protocolchooser.h"
 #include "protocoldialog.h"
@@ -405,7 +406,10 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
 }
 
 void ProtocolSwitcher::displayPointRequested(int x, int y, int z) {
-    emit requestDisplayPoint(x, y, z);
+  QMap<QString, QVariant> config;
+  config["locate"] = (QList<QVariant>() << x << y << z);
+  stateUpdateRequested(config);
+//    emit requestDisplayPoint(x, y, z);
 }
 
 void ProtocolSwitcher::displayBodyRequested(uint64_t bodyID) {
@@ -414,6 +418,13 @@ void ProtocolSwitcher::displayBodyRequested(uint64_t bodyID) {
 
 void ProtocolSwitcher::updateColorMapRequested(ZFlyEmSequencerColorScheme scheme) {
     emit colorMapChanged(scheme);
+}
+
+void ProtocolSwitcher::stateUpdateRequested(QMap<QString, QVariant> config)
+{
+  HLDEBUG("mvc state") << "State update requested from ProtocolSwitcher" << std::endl;
+
+  emit requestStateUpdate(config);
 }
 
 void ProtocolSwitcher::activateProtocolColorMap() {
@@ -602,12 +613,16 @@ void ProtocolSwitcher::connectProtocolSignals() {
     connect(this, SIGNAL(requestLoadProtocol(ZJsonObject)), m_activeProtocol, SLOT(loadDataRequested(ZJsonObject)));
 
     // interaction connects
-    connect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
-    connect(m_activeProtocol, SIGNAL(requestDisplayBody(uint64_t)), this, SLOT(displayBodyRequested(uint64_t)));
+    connect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)),
+            this, SLOT(displayPointRequested(int,int,int)));
+    connect(m_activeProtocol, SIGNAL(requestDisplayBody(uint64_t)),
+            this, SLOT(displayBodyRequested(uint64_t)));
     connect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
         this, SLOT(updateColorMapRequested(ZFlyEmSequencerColorScheme)));
     connect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));
     connect(m_activeProtocol, SIGNAL(requestDeactivateColorMap()), this, SLOT(deactivateProtocolColorMap()));
+    connect(m_activeProtocol, &ProtocolDialog::requestStateUpdate,
+            this, &ProtocolSwitcher::requestStateUpdate);
 }
 
 void ProtocolSwitcher::disconnectProtocolSignals() {

@@ -115,6 +115,7 @@
 
 #include "bigdata/tests/zitemchunktest.h"
 #include "bigdata/tests/zdatachunktest.h"
+#include "bigdata/tests/zblockgridtest.h"
 
 #include "data3d/tests/utilitiestest.h"
 #include "data3d/tests/zstackobjecthandletest.h"
@@ -141,5 +142,6 @@
 #include "flyem/tests/flyemtodoensembletest.h"
 #include "flyem/tests/flyembodyconfigtest.h"
 #include "flyem/tests/flyembodymeshfactorytest.h"
+#include "flyem/tests/flyembodysourcetest.h"
 
 #endif // ZTESTALL_H

@@ -3891,6 +3891,11 @@ void ZSwcTree::deselectAllNode()
   m_selectedNode.clear();
 }
 
+void ZSwcTree::deselectSub()
+{
+  deselectAllNode();
+}
+
 const std::set<Swc_Tree_Node*>& ZSwcTree::getSelectedNode() const
 {
   return m_selectedNode;

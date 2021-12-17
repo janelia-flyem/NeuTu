@@ -25,6 +25,15 @@ public:
 
   void setSelectOption(ZStackObject::EType type, ESelectOption option);
 
+  /*!
+   * \brief Delect all objects in a document
+   */
+  static void Deselect(
+      ZStackDoc *doc,
+      const std::map<ZStackObject::EType, ESelectOption> &optionMap);
+
+  static void DeselectAll(ZStackDoc *doc);
+
 private:
   std::shared_ptr<ZStackDoc> m_doc;
   std::map<ZStackObject::EType, ESelectOption> m_option;

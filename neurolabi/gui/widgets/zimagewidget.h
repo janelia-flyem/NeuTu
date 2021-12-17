@@ -399,6 +399,7 @@ private:
   bool m_showingCrossHair= false;
   bool m_showingZoomHint = true;
   bool m_isReady = false;
+  bool m_delayedTransformNotification = false;
   bool m_offsetAdjustment = false;
   bool m_signalingTransformSync = true;
   bool m_showingAxes = true;

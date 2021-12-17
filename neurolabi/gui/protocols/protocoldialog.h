@@ -2,6 +2,8 @@
 #define PROTOCOLDIALOG_H
 
 #include <QDialog>
+#include <QMap>
+#include <QVariant>
 
 #include "flyem/zflyemsequencercolorscheme.h"
 
@@ -40,6 +42,7 @@ signals:
     void requestColorMapChange(ZFlyEmSequencerColorScheme scheme);
     void requestActivateColorMap();
     void requestDeactivateColorMap();
+    void requestStateUpdate(QMap<QString, QVariant> config);
     void rangeChanged(ZIntPoint firstCorner, ZIntPoint lastCorner);
 
 public slots:

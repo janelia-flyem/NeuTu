@@ -2847,6 +2847,8 @@ void ZFlyEmProofMvc::customInit()
 //            m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
     connect(this, &ZFlyEmProofMvc::dvidTargetChanged,
             this, &ZFlyEmProofMvc::handleDvidTargetChange);
+    connect(m_protocolSwitcher, &ProtocolSwitcher::requestStateUpdate,
+            this, &ZStackMvc::updateState);
     connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
             this, SLOT(zoomTo(int,int,int)));
     connect(m_protocolSwitcher, SIGNAL(requestDisplayBody(uint64_t)),
@@ -5172,6 +5174,11 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
        }
     }
   }
+}
+
+void ZFlyEmProofMvc::updateState_(QMap<QString, QVariant> config)
+{
+  ZStackMvc::updateState_(config);
 }
 
 #if 0

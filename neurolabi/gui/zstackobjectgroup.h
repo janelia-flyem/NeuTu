@@ -49,6 +49,15 @@ public:
   void setSelected(
       bool selected, std::function<void(const ZStackObject*)> selChangeProc);
 
+  /*!
+   * \brief Deselect all objects.
+   *
+   * A thread-safe version of \a deselectAllUnsync.
+   */
+  void deselectAll(
+      bool recursive,
+      std::function<void(const ZStackObject*)> selectionChangeProc);
+
   void setSelected(ZStackObject::EType type, bool selected);
   void setSelected(ZStackObjectRole::TRole role, bool selected);
 
@@ -219,6 +228,17 @@ public:
       bool selected,
       std::function<void(const ZStackObject*)> selectionChangeProc);
   void setSelectedUnsync(ZStackObject::EType type, bool selected);
+
+  /*!
+   * \brief Deselect all objects.
+   *
+   * It deselect every object in the group and applies \a selectionChangeProc
+   * to the object if its selection is changed or recusive. Recusive deselection
+   * means that deselectSub() method of the object will be called.
+   */
+  void deselectAllUnsync(
+      bool recursive,
+      std::function<void(const ZStackObject*)> selectionChangeProc);
 
   void setSelectedUnsync(ZStackObjectRole::TRole role, bool selected);
 

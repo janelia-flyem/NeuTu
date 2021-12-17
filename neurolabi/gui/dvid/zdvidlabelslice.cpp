@@ -1547,6 +1547,11 @@ uint64_t ZDvidLabelSlice::getHitLabel() const
   return m_hitLabel;
 }
 
+void ZDvidLabelSlice::deselectSub()
+{
+  clearSelection();
+}
+
 void ZDvidLabelSlice::processHit(ESelection s)
 {
   startSelection();

@@ -4642,11 +4642,13 @@ ZStackViewParam ZStackDoc::getSelectedSwcNodeView() const
 */
 void ZStackDoc::deselectAllObject(bool recursive)
 {
+  HLDEBUG_FUNC("select object") << recursive << std::endl;
   //m_selectedSwcTreeNodes.clear();
   if (recursive) {
     deselectAllSwcTreeNodes();
   }
 
+  /*
   if (recursive) {
     QList<ZDvidLabelSlice*> labelSliceList = getDvidLabelSliceList();
     foreach (ZDvidLabelSlice *labelSlice, labelSliceList) {
@@ -4655,6 +4657,11 @@ void ZStackDoc::deselectAllObject(bool recursive)
       }
     }
   }
+  */
+
+  m_objectGroup.deselectAll(recursive, [this](const ZStackObject* obj) {
+    bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
+  });
 
   notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::EType::SWC));
   notifyDeselected(getSelectedObjectList<ZMesh>(ZStackObject::EType::MESH));
@@ -4662,9 +4669,6 @@ void ZStackDoc::deselectAllObject(bool recursive)
   notifyDeselected(getSelectedObjectList<ZLocsegChain>(
                      ZStackObject::EType::LOCSEG_CHAIN));
 
-  m_objectGroup.setSelected(false, [this](const ZStackObject* obj) {
-    bufferObjectModified(obj, ZStackObjectInfo::STATE_SELECTION_CHANGED);
-  });
   processObjectModified();
 }
 
@@ -11194,6 +11198,18 @@ ZStackDoc::getSegmentAnnotations(
   }
 
   return std::vector<std::pair<uint64_t, ZJsonObject>>();
+}
+
+void ZStackDoc::updateState(QMap<QString, QVariant> config)
+{
+  for (auto iter = config.begin(); iter != config.end(); ++iter) {
+    if (iter.key() == "deselect") {
+      HLDEBUG("mvc state") << "Update state: " << iter.key().toStdString() << std::endl;
+      if (iter.value().toString() == "*") {
+        deselectAllObject();
+      }
+    }
+  }
 }
 
 template <class InputIterator>

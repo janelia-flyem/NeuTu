@@ -543,6 +543,8 @@ protected:
   void enableSplit(neutu::EBodySplitMode mode);
   void disableSplit();
 
+  void updateState_(QMap<QString, QVariant> config) override;
+
 private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);

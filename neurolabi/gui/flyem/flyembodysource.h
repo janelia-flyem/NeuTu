@@ -73,7 +73,18 @@ public:
    */
   virtual ZIntPoint getBlockSize() const;
 
+  /*!
+   * \brief Get bounding box of a body.
+   *
+   * \return Bounding box of a body if the body exists; an empty box if it does not.
+   */
   virtual ZIntCuboid getBoundBox(uint64_t bodyId) const;
+
+  /*!
+   * \brief Get bouding box of a body at a downsampling level.
+   *
+   * The coordinates of the box are from the downsampled space.
+   */
   virtual ZIntCuboid getBoundBox(uint64_t bodyId, int dsLevel) const;
 
 protected:

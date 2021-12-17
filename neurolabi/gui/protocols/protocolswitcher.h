@@ -2,6 +2,9 @@
 #define PROTOCOLSWITCHER_H
 
 #include <QObject>
+#include <QMap>
+#include <QVariant>
+#include <QString>
 
 #include "flyem/zflyemsequencercolorscheme.h"
 
@@ -38,6 +41,7 @@ signals:
     void requestDisplaySavedProtocols(QStringList keyList);
     void requestDisplayPoint(int x, int y, int z);
     void requestDisplayBody(uint64_t bodyID);
+    void requestStateUpdate(QMap<QString, QVariant>);
     void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
     void activateColorMap(QString colorMapName);
     void rangeChanged(ZIntPoint firstCorner, ZIntPoint lastCorner);
@@ -63,6 +67,7 @@ private slots:
     void displayPointRequested(int x, int y, int z);
     void displayBodyRequested(uint64_t bodyID);
     void updateColorMapRequested(ZFlyEmSequencerColorScheme scheme);
+    void stateUpdateRequested(QMap<QString, QVariant> config);
     void activateProtocolColorMap();
     void deactivateProtocolColorMap();
 

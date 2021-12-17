@@ -147,6 +147,11 @@ public slots:
 
   void saveStack();
 
+  /*!
+   * \brief Update MVC state from a general configuration
+   */
+  void updateState(QMap<QString, QVariant> config);
+
   virtual bool processKeyEvent(QKeyEvent *event);
   virtual void processObjectModified(const ZStackObjectInfoSet &objSet);
 
@@ -199,6 +204,8 @@ protected:
 
   int getViewIndex(ZStackView *view);
   int getViewIndex(int viewId);
+
+  virtual void updateState_(QMap<QString, QVariant> config);
 
 private:
   void dropDocument(std::shared_ptr<ZStackDoc> doc);

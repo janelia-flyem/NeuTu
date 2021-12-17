@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 
 #include "main.h"
 
+#include "common/debug.h"
 #include "neuapp.h"
 #include "mainwindow.h"
 #include "neu3window.h"
@@ -57,6 +58,10 @@ int main(int argc, char *argv[])
 
     return 0;
   }
+
+#ifdef _DEBUG_
+  HighlightDebug::GetInstance().setTopicFilter(neutu::GetEnv("NEUTU_HLDEBUG"));
+#endif
 
   NeutubeConfig::getInstance().init(mainConfig.userName);
 

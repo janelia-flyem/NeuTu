@@ -491,6 +491,58 @@ TEST(ZStackObjectGroup, ZOrder)
   ASSERT_EQ(obj9, objectGroup.getLastObject(ZObject3d::GetType()));
 }
 
+TEST(ZStackObjectGroup, selection)
+{
+  ZStackObjectGroup objectGroup;
+
+  ZObject3d *obj = new ZObject3d;
+  objectGroup.add(obj, true);
+  obj = new ZObject3d;
+  objectGroup.add(obj, true);
+
+  ZObject3d *obj2 = new ZObject3d;
+  obj2->setSource("test");
+  objectGroup.add(obj2, true);
+
+  ZObject3d *obj3 = new ZObject3d;
+  obj3->setSource("test");
+  objectGroup.add(obj3, true);
+
+
+  ZSwcTree *tree = new ZSwcTree;
+  objectGroup.add(tree, false);
+
+  tree = new ZSwcTree;
+  tree->setSource("test");
+  objectGroup.add(tree, true);
+
+  tree->addRegularRoot(SwcTreeNode::MakePointer());
+  tree->selectAllNode();
+
+  QSet<const ZStackObject*> selectedSet;
+  objectGroup.setSelected(true, [&](const ZStackObject *obj) {
+    selectedSet.insert(obj);
+  });
+
+  ASSERT_TRUE(obj->isSelected());
+  ASSERT_TRUE(selectedSet.contains(obj));
+  ASSERT_EQ(1, tree->getSelectedNode().size());
+
+  objectGroup.deselectAll(false, [&](const ZStackObject *obj) {
+    selectedSet.remove(obj);
+  });
+  ASSERT_FALSE(obj->isSelected());
+  ASSERT_FALSE(selectedSet.contains(obj));
+  ASSERT_EQ(1, tree->getSelectedNode().size());
+
+  objectGroup.deselectAll(true, [&](const ZStackObject *obj) {
+    selectedSet.remove(obj);
+  });
+  ASSERT_FALSE(obj->isSelected());
+  ASSERT_FALSE(selectedSet.contains(obj));
+  ASSERT_TRUE(tree->getSelectedNode().empty());
+}
+
 #endif
 
 #endif // ZSTACKOBJECTGROUPTEST_H

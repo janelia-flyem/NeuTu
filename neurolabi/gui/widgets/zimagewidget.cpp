@@ -1391,6 +1391,10 @@ void ZImageWidget::resetView(double defaultScale)
 
 void ZImageWidget::setReady(bool ready)
 {
+  if (ready && !m_isReady && m_delayedTransformNotification) {
+    m_delayedTransformNotification = false;
+    emit transformChanged();
+  }
   m_isReady = ready;
 }
 
@@ -1547,6 +1551,8 @@ void ZImageWidget::blockTransformSyncSignal(bool blocking)
 void ZImageWidget::notifyTransformChanged(neutu::ESignalControl signaling)
 {
   if (signaling == neutu::ESignalControl::BROADCASTING) {
+    // Necessary for syncing transform when changing view before the widget is ready
+    m_delayedTransformNotification = !m_isReady;
     if (m_isReady) {
       emit transformChanged();
     }

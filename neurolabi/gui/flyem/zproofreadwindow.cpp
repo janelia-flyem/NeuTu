@@ -359,6 +359,7 @@ void ZProofreadWindow::createMenu()
   m_viewSynapseAction->setIcon(QIcon(":/images/synapse.png"));
   m_viewSynapseAction->setCheckable(true);
   m_viewSynapseAction->setChecked(true);
+  m_viewSynapseAction->setShortcut(Qt::SHIFT + Qt::Key_F);
   connect(m_viewSynapseAction, SIGNAL(toggled(bool)),
           m_mainMvc, SLOT(showSynapseAnnotation(bool)));
 

@@ -2557,6 +2557,19 @@ void ZStackView::updateObjectBuffer(
   }
 }
 
+void ZStackView::updateState(QMap<QString, QVariant> config)
+{
+  for (auto iter = config.begin(); iter != config.end(); ++iter) {
+    HLDEBUG("mvc state") << "Update state: " << iter.key().toStdString() << std::endl;
+    if (iter.key() == "locate") {
+      QList<QVariant> coords = iter.value().toList();
+      if (coords.size() >= 3) {
+        zoomTo(coords[0].toInt(), coords[1].toInt(), coords[2].toInt());
+      }
+    }
+  }
+}
+
 void ZStackView::updateObjectBuffer(
     neutu::data3d::ETarget target, const QList<ZStackObject *> &objList)
 {

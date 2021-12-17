@@ -581,7 +581,8 @@ void ZString::trim()
 {
   char *str = strdup(c_str());
   strtrim(str);
-  string::replace(0, strlen(str) + 1, str);
+  *this = str;
+//  string::replace(0, strlen(str) + 1, str);
 
   free(str);
 }

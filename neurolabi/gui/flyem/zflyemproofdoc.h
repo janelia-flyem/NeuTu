@@ -636,6 +636,8 @@ public:
   void removeTodoList(
       const QList<ZIntPoint> &todoList, bool allowingUndo);
 
+  void updateState(QMap<QString, QVariant> config) override;
+
 signals:
   void bodyMerged();
   void bodyUnmerged();

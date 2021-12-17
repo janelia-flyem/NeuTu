@@ -64,6 +64,37 @@ public:
     return TItem();
   }
 
+  /*!
+   * \brief Get item reference at a certain position.
+   */
+  TItem& getItemRef(const ZIntPoint &pos)
+  {
+    ZIntPoint blockIndex = getBlockIndex(pos);
+    if (containsBlock(blockIndex)) {
+      std::lock_guard<std::mutex> guard(m_chunkMutex);
+      return getChunkRef(blockIndex).getItemRef(pos);
+    }
+
+    return m_invalidItem;
+  }
+
+  /*!
+   * \brief Process an item.
+   *
+   * It applies \a f on a valid item at \a pos.
+   */
+  void processValidItem(const ZIntPoint &pos, std::function<void(TItem&)> f) const
+  {
+    ZIntPoint blockIndex = getBlockIndex(pos);
+    if (containsBlock(blockIndex)) {
+      std::lock_guard<std::mutex> guard(m_chunkMutex);
+      TItem& item = getChunkRef(blockIndex).getItemRef(pos);
+      if (item.isValid()) {
+        f(item);
+      }
+    }
+  }
+
   TItem pickCachedItem(double x, double y, double z) const
   {
     ZIntPoint pos = ZPoint(x, y, z).toIntPoint();
@@ -151,6 +182,7 @@ private:
   mutable std::unordered_map<ZIntPoint, TChunk> m_chunkMap;
   mutable TChunk m_emptyChunk;
   std::shared_ptr<ZIntPointAnnotationSource<TItem>> m_source;
+  TItem m_invalidItem;
 };
 
 template<typename TItem, typename TChunk>

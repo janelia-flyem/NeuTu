@@ -212,6 +212,8 @@ public:
   std::set<uint64_t> getRecentSelected(neutu::ELabelSource labelType) const;
   std::set<uint64_t> getRecentDeselected(neutu::ELabelSource labelType) const;
 
+  void deselectSub() override;
+
   void setCustomColorMap(const std::shared_ptr<ZFlyEmBodyColorScheme> &colorMap);
   void removeCustomColorMap();
   bool hasCustomColorMap() const;

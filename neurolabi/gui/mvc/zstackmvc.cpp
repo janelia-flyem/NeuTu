@@ -10,6 +10,7 @@
 
 #include "neutubeconfig.h"
 #include "common/math.h"
+#include "common/debug.h"
 #include "logging/zlog.h"
 
 #include "zstackview.h"
@@ -1060,6 +1061,19 @@ void ZStackMvc::setZoomScale(double s)
 void ZStackMvc::setInitialScale(double s)
 {
   getMainView()->setInitialScale(s);
+}
+
+void ZStackMvc::updateState(QMap<QString, QVariant> config)
+{
+  HLDEBUG("mvc state") << "Update state" << std::endl;
+  updateState_(config);
+}
+
+void ZStackMvc::updateState_(QMap<QString, QVariant> config)
+{
+//  getPresenter()->updateState(config);
+  getDocument()->updateState(config);
+  getMainView()->updateState(config);
 }
 
 /*

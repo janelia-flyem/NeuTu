@@ -1441,6 +1441,60 @@ void ZFlyEmProofDoc::annotateBodies(
   annotateSegments(annotations);
 }
 
+void ZFlyEmProofDoc::updateState(QMap<QString, QVariant> config)
+{
+  QMutableMapIterator<QString, QVariant> iter(config);
+  while (iter.hasNext()) {
+    iter.next();
+    if (iter.key() == "deselect") {
+      HLDEBUG("mvc state") << "Update state: " << iter.key().toStdString() << std::endl;
+      if (iter.value().toString() == "*") {
+        deselectAllObject();
+        iter.remove();
+      }
+    } else if (iter.key() == "select") {
+      HLDEBUG("mvc state") << "Update state: " << iter.key().toStdString() << std::endl;
+      QMap<QString, QVariant> selObj = iter.value().toMap();
+      for (auto selIter = selObj.begin(); selIter != selObj.end(); ++selIter) {
+        if (selIter.key() == "synapse") {
+          QMap<QString, QVariant> synapseSel = selIter.value().toMap();
+          if (synapseSel.contains("pos")) {
+            QList<QVariant> coords = synapseSel.value("pos").toList();
+            if (coords.size() >= 3) {
+              FlyEmSynapseEnsemble *se = getSynapseEnsemble();
+              if (se) {
+                ZIntPoint pos = ZIntPoint(
+                      coords[0].toInt(), coords[1].toInt(), coords[2].toInt());
+                if (se->trySelectionAt(pos, true)) {
+                  if (synapseSel.contains("body")) {
+                    QString bodyOption = synapseSel.value("body").toString();
+                    if (bodyOption == "connected") {
+                      auto item = se->getItem(pos);
+                      if (item.isValid()) {
+                        QList<ZIntPoint> posList;
+                        posList.append(item.getPosition());
+                        auto partners = item.getPartners();
+                        for (const auto partner : partners) {
+                          posList.append(partner);
+                        }
+                        selectBodyAt(posList, false);
+                      }
+                    }
+                  }
+                  processObjectModified(se);
+                }
+              }
+            }
+          }
+        }
+      }
+      iter.remove(); // FIXME: need more granulated control
+    }
+  }
+
+  ZStackDoc::updateState(config);
+}
+
 void ZFlyEmProofDoc::initData(
     const std::string &type, const std::string &dataName)
 {

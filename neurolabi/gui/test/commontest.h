@@ -5,6 +5,8 @@
 
 #include "common/utilities.h"
 #include "common/math.h"
+#include "common/debug.h"
+
 #include "filesystem/utilities.h"
 
 #ifdef _USE_GTEST_
@@ -188,6 +190,28 @@ TEST(filesystem, utilities)
 //  std::cout << neutu::Absolute("test1", "test2") << std::endl;
 //  std::cout << neutu::Absolute("test1", "") << std::endl;
 #endif
+}
+
+TEST(common, debug)
+{
+  HighlightDebug debug;
+  debug.setTopicFilter("test1;test2;test 3");
+  ASSERT_EQ(OUTPUT_HIGHLIGHT_1, debug.getIcon("test1"));
+  ASSERT_EQ(OUTPUT_HIGHLIGHT_2, debug.getIcon("test2"));
+  ASSERT_EQ(OUTPUT_HIGHLIGHT_3, debug.getIcon("test 3"));
+  ASSERT_TRUE(debug.getIcon("test4").empty());
+
+  debug.setTopicFilter(" test1; test2; test 3 ");
+  ASSERT_EQ(OUTPUT_HIGHLIGHT_1, debug.getIcon("test1"));
+  ASSERT_EQ(OUTPUT_HIGHLIGHT_2, debug.getIcon("test2"));
+  ASSERT_EQ(OUTPUT_HIGHLIGHT_3, debug.getIcon("test 3"));
+  ASSERT_TRUE(debug.getIcon("test4").empty());
+
+  debug.setTopicFilter(" ~ test1; test2; test3 ");
+  ASSERT_TRUE(debug.getIcon("test1").empty());
+  ASSERT_TRUE(debug.getIcon("test2").empty());
+  ASSERT_TRUE(debug.getIcon("test3").empty());
+  ASSERT_EQ(OUTPUT_HIGHLIGHT_1, debug.getIcon("test 3"));
 }
 
 #endif

@@ -17,9 +17,11 @@
 
 #include "neutube.h"
 #include "common/debug.h"
+#include "common/utilities.h"
 
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "zjsonobjectparser.h"
 
 ConnectionValidationProtocol::ConnectionValidationProtocol(QWidget *parent) :
   ProtocolDialog(parent),
@@ -187,9 +189,17 @@ void ConnectionValidationProtocol::onGotoButton() {
   gotoCurrentPoint();
 }
 
+void ConnectionValidationProtocol::updateTimestamp()
+{
+  if (m_currentIndex >= 0) {
+    m_pointData[m_points[m_currentIndex]].timestamp = neutu::GetTimeStamp();
+  }
+}
+
 void ConnectionValidationProtocol::onReviewedChanged() {
   HLDEBUG_FUNC_LN("protocol");
-  m_pointData[m_points[m_currentIndex]].reviewed = ui->reviewedBox->isChecked();
+  m_pointData[m_points[m_currentIndex]].reviewed = acReviewed();
+  updateTimestamp();
   saveState();
   updateTable();
   // reviewed change affects progress
@@ -198,40 +208,46 @@ void ConnectionValidationProtocol::onReviewedChanged() {
 
 void ConnectionValidationProtocol::onTbarGoodChanged() {
   HLDEBUG_FUNC_LN("protocol");
-  m_pointData[m_points[m_currentIndex]].tbarGood = ui->tbarCheckBox->isChecked();
+  m_pointData[m_points[m_currentIndex]].tbarGood = acTbarGood();
+  updateTimestamp();
   saveState();
   updateTable();
 }
 
 void ConnectionValidationProtocol::onTbarSegGoodChanged() {
   HLDEBUG_FUNC_LN("protocol");
-  m_pointData[m_points[m_currentIndex]].tbarSegGood = ui->tbarSegCheckBox->isChecked();
+  m_pointData[m_points[m_currentIndex]].tbarSegGood = acTbarSegGood();
+  updateTimestamp();
   saveState();
   updateTable();
 }
 
 void ConnectionValidationProtocol::onPSDGoodCanged() {
   HLDEBUG_FUNC_LN("protocol");
-  m_pointData[m_points[m_currentIndex]].psdGood = ui->psdCheckBox->isChecked();
+  m_pointData[m_points[m_currentIndex]].psdGood = acPsdGood();
+  updateTimestamp();
   saveState();
   updateTable();
 }
 
 void ConnectionValidationProtocol::onPSDSegGoodChanged() {
   HLDEBUG_FUNC_LN("protocol");
-  m_pointData[m_points[m_currentIndex]].psdSegGood = ui->psdSegCheckBox->isChecked();
+  m_pointData[m_points[m_currentIndex]].psdSegGood = acPsdGood();
+  updateTimestamp();
   saveState();
   updateTable();
 }
 
 void ConnectionValidationProtocol::onNotSureChanged() {
-  m_pointData[m_points[m_currentIndex]].notSure = ui->notSureBox->isChecked();
+  m_pointData[m_points[m_currentIndex]].notSure = acNotSure();
+  updateTimestamp();
   saveState();
   updateTable();
 }
 
 void ConnectionValidationProtocol::onSetComment() {
-  m_pointData[m_points[m_currentIndex]].comment = ui->commentEdit->text();
+  m_pointData[m_points[m_currentIndex]].comment = acComment();
+  updateTimestamp();
   saveState();
   updateTable();
 }
@@ -261,7 +277,17 @@ void ConnectionValidationProtocol::gotoCurrentPoint() {
   HLDEBUG_FUNC_LN("protocol");
   if (m_currentIndex >= 0) {
     ZIntPoint p = m_points[m_currentIndex];
-    emit requestDisplayPoint(p.getX(), p.getY(), p.getZ());
+    QMap<QString, QVariant> config;
+    config["locate"] = (QList<QVariant>() << p.getX() << p.getY() << p.getZ());
+    QMap<QString, QVariant> selObj;
+    QMap<QString, QVariant> synapseSelection;
+    synapseSelection["pos"] = config.value("locate");
+    synapseSelection["body"] = "connected";
+    selObj["synapse"] = synapseSelection;
+    config["select"] = selObj;
+    config["deselect"] = "*";
+    emit requestStateUpdate(config);
+//    emit requestDisplayPoint(p.getX(), p.getY(), p.getZ());
   }
 }
 
@@ -305,6 +331,13 @@ void ConnectionValidationProtocol::updateProgressLabel() {
 void ConnectionValidationProtocol::updateCheckBoxes() {
   HLDEBUG_FUNC_LN("protocol");
   PointData pd = m_pointData[m_points[m_currentIndex]];
+  acSetReviewed(pd.reviewed);
+  acSetTbarGood(pd.tbarGood);
+  acSetTbarSegGood(pd.tbarSegGood);
+  acSetPsdGood(pd.psdGood);
+  acSetPsdSegGood(pd.psdSegGood);
+  acSetNotSure(pd.notSure);
+  /*
   if (pd.reviewed) {
     ui->reviewedBox->setCheckState(Qt::CheckState::Checked);
   } else {
@@ -335,11 +368,13 @@ void ConnectionValidationProtocol::updateCheckBoxes() {
   } else {
     ui->notSureBox->setCheckState(Qt::CheckState::Unchecked);
   }
+  */
 }
 
 void ConnectionValidationProtocol::updateComment() {
   PointData pd = m_pointData[m_points[m_currentIndex]];
-  ui->commentEdit->setText(pd.comment);
+  acSetComment(pd.comment);
+//  ui->commentEdit->setText(pd.comment);
 }
 
 void ConnectionValidationProtocol::updateTable() {
@@ -480,6 +515,9 @@ void ConnectionValidationProtocol::saveState() {
     c.setEntry("PSD segmentation good", pd.psdSegGood);
     c.setEntry("comment", pd.comment.toStdString());
     c.setEntry("not sure", pd.notSure);
+    if (pd.timestamp > 0) {
+      c.setEntry("timestamp", pd.timestamp);
+    }
     connections.append(c);
   }
   data.setEntry("connections", connections);
@@ -527,6 +565,8 @@ void ConnectionValidationProtocol::loadDataRequested(ZJsonObject data) {
     pd.psdSegGood = ZJsonParser::booleanValue(pointData["PSD segmentation good"]);
     pd.comment = QString::fromStdString(ZJsonParser::stringValue(pointData["comment"]));
     pd.notSure = ZJsonParser::booleanValue(pointData["not sure"]);
+    pd.timestamp = ZJsonObjectParser::GetValue(
+          pointData, "timestamp", int64_t(0));
     m_points << p;
     m_pointData[p] = pd;
   }
@@ -627,6 +667,76 @@ void ConnectionValidationProtocol::showCompleteMessage()
 {
   showMessage(
         "Done!", "No unreviewed connections! You may complete this protocol.");
+}
+
+bool ConnectionValidationProtocol::acReviewed() const
+{
+  return ui->reviewedBox->isChecked();
+}
+
+void ConnectionValidationProtocol::acSetReviewed(bool on)
+{
+  ui->reviewedBox->setChecked(on);
+}
+
+bool ConnectionValidationProtocol::acTbarGood() const
+{
+  return ui->tbarCheckBox->isChecked();
+}
+
+void ConnectionValidationProtocol::acSetTbarGood(bool on)
+{
+  ui->tbarCheckBox->setChecked(on);
+}
+
+bool ConnectionValidationProtocol::acPsdGood() const
+{
+  return ui->psdCheckBox->isChecked();
+}
+
+void ConnectionValidationProtocol::acSetPsdGood(bool on)
+{
+  ui->psdCheckBox->setChecked(on);
+}
+
+bool ConnectionValidationProtocol::acTbarSegGood() const
+{
+  return ui->tbarSegCheckBox->isChecked();
+}
+
+void ConnectionValidationProtocol::acSetTbarSegGood(bool on)
+{
+  ui->tbarSegCheckBox->setChecked(on);
+}
+
+bool ConnectionValidationProtocol::acPsdSegGood() const
+{
+  return ui->psdSegCheckBox->isChecked();
+}
+
+void ConnectionValidationProtocol::acSetPsdSegGood(bool on)
+{
+  ui->psdSegCheckBox->setChecked(on);
+}
+
+bool ConnectionValidationProtocol::acNotSure() const
+{
+  return ui->notSureBox->isChecked();
+}
+
+void ConnectionValidationProtocol::acSetNotSure(bool on)
+{
+  ui->notSureBox->setChecked(on);
+}
+
+QString ConnectionValidationProtocol::acComment() const
+{
+  return ui->commentEdit->text();
+}
+
+void ConnectionValidationProtocol::acSetComment(const QString &comment)
+{
+  ui->commentEdit->setText(comment);
 }
 
 ConnectionValidationProtocol::~ConnectionValidationProtocol()

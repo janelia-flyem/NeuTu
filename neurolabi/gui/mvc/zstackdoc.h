@@ -19,7 +19,7 @@
 #include <string>
 #include <QMenu>
 #include <QPair>
-#include <QMap>
+#include <QVariant>
 #include <QMutex>
 #include <QSet>
 #include <QStack>
@@ -935,18 +935,6 @@ public:
   Connection_Test_Workspace* getConnectionTestWorkspace();
   Stack *computeSeedMask(Stack *stack);
 
-//  void disconnectSwcNodeModelUpdate();
-//  void disconnectPunctaModelUpdate();
-  /*
-  inline ZSwcTree* previewSwc() { return m_previewSwc; }
-  void updatePreviewSwc();
-  */
-
-//  void clearObjectModifiedTypeBuffer(bool sync = true);
-//  void clearObjectModifiedTargetBuffer(bool sync = true);
-//  void clearObjectModifiedRoleBuffer(bool sync = true);
-//  void clearObjectModifiedBuffer(bool sync = true);
-
   EObjectModifiedMode getObjectModifiedMode();
   void beginObjectModifiedMode(EObjectModifiedMode mode);
   void endObjectModifiedMode();
@@ -1119,6 +1107,15 @@ public:
   ZProgressSignal* getProgressSignal() const {
     return m_progressSignal;
   }
+
+  /*!
+   * \brief Update state of the document.
+   *
+   * Note: This is function related to general state update that is still under
+   * development. For now it has partial implementations to enable some
+   * features.
+   */
+  virtual void updateState(QMap<QString, QVariant> config);
 
   void addTask(ZTask *task);
   void addTask(std::function<void()> f);

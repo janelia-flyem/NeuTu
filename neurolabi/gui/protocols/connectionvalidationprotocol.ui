@@ -110,16 +110,16 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="tbarSegCheckBox">
+        <widget class="QCheckBox" name="psdCheckBox">
          <property name="text">
-          <string>T-bar segmentation correct</string>
+          <string>PSD placement correct</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="psdCheckBox">
+        <widget class="QCheckBox" name="tbarSegCheckBox">
          <property name="text">
-          <string>PSD placement correct</string>
+          <string>T-bar segmentation correct</string>
          </property>
         </widget>
        </item>

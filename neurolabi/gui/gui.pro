@@ -279,13 +279,6 @@ HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
     dialogs/zparameterdialog.h \
     neuapp.h \
-    protocols/protocolassignment.h \
-    protocols/protocolassignmentdialog.h \
-    protocols/protocolassignmentclient.h \
-    protocols/protocolchooseassignmentdialog.h \
-    protocols/protocolassignmenttask.h \
-    protocols/protocolassignmenturl.h \
-    protocols/taskprotocolmocktask.h \
     zimage.h \
     zslider.h \
     plotsettings.h \
@@ -532,6 +525,13 @@ HEADERS += mainwindow.h \
     zstackblockfactory.h \
     zstackblocksource.h \
     imgproc/zstackmultiscalewatershed.h \
+    protocols/protocolassignment.h \
+    protocols/protocolassignmentdialog.h \
+    protocols/protocolassignmentclient.h \
+    protocols/protocolchooseassignmentdialog.h \
+    protocols/protocolassignmenttask.h \
+    protocols/protocolassignmenturl.h \
+    protocols/taskprotocolmocktask.h \
     protocols/protocolswitcher.h \
     protocols/protocolchooser.h \
     protocols/protocolmetadata.h \
