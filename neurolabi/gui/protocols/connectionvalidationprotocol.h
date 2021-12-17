@@ -91,8 +91,8 @@ private:
         POINT_COLUMN,
         REVIEWED_COLUMN,
         TBAR_GOOD_COLUMN,
-        TBAR_SEG_GOOD_COLUMN,
         PSD_GOOD_COLUMN,
+        TBAR_SEG_GOOD_COLUMN,
         PSD_SEG_GOOD_COLUMN,
         NOT_SURE_COLUMN,
         HAS_COMMENT_COLUMN

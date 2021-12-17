@@ -232,7 +232,7 @@ void ConnectionValidationProtocol::onPSDGoodCanged() {
 
 void ConnectionValidationProtocol::onPSDSegGoodChanged() {
   HLDEBUG_FUNC_LN("protocol");
-  m_pointData[m_points[m_currentIndex]].psdSegGood = acPsdGood();
+  m_pointData[m_points[m_currentIndex]].psdSegGood = acPsdSegGood();
   updateTimestamp();
   saveState();
   updateTable();
