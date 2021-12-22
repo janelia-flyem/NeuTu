@@ -10,6 +10,11 @@ FlyEmBodyConfigBuilder::FlyEmBodyConfigBuilder(uint64_t bodyId)
   m_config.setBodyId(bodyId);
 }
 
+FlyEmBodyConfigBuilder::FlyEmBodyConfigBuilder(const FlyEmBodyConfig &config)
+{
+  m_config = config;
+}
+
 FlyEmBodyConfigBuilder::operator FlyEmBodyConfig() const
 {
   return m_config;

@@ -95,7 +95,7 @@ ZObject3dScan* FlyEmBodySource::getCoarseSparsevol(
 
 ZIntCuboid FlyEmBodySource::getBoundBox(uint64_t bodyId) const
 {
-  ZObject3dScan *body = getCoarseSparsevol(bodyId);
+  ZObject3dScan *body = getSparsevol(bodyId, 0);
   if (body) {
     return body->getIntBoundBox();
   }

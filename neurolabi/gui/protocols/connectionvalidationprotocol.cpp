@@ -196,12 +196,17 @@ void ConnectionValidationProtocol::updateTimestamp()
   }
 }
 
-void ConnectionValidationProtocol::onReviewedChanged() {
-  HLDEBUG_FUNC_LN("protocol");
-  m_pointData[m_points[m_currentIndex]].reviewed = acReviewed();
+void ConnectionValidationProtocol::applyChange()
+{
   updateTimestamp();
   saveState();
   updateTable();
+}
+
+void ConnectionValidationProtocol::onReviewedChanged() {
+  HLDEBUG_FUNC_LN("protocol");
+  m_pointData[m_points[m_currentIndex]].reviewed = acReviewed();
+  applyChange();
   // reviewed change affects progress
   updateProgressLabel();
 }
@@ -209,47 +214,35 @@ void ConnectionValidationProtocol::onReviewedChanged() {
 void ConnectionValidationProtocol::onTbarGoodChanged() {
   HLDEBUG_FUNC_LN("protocol");
   m_pointData[m_points[m_currentIndex]].tbarGood = acTbarGood();
-  updateTimestamp();
-  saveState();
-  updateTable();
+  applyChange();
 }
 
 void ConnectionValidationProtocol::onTbarSegGoodChanged() {
   HLDEBUG_FUNC_LN("protocol");
   m_pointData[m_points[m_currentIndex]].tbarSegGood = acTbarSegGood();
-  updateTimestamp();
-  saveState();
-  updateTable();
+  applyChange();
 }
 
 void ConnectionValidationProtocol::onPSDGoodCanged() {
   HLDEBUG_FUNC_LN("protocol");
   m_pointData[m_points[m_currentIndex]].psdGood = acPsdGood();
-  updateTimestamp();
-  saveState();
-  updateTable();
+  applyChange();
 }
 
 void ConnectionValidationProtocol::onPSDSegGoodChanged() {
   HLDEBUG_FUNC_LN("protocol");
   m_pointData[m_points[m_currentIndex]].psdSegGood = acPsdSegGood();
-  updateTimestamp();
-  saveState();
-  updateTable();
+  applyChange();
 }
 
 void ConnectionValidationProtocol::onNotSureChanged() {
   m_pointData[m_points[m_currentIndex]].notSure = acNotSure();
-  updateTimestamp();
-  saveState();
-  updateTable();
+  applyChange();
 }
 
 void ConnectionValidationProtocol::onSetComment() {
   m_pointData[m_points[m_currentIndex]].comment = acComment();
-  updateTimestamp();
-  saveState();
-  updateTable();
+  applyChange();
 }
 
 void ConnectionValidationProtocol::onClickedTable(QModelIndex tableIndex) {

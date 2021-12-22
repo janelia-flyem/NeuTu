@@ -12,6 +12,8 @@
 #include "flyem/flyemchainedbodymeshfactory.h"
 #include "flyem/flyembodysource.h"
 #include "flyem/flyemsparsevolbodymeshfactory.h"
+#include "flyem/flyemcachedbodymeshfactory.h"
+#include "flyembodymeshcache_mock.h"
 
 TEST(FlyEmFunctionBodyMeshFactory, make)
 {
@@ -119,7 +121,93 @@ TEST(FlyEmSparsevolBodyMeshFactory, make)
     auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(2).withDsLevel(2));
     ASSERT_FALSE(bodyMesh.hasData());
   }
+}
 
+TEST(FlyEmCachedBodyMeshFactory, make)
+{
+  FlyEmCachedBodyMeshFactory factory;
+
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(1).withDsLevel(0));
+    ASSERT_FALSE(bodyMesh.hasData());
+  }
+
+  std::shared_ptr<FlyEmFunctionBodyMeshFactory> fastFactory =
+      std::make_shared<FlyEmFunctionBodyMeshFactory>(
+        [](const FlyEmBodyConfig &config) {
+    ZMesh *mesh = nullptr;
+    if (config.getBodyId() == 1) {
+      mesh = new ZMesh{ZMesh::CreateCube()};
+      mesh->setSource(neulib::StringBuilder("[$]").append(config.getBodyId()));
+    }
+    return FlyEmBodyMesh{mesh, config};
+  });
+  factory.setFastFactory(fastFactory);
+
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(1).withDsLevel(0));
+    ASSERT_TRUE(bodyMesh.hasData());
+  }
+
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(2).withDsLevel(0));
+    ASSERT_FALSE(bodyMesh.hasData());
+  }
+
+  std::shared_ptr<FlyEmFunctionBodyMeshFactory> slowFactory =
+      std::make_shared<FlyEmFunctionBodyMeshFactory>(
+        [](const FlyEmBodyConfig &config) {
+    ZMesh *mesh = nullptr;
+    if (config.getBodyId() == 2 || config.getBodyId() == 3) {
+      mesh = new ZMesh{ZMesh::CreateCube()};
+      mesh->setSource(neulib::StringBuilder("[$]").append(config.getBodyId()));
+    }
+    return FlyEmBodyMesh{mesh, config};
+  });
+  factory.setSlowFactory(slowFactory);
+
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(2).withDsLevel(0));
+    ASSERT_TRUE(bodyMesh.hasData());
+  }
+
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(3).withDsLevel(0));
+    ASSERT_TRUE(bodyMesh.hasData());
+  }
+
+  std::shared_ptr<FlyEmBodyMeshCache_Mock> meshCache =
+      std::make_shared<FlyEmBodyMeshCache_Mock>();
+  FlyEmBodyMeshCache::MeshIndex index;
+  index.bodyId = 2;
+  index.mutationId = -1;
+  index.resLevel = -1;
+  ASSERT_EQ(nullptr, meshCache->get(index).second);
+
+  factory.setCache(meshCache);
+  index.bodyId = 1;
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(1).withDsLevel(0));
+    ASSERT_TRUE(bodyMesh.hasData());
+  }
+  ASSERT_EQ(nullptr, meshCache->get(index).second);
+
+  index.bodyId = 2;
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(2).withDsLevel(0));
+    ASSERT_TRUE(bodyMesh.hasData());
+  }
+  ASSERT_NE(nullptr, meshCache->get(index).second);
+
+  factory.setSlowFactory(std::shared_ptr<FlyEmFunctionBodyMeshFactory>());
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(2).withDsLevel(0));
+    ASSERT_TRUE(bodyMesh.hasData());
+  }
+  {
+    auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(3).withDsLevel(0));
+    ASSERT_FALSE(bodyMesh.hasData());
+  }
 }
 
 #endif

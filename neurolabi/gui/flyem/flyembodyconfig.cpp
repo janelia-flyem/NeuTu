@@ -64,14 +64,13 @@ void FlyEmBodyConfig::decDsLevel()
     m_dsLevel = m_nextDsLevel;
     m_nextDsLevel = -1;
   } else if (m_nextDsLevel == -1) {
-    --m_dsLevel;
-    /*
+//    --m_dsLevel;
+
     if (usingCoarseLevel()) {
       m_dsLevel = m_coarseLevel - 1;
     } else {
       --m_dsLevel;
     }
-    */
   }
 }
 

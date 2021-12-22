@@ -1766,6 +1766,7 @@ void ZFlyEmProofDoc::setGrayscaleReader(
   }
 }
 
+#if 0
 void ZFlyEmProofDoc::setGrayscaleReader(
     const std::string &key, ZDvidReader *reader)
 {
@@ -1793,6 +1794,7 @@ void ZFlyEmProofDoc::setGrayscaleReader(
     m_grayscaleReaderMap.erase(key);
   }
 }
+#endif
 
 void ZFlyEmProofDoc::prepareGrayscaleReader(
     std::unordered_map<std::string, ZDvidReader*> &readerMap,
@@ -7419,10 +7421,12 @@ void ZFlyEmProofDoc::addUploadTask(
 
 void ZFlyEmProofDoc::addUploadTask(std::function<void(ZDvidWriter &writer)> f)
 {
-  addTask([f, this] {
-    QMutexLocker locker(&m_workWriterMutex);
-    f(getWorkWriter());
-  });
+  if (f) {
+    addTask([f, this]() {
+      QMutexLocker locker(&m_workWriterMutex);
+      f(getWorkWriter());
+    });
+  }
 }
 
 void ZFlyEmProofDoc::exportGrayscale(

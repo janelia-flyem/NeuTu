@@ -82,6 +82,8 @@
 #include "flyemsparsevolbodymeshfactory.h"
 #include "flyemchainedbodymeshfactory.h"
 #include "flyemfunctionbodymeshfactory.h"
+#include "flyemcachedbodymeshfactory.h"
+#include "flyemdvidbodymeshcache.h"
 
 #include "flyem/exception/utilities.h"
 
@@ -305,6 +307,22 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
   }
 
   return obj;
+}
+
+void ZFlyEmBody3dDoc::setMinDsLevel(int res)
+{
+  m_minDsLevel = res;
+  if (m_bodyMeshFactory) {
+    m_bodyMeshFactory->setMinResLevel(m_minDsLevel);
+  }
+}
+
+void ZFlyEmBody3dDoc::setMaxDsLevel(int res)
+{
+  m_maxDsLevel = res;
+  if (m_bodyMeshFactory) {
+    m_bodyMeshFactory->setMaxResLevel(m_maxDsLevel);
+  }
 }
 
 void ZFlyEmBody3dDoc::useCoarseOnly()
@@ -3709,7 +3727,10 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
   }
 
   if (mesh) {
-    if (IsOverSize(mesh) && config.getDsLevel() <= m_goodEnoughBodyDsLevel) {
+    if (isBodyModelGoodEnough(config.getBodyId(), config.getDsLevel())) {
+      HLDEBUG("body mesh") << "Disable next level because the current mesh is good enough."
+                           << std::endl;
+//    if (IsOverSize(mesh) && config.getDsLevel() <= m_goodEnoughBodyDsLevel) {
       config.disableNextDsLevel();
     }
   }
@@ -3895,10 +3916,11 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
     if (config.getDsLevel() <= getMinDsLevel()) {
       HLDEBUG("body mesh") << "Disable next level because of reaching ds limit" << std::endl;
       config.disableNextDsLevel();
-    } else if (ZStackObjectHelper::IsOverSize(
+    } else if (isBodyModelGoodEnough(config.getBodyId(), config.getDsLevel())) {
+      /*if (ZStackObjectHelper::IsOverSize(
             m_bodySource->getBoundBox(config.getBodyId()), config.getDsLevel())
-               && config.getDsLevel() <= m_goodEnoughBodyDsLevel) {
-      HLDEBUG("body mesh") << "Disable next level because of exceeding size limit" << std::endl;
+               && config.getDsLevel() <= m_goodEnoughBodyDsLevel) {*/
+      HLDEBUG("body mesh") << "Disable next level because it's good enough" << std::endl;
       config.disableNextDsLevel();
     }
   }
@@ -3914,7 +3936,9 @@ const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const
 void ZFlyEmBody3dDoc::prepareBodyMeshFactory()
 {
   if (m_bodySource) {
-    FlyEmChainedBodyMeshFactory *factory = new FlyEmChainedBodyMeshFactory;
+    FlyEmCachedBodyMeshFactory *factory = new FlyEmCachedBodyMeshFactory;
+
+    factory->setResRange(m_minDsLevel, m_maxDsLevel);
 
     FlyEmFunctionBodyMeshFactory *bufferFactory =
         new FlyEmFunctionBodyMeshFactory(
@@ -3945,23 +3969,42 @@ void ZFlyEmBody3dDoc::prepareBodyMeshFactory()
         mesh = dynamic_cast<ZMesh*>(obj);
         if (mesh) {
           actualConfig.setDsLevel(0);
+          HLDEBUG("mesh factory") << "Mesh retrieved: " << mesh->getSource() << std::endl;
         }
       }
       return {mesh, actualConfig};
     });
-    factory->append(bufferFactory);
 
     FlyEmDvidPullBodyMeshFactory *dvidPullFactory =
         new FlyEmDvidPullBodyMeshFactory;
     dvidPullFactory->setReader(
           m_bodySource->getReader(), m_bodySource->getIoMutex(), nullptr);
-    factory->append(dvidPullFactory);
+
+    FlyEmChainedBodyMeshFactory *fastFactory = new FlyEmChainedBodyMeshFactory;
+
+    fastFactory->append(bufferFactory);
+    fastFactory->append(dvidPullFactory);
+
+    factory->setFastFactory(std::shared_ptr<FlyEmBodyMeshFactory>(fastFactory));
+
+    auto cache = std::make_shared<FlyEmDvidBodyMeshCache>();
+    try {
+      cache->setDvidTarget(m_mainDvidWriter.getDvidTarget());
+      factory->setCache(cache);
+    } catch (std::exception &e) {
+      emit messageGenerated(
+            ZWidgetMessage(e.what(), neutu::EMessageType::ERROR));
+    }
+
+
 
     FlyEmSparsevolBodyMeshFactory *sparsevolFactory =
         new FlyEmSparsevolBodyMeshFactory;
     sparsevolFactory->setBodySource(
           std::dynamic_pointer_cast<FlyEmBodySource>(m_bodySource));
-    factory->append(sparsevolFactory);
+//    factory->append(sparsevolFactory);
+    factory->setSlowFactory(
+          std::shared_ptr<FlyEmBodyMeshFactory>(sparsevolFactory));
 
     factory->setPostProcess([](FlyEmBodyMesh &bodyMesh) {
       if (bodyMesh.hasData()) {
@@ -3986,6 +4029,7 @@ void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
 //  m_dvidTarget = target;
   m_mainDvidWriter.clear();
   m_bodyReader.clear();
+  m_bodySource.reset();
 
   if (m_mainDvidWriter.open(target)) {
     for (ZDvidReader& reader : m_workDvidReader) {
@@ -3998,9 +4042,10 @@ void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
 
     if (!m_bodySource) {
       m_bodySource = std::make_shared<FlyEmDvidBodySource>();
+      m_bodySource->setDvidTarget(m_mainDvidWriter.getDvidTarget());
       prepareBodyMeshFactory();
     }
-    m_bodySource->setDvidTarget(m_mainDvidWriter.getDvidTarget());
+//    m_bodySource->setDvidTarget(m_mainDvidWriter.getDvidTarget());
   }
 }
 
@@ -5153,10 +5198,23 @@ void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)
   }
 }
 
-
 void ZFlyEmBody3dDoc::configure(const ProtocolTaskConfig &config)
 {
   m_taskConfig = config;
+}
+
+bool ZFlyEmBody3dDoc::isBodyModelGoodEnough(uint64_t bodyId, int dsLevel) const
+{
+  if (dsLevel <= m_minDsLevel) {
+    return true;
+  }
+
+  if (dsLevel <= m_goodEnoughBodyDsLevel) {
+    ZIntCuboid box = m_bodySource->getBoundBox(bodyId);
+    return ZStackObjectHelper::IsOverSize(box, dsLevel);
+  }
+
+  return false;
 }
 
 /** Update bodies

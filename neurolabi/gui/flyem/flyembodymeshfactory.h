@@ -25,8 +25,21 @@ public:
    */
   void setPostProcess(std::function<void(FlyEmBodyMesh&)> f);
 
+  /*!
+   * \brief Set the resolution range
+   *
+   * It gives hints about the resolution range that the factory can make. A
+   * derived class can decide how to use the range.
+   */
+  void setResRange(int minResLevel, int maxResLevel);
+  void setMinResLevel(int level);
+  void setMaxResLevel(int level);
+
 protected:
   virtual FlyEmBodyMesh _make(const FlyEmBodyConfig &config) = 0;
+
+  int m_minResLevel = 0;
+  int m_maxResLevel = 30;
 
 private:
   std::function<void(FlyEmBodyMesh&)> _postProcess;

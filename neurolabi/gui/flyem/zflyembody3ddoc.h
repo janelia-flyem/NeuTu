@@ -243,12 +243,8 @@ public:
   bool fromTar(uint64_t id) const;
 //  bool isTarMode() const;
 
-  void setMinDsLevel(int res) {
-    m_minDsLevel = res;
-  }
-  void setMaxDsLevel(int res) {
-    m_maxDsLevel = res;
-  }
+  void setMinDsLevel(int res);
+  void setMaxDsLevel(int res);
 
   void useCoarseOnly();
   bool showingCoarseOnly() const;
@@ -588,6 +584,8 @@ private:
   void invalidateBodyCache(InputIterator first, InputIterator last);
 
   void prepareBodyMeshFactory();
+
+  bool isBodyModelGoodEnough(uint64_t bodyId, int dsLevel) const;
 
 private:
   ZFlyEmBodyManager m_bodyManager;

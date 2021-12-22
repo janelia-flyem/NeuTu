@@ -3,6 +3,7 @@
 
 #include "z3dgl.h"
 #include <QStringList>
+#include <mutex>
 #include <vector>
 #include "common/neutudefs.h"
 #include "assimp/scene.h"
@@ -46,14 +47,27 @@ public:
 
   static draco::Mesh *ToDracoMesh(const ZMesh &zmesh, draco::Mesh *dmesh);
 
+  /*!
+   * \brief Test if the instance will perform deduplicating for draco decoding
+   */
+  bool deduplicatingDraco() const;
+
+  /*!
+   * \brief Enable or disable draco deduplicating
+   *
+   * Deduplicating can be expensive and its necessity is unclear.
+   */
+  void setDeduplicatingDraco(bool on);
+
 private:
   void readAllenAtlasMesh(
       const QString& filename, std::vector<glm::vec3>& normals,
       std::vector<glm::vec3>& vertices, std::vector<GLuint>& indices) const;
-  void readDracoMesh(const QString& filename, ZMesh& mesh) const;
+  void readDracoMesh(const QString& filename, ZMesh& mesh, bool deduplicating) const;
   void writeDracoMesh(const QString& filename, const ZMesh &mesh) const;
   ATTRIBUTE_NO_SANITIZE_ADDRESS
-  void readDracoMeshFromMemory(const char *data, size_t size, ZMesh &mesh) const;
+  void readDracoMeshFromMemory(
+      const char *data, size_t size, ZMesh &mesh, bool deduplicating) const;
   void loadMesh(const aiScene *scene, ZMesh &mesh) const;
   void initImporter(Assimp::Importer &importer) const;
   void readNgMeshFromMemory(const char *data, size_t size, ZMesh &mesh) const;
@@ -70,6 +84,8 @@ private:
   QString m_readFilter;
   QStringList m_writeFilters;
   QList<std::string> m_writeFormats;
+
+  bool m_decuplicatingDraco = true;
 };
 
 #endif // ZMESHIO_H

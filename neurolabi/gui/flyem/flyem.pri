@@ -30,11 +30,14 @@ HEADERS += \
     $$PWD/flyembodyconfig.h \
     $$PWD/flyembodyconfigbuilder.h \
     $$PWD/flyembodymesh.h \
+    $$PWD/flyembodymeshcache.h \
     $$PWD/flyembodymeshfactory.h \
     $$PWD/flyembodysource.h \
+    $$PWD/flyemcachedbodymeshfactory.h \
     $$PWD/flyemchainedbodymeshfactory.h \
     $$PWD/flyemdataframeoptiondialog.h \
     $$PWD/flyemdef.h \
+    $$PWD/flyemdvidbodymeshcache.h \
     $$PWD/flyemdvidbodysource.h \
     $$PWD/flyemdvidpullbodymeshfactory.h \
     $$PWD/flyemfunctionbodymeshfactory.h \
@@ -186,10 +189,13 @@ SOURCES += \
     $$PWD/flyembodyconfig.cpp \
     $$PWD/flyembodyconfigbuilder.cpp \
     $$PWD/flyembodymesh.cpp \
+    $$PWD/flyembodymeshcache.cpp \
     $$PWD/flyembodymeshfactory.cpp \
     $$PWD/flyembodysource.cpp \
+    $$PWD/flyemcachedbodymeshfactory.cpp \
     $$PWD/flyemchainedbodymeshfactory.cpp \
     $$PWD/flyemdataframeoptiondialog.cpp \
+    $$PWD/flyemdvidbodymeshcache.cpp \
     $$PWD/flyemdvidbodysource.cpp \
     $$PWD/flyemdvidpullbodymeshfactory.cpp \
     $$PWD/flyemfunctionbodymeshfactory.cpp \

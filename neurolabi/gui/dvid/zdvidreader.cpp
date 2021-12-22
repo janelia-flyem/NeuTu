@@ -1385,8 +1385,33 @@ std::tuple<QByteArray, std::string> ZDvidReader::readMeshBufferFromUrl(
   return result;
 }
 
+ZMesh* ZDvidReader::readMeshFromUrl(
+    const std::string &url, const ZMeshIO &mio) const
+{
+  ZMesh *mesh = nullptr;
+
+  QByteArray buffer;
+  std::string format;
+  std::tie(buffer, format) = ZDvidReader::readMeshBufferFromUrl(url);
+  if (!buffer.isEmpty()) {
+    mesh = mio.loadFromMemory(buffer, format);
+    if (format == "ngmesh") {
+      ZDvidInfo info = readLabelInfo();
+      ZResolution res = info.getVoxelResolution();
+      double sx = 1.0 / res.getVoxelSize(neutu::EAxis::X, res.getUnit());
+      double sy = 1.0 / res.getVoxelSize(neutu::EAxis::Y, res.getUnit());
+      double sz = 1.0 / res.getVoxelSize(neutu::EAxis::Z, res.getUnit());
+      mesh->scale(sx, sy, sz);
+    }
+  }
+
+  return mesh;
+}
+
 ZMesh* ZDvidReader::readMeshFromUrl(const std::string &url) const
 {
+  return readMeshFromUrl(url, ZMeshIO::instance());
+  /*
   ZMesh *mesh = nullptr;
 
   QByteArray buffer;
@@ -1404,33 +1429,6 @@ ZMesh* ZDvidReader::readMeshFromUrl(const std::string &url) const
     }
   }
 
-
-  return mesh;
-
-  /*
-  ZDvidTarget target;
-  target.setFromUrl(url);
-  if (target.getAddressWithPort() != getDvidTarget().getAddressWithPort() ||
-      target.getUuid() != getDvidTarget().getUuid()) {
-    LWARN() << "Unmatched target";
-    return NULL;
-  }
-
-  ZMesh *mesh = NULL;
-
-  std::string format = "obj";
-
-  ZJsonObject infoJson = readJsonObject(ZDvidUrl::GetMeshInfoUrl(url));
-  if (infoJson.hasKey("format")) {
-    format = ZJsonParser::stringValue(infoJson["format"]);
-  }
-
-  m_bufferReader.read(url.c_str(), isVerbose());
-  if (m_bufferReader.getStatus() != neutu::EReadStatus::FAILED) {
-    const QByteArray &buffer = m_bufferReader.getBuffer();
-    mesh = ZMeshIO::instance().loadFromMemory(buffer, format);
-  }
-  m_bufferReader.clearBuffer();
 
   return mesh;
   */
@@ -1561,9 +1559,39 @@ ZDvidReader::readConsistentMergedMeshKeys(const std::string &key) const
   return bodyArray;
 }
 
-ZMesh* ZDvidReader::readMesh(const std::string &data, const std::string &key)
-const
+ZMesh* ZDvidReader::readMesh(
+    const std::string &data, const std::string &key, const ZMeshIO &mio) const
 {
+  ZDvidUrl dvidUrl(getDvidTarget());
+
+  ZMesh *mesh = nullptr;
+
+  if (hasKey(data.c_str(), key.c_str())) {
+    if (ZString(key).endsWith(".merge")) {
+      std::vector<uint64_t> bodyArray = readConsistentMergedMeshKeys(key);
+      if (!bodyArray.empty()) {
+        mesh = new ZMesh;
+        for (uint64_t bodyId : bodyArray) {
+          std::unique_ptr<ZMesh> submesh(
+                readMesh(data, ZDvidUrl::GetMeshKey(bodyId, ZDvidUrl::EMeshType::NG), mio));
+          if (submesh) {
+            mesh->append(*submesh);
+          }
+        }
+      }
+    } else {
+      std::string meshUrl = dvidUrl.getKeyUrl(data, key);
+      mesh = readMeshFromUrl(with_source_query(meshUrl), mio);
+    }
+  }
+
+  return mesh;
+}
+
+ZMesh* ZDvidReader::readMesh(const std::string &data, const std::string &key) const
+{
+  return readMesh(data, key, ZMeshIO::instance());
+  /*
   ZDvidUrl dvidUrl(getDvidTarget());
 
   ZMesh *mesh = nullptr;
@@ -1588,6 +1616,7 @@ const
   }
 
   return mesh;
+  */
 }
 
 ZMesh* ZDvidReader::readSupervoxelMesh(uint64_t svId) const

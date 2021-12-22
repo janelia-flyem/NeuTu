@@ -400,7 +400,9 @@ std::vector<glm::uvec3> ZMesh::triangleIndices() const
 glm::uvec3 ZMesh::triangleIndices(size_t index) const
 {
   glm::uvec3 triangle;
+#ifdef _DEBUG_
   CHECK(index < numTriangles());
+#endif
   if (m_indices.empty()) {
     if (m_ttype == GL_TRIANGLES) {
       triangle[0] = index * 3;

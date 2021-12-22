@@ -143,5 +143,6 @@
 #include "flyem/tests/flyembodyconfigtest.h"
 #include "flyem/tests/flyembodymeshfactorytest.h"
 #include "flyem/tests/flyembodysourcetest.h"
+#include "flyem/tests/flyembodymeshcachetest.h"
 
 #endif // ZTESTALL_H

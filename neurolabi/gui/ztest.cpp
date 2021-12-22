@@ -393,6 +393,9 @@
 #include "flyem/flyemsparsevolbodymeshfactory.h"
 #include "flyem/flyemchainedbodymeshfactory.h"
 #include "flyem/dialogs/flyembatchbodyannotationdialog.h"
+#include "flyem/flyemdvidbodymeshcache.h"
+#include "flyem/flyemcachedbodymeshfactory.h"
+#include "flyem/flyemfunctionbodymeshfactory.h"
 
 #include "widgets/zcheckboxgroup.h"
 #include "widgets/zh3widget.h"
@@ -33051,7 +33054,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   FlyEmBatchBodyAnnotationDialog *dlg = new FlyEmBatchBodyAnnotationDialog(host);
   ZJsonObject config;
   config.load(GET_BENCHMARK_DIR + "/bnschema.json");
@@ -33503,6 +33506,43 @@ void ZTest::test(MainWindow *host)
   } else {
     std::cout << "No mesh generated." << std::endl;
   }
+#endif
+
+#if 0
+  FlyEmDvidBodyMeshCache cache;
+  ZDvidReader *reader = ZGlobal::GetDvidReader("local_test");
+  cache.setDvidTarget(reader->getDvidTarget());
+
+  FlyEmBodyMeshCache::MeshIndex index;
+  index.bodyId = 5901371321;
+  index.mutationId = -1;
+  index.resLevel = -1;
+  cache.get(index);
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetDvidReader("local_test");
+  FlyEmCachedBodyMeshFactory factory;
+  auto cache = std::make_shared<FlyEmDvidBodyMeshCache>();
+  cache->setDvidTarget(reader->getDvidTarget());
+  factory.setCache(cache);
+
+  auto source = std::shared_ptr<FlyEmDvidBodySource>(new FlyEmDvidBodySource);
+  source->setDvidTarget(reader->getDvidTarget());
+  auto slowFactory = std::make_shared<FlyEmSparsevolBodyMeshFactory>();
+  slowFactory->setBodySource(source);
+
+  factory.setSlowFactory(slowFactory);
+
+  auto fastFactory = std::make_shared<FlyEmFunctionBodyMeshFactory>(
+        [](const FlyEmBodyConfig &config) {
+    return FlyEmBodyMesh(nullptr, config);
+  });
+  factory.setFastFactory(fastFactory);
+
+  auto bodyMesh = factory.make(FlyEmBodyConfigBuilder(5901371321).withDsLevel(3));
+  std::cout << bodyMesh.getBodyConfig().getDsLevel() << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;

@@ -22,6 +22,11 @@ public:
     return hd;
   }
 
+  /*!
+   * \brief Get icon of a topic
+   *
+   * It returns empty if the topic is empty or disabled.
+   */
   std::string getIcon(const std::string &topic) const;
 
   template<typename T>
@@ -75,7 +80,7 @@ HighlightDebug& HLDebug(const std::string &key);
 
 #ifdef _DEBUG_
 #  define HLDEBUG(key) HLDebug(key)
-#  define HLDEBUG_FUNC(key) HLDebug(key) << __PRETTY_FUNCTION__
+#  define HLDEBUG_FUNC(key) HLDebug(key) << std::string(__PRETTY_FUNCTION__) + ": "
 #  define HLDEBUG_FUNC_LN(key) HLDEBUG_FUNC(key) << std::endl
 #else
 #  define HLDEBUG(key) if (1) {} else std::cout

@@ -7,6 +7,7 @@ class FlyEmBodyConfigBuilder
 {
 public:
   FlyEmBodyConfigBuilder();
+  FlyEmBodyConfigBuilder(const FlyEmBodyConfig &config);
   FlyEmBodyConfigBuilder(uint64_t bodyId);
 
   FlyEmBodyConfigBuilder& withDsLevel(int level);
@@ -14,8 +15,6 @@ public:
   FlyEmBodyConfigBuilder& within(const ZIntCuboid &range);
 
   operator FlyEmBodyConfig() const;
-
-
 
 private:
   FlyEmBodyConfig m_config;

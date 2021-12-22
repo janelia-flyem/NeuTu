@@ -435,7 +435,7 @@ void ZMeshIO::loadFromMemory(
 {
   try {
     if (format == "drc") {
-      readDracoMeshFromMemory(buffer.constData(), buffer.size(), mesh);
+      readDracoMeshFromMemory(buffer.constData(), buffer.size(), mesh, m_decuplicatingDraco);
     } else if (format == "ngmesh") {
       readNgMeshFromMemory(buffer.constData(), buffer.size(), mesh);
     } else {
@@ -484,7 +484,7 @@ void ZMeshIO::load(const QString& filename, ZMesh& mesh) const
     if (filename.endsWith(".msh", Qt::CaseInsensitive)) {
       readAllenAtlasMesh(filename, mesh.m_normals, mesh.m_vertices, mesh.m_indices);
     } else if (filename.endsWith(".drc", Qt::CaseInsensitive)) {
-      readDracoMesh(filename, mesh);
+      readDracoMesh(filename, mesh, m_decuplicatingDraco);
     } else if (filename.endsWith(".ngmesh", Qt::CaseInsensitive)) {
       readNgMesh(filename, mesh);
     } else {
@@ -810,7 +810,7 @@ void ZMeshIO::readNgMeshFromMemory(
 }
 
 void ZMeshIO::readDracoMeshFromMemory(
-    const char *data, size_t size, ZMesh &mesh) const
+    const char *data, size_t size, ZMesh &mesh, bool deduplicating) const
 {
   draco::DecoderBuffer buffer;
   buffer.Init(data, size);
@@ -832,15 +832,15 @@ void ZMeshIO::readDracoMeshFromMemory(
     }
     std::unique_ptr<draco::Mesh> in_mesh = std::move(statusor).value();
     if (in_mesh) {
-      msh = in_mesh.get();
-
-      // Draco encoding may cause duplication of vertices data.
-      // De-duplicate after decoding.
-      // Note: These functions are not defined unless you build with a special preprocessor definition:
-      //       Make sure NeuTu is built with -D DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED=1
-      msh->DeduplicateAttributeValues();
-      msh->DeduplicatePointIds();
-
+      msh = in_mesh.get(); // This is necessary for mesh vertex indexing if skipping dedupliating. Reason unknown.
+      if (deduplicating) {
+        // Draco encoding may cause duplication of vertices data.
+        // De-duplicate after decoding.
+        // Note: These functions are not defined unless you build with a special preprocessor definition:
+        //       Make sure NeuTu is built with -D DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED=1
+        msh->DeduplicateAttributeValues();
+        msh->DeduplicatePointIds();
+      }
       pc = std::move(in_mesh);
     }
   } else if (geom_type == draco::POINT_CLOUD) {
@@ -921,7 +921,8 @@ void ZMeshIO::writeDracoMesh(const QString &filename, const ZMesh &mesh) const
   }
 }
 
-void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
+void ZMeshIO::readDracoMesh(
+    const QString& filename, ZMesh& mesh, bool deduplicating) const
 {
   std::ifstream inputFileStream;
   openFileStream(inputFileStream, filename, std::ios::in | std::ios::binary | std::ios::ate);
@@ -934,7 +935,7 @@ void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
   readStream(inputFileStream, data.data(), size);
   inputFileStream.close();
 
-  readDracoMeshFromMemory(data.data(), data.size(), mesh);
+  readDracoMeshFromMemory(data.data(), data.size(), mesh, deduplicating);
 }
 
 void ZMeshIO::readNgMesh(const QString &filename, ZMesh &mesh) const
@@ -944,3 +945,14 @@ void ZMeshIO::readNgMesh(const QString &filename, ZMesh &mesh) const
 
   readNgMesh(stream, mesh);
 }
+
+bool ZMeshIO::deduplicatingDraco() const
+{
+  return m_decuplicatingDraco;
+}
+
+void ZMeshIO::setDeduplicatingDraco(bool on)
+{
+  m_decuplicatingDraco = on;
+}
+

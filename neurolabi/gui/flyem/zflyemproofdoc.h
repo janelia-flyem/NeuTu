@@ -807,7 +807,7 @@ protected:
   void initTodoEnsemble();
   void initSynapseEnsemble();
 
-  void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
+//  void setGrayscaleReader(const std::string &key, ZDvidReader *reader);
   void setGrayscaleReader(
       std::unordered_map<std::string, ZDvidReader*> &readerMap,
       const std::string &key, ZDvidReader *reader, bool updatingMainReader);

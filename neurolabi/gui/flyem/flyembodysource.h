@@ -61,7 +61,7 @@ public:
   /*!
    * \brief Get the scale of the coarse sparsevol
    *
-   * If it returns 0, it means that there is not coarse sparsevol.
+   * If it returns 0, it means that there is no coarse sparsevol.
    */
   virtual int getCoarseSparsevolScale() const;
 
@@ -83,7 +83,8 @@ public:
   /*!
    * \brief Get bouding box of a body at a downsampling level.
    *
-   * The coordinates of the box are from the downsampled space.
+   * The coordinates of the box are from the downsampled space. It is not
+   * necessary the same as the bounding box of the sparsevol at the same level.
    */
   virtual ZIntCuboid getBoundBox(uint64_t bodyId, int dsLevel) const;
 

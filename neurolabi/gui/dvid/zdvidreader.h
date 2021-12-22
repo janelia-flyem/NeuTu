@@ -45,6 +45,7 @@ class ZAffineRect;
 class ZDvidUrl;
 class ZDvidSynapse;
 class ZClosedCurve;
+class ZMeshIO;
 
 struct archive;
 
@@ -216,7 +217,10 @@ public:
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
   ZMesh* readMesh(const std::string &key) const;
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
+  ZMesh* readMesh(
+      const std::string &data, const std::string &key, const ZMeshIO &mio) const;
   ZMesh* readMeshFromUrl(const std::string &url) const;
+  ZMesh* readMeshFromUrl(const std::string &url, const ZMeshIO &mio) const;
   std::tuple<QByteArray, std::string> readMeshBufferFromUrl(
       const std::string &url) const;
 

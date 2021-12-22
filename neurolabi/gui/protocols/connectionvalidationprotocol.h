@@ -106,6 +106,7 @@ private:
     QString m_assignmentID;
 
 
+    void applyChange();
     void saveState();
     void showMessage(QString title, QString message);
     void showError(QString title, QString message);
