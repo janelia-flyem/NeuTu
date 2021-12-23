@@ -46,6 +46,8 @@ FlyEmBodyMesh FlyEmCachedBodyMeshFactory::_make(const FlyEmBodyConfig &config)
     index.bodyId = config.getBodyId();
     index.resLevel = -1;
     index.mutationId = -1;
+  } else {
+    HLDEBUG("body mesh") << "Skip indexing for hybrid body" << std::endl;
   }
 
   if (m_meshCache && index.isValid()) {
@@ -75,11 +77,6 @@ FlyEmBodyMesh FlyEmCachedBodyMeshFactory::_make(const FlyEmBodyConfig &config)
     //   1. < 0 or bigger than m_maxResLevel: try m_maxResLevel only
     //   2. in range: try the specified level only
     //   3. smaller than m_minResLevel: try m_minResLevel only
-    if (index.mutationId == -1) {
-      if (m_meshCache) {
-        index.mutationId = m_meshCache->getLatestMutationId(index.bodyId);
-      }
-    }
     int level = config.getDsLevel();
     if (level < 0 || level > m_maxResLevel) {
       level = m_maxResLevel;
@@ -88,8 +85,14 @@ FlyEmBodyMesh FlyEmCachedBodyMeshFactory::_make(const FlyEmBodyConfig &config)
     }
     FlyEmBodyMesh bodyMesh = m_slowMeshFactory->make(
           FlyEmBodyConfigBuilder(config).withDsLevel(level));
-    if (m_meshCache && bodyMesh.hasData()) {
+    if (m_meshCache && bodyMesh.hasData() && !bodyMesh.getBodyConfig().isHybrid()) {
+      if (index.mutationId == -1) {
+        if (m_meshCache) {
+          index.mutationId = m_meshCache->getLatestMutationId(index.bodyId);
+        }
+      }
       index.resLevel = bodyMesh.getBodyConfig().getDsLevel();
+      HLDEBUG("body mesh") << "Caching " << index << std::endl;
       m_meshCache->set(index, bodyMesh.getData());
     }
     return bodyMesh;

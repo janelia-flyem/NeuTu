@@ -37,3 +37,9 @@ FlyEmBodyConfigBuilder& FlyEmBodyConfigBuilder::within(const ZIntCuboid &range)
   m_config.setRange(range);
   return *this;
 }
+
+FlyEmBodyConfigBuilder& FlyEmBodyConfigBuilder::withLocalDsLevel(int level)
+{
+  m_config.setLocalDsLevel(level);
+  return *this;
+}

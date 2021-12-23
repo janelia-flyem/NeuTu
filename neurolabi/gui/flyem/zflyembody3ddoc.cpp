@@ -603,7 +603,8 @@ void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
       bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
       bodyEvent.setBodyColor(getBodyColor(bodyId));
       bodyEvent.setRange(range);
-      bodyEvent.setDsLevel(getMinDsLevel());
+      bodyEvent.setDsLevel(std::max(2, getMinDsLevel()));
+      bodyEvent.setCoarseLevel(getCoarseBodyZoom());
       if (getDvidTarget().hasMultiscaleSegmentation()) {
         bodyEvent.setLocalDsLevel(1); //need configuration
       } else {

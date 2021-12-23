@@ -136,7 +136,7 @@ TEST(FlyEmCachedBodyMeshFactory, make)
       std::make_shared<FlyEmFunctionBodyMeshFactory>(
         [](const FlyEmBodyConfig &config) {
     ZMesh *mesh = nullptr;
-    if (config.getBodyId() == 1) {
+    if (config.getBodyId() == 1 && !config.isHybrid()) {
       mesh = new ZMesh{ZMesh::CreateCube()};
       mesh->setSource(neulib::StringBuilder("[$]").append(config.getBodyId()));
     }
@@ -198,6 +198,16 @@ TEST(FlyEmCachedBodyMeshFactory, make)
     ASSERT_TRUE(bodyMesh.hasData());
   }
   ASSERT_NE(nullptr, meshCache->get(index).second);
+
+  {
+    auto bodyMesh = factory.make(
+          FlyEmBodyConfigBuilder(3).withDsLevel(1).
+          within(ZIntCuboid(0, 0, 0, 1, 1, 1)).withLocalDsLevel(0));
+    ASSERT_TRUE(bodyMesh.hasData());
+  }
+
+  index.bodyId = 3;
+  ASSERT_EQ(nullptr, meshCache->get(index).second);
 
   factory.setSlowFactory(std::shared_ptr<FlyEmFunctionBodyMeshFactory>());
   {

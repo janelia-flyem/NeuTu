@@ -150,9 +150,11 @@ void FlyEmDvidBodyMeshCache::set(const MeshIndex &index, const ZMesh *mesh)
 {
   if (m_writer && mesh) {
     std::string key = getKey(index, m_defaultFormat);
-    QByteArray buffer = mesh->writeToMemory(m_defaultFormat);
-    if (!buffer.isEmpty()) {
-      m_writer->writeDataToKeyValue(getCacheName(), key, buffer);
+    if (!key.empty()) {
+      QByteArray buffer = mesh->writeToMemory(m_defaultFormat);
+      if (!buffer.isEmpty()) {
+        m_writer->writeDataToKeyValue(getCacheName(), key, buffer);
+      }
     }
   }
 }

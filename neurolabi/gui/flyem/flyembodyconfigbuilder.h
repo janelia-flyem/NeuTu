@@ -13,6 +13,7 @@ public:
   FlyEmBodyConfigBuilder& withDsLevel(int level);
   FlyEmBodyConfigBuilder& withCoarseLevel(int level);
   FlyEmBodyConfigBuilder& within(const ZIntCuboid &range);
+  FlyEmBodyConfigBuilder& withLocalDsLevel(int level);
 
   operator FlyEmBodyConfig() const;
 

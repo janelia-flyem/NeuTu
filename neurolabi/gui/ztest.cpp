@@ -445,6 +445,7 @@ void ZTest::runUnitTest()
 
 int ZTest::RunUnitTest(int argc, char *argv[])
 {
+  HighlightDebug::GetInstance().setTopicFilter("test");
   return ZUnitTest(argc, argv).run();
 }
 
