@@ -1811,7 +1811,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(FlyEmBodyConfig &config)
 
   if (config.getLabelType() == neutu::EBodyLabelType::BODY &&
       !config.getAddBuffer()) {
-    loadSynapseFresh(bodyId);
+    loadSynapseFresh(ZFlyEmBodyManager::Decode(bodyId));
     loadTodoFresh(bodyId);
   }
   /*

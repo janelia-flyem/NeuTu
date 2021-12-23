@@ -913,6 +913,37 @@ std::vector<std::pair<uint64_t, uint64_t>> ZFlyEmProofDoc::getMergeCandidate() c
   return result;
 }
 
+void ZFlyEmProofDoc::markAutapses(const std::vector<ZDvidSynapse> &synapses,
+                                  const std::vector<ZPunctum*> &tbars,
+                                  const std::vector<ZPunctum*> &psds)
+{
+  std::unordered_map<ZIntPoint, ZPunctum*> psdPosToPunctum;
+  for (ZPunctum *psd : psds) {
+    psdPosToPunctum[ZIntPoint(int(psd->x()), int(psd->y()), int(psd->z()))] = psd;
+  }
+
+  std::unordered_map<ZIntPoint, ZPunctum*> tbarPosToPunctum;
+  for (ZPunctum *tbar : tbars) {
+    tbarPosToPunctum[ZIntPoint(int(tbar->x()), int(tbar->y()), int(tbar->z()))] = tbar;
+  }
+
+  for (const ZDvidSynapse &synapse : synapses) {
+    if (synapse.getKind() == ZDvidSynapse::EKind::KIND_PRE_SYN) {
+      const std::vector<ZIntPoint>& partners = synapse.getPartners();
+      for (const ZIntPoint& partnerPos : partners) {
+        auto itPsds = psdPosToPunctum.find(partnerPos);
+        if (itPsds != psdPosToPunctum.end()) {
+          auto itTbars = tbarPosToPunctum.find(synapse.getPosition());
+          if (itTbars != tbarPosToPunctum.end()) {
+            itPsds->second->setRole(ZStackObjectRole::ROLE_AUTAPSE);
+            itTbars->second->setRole(ZStackObjectRole::ROLE_AUTAPSE);
+          }
+        }
+      }
+    }
+  }
+}
+
 #if 0
 template<typename T>
 void ZFlyEmProofDoc::mergeSelectedWithoutConflict(
@@ -4932,6 +4963,8 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
         psd.push_back(punctum);
       }
     }
+
+    markAutapses(synapseArray, tbar, psd);
   }
 
   return synapse;

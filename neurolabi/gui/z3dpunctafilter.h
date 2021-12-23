@@ -35,6 +35,11 @@ public:
     m_colorMode.select(mode.c_str());
   }
 
+  inline std::string getColorMode()
+  {
+    return m_colorMode.get().toStdString();
+  }
+
   //virtual bool hasOpaque(Z3DEye eye) const override { return Z3DGeometryFilter::hasOpaque(eye) && !m_randomGlow.get(); }
   virtual void renderOpaque(Z3DEye eye) override;
 
