@@ -85,7 +85,7 @@ private:
   QStringList m_writeFilters;
   QList<std::string> m_writeFormats;
 
-  bool m_decuplicatingDraco = true;
+  bool m_decuplicatingDraco = false;
 };
 
 #endif // ZMESHIO_H

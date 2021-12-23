@@ -476,7 +476,6 @@ HEADERS += mainwindow.h \
     z3dwindow.h \
     z3dmainwindow.h \
     zscrollslicestrategy.h \
-    zviewproj.h \
     zorthoviewhelper.h \
     zglobal.h \
     zstackgarbagecollector.h \
@@ -763,7 +762,6 @@ SOURCES += main.cpp \
     zcubearraymovieactor.cpp \
     z3dmainwindow.cpp \
     zscrollslicestrategy.cpp \
-    zviewproj.cpp \
     zorthoviewhelper.cpp \
     zglobal.cpp \
     zstackgarbagecollector.cpp \

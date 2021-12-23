@@ -12,7 +12,7 @@
 class ZInteractiveContext;
 class ZImageWidget;
 class ZStackDoc;
-class ZViewProj;
+//class ZViewProj;
 
 class ZMouseEventProcessor
 {

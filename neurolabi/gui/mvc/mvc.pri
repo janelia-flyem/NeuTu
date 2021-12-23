@@ -5,7 +5,6 @@ HEADERS += \
     $$PWD/logging.h \
     $$PWD/utilities.h \
     $$PWD/zmousecursorglyph.h \
-    $$PWD/zpositionmapper.h \
     $$PWD/zstackdocobjectmonitor.h \
     $$PWD/zstackdocobjectupdate.h \
     $$PWD/zstackobjectpaintsorter.h \
@@ -26,7 +25,6 @@ SOURCES += \
     $$PWD/logging.cpp \
     $$PWD/utilities.cpp \
     $$PWD/zmousecursorglyph.cpp \
-    $$PWD/zpositionmapper.cpp \
     $$PWD/zstackdocobjectmonitor.cpp \
     $$PWD/zstackdocobjectupdate.cpp \
     $$PWD/zstackobjectpaintsorter.cpp \

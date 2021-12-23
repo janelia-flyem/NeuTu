@@ -6,7 +6,7 @@
 #include "zstackoperator.h"
 #include "zstack.hxx"
 
-#include "mvc/zpositionmapper.h"
+//#include "mvc/zpositionmapper.h"
 #include "mvc/zstackdocutil.h"
 #include "mvc/zstackdoc.h"
 

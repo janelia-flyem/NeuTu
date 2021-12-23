@@ -6,7 +6,7 @@
 #include "zstackpresenter.h"
 #include "zviewproj.h"
 #include "widgets/zimagewidget.h"
-#include "zpositionmapper.h"
+//#include "zpositionmapper.h"
 #include "zstackdocutil.h"
 #include "zstack.hxx"
 #include "geometry/zgeometry.h"

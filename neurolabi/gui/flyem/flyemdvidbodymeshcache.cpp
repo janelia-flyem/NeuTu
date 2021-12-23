@@ -135,9 +135,9 @@ ZMesh* FlyEmDvidBodyMeshCache::getFromSolidIndex(const MeshIndex &index) const
     std::string key = getKey(index, m_defaultFormat);
     HLDEBUG("mesh cache") << "Trying to get mesh from " << key << std::endl;
     if (reader->hasKey(getCacheName().c_str(), key.c_str())) {
-      ZMeshIO mio = ZMeshIO::instance();
-      mio.setDeduplicatingDraco(false);
-      ZMesh *mesh = reader->readMesh(getCacheName(), key, mio);
+//      ZMeshIO mio = ZMeshIO::instance();
+//      mio.setDeduplicatingDraco(false);
+      ZMesh *mesh = reader->readMesh(getCacheName(), key);
       return mesh;
     } else {
       HLDEBUG("mesh cache") << "No mesh exists at " << key << std::endl;

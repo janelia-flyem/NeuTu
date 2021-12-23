@@ -362,7 +362,7 @@ public:
   ZStackViewParam getViewParameter() const;
 
 //  QRectF getProjRegion() const;
-  ZViewProj getViewProj() const;
+//  ZViewProj getViewProj() const;
 
   //Get transform from view port to proj region
 //  ZStTransform getViewTransform() const;

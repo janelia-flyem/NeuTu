@@ -27,6 +27,10 @@ Z3DMeshRenderer::Z3DMeshRenderer(Z3DRendererBase& rendererBase)
   , m_wireframeColor("Wireframe Color", glm::vec4(1), glm::vec4(0), glm::vec4(1))
   , m_useTwoSidedLighting("Two-Sided Lighting", true)
 {
+#ifdef __APPLE__
+  m_useTwoSidedLighting.set(false);
+#endif
+
   m_colorSource.addOptions("MeshColor", "Mesh1DTexture", "Mesh2DTexture", "Mesh3DTexture", "CustomColor");
   m_colorSource.select("MeshColor");
   connect(&m_colorSource, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshRenderer::compile);

@@ -14,6 +14,7 @@
 #include <QFile>
 #include <memory>
 
+#include "common/debug.h"
 #include "zmesh.h"
 #include "zioutils.h"
 #include "qt/core/zexception.h"
@@ -327,8 +328,10 @@ ZMeshIO::ZMeshIO()
     */
   }
   addWriteFormat("ngmesh", "ngmesh", "NG Mesh");
-//  m_writeExts.push_back("ngmesh");
-//  m_writeFormats.push_back("ngmesh");
+
+  if (neutu::GetEnv("NEUTU_DEDUP_DRACO") == "yes") {
+    setDeduplicatingDraco(true);
+  }
 }
 
 void ZMeshIO::addWriteFormat(
@@ -832,12 +835,13 @@ void ZMeshIO::readDracoMeshFromMemory(
     }
     std::unique_ptr<draco::Mesh> in_mesh = std::move(statusor).value();
     if (in_mesh) {
-      msh = in_mesh.get(); // This is necessary for mesh vertex indexing if skipping dedupliating. Reason unknown.
+      msh = in_mesh.get(); // This is necessary for correct mesh vertex indexing. Reason unknown.
       if (deduplicating) {
         // Draco encoding may cause duplication of vertices data.
         // De-duplicate after decoding.
         // Note: These functions are not defined unless you build with a special preprocessor definition:
         //       Make sure NeuTu is built with -D DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED=1
+        HLDEBUG("body mesh") << "Deduplicating mesh" << std::endl;
         msh->DeduplicateAttributeValues();
         msh->DeduplicatePointIds();
       }

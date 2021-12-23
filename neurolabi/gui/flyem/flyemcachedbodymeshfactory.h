@@ -25,8 +25,25 @@ class FlyEmCachedBodyMeshFactory : public FlyEmBodyMeshFactory
 public:
   FlyEmCachedBodyMeshFactory();
 
+  /*!
+   * \brief Set fast factory
+   *
+   * It removes the fast factory if \a f is emtpy.
+   */
   void setFastFactory(std::shared_ptr<FlyEmBodyMeshFactory> f);
+
+  /*!
+   * \brief Set slow factory
+   *
+   * It removes the slow factory if \a f is empty.
+   */
   void setSlowFactory(std::shared_ptr<FlyEmBodyMeshFactory> f);
+
+  /*!
+   * \brief Set cache
+   *
+   * It removes cache if \a cache is empty.
+   */
   void setCache(std::shared_ptr<FlyEmBodyMeshCache> cache);
 
 protected:

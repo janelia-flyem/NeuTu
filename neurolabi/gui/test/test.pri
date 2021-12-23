@@ -84,7 +84,6 @@ HEADERS += \
     $$PWD/zstackskeletonizertest.h \
     $$PWD/zdvidroitest.h \
     $$PWD/zflyembodyannotationtest.h \
-    $$PWD/zviewprojtest.h \
     $$PWD/z3dfiltersettingtest.h \
     $$PWD/zdvidresultservicetest.h \
     $$PWD/zxmltest.h \
@@ -94,7 +93,6 @@ HEADERS += \
     $$PWD/zstackobjectinfotest.h \
     $$PWD/zglobaltest.h \
     $$PWD/zmouseeventprocessortest.h \
-    $$PWD/zpositionmappertest.h \
     $$PWD/zstackdochelpertest.h \
     $$PWD/zgeometrytest.h \
     $$PWD/zdviddataslicetest.h \

@@ -58,7 +58,7 @@
 #include "widgets/zhwidget.h"
 
 #include "zstackviewrecorder.h"
-#include "zpositionmapper.h"
+//#include "zpositionmapper.h"
 #include "utilities.h"
 
 std::atomic<int> ZStackView::m_nextViewId{1};
@@ -3068,7 +3068,7 @@ void ZStackView::configurePainter(ZStackObjectPainter &/*painter*/)
 
 void ZStackView::printViewParam() const
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
     std::cout << "Axis: " << neutu::EnumValue(getSliceAxis()) << std::endl;
     getViewProj().print();
 #endif
@@ -3220,11 +3220,13 @@ QRectF ZStackView::getProjRegion() const
 }
 */
 
+/*
 ZViewProj ZStackView::getViewProj() const
 {
 //  return m_imageWidget->getViewProj();
   return ZViewProj();
 }
+*/
 
 /*
 void ZStackView::setViewProj(int x0, int y0, double zoom)
