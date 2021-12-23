@@ -39,6 +39,8 @@
 #include "z3dwindow.h"
 #include "zdialogfactory.h"
 #include "zglobal.h"
+#include "z3dpunctafilter.h"
+#include "zpunctum.h"
 
 #include "qt/network/znetworkutils.h"
 
@@ -123,6 +125,30 @@ namespace {
     return nullptr;
   }
 
+  Z3DPunctaFilter *getPunctaFilter(ZStackDoc *doc)
+  {
+    if (Z3DWindow *window = doc->getParent3DWindow()) {
+      if (Z3DPunctaFilter *filter =
+          dynamic_cast<Z3DPunctaFilter*>(window->getPunctaFilter())) {
+          return filter;
+       }
+    }
+    return nullptr;
+  }
+
+  void showSynapses(ZStackDoc *doc, bool show)
+  {
+    if (Z3DWindow *window = doc->getParent3DWindow()) {
+      if (QToolBar *toolbar = window->getToolBar()) {
+        for (QAction *action : toolbar->actions()) {
+          if (action->text() == "Synapses") {
+            action->setChecked(show);
+          }
+        }
+      }
+    }
+  }
+
   std::string getOutputInstanceName(const ZDvidTarget &dvidTarget)
   {
     return dvidTarget.getBodyLabelName() + "_cleaved";
@@ -136,10 +162,12 @@ namespace {
 
   static bool garbageLifetimeLimitEnabled;
   static bool splitTaskLoadingEnabled;
-  static bool showingSynapse;
+  static bool showingSynapses;
   static bool preservingSourceColorEnabled;
   static bool showingSourceColors;
   static bool showingAnnotations;
+  static std::string punctaColorMode;
+  static bool punctaStayingOnTop;
 
   void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
   {
@@ -152,8 +180,9 @@ namespace {
       splitTaskLoadingEnabled = bodyDoc->splitTaskLoadingEnabled();
       bodyDoc->enableSplitTaskLoading(false);
 
-      showingSynapse = bodyDoc->showingSynapse();
-      bodyDoc->showSynapse(false);
+      showingSynapses = bodyDoc->showingSynapse();
+      // Show autapses, which indicate regions where cleaving might be needed.
+      showSynapses(bodyDoc, true);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
@@ -165,6 +194,13 @@ namespace {
 
         showingSourceColors = filter->showingSourceColors();
         filter->showSourceColors(false);
+      }
+
+      if (Z3DPunctaFilter *filter = getPunctaFilter(bodyDoc)) {
+        punctaColorMode = filter->getColorMode();
+        filter->setColorMode("Original Point Color");
+        punctaStayingOnTop = filter->isStayOnTop();
+        filter->setStayOnTop(true);
       }
 
       showingAnnotations = ZFlyEmProofMvc::showingAnnotations();
@@ -179,16 +215,39 @@ namespace {
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
       bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
-      bodyDoc->showSynapse(showingSynapse);
+      showSynapses(bodyDoc, showingSynapses);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
         filter->showSourceColors(showingSourceColors);
       }
 
+      if (Z3DPunctaFilter *filter = getPunctaFilter(bodyDoc)) {
+        filter->setColorMode(punctaColorMode);
+        filter->setStayOnTop(punctaStayingOnTop);
+      }
+
       ZFlyEmProofMvc::showAnnotations(showingAnnotations);
     }
   }
+
+  void setupAutapses(ZFlyEmBody3dDoc *doc)
+  {
+    QList<ZPunctum*> punctumList = doc->getPunctumList();
+    for (ZPunctum* punctum : punctumList) {
+      if (punctum->getRole() == ZStackObjectRole::ROLE_AUTAPSE) {
+        // A bright yellow-green (chartreuse) seems to be the best compromise for contrasting with
+        // the cleaving colors.
+        punctum->setColor(240, 255, 0);
+      } else {
+        punctum->setVisible(false);
+      }
+      doc->bufferObjectModified(punctum);
+    }
+    doc->processObjectModified();
+
+  }
+
 
   // The timer for roughly measuring the time to load task N must be static,
   // because it starts when the user presses a button to end task N-1.
@@ -768,6 +827,8 @@ void TaskBodyCleave::onLoaded()
   if (m_colorAggloButton->isChecked()) {
     updateMeshIdToAggloIndex();
   }
+
+  setupAutapses(m_bodyDoc);
 
   m_startupTimes.push_back(s_startupTimer.elapsed());
 }
