@@ -942,6 +942,12 @@ private:
 
   std::vector<std::pair<uint64_t, uint64_t>> getMergeCandidate() const;
 
+  // For any synapses from the body onto itself, marks the corresponding elements of
+  // `tbars` and `psds` with `ZStackObjectRole::ROLE_AUTAPSE`.
+  void markAutapses(const std::vector<ZDvidSynapse> &synapses,
+                    const std::vector<ZPunctum*> &tbars,
+                    const std::vector<ZPunctum*> &psds);
+
 private slots:
   void processBodyMergeUploaded();
   void processBodyAnnotationUpdate(uint64_t bodyId, ZJsonObject annotation);

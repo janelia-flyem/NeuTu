@@ -26,6 +26,7 @@ public:
   const static TRole ROLE_SUPERVOXEL;
   const static TRole ROLE_BODY_MODEL;
   const static TRole ROLE_MERGE_LINK;
+  const static TRole ROLE_AUTAPSE;
 
   ZStackObjectRole();
   ZStackObjectRole(TRole role);
