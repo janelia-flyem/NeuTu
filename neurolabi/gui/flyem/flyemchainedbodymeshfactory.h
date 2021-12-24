@@ -15,7 +15,7 @@ public:
   void append(FlyEmBodyMeshFactory *factory);
 
 protected:
-  FlyEmBodyMesh _make(const FlyEmBodyConfig &config) override;
+  FlyEmBodyMesh make_(const FlyEmBodyConfig &config) override;
 
 private:
   std::vector<std::shared_ptr<FlyEmBodyMeshFactory>> m_factoryList;

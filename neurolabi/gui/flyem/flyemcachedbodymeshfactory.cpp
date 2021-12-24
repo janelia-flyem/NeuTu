@@ -9,7 +9,7 @@ FlyEmCachedBodyMeshFactory::FlyEmCachedBodyMeshFactory()
 
 }
 
-FlyEmBodyMesh FlyEmCachedBodyMeshFactory::_make(const FlyEmBodyConfig &config)
+FlyEmBodyMesh FlyEmCachedBodyMeshFactory::make_(const FlyEmBodyConfig &config)
 {
   FlyEmBodyConfig newConfig = config;
   if (m_fastMeshFactory) {

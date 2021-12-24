@@ -84,12 +84,12 @@ TEST(ZImageWidget, viewport)
   widget.resetView(1.0);
   widget.setCutCenter(5, 6, 7, neutu::ESignalControl::SLIENT);
 
-  ZAffineRect rect = widget.getViewPort();
+  ZAffineRect rect = widget.getViewRegion();
   ASSERT_EQ(ZPoint(5, 6, 7), rect.getCenter());
 
   widget.resetView(1.0);
 
-  std::cout << widget.getViewPort() << std::endl;
+  std::cout << widget.getViewRegion() << std::endl;
 }
 
 #endif

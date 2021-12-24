@@ -47,7 +47,7 @@ public:
   void setCache(std::shared_ptr<FlyEmBodyMeshCache> cache);
 
 protected:
-  FlyEmBodyMesh _make(const FlyEmBodyConfig &config) override;
+  FlyEmBodyMesh make_(const FlyEmBodyConfig &config) override;
 
 private:
   std::shared_ptr<FlyEmBodyMeshFactory> m_fastMeshFactory;

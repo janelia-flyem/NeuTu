@@ -45,21 +45,6 @@ public:
   ZImageWidget(QWidget *parent);
   virtual ~ZImageWidget() override;
 
-//  inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
-
-#if 0
-  enum ECanvasRole {
-    CANVAS_ROLE_IMAGE = 0, /**< For the main stack data */
-    CANVAS_ROLE_TILE, /**< For tiles*/
-    CANVAS_ROLE_MASK, /**< For pixel masks (e.g. segmentation layer) */
-    CANVAS_ROLE_OBJECT, /**< For normal objects */
-    CANVAS_ROLE_DYNAMIC_OBJECT, /**< For objects that need dynamic loading */
-    CANVAS_ROLE_ACTIVE_DECORATION, /**< For objects moving with mouse */
-    CANVAS_ROLE_WIDGET, /**< For object painted into widget (for high definition) */
-    CANVAS_ROLE_COUNT, /**< The total number of roles */
-  };
-#endif
-
   std::shared_ptr<ZSliceCanvas> getCanvas(
       neutu::data3d::ETarget target, bool initing);
 
@@ -74,14 +59,14 @@ public:
 
   void setCanvasVisible(neutu::data3d::ETarget target, bool visible);
 
-  void setImage(ZImage *image);
-  void setMask(ZImage *mask, int channel);
+//  void setImage(ZImage *image);
+//  void setMask(ZImage *mask, int channel);
 
 //  void removeCanvas(ZImage *canvas);
 
   void setInitialScale(double s);
 
-  QSizeF getViewportSize() const;
+  QSizeF getViewSizeHint() const;
 
   double getCutDepth() const;
   int getMinCutDepth() const;
@@ -113,7 +98,7 @@ public:
   /*!
    * \brief Reset the image widget by removing all canvases and view information.
    */
-  void reset();
+//  void reset();
 
   enum EViewPortAdjust {
     VIEWPORT_NO_ADJUST, VIEWPORT_EXPAND, VIEWPORT_SHRINK
@@ -123,10 +108,10 @@ public:
   ZPoint getAnchorPoint(neutu::data3d::ESpace space) const;
 
   /*!
-   * \brief Get viewport in the model space
+   * \brief Get view region in the model space
    */
-  ZAffineRect getViewPort() const;
-  void setViewPort(const ZAffineRect &rect, neutu::ESignalControl signaling);
+  ZAffineRect getViewRegion() const;
+  void setViewRegion(const ZAffineRect &rect, neutu::ESignalControl signaling);
 
 //  void setViewPort(const QRect &rect);
 //  void setProjRegion(const QRectF &rect);
@@ -203,7 +188,7 @@ public:
   QSize minimumSizeHint() const override;
   QSize sizeHint() const override;
 //  bool isColorTableRequired();
-  void addColorTable();
+//  void addColorTable();
 
 //  QSize canvasSize() const;
   QSize screenSize() const;
@@ -282,7 +267,7 @@ public:
 
 //  void resetTransform();
 
-public:
+protected:
   void mouseReleaseEvent(QMouseEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
@@ -366,8 +351,8 @@ private:
       double w, double h, neutu::data3d::ESpace space) const;
 
 private:
-  ZImage *m_image = nullptr;
-  QVector<ZImage*> m_mask;
+//  ZImage *m_image = nullptr;
+//  QVector<ZImage*> m_mask;
 
   QVector<std::shared_ptr<ZSliceCanvas>> m_canvasList;
 

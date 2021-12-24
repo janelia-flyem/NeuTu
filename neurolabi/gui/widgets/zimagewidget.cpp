@@ -25,7 +25,6 @@
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
-#include "common/utilities.h"
 #include "vis2d/zslicepainter.h"
 #include "data3d/displayconfig.h"
 
@@ -160,13 +159,13 @@ ZPoint ZImageWidget::getAnchorPoint(neutu::data3d::ESpace space) const
         ZPoint(pt.x(), pt.y(), 0), neutu::data3d::ESpace::CANVAS, space);
 }
 
-ZAffineRect ZImageWidget::getViewPort() const
+ZAffineRect ZImageWidget::getViewRegion() const
 {
   return m_sliceViewTransform.getCutRect(width(), height());
 //  return m_sliceViewTransform.inverseTransformRect(0, 0, width(), height());
 }
 
-void ZImageWidget::setViewPort(const ZAffineRect &rect, neutu::ESignalControl signaling)
+void ZImageWidget::setViewRegion(const ZAffineRect &rect, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setScale(
         std::min(width() / rect.getWidth(), height() / rect.getHeight()));
@@ -230,13 +229,15 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
   }
 }
 
-
+/*
 void ZImageWidget::setImage(ZImage *image)
 {
   m_image = image;
   updateGeometry();
 }
+*/
 
+/*
 void ZImageWidget::setMask(ZImage *mask, int channel)
 {
   if (channel >= m_mask.size()) {
@@ -250,6 +251,7 @@ void ZImageWidget::setMask(ZImage *mask, int channel)
 //    m_viewPort.setRect(0, 0, maskSize.width(), maskSize.height());
   }
 }
+*/
 
 void ZImageWidget::zoomTo(
     const QPoint &center, int w, int h, neutu::ESignalControl signaling)
@@ -1060,12 +1062,16 @@ void ZImageWidget::paintCrossHair()
 
 QSize ZImageWidget::minimumSizeHint() const
 {
+  /*
   if (m_image != NULL) {
     return QSize(std::min(200, m_image->width()),
                  std::min(200, m_image->height()));
   } else {
     return QSize(200, 200);
   }
+  */
+
+  return QSize(200, 200);
 }
 
 
@@ -1145,6 +1151,7 @@ bool ZImageWidget::isColorTableRequired()
 }
 #endif
 
+/*
 void ZImageWidget::addColorTable()
 {
   if (m_image != NULL) {
@@ -1155,6 +1162,7 @@ void ZImageWidget::addColorTable()
     m_image->setColorTable(colorTable);
   }
 }
+*/
 
 QSize ZImageWidget::screenSize() const
 {
@@ -1532,7 +1540,7 @@ void ZImageWidget::removeCanvas(ZPixmap *canvas)
 }
 */
 
-QSizeF ZImageWidget::getViewportSize() const
+QSizeF ZImageWidget::getViewSizeHint() const
 {
   return QSizeF(width() / getSliceViewTransform().getScale(),
                 height() / getSliceViewTransform().getScale());
@@ -1735,10 +1743,11 @@ bool ZImageWidget::takeScreenshot(const QString &filename)
   return false;
 }
 
+/*
 void ZImageWidget::reset()
 {
-  m_image = NULL;
-  m_mask.clear();
+//  m_image = NULL;
+//  m_mask.clear();
 //  m_objectCanvas = NULL;
 //  m_tileCanvas = NULL;
 //  m_activeDecorationCanvas = NULL;
@@ -1749,3 +1758,4 @@ void ZImageWidget::reset()
 //  m_canvasRegion.setSize(QSize(0, 0));
 //  m_projRegion.setSize(QSize(0, 0));
 }
+*/

@@ -11,7 +11,7 @@ FlyEmFunctionBodyMeshFactory::FlyEmFunctionBodyMeshFactory(
   m_getMesh = getMesh;
 }
 
-FlyEmBodyMesh FlyEmFunctionBodyMeshFactory::_make(
+FlyEmBodyMesh FlyEmFunctionBodyMeshFactory::make_(
     const FlyEmBodyConfig &config)
 {
   if (m_getMesh) {

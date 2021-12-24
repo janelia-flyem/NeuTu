@@ -16,7 +16,7 @@ public:
   void setBodySource(FlyEmBodySource* source);
 
 protected:
-  FlyEmBodyMesh _make(const FlyEmBodyConfig &config) override;
+  FlyEmBodyMesh make_(const FlyEmBodyConfig &config) override;
 
 private:
   std::shared_ptr<FlyEmBodySource> m_bodySource;

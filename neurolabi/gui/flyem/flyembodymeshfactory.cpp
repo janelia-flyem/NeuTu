@@ -12,7 +12,7 @@ FlyEmBodyMeshFactory::~FlyEmBodyMeshFactory()
 
 FlyEmBodyMesh FlyEmBodyMeshFactory::make(const FlyEmBodyConfig &config)
 {
-  FlyEmBodyMesh bodyMesh = _make(config);
+  FlyEmBodyMesh bodyMesh = make_(config);
   if (_postProcess) {
     _postProcess(bodyMesh);
   }

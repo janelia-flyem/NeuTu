@@ -2,6 +2,7 @@
 #define FLYEMDVIDBODYMESHCACHE_H
 
 #include <memory>
+#include <mutex>
 
 #include "flyembodymeshcache.h"
 
@@ -37,6 +38,7 @@ private:
   std::string getKey(const MeshIndex &index, const std::string &format) const;
 
 private:
+  mutable std::mutex m_ioMutex;
   std::shared_ptr<ZDvidWriter> m_writer;
   std::string m_defaultFormat;
 };

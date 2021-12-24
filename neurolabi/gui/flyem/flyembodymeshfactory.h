@@ -36,7 +36,7 @@ public:
   void setMaxResLevel(int level);
 
 protected:
-  virtual FlyEmBodyMesh _make(const FlyEmBodyConfig &config) = 0;
+  virtual FlyEmBodyMesh make_(const FlyEmBodyConfig &config) = 0;
 
   int m_minResLevel = 0;
   int m_maxResLevel = 30;

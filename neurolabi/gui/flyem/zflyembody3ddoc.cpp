@@ -1819,26 +1819,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(FlyEmBodyConfig &config)
 
   notifyBodyUpdate(bodyId, config.getDsLevel());
 
-//  std::map<uint64_t, ZMesh*> meshes;
   std::vector<ZMesh *> meshes = makeBodyMeshModels(config);
-
-//  bool loaded =
-//      !(getObjectGroup().findSameClass(
-//          ZStackObject::EType::TYPE_SWC,
-//          ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId())).
-//        isEmpty());
-
-  if (config.getLabelType() == neutu::EBodyLabelType::BODY &&
-      !config.getAddBuffer()) {
-    loadSynapseFresh(ZFlyEmBodyManager::Decode(bodyId));
-    loadTodoFresh(bodyId);
-  }
-  /*
-  if (!loaded) {
-    addSynapse(ZFlyEmBodyManager::decode(id));
-    updateTodo(ZFlyEmBodyManager::decode(id));
-  }
-  */
 
   for (ZMesh *mesh : meshes) {
     mesh->setColor(config.getBodyColor());
@@ -1870,6 +1851,12 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(FlyEmBodyConfig &config)
     }
   }
 
+  if (config.getLabelType() == neutu::EBodyLabelType::BODY &&
+      !config.getAddBuffer()) {
+    loadSynapseFresh(ZFlyEmBodyManager::Decode(bodyId));
+    loadTodoFresh(bodyId);
+  }
+
   notifyBodyUpdated(config.getBodyId(), config.getDsLevel());
 
   if (config.isTar() && !config.getAddBuffer()) {
@@ -1886,71 +1873,6 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(FlyEmBodyConfig &config)
     emit messageGenerated(ZWidgetMessage(msg));
     emit bodyMeshBuffered(config.getBodyId());
   }
-
-#if 0
-  for (auto it : meshes) {
-//    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
-
-    uint64_t bodyId = it.first;
-    ZMesh *mesh = it.second;
-
-    if (mesh != NULL) {
-      resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
-            mesh->getSource());
-      config.setDsLevel(resLevel);
-    }
-
-    if (mesh != NULL) {
-  #ifdef _DEBUG_
-      std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(mesh) << std::endl;
-      std::cout << "Color count: " << mesh->colors().size() << std::endl;
-      std::cout << "Vertex count: " << mesh->vertices().size() << std::endl;
-  #endif
-      mesh->setColor(config.getBodyColor());
-      mesh->pushObjectColor();
-
-      // The findSameClass() function has performance that iis quadratic in the number of meshes,
-      // and is unnecessary for meshes from a tar archive.
-
-      bool loaded = fromTar(id);
-      if (!loaded) {
-        loaded =
-          !(getObjectGroup().findSameClass(
-              ZStackObject::EType::TYPE_MESH,
-              ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
-            isEmpty());
-      }
-
-//      updateBodyFunc(bodyId, mesh);
-
-#if defined(_NEU3_)
-      if (!loaded) {
-        // TODO: As of December, 2017, the following is slow due to access of a desktop server,
-        // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
-        // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
-        loadSplitTask(bodyId);
-      }
-#endif
-
-      // If the argument ID loads an archive, then makeBodyMeshModels() can create
-      // multiple meshes whose IDs need to be recorded, to make operations like
-      // selection work correctly.
-
-      getBodyManager().registerBody(mesh->getLabel());
-    }
-  }
-
-  notifyBodyUpdated(id, resLevel);
-
-  if (ZFlyEmBodyManager::encodesTar(id)) {
-
-    // Meshes loaded from an archive are ready at this point, so emit a signal, which
-    // can be used by code that needs to know the IDs of the loaded meshes (instead of
-    // the ID of the archive).
-    LDEBUG() << "Emitting bodyMeshesAdded";
-    emit bodyMeshesAdded(meshes.size());
-  }
-#endif
 }
 
 bool ZFlyEmBody3dDoc::toBeRemoved(uint64_t bodyId) const
@@ -3872,41 +3794,8 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
     } else {
       auto bodyMesh = m_bodyMeshFactory->make(config);
       config = bodyMesh.getBodyConfig();
-      /*
-      ZMesh *mesh = NULL;
-
-      if (!config.isHybrid()) {
-        ZStackObject *obj = takeObjectFromBuffer(
-              ZStackObject::EType::MESH,
-              ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                config.getBodyId(), 0, flyem::EBodyType::MESH));
-        mesh = dynamic_cast<ZMesh*>(obj);
-        if (mesh) {
-          config.setDsLevel(0);
-        }
-      }
-      if (mesh == NULL) {
-        mesh = readMesh(config);
-        if (mesh != NULL) {
-          mesh->setLabel(config.getBodyId());
-        }
-      }
-      */
       ZMesh *mesh = bodyMesh.releaseData();
       if (mesh) {
-        /*
-        if (ZStackObjectHelper::IsOverSize(
-              m_bodySource->getBoundBox(config.getBodyId()), config.getDsLevel())
-            && config.getDsLevel() <= m_minBodyDsLevel) {
-          config.disableNextDsLevel();
-        }
-        */
-
-//        uint64_t parentId = config.getBodyId();
-//        if (config.getLabelType() != neutu::EBodyLabelType::SUPERVOXEL) {
-//          parentId = decode(parentId);
-//        }
-//        finalize_mesh(mesh, parentId, bodyMesh.getBodyConfig().getDsLevel(), t);
         mesh->setTimestamp(t);
         result.push_back(mesh);
       }

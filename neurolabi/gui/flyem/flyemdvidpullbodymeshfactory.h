@@ -33,7 +33,7 @@ public:
   void useObjMesh(bool on);
 
 protected:
-  FlyEmBodyMesh _make(const FlyEmBodyConfig &config) override;
+  FlyEmBodyMesh make_(const FlyEmBodyConfig &config) override;
 
 private:
   int getCoarseBodyZoom() const;

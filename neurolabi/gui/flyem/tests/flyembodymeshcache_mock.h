@@ -9,6 +9,12 @@
 class FlyEmBodyMeshCache_Mock : public FlyEmBodyMeshCache
 {
 public:
+  ~FlyEmBodyMeshCache_Mock() {
+    for (auto entry : m_meshMap) {
+      delete entry.second;
+    }
+  }
+
   void set(const MeshIndex &index, const ZMesh *mesh) override {
     std::string key = getKey(index);
     if (!key.empty() && mesh) {
@@ -24,7 +30,7 @@ protected:
   ZMesh* getFromSolidIndex(const MeshIndex &index) const override {
     std::string key = getKey(index);
     if (m_meshMap.count(key) > 0) {
-      return m_meshMap.at(key);
+      return m_meshMap.at(key)->clone();
     }
     return nullptr;
   };

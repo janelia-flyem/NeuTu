@@ -278,6 +278,7 @@ void ZStackFrame::createView()
 {
   if (m_view == NULL) {
     m_view = new ZStackView(this);
+    m_view->showAxes(false);
   }
 }
 

@@ -38,7 +38,7 @@ void FlyEmDvidPullBodyMeshFactory::useObjMesh(bool on)
   m_usingObjMesh = on;
 }
 
-FlyEmBodyMesh FlyEmDvidPullBodyMeshFactory::_make(const FlyEmBodyConfig &config)
+FlyEmBodyMesh FlyEmDvidPullBodyMeshFactory::make_(const FlyEmBodyConfig &config)
 {
   if (!m_reader || !config.getRange().isEmpty()) {
     return {nullptr, config};

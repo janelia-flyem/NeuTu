@@ -1794,7 +1794,7 @@ void ZStackView::clearCanvas()
   delete m_image;
   m_image = NULL;
 
-  m_imageWidget->setImage(NULL);
+//  m_imageWidget->setImage(NULL);
 }
 
 /*
@@ -2370,7 +2370,7 @@ void ZStackView::paintStackBuffer()
   ZStack *stack = stackData();
   if (stack) {
     if (stack->hasData()) {
-      QSizeF viewportSize = imageWidget()->getViewportSize();
+      QSizeF viewportSize = imageWidget()->getViewSizeHint();
       if (viewportSize.width() > 0 && viewportSize.height() > 0) {
         auto canvas = getClearCanvas(neutu::data3d::ETarget::STACK_CANVAS);
 //            imageWidget()->getValidCanvas(ZImageWidget::CANVAS_ROLE_IMAGE);
@@ -2389,7 +2389,7 @@ void ZStackView::paintStackBuffer()
   if (buddyDocument()->getTag() == neutu::Document::ETag::NORMAL) {
     ZSparseStack *spStack = buddyDocument()->getSparseStack();
     if (spStack) {
-      QSizeF viewportSize = imageWidget()->getViewportSize();
+      QSizeF viewportSize = imageWidget()->getViewSizeHint();
       if (viewportSize.width() > 0 && viewportSize.height() > 0) {
         auto canvas = getClearCanvas(neutu::data3d::ETarget::STACK_CANVAS);
         ZImageSliceFactory::Make(
@@ -3132,7 +3132,7 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
 void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 {
   if (m_maxViewPort > 0) {
-    ZAffineRect rect = imageWidget()->getViewPort();
+    ZAffineRect rect = imageWidget()->getViewRegion();
     if (rect.getWidth() * rect.getHeight() >= m_maxViewPort) {
       return;
     }
@@ -3210,7 +3210,7 @@ int ZStackView::getZ(neutu::ECoordinateSystem coordSys) const
 
 ZAffineRect ZStackView::getViewPort() const
 {
-  return m_imageWidget->getViewPort();
+  return m_imageWidget->getViewRegion();
 }
 
 /*
@@ -3546,7 +3546,7 @@ void ZStackView::setViewPort(const QRect &rect)
 
 void ZStackView::setViewPort(const ZAffineRect &rect)
 {
-  imageWidget()->setViewPort(rect, neutu::ESignalControl::BROADCASTING);
+  imageWidget()->setViewRegion(rect, neutu::ESignalControl::BROADCASTING);
 }
 
 void ZStackView::maximizeViewPort()

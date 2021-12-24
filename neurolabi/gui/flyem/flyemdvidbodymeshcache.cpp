@@ -44,6 +44,7 @@ void FlyEmDvidBodyMeshCache::setDvidTarget(const ZDvidTarget &target)
 {
   std::string error;
 
+  std::lock_guard<std::mutex> guard(m_ioMutex);
   if (target.isValid() && target.hasSegmentation()) {
     m_writer = std::shared_ptr<ZDvidWriter>(new ZDvidWriter);
     if (m_writer->open(target)) {
@@ -100,6 +101,7 @@ std::string FlyEmDvidBodyMeshCache::getKey(
 
 int FlyEmDvidBodyMeshCache::getLatestMutationId(uint64_t bodyId) const
 {
+  std::lock_guard<std::mutex> guard(m_ioMutex);
   ZDvidReader *reader = getDvidReader();
   if (reader) {
     return reader->readBodyMutationId(bodyId);
@@ -113,6 +115,7 @@ FlyEmDvidBodyMeshCache::getCachedKeys(uint64_t bodyId, int mutationId) const
 {
   std::vector<std::string> result;
 
+  std::lock_guard<std::mutex> guard(m_ioMutex);
   ZDvidReader *reader = getDvidReader();
   if (reader) {
     QString bodyKey = QString::fromStdString(getBodyKey(bodyId, mutationId));
@@ -130,6 +133,7 @@ FlyEmDvidBodyMeshCache::getCachedKeys(uint64_t bodyId, int mutationId) const
 
 ZMesh* FlyEmDvidBodyMeshCache::getFromSolidIndex(const MeshIndex &index) const
 {
+  std::lock_guard<std::mutex> guard(m_ioMutex);
   ZDvidReader *reader = getDvidReader();
   if (reader) {
     std::string key = getKey(index, m_defaultFormat);
@@ -148,6 +152,7 @@ ZMesh* FlyEmDvidBodyMeshCache::getFromSolidIndex(const MeshIndex &index) const
 
 void FlyEmDvidBodyMeshCache::set(const MeshIndex &index, const ZMesh *mesh)
 {
+  std::lock_guard<std::mutex> guard(m_ioMutex);
   if (m_writer && mesh) {
     std::string key = getKey(index, m_defaultFormat);
     if (!key.empty()) {

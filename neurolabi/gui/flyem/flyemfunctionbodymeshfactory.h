@@ -11,7 +11,7 @@ public:
       std::function<FlyEmBodyMesh(const FlyEmBodyConfig&)> getMesh);
 
 protected:
-  FlyEmBodyMesh _make(const FlyEmBodyConfig &config) override;
+  FlyEmBodyMesh make_(const FlyEmBodyConfig &config) override;
 
 private:
   std::function<FlyEmBodyMesh(const FlyEmBodyConfig&)> m_getMesh;

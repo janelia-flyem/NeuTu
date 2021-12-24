@@ -6,9 +6,11 @@
 #include <unordered_map>
 
 #include "../flyem/flyembodymeshcache.h"
+#include "../flyem/flyemdvidbodymeshcache.h"
 #include "flyembodymeshcache_mock.h"
 #include "test/ztestheader.h"
 #include "zmeshfactory.h"
+#include "dvid/zdvidtarget.h"
 
 
 TEST(FlyEmBodyMeshCache, Basic)
@@ -101,6 +103,25 @@ TEST(FlyEmBodyMeshCache, MeshIndex)
   ASSERT_EQ(-1, index.resLevel);
   ASSERT_EQ(4, index.minResLevel);
   ASSERT_EQ(5, index.maxResLevel);
+}
+
+TEST(FlyEmDvidBodyMeshCache, Basic)
+{
+  FlyEmDvidBodyMeshCache cache;
+  ZDvidTarget target;
+  EXPECT_THROW(cache.setDvidTarget(target), std::runtime_error);
+
+  FlyEmBodyMeshCache::MeshIndex index;
+  ASSERT_EQ(nullptr, cache.get(index).second);
+
+  index = FlyEmBodyMeshCache::MeshIndexBuilder(1).autoRes();
+  ASSERT_EQ(nullptr, cache.get(index).second);
+
+  index.resLevel = 1;
+  index.mutationId = 1;
+  ASSERT_TRUE(index.isSolidValid());
+  ZMesh mesh = ZMesh::CreateSphereMesh(glm::vec3(0.0, 0.0, 0.0), 5);
+  cache.set(index, &mesh);
 }
 
 #endif

@@ -21,7 +21,7 @@ void FlyEmSparsevolBodyMeshFactory::setBodySource(FlyEmBodySource* source)
   setBodySource(std::shared_ptr<FlyEmBodySource>(source));
 }
 
-FlyEmBodyMesh FlyEmSparsevolBodyMeshFactory::_make(const FlyEmBodyConfig &config)
+FlyEmBodyMesh FlyEmSparsevolBodyMeshFactory::make_(const FlyEmBodyConfig &config)
 {
   ZMesh *bodyMesh = nullptr;
 
