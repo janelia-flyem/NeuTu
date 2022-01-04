@@ -277,7 +277,6 @@ RESOURCES = gui.qrc ext/QFontIcon/resource.qrc
 
 HEADERS += mainwindow.h \
     concurrent/zworkerwrapper.h \
-    dialogs/zparameterdialog.h \
     neuapp.h \
     zimage.h \
     zslider.h \
@@ -358,7 +357,6 @@ HEADERS += mainwindow.h \
     zerror.h \
     zhistogram.h \
     zswcgenerator.h \
-    zpaintbundle.h \
     zflyemqueryview.h \
     zqslogmessagereporter.h \
     zactionactivator.h \
@@ -585,7 +583,6 @@ FORMS += mainwindow.ui \
 
 SOURCES += main.cpp \
     concurrent/zworkerwrapper.cpp \
-    dialogs/zparameterdialog.cpp \
     mainwindow.cpp \
     neuapp.cpp \
     zimage.cpp \
@@ -647,7 +644,6 @@ SOURCES += main.cpp \
     zswcfilelistmodel.cpp \
     zcommandline.cpp \
     neutube.cpp \
-    zpaintbundle.cpp \
     zflyemqueryview.cpp \
     zqslogmessagereporter.cpp \
     zactionactivator.cpp \

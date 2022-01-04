@@ -304,7 +304,7 @@ FlyEmBodyInfoDialog* FlyEmMvcDialogManager::makeBodyInfoDlg(
                    m_parent, SLOT(addLocateBody(uint64_t)));
   QObject::connect(dlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
                    m_parent, SLOT(selectBody(QList<uint64_t>)));
-  QObject::connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
+  QObject::connect(dlg, SIGNAL(namedBodyChanged(ZJsonValue)),
                    m_parent, SLOT(prepareBodyMap(ZJsonValue)));
   QObject::connect(dlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
                    m_parent, SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));

@@ -474,8 +474,47 @@ void Neu3Window::initWebView()
 #endif
 }
 
+namespace {
+
+template<typename T>
+void register_task()
+{
+  TaskProtocolTaskFactory::getInstance().registerJsonCreator(
+        T::taskTypeStatic(), T::createFromJson);
+}
+
+template <>
+void register_task<TaskBodyCleave>()
+{
+  TaskProtocolTaskFactory &factory = TaskProtocolTaskFactory::getInstance();
+  factory.registerJsonCreator(
+        TaskBodyCleave::taskTypeStatic(), TaskBodyCleave::createFromJson);
+  factory.registerGuiCreator(
+        TaskBodyCleave::menuLabelCreateFromGuiBodyId(),
+        TaskBodyCleave::createFromGuiBodyId);
+  factory.registerGuiCreator(
+        TaskBodyCleave::menuLabelCreateFromGui3dPoint(),
+        TaskBodyCleave::createFromGui3dPoint);
+}
+
+void configure_task_factory()
+{
+  register_task<TaskBodyCleave>();
+  register_task<TaskBodyHistory>();
+  register_task<TaskBodyMerge>();
+  register_task<TaskBodyReview>();
+  register_task<TaskFalseSplitReview>();
+  register_task<TaskMergeReview>();
+  register_task<TaskSplitSeeds>();
+  register_task<TaskTestTask>();
+}
+
+}
+
 void Neu3Window::createTaskWindow() {
   // set up the factory for creating "protocol tasks"
+  configure_task_factory();
+  /*
   TaskProtocolTaskFactory &factory = TaskProtocolTaskFactory::getInstance();
   factory.registerJsonCreator(TaskBodyCleave::taskTypeStatic(), TaskBodyCleave::createFromJson);
   factory.registerGuiCreator(TaskBodyCleave::menuLabelCreateFromGuiBodyId(), TaskBodyCleave::createFromGuiBodyId);
@@ -487,6 +526,7 @@ void Neu3Window::createTaskWindow() {
   factory.registerJsonCreator(TaskMergeReview::taskTypeStatic(), TaskMergeReview::createFromJson);
   factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
   factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
+  */
 
   QDockWidget *dockWidget = new QDockWidget("Tasks", this);
   m_taskProtocolWidget =
@@ -504,10 +544,12 @@ void Neu3Window::createTaskWindow() {
     connect(m_taskProtocolWidget, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
     connect(m_taskProtocolWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
-    connect(m_taskProtocolWidget, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
-            this, SLOT(browse(double,double,double,const QHash<uint64_t, QColor>&)));
-    connect(m_taskProtocolWidget, SIGNAL(updateGrayscaleColor(const QHash<uint64_t,QColor>&)),
-            this, SLOT(updateBrowserColor(const QHash<uint64_t,QColor>&)));
+    connect(m_taskProtocolWidget,
+            SIGNAL(browseGrayscale(double,double,double,QHash<uint64_t,QColor>)),
+            this, SLOT(browse(double,double,double,QHash<uint64_t,QColor>)));
+    connect(m_taskProtocolWidget,
+            SIGNAL(updateGrayscaleColor(QHash<uint64_t,QColor>)),
+            this, SLOT(updateBrowserColor(QHash<uint64_t,QColor>)));
     ZWidgetMessage::ConnectMessagePipe(m_taskProtocolWidget, this);
 
     // make the OpenGL context current in case any task's widget changes any parameters

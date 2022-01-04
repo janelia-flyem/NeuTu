@@ -1,3 +1,5 @@
+include($${PWD}/tests/tests.pri)
+
 HEADERS += $${PWD}/utilities.h \
   $$PWD/zimageslicefactory.h \
   $$PWD/zslicecanvas.h \

@@ -92,6 +92,7 @@ HEADERS += $$PWD/userfeedbackdialog.h \
     $$PWD/flyemsettingdialog.h \
     $$PWD/neuprintsetupdialog.h \
     $$PWD/neuroglancerlinkdialog.h \
+    $$PWD//zparameterdialog.h \
     $$PWD/channeldialog.h
 
 FORMS += $$PWD/traceoutputdialog.ui \
@@ -186,6 +187,7 @@ FORMS += $$PWD/traceoutputdialog.ui \
     $$PWD/neuprintsetupdialog.ui
 
 SOURCES += $$PWD/distancemapdialog.cpp \
+    $$PWD/zparameterdialog.cpp \
     $$PWD/flyembodyinfodialog.cpp \
     $$PWD/zsubtractswcsdialog.cpp \
     $$PWD/zmarkswcsomadialog.cpp \

@@ -35,6 +35,11 @@ void ZSliceCanvas::setCanvasStatus(ECanvasStatus status)
   m_status = status;
 }
 
+ZSliceCanvas::ECanvasStatus ZSliceCanvas::getCanvasStatus() const
+{
+  return m_status;
+}
+
 void ZSliceCanvas::resetCanvas()
 {
   if (m_status != ECanvasStatus::CLEAN) {

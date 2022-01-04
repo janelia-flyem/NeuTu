@@ -20,7 +20,7 @@
 #include "widgets/zparameter.h"
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
-#include "zpaintbundle.h"
+//#include "zpaintbundle.h"
 #include "common/zsharedpointer.h"
 #include "zmessageprocessor.h"
 #include "zpainter.h"
@@ -84,14 +84,6 @@ public:
   ~ZStackView() override;
 
 public:
-  /*!
-   * \brief Reset the view status
-   *
-   * This function is for synchorinizing the view controls such as depth slider
-   * and channel controls with stack update in the document.
-   */
-//  void reset(bool updatingScreen = true);
-
   enum class EMode {
     NORMAL, IMAGE_ONLY, PLAIN_IMAGE
   };
@@ -259,14 +251,6 @@ public:
 
   void paintStackBuffer();
   void paintMaskBuffer();
-
-
-//  bool paintTileCanvasBuffer();
-
-  //void paintObjectBuffer(ZImage *canvas, neutu::data3d::ETarget target);
-
-//  void paintActiveDecorationBuffer();
-//  void paintDynamicObjectBuffer();
 
 
   ZStack* getStrokeMask(uint8_t maskValue);

@@ -45,6 +45,7 @@ public:
   };
 
   void setCanvasStatus(ECanvasStatus status);
+  ECanvasStatus getCanvasStatus() const;
 
   void set(int width, int height, ESetOption option);
   void set(int width, int height, const ZSliceViewTransform &transform,

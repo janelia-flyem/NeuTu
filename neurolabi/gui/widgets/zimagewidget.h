@@ -6,6 +6,7 @@
 #define ZIMAGEWIDGET_H_
 
 #include <memory>
+#include <array>
 
 #include <QImage>
 #include <QWidget>
@@ -14,13 +15,14 @@
 #include <QKeyEvent>
 
 #include "common/neutudefs.h"
+#include "common/utilities.h"
 #include "qt/core/defs.h"
 #include "zviewproj.h"
 #include "data3d/zsliceviewtransform.h"
 #include "vis2d/zslicecanvas.h"
 
 class QPaintEvent;
-class ZPaintBundle;
+//class ZPaintBundle;
 class ZImage;
 class ZPixmap;
 class ZWidgetMessage;
@@ -100,9 +102,11 @@ public:
    */
 //  void reset();
 
+  /*
   enum EViewPortAdjust {
     VIEWPORT_NO_ADJUST, VIEWPORT_EXPAND, VIEWPORT_SHRINK
   };
+  */
 
   QPointF getAnchorPoint() const;
   ZPoint getAnchorPoint(neutu::data3d::ESpace space) const;
@@ -113,37 +117,22 @@ public:
   ZAffineRect getViewRegion() const;
   void setViewRegion(const ZAffineRect &rect, neutu::ESignalControl signaling);
 
-//  void setViewPort(const QRect &rect);
-//  void setProjRegion(const QRectF &rect);
-//  void setView(double zoomRatio, const QPoint &zoomOffset);
-//  void setView(const QRect &viewPort, const QRectF &projRegion);
-
-  /*!
-   * \brief Set view port offset
-   *
-   * Set the first corner of viewport to (\a x, \a y) in the world coordinate
-   * system. The position will be adjusted if (\a x, \a y) is outside the canvas.
-   */
-//  void setViewPortOffset(int x, int y);
-//  void setViewPortCenterQuitely(int cx, int cy);
-
-
   /*!
    * \brief Move viewport.
    *
    * Move the current viewport so that the offset between its first corner and
    * the first corner of the canvas is (\a dx, \a dy).
    */
-  void moveViewPort(int dx, int dy, neutu::ESignalControl signaling);
-  void moveViewPort(const QPoint &src, const QPointF &dst, neutu::ESignalControl signaling);
+  void moveViewport(int dx, int dy, neutu::ESignalControl signaling);
+  void moveViewport(const QPoint &src, const QPointF &dst, neutu::ESignalControl signaling);
 
   /*!
    * \brief Move viewport
    *
    * Move \a src in the model space to a widget point \a dst.
    */
-  void moveViewPort(const ZPoint &src, const QPointF &dst, neutu::ESignalControl signaling);
-  void moveViewPortToCenter(const ZPoint &src, neutu::ESignalControl signaling);
+  void moveViewport(const ZPoint &src, const QPointF &dst, neutu::ESignalControl signaling);
+//  void moveViewportToCenter(const ZPoint &src, neutu::ESignalControl signaling);
 
   void setZoomRatio(double zoomRatio, neutu::ESignalControl signaling);
   //inline int zoomRatio() const { return m_zoomRatio; }
@@ -153,8 +142,8 @@ public:
   void increaseZoomRatio(int x, int y, bool usingRef, neutu::ESignalControl signaling);
   void decreaseZoomRatio(int x, int y, bool usingRef, neutu::ESignalControl signaling);
 
-  void zoom(double zoomRatio, neutu::ESignalControl signaling);
-  void zoom(double zoomRatio, EViewPortAdjust option);
+//  void zoom(double zoomRatio, neutu::ESignalControl signaling);
+//  void zoom(double zoomRatio, EViewPortAdjust option);
 
   void zoomTo(const QPoint &center, int w, int h, neutu::ESignalControl signaling);
   void zoomTo(const ZPoint &pt, double w, double h,
@@ -173,7 +162,7 @@ public:
    *
    * Zoom an image by keeping the screen point \a ref relatively constant.
    */
-  void zoom(double zoomRatio, const QPointF &ref);
+//  void zoom(double zoomRatio, const QPointF &ref);
 //  void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
 
 //  void zoomWithWidthAligned(int x0, int x1, int cy);
@@ -237,7 +226,7 @@ public:
   void showCrossHair(bool on);
   void updateCrossHair(int x, int y);
 
-  void maximizeViewPort(const ZIntCuboid &worldRange, neutu::ESignalControl signaling);
+  void maximizeViewRegion(const ZIntCuboid &worldRange, neutu::ESignalControl signaling);
 
   void enableOffsetAdjustment(bool on);
 //  bool paintWidgetCanvas(ZImage *canvas);
@@ -302,32 +291,32 @@ protected:
 private:
   void init();
 
-  void setValidViewPortBackup(const QRect &viewPort);
-  void setValidViewPort(const QRect &viewPort);
+//  void setValidViewPortBackup(const QRect &viewPort);
+//  void setValidViewPort(const QRect &viewPort);
   /*!
    * \brief Align view port by aligning a point
    *
    * Align the view port to map the world coordinates (\a vx, \a vy) to the
    * screen coordinates (\a px, \a py).
    */
-  QRect alignViewPort(
-      const QRect &viewPort, double vx, double vy, double px, double py,
-      double ratio) const;
-  QRect alignViewPort(
-      const QRect &viewPort, int vx, int vy, int px, int py) const;
+//  QRect alignViewPort(
+//      const QRect &viewPort, double vx, double vy, double px, double py,
+//      double ratio) const;
+//  QRect alignViewPort(
+//      const QRect &viewPort, int vx, int vy, int px, int py) const;
 
-  void alignProjRegion(double ratio);
+//  void alignProjRegion(double ratio);
 
 
-  QRect adjustViewPort(const QRect &viewPort, EViewPortAdjust option);
-  void adjustViewPort(EViewPortAdjust option);
+//  QRect adjustViewPort(const QRect &viewPort, EViewPortAdjust option);
+//  void adjustViewPort(EViewPortAdjust option);
 
   /*!
    * \brief Maximize the projection region while ensuring that at least one of
    *        the deminesions of the view port is fully covered.
    */
-  void adjustProjRegion();
-  void adjustProjRegion(const QRect &viewPort);
+//  void adjustProjRegion();
+//  void adjustProjRegion(const QRect &viewPort);
 //  QSize getMaskSize() const;
 //  void paintObject();
   bool paintObject(QPainter *painter,
@@ -354,7 +343,9 @@ private:
 //  ZImage *m_image = nullptr;
 //  QVector<ZImage*> m_mask;
 
-  QVector<std::shared_ptr<ZSliceCanvas>> m_canvasList;
+//  QVector<std::shared_ptr<ZSliceCanvas>> m_canvasList;
+  std::array<std::shared_ptr<ZSliceCanvas>,
+             neutu::EnumValue(neutu::data3d::ETarget::WIDGET)> m_canvasList;
 
   QMenu *m_leftButtonMenu = nullptr;
   QMenu *m_rightButtonMenu = nullptr;

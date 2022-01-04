@@ -3410,7 +3410,7 @@ void ZStackView::updateSliceViewParam()
 
 void ZStackView::moveViewPort(const QPoint &src, const QPointF &dst)
 {
-  imageWidget()->moveViewPort(src, dst, neutu::ESignalControl::BROADCASTING);
+  imageWidget()->moveViewport(src, dst, neutu::ESignalControl::BROADCASTING);
 #if 0
   recordViewParam();
 
@@ -3437,14 +3437,14 @@ void ZStackView::moveViewPort(const QPoint &src, const QPointF &dst)
 
 void ZStackView::moveViewPort(const ZPoint &src, int a, int b)
 {
-  imageWidget()->moveViewPort(src, QPointF(a, b), neutu::ESignalControl::BROADCASTING);
+  imageWidget()->moveViewport(src, QPointF(a, b), neutu::ESignalControl::BROADCASTING);
 }
 
 void ZStackView::moveViewPort(int dx, int dy)
 {
   recordViewParam();
 
-  imageWidget()->moveViewPort(dx, dy, neutu::ESignalControl::BROADCASTING);
+  imageWidget()->moveViewport(dx, dy, neutu::ESignalControl::BROADCASTING);
 //  processViewChange(false, false);
 //  redraw(EUpdateOption::DIRECT);
 }
@@ -3551,7 +3551,7 @@ void ZStackView::setViewPort(const ZAffineRect &rect)
 
 void ZStackView::maximizeViewPort()
 {
-  imageWidget()->maximizeViewPort(
+  imageWidget()->maximizeViewRegion(
         buddyDocument()->getDataRange(), neutu::ESignalControl::BROADCASTING);
 
 //  reloadCanvas();
@@ -4078,94 +4078,6 @@ void ZStackView::blockViewChangeEvent(bool state)
 {
   m_viewChangeEventBlocked = state;
 }
-/*
-void ZStackView::setCanvasVisible(neutu::data3d::ETarget target, bool visible)
-{
-  switch (target) {
-  case neutu::data3d::ETarget::OBJECT_CANVAS:
-    if (m_objectCanvas != NULL) {
-      m_objectCanvas->setVisible(visible);
-    }
-//    m_objectCanvas.setVisible(visible);
-    break;
-  case neutu::data3d::ETarget::TILE_CANVAS:
-//    m_tileCanvas.setVisible(visible);
-    if (m_tileCanvas != NULL) {
-      m_tileCanvas->setVisible(visible);
-    }
-    break;
-  case neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS:
-    m_dynamicObjectCanvas->setVisible(true);
-    break;
-  default:
-    break;
-  }
-}
-*/
-
-/*
-ZPixmap* ZStackView::getCanvas(neutu::data3d::ETarget target)
-{
-  switch (target) {
-  case neutu::data3d::ETarget::OBJECT_CANVAS:
-    return imageWidget()->getObjectCanvas();
-  case neutu::data3d::ETarget::TILE_CANVAS:
-    return imageWidget()->getTileCanvas();
-  case neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS:
-    return imageWidget()->getDynamicObjectCanvas();
-  default:
-    break;
-  }
-
-  return NULL;
-}
-*/
-
-#if 0
-void ZStackView::updateCanvas(neutu::data3d::ETarget target)
-{
-  switch(target) {
-  case neutu::data3d::ETarget::OBJECT_CANVAS:
-    updateObjectCanvas();
-    break;
-  case neutu::data3d::ETarget::TILE_CANVAS:
-    updateTileCanvas();
-    break;
-  case neutu::data3d::ETarget::STACK_CANVAS:
-    break;
-  case neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS:
-    updateDynamicObjectCanvas();
-    break;
-  default:
-    break;
-  }
-}
-
-ZPainter* ZStackView::getPainter(neutu::data3d::ETarget target)
-{
-  switch (target) {
-  case neutu::data3d::ETarget::OBJECT_CANVAS:
-    updateObjectCanvas();
-    return getObjectCanvasPainter();
-  case neutu::data3d::ETarget::TILE_CANVAS:
-    updateTileCanvas();
-    return getTileCanvasPainter();
-#if 0
-  case neutu::data3d::ETarget::TARGET_DYNAMIC_OBJECT_CANVAS:
-    updateDynamicObjectCanvas();
-    if (!m_dynamicObjectCanvasPainter.isActive()) {
-      return NULL;
-    }
-
-    return &m_dynamicObjectCanvasPainter;
-#endif
-  default:
-    break;
-  }
-
-  return NULL;
-}
-#endif
 
 std::shared_ptr<ZSliceCanvas> ZStackView::getClearCanvas(
     neutu::data3d::ETarget target)
@@ -4194,55 +4106,9 @@ std::shared_ptr<ZSliceCanvas> ZStackView::getClearCanvas(
 
   return canvas;
 }
-/*
-ZSliceCanvas* ZStackView::getClearVisibleCanvas(neutu::data3d::ETarget target)
-{
-  bool visible = true;
-  if (neutu::data3d::IsSettled2dObjectCanvas(target)
-      && target != neutu::data3d::ETarget::TILE_CANVAS) {
-    visible = buddyPresenter()->isObjectVisible();
-  }
 
-  ZSliceCanvas *canvas = nullptr;
-
-  if (visible) {
-    if (neutu::data3d::IsNonblocking(target)) {
-      canvas = imageWidget()->makeClearCanvas();
-    } else {
-      canvas = getClearCanvas(target).get();
-    }
-
-    if (canvas && !canvas->isVisible()) {
-      canvas = nullptr;
-    }
-  }
-
-  return canvas;
-}
-*/
 void ZStackView::dump(const QString &msg)
 {
   m_stackLabel->setText(msg);
 }
 
-/*
-void ZStackView::highlightPosition(const ZIntPoint &pt)
-{
-  highlightPosition(pt.getX(), pt.getY(), pt.getZ());
-}
-
-void ZStackView::highlightPosition(int x, int y, int z)
-{
-//  ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
-//  ball->setColor(255, 0, 0);
-//  ball->addVisualEffect(neutu::display::Sphere::VE_GRADIENT_FILL);
-//  ball->display(m_objectCanvasPainter, sliceIndex(), ZStackObject::SOLID);
-
-//  buddyPresenter()->setHighlight(true);
-//  buddyPresenter()->highlight(x, y, z);
-  buddyPresenter()->flashHighlight(x, y, z);
-//  buddyPresenter()->addDecoration(ball);
-
-  updateImageScreen(EUpdateOption::QUEUED);
-}
-*/

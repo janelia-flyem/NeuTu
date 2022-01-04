@@ -28,6 +28,11 @@ public:
     const QSet<uint64_t> & visibleBodies();
     const QSet<uint64_t> & selectedBodies();
 
+    //#Review-TZ: it might better to replace beforeNext and beforePrev with
+    // one function: onUnloaded or beforeUnloaded. If we do need to distinguish
+    // between going to previous and next tasks in some scenarios, we
+    // can keep these two and make their dedfault behaviors as calling
+    // beforeUnloaded.
     virtual void beforeNext();
     virtual void beforePrev();
     virtual void beforeLoading();

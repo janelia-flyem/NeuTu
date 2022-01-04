@@ -123,6 +123,8 @@
 #include "data3d/tests/zviewplanetransformtest.h"
 #include "data3d/tests/zsliceviewtransformtest.h"
 
+#include "vis2d/tests/zslicecanvastest.h"
+
 #include "logging/tests/zlogtest.h"
 
 #include "mvc/tests/zstackobjectpaintsortertest.h"

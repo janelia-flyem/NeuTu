@@ -20,17 +20,36 @@ class NeuPrintReader;
 class ZJsonObject;
 class ZDvidBufferReader;
 
-class ZGlobal
+template<typename T>
+class ZSingleton
 {
 public:
-  ZGlobal();
+  virtual ~ZSingleton() {}
+
+  static T& GetInstance() {
+    static T g;
+    return g;
+  }
+
+protected:
+  ZSingleton() {};
+  ZSingleton(ZSingleton&) = delete;
+};
+
+class ZGlobal : public ZSingleton<ZGlobal>
+{
+public:
   ~ZGlobal();
 
+  friend class ZSingleton<ZGlobal>;
+
+  /*
   static ZGlobal& GetInstance() {
     static ZGlobal g;
 
     return g;
   }
+  */
 
   /*!
    * \brief For transferring positions globally.
@@ -111,6 +130,9 @@ public:
   static void CopyToClipboard(const std::string &str);
 
   ZJsonObject readJsonObjectFromUrl(const std::string& url);
+
+private:
+  ZGlobal();
 
 private:
   /*

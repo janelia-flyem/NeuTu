@@ -387,8 +387,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
 
   //    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
   //            this, SLOT(updateDvidLabelObject()));
-  connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, neutu::EBodySplitMode)),
-          this, SLOT(checkInBodyWithMessage(uint64_t, neutu::EBodySplitMode)));
+  connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t,neutu::EBodySplitMode)),
+          this, SLOT(checkInBodyWithMessage(uint64_t,neutu::EBodySplitMode)));
   connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
           this, SLOT(updateDvidLabelObjectSliently()));
 
@@ -403,8 +403,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
   connect(this, &ZFlyEmProofDoc::updatingGraySlice,
           this, &ZFlyEmProofDoc::updateGraySlice);
 
-  connect(this, SIGNAL(segmentAnnotated(uint64_t, ZJsonObject)),
-          this, SLOT(processBodyAnnotationUpdate(uint64_t, ZJsonObject)));
+  connect(this, SIGNAL(segmentAnnotated(uint64_t,ZJsonObject)),
+          this, SLOT(processBodyAnnotationUpdate(uint64_t,ZJsonObject)));
   connect(this, SIGNAL(segmentAnnotated(QList<uint64_t>)),
           this, SLOT(processBodyAnnotationUpdate(QList<uint64_t>)));
   /*

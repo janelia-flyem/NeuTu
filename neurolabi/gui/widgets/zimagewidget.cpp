@@ -20,7 +20,7 @@
 #include "qt/gui/loghelper.h"
 
 #include "zpainter.h"
-#include "zpaintbundle.h"
+//#include "zpaintbundle.h"
 #include "neutubeconfig.h"
 #include "zimage.h"
 #include "zpixmap.h"
@@ -49,7 +49,7 @@ void ZImageWidget::init()
   m_leftButtonMenu = new QMenu(this);
   m_rightButtonMenu = new QMenu(this);
 
-  m_canvasList.resize(neutu::EnumValue(neutu::data3d::ETarget::WIDGET));
+//  m_canvasList.resize(neutu::EnumValue(neutu::data3d::ETarget::WIDGET));
 
   m_sliceViewTransform.setMinScale(0.4);
   m_defaultArbPlane.invalidate();
@@ -60,7 +60,7 @@ std::shared_ptr<ZSliceCanvas> ZImageWidget::getCanvas(
 {
   auto canvas = std::shared_ptr<ZSliceCanvas>();
   int index = neutu::EnumValue(target);
-  if (index >= 0 && index < m_canvasList.size()) {
+  if (index >= 0 && index < int(m_canvasList.size())) {
     canvas = m_canvasList[index];
     if (initing && !canvas) {
        canvas = std::shared_ptr<ZSliceCanvas>(new ZSliceCanvas);
@@ -76,7 +76,7 @@ bool ZImageWidget::hasCanvas(
 {
   if (canvas) {
     int index = neutu::EnumValue(target);
-    if (index >= 0 && index < m_canvasList.size()) {
+    if (index >= 0 && index < int(m_canvasList.size())) {
       return (canvas == m_canvasList[index]);
     }
   }
@@ -133,10 +133,10 @@ void ZImageWidget::setCanvasVisible(neutu::data3d::ETarget target, bool visible)
   }
 }
 
-void ZImageWidget::maximizeViewPort(
+void ZImageWidget::maximizeViewRegion(
     const ZIntCuboid &worldRange, neutu::ESignalControl signaling)
 {
-  qDebug() << "ZImageWidget::maximizeViewPort";
+//  qDebug() << "ZImageWidget::maximizeViewPort";
 //  m_viewProj.maximizeViewPort();
   m_sliceViewTransform.fitModelRange(worldRange, width(), height());
   notifyTransformChanged(signaling);
@@ -369,7 +369,7 @@ bool ZImageWidget::isModelWithinWidget() const
 bool ZImageWidget::restoreFromBadView(const ZIntCuboid &worldRange)
 {
   if (isBadView()) {
-    maximizeViewPort(worldRange, neutu::ESignalControl::BROADCASTING);
+    maximizeViewRegion(worldRange, neutu::ESignalControl::BROADCASTING);
     return true;
   }
 
@@ -395,6 +395,7 @@ void ZImageWidget::setViewPort(const QRect &rect)
 }
 */
 
+/*
 void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
 {
   ZPoint fixPoint = m_sliceViewTransform.inverseTransform(ref.x(), ref.y());
@@ -405,6 +406,7 @@ void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
 //  m_viewProj.setZoomWithFixedPoint(zoomRatio, m_viewProj.mapPointBack(ref));
   updateView();
 }
+*/
 
 /*
 void ZImageWidget::setView(double zoomRatio, const QPoint &zoomOffset)
@@ -505,7 +507,7 @@ void ZImageWidget::decreaseZoomRatio(neutu::ESignalControl signaling)
   decreaseZoomRatio(0, 0, false, signaling);
 }
 
-void ZImageWidget::moveViewPort(const QPoint &src, const QPointF &dst, neutu::ESignalControl signaling)
+void ZImageWidget::moveViewport(const QPoint &src, const QPointF &dst, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(
         ZPoint(src.x(), src.y(), 0), ZPoint(dst.x(), dst.y(), 0),
@@ -515,7 +517,7 @@ void ZImageWidget::moveViewPort(const QPoint &src, const QPointF &dst, neutu::ES
   notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::moveViewPort(int dx, int dy, neutu::ESignalControl signaling)
+void ZImageWidget::moveViewport(int dx, int dy, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(
         ZPoint(0, 0, 0), ZPoint(dx, dy, 0),
@@ -525,19 +527,22 @@ void ZImageWidget::moveViewPort(int dx, int dy, neutu::ESignalControl signaling)
   notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::moveViewPort(const ZPoint &src, const QPointF &dst, neutu::ESignalControl signaling)
+void ZImageWidget::moveViewport(const ZPoint &src, const QPointF &dst, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(src, dst.x(), dst.y());
   notifyTransformChanged(signaling);
 }
 
-void ZImageWidget::moveViewPortToCenter(const ZPoint &src, neutu::ESignalControl signaling)
+/*
+void ZImageWidget::moveViewportToCenter(const ZPoint &src, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.translateModelViewTransform(
         src, width() * 0.5, height() * 0.5);
   notifyTransformChanged(signaling);
 }
+*/
 
+/*
 void ZImageWidget::zoom(double zoomRatio, neutu::ESignalControl signaling)
 {
   m_sliceViewTransform.setScale(zoomRatio);
@@ -545,6 +550,7 @@ void ZImageWidget::zoom(double zoomRatio, neutu::ESignalControl signaling)
 //  updateView();
   notifyTransformChanged(signaling);
 }
+*/
 
 void ZImageWidget::rotate(
     double au, double av, double rad, neutu::ESignalControl signaling)

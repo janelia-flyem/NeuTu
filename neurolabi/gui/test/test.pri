@@ -1,14 +1,14 @@
 HEADERS += \
-  $$PWD/commandtest.h \
+    $$PWD/commandtest.h \
     $$PWD/commontest.h \
-  $$PWD/flyembodyannotationiotest.h \
-  $$PWD/flyembodyannotationmanagertest.h \
+    $$PWD/flyembodyannotationiotest.h \
+    $$PWD/flyembodyannotationmanagertest.h \
     $$PWD/flyemutilitiestest.h \
-  $$PWD/maintest.h \
+    $$PWD/maintest.h \
     $$PWD/miscutilitytest.h \
     $$PWD/neutusetest.h \
     $$PWD/taskprotocoltasktest.h \
-  $$PWD/z3dwindowtest.h \
+    $$PWD/z3dwindowtest.h \
     $$PWD/zaffinerecttest.h \
     $$PWD/zcolorschemetest.h \
     $$PWD/zdviddialogtest.h \
@@ -25,7 +25,7 @@ HEADERS += \
     $$PWD/znetworkutilstest.h \
     $$PWD/zneurontracertest.h \
     $$PWD/zstackdocobjectupdatetest.h \
-  $$PWD/zstacksourcetest.h \
+    $$PWD/zstacksourcetest.h \
     $$PWD/zswctreetest.h \
     $$PWD/zsttransformtest.h \
     $$PWD/zobject3dscantest.h \
