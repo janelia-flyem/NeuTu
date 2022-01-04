@@ -42,7 +42,7 @@ requirements:
     - libpng  1.6.*
     - hdf5    1.10.*
     - pango   1.42.*         # [linux64]
-    - lowtis  0.1.0.post77.*
+    - lowtis  0.1.0.post78.*
     - tbb 2020.2.*
     - tbb-devel 2020.2.*
     - vtk 9.0.*
@@ -71,7 +71,7 @@ requirements:
     - libpng  1.6.*
     - hdf5    1.10.*
     - pango   1.42.*         # [linux64]
-    - lowtis  0.1.0.post77.*
+    - lowtis  0.1.0.post78.*
     - tbb 2020.2.*
     - tbb-devel 2020.2.*
     - vtk 9.0.*
