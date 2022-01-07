@@ -1797,36 +1797,6 @@ void ZFlyEmProofDoc::setGrayscaleReader(
   }
 }
 
-#if 0
-void ZFlyEmProofDoc::setGrayscaleReader(
-    const std::string &key, ZDvidReader *reader)
-{
-  auto iter = m_grayscaleReaderMap.find(key);
-  if (iter != m_grayscaleReaderMap.end()) {
-    ZDvidReader *obsoleteReader = iter->second;
-    if (m_mainGrayscaleReader == obsoleteReader) {
-      m_mainGrayscaleReader = nullptr;
-    }
-    delete obsoleteReader;
-  }
-  /*
-  if (m_grayscaleReaderMap.contains(key)) {
-    ZDvidReader *obsoleteReader = m_grayscaleReaderMap.value(key);
-    if (m_mainGrayscaleReader == obsoleteReader) {
-      m_mainGrayscaleReader = nullptr;
-    }
-    delete obsoleteReader;
-  }
-  */
-
-  if (reader) {
-    m_grayscaleReaderMap[key] = reader;
-  } else {
-    m_grayscaleReaderMap.erase(key);
-  }
-}
-#endif
-
 void ZFlyEmProofDoc::prepareGrayscaleReader(
     std::unordered_map<std::string, ZDvidReader*> &readerMap,
     bool updatingMainReader)

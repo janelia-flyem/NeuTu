@@ -417,7 +417,7 @@ void Neu3Window::createBodyListWidget()
 
 void Neu3Window::createMessageWidget()
 {
-    m_messageWidget = new ZFlyEmMessageWidget(this);
+  m_messageWidget = new ZFlyEmMessageWidget(this);
 }
 
 void Neu3Window::createMessageDock()
@@ -514,19 +514,6 @@ void configure_task_factory()
 void Neu3Window::createTaskWindow() {
   // set up the factory for creating "protocol tasks"
   configure_task_factory();
-  /*
-  TaskProtocolTaskFactory &factory = TaskProtocolTaskFactory::getInstance();
-  factory.registerJsonCreator(TaskBodyCleave::taskTypeStatic(), TaskBodyCleave::createFromJson);
-  factory.registerGuiCreator(TaskBodyCleave::menuLabelCreateFromGuiBodyId(), TaskBodyCleave::createFromGuiBodyId);
-  factory.registerGuiCreator(TaskBodyCleave::menuLabelCreateFromGui3dPoint(), TaskBodyCleave::createFromGui3dPoint);
-  factory.registerJsonCreator(TaskBodyHistory::taskTypeStatic(), TaskBodyHistory::createFromJson);
-  factory.registerJsonCreator(TaskBodyMerge::taskTypeStatic(), TaskBodyMerge::createFromJson);
-  factory.registerJsonCreator(TaskBodyReview::taskTypeStatic(), TaskBodyReview::createFromJson);
-  factory.registerJsonCreator(TaskFalseSplitReview::taskTypeStatic(), TaskFalseSplitReview::createFromJson);
-  factory.registerJsonCreator(TaskMergeReview::taskTypeStatic(), TaskMergeReview::createFromJson);
-  factory.registerJsonCreator(TaskSplitSeeds::taskTypeStatic(), TaskSplitSeeds::createFromJson);
-  factory.registerJsonCreator(TaskTestTask::taskTypeStatic(), TaskTestTask::createFromJson);
-  */
 
   QDockWidget *dockWidget = new QDockWidget("Tasks", this);
   m_taskProtocolWidget =

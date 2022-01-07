@@ -27,6 +27,8 @@ public:
   int getLatestMutationId(uint64_t bodyId) const override;
 
 protected:
+  friend class FlyEmDvidBodyMeshCache_Private_Test;
+
   ZMesh* getFromSolidIndex(const MeshIndex &index) const override;
   std::vector<std::string> getCachedKeys(
       uint64_t bodyId, int mutationId) const override;
@@ -34,7 +36,7 @@ protected:
 private:
   ZDvidReader *getDvidReader() const;
   std::string getCacheName() const;
-  std::string getBodyKey(int bodyId, int mutationId) const;
+  std::string getBodyKey(uint64_t bodyId, int64_t mutationId) const;
   std::string getKey(const MeshIndex &index, const std::string &format) const;
 
 private:

@@ -234,7 +234,7 @@ namespace {
   void setupAutapses(ZFlyEmBody3dDoc *doc)
   {
     QList<ZPunctum*> punctumList = doc->getPunctumList();
-    for (ZPunctum* punctum : punctumList) {
+    foreach (ZPunctum* punctum, punctumList) {
       if (punctum->getRole() == ZStackObjectRole::ROLE_AUTAPSE) {
         // A bright yellow-green (chartreuse) seems to be the best compromise for contrasting with
         // the cleaving colors.

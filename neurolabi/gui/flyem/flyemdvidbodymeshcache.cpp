@@ -75,10 +75,14 @@ void FlyEmDvidBodyMeshCache::setDvidTarget(const ZDvidTarget &target)
   }
 }
 
-std::string FlyEmDvidBodyMeshCache::getBodyKey(int bodyId, int mutationId) const
+std::string FlyEmDvidBodyMeshCache::getBodyKey(
+    uint64_t bodyId, int64_t mutationId) const
 {
   if (bodyId > 0 && mutationId >= 0) {
-    return neulib::StringBuilder("[$]_[$]").arg(bodyId).arg(mutationId);
+    // Use a prefix version number for body key to make sure that an old version of
+    // NeuTu/Neu3 will not affect newer versions if it has any problem that can
+    // corrupt the cache.
+    return neulib::StringBuilder("v1_[$]_[$]").arg(bodyId).arg(mutationId);
   }
   return "";
 }

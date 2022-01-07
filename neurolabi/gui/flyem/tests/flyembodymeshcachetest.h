@@ -124,6 +124,15 @@ TEST(FlyEmDvidBodyMeshCache, Basic)
   cache.set(index, &mesh);
 }
 
+TEST(FlyEmDvidBodyMeshCache, Private)
+{
+  FlyEmDvidBodyMeshCache cache;
+  ASSERT_TRUE(cache.getCacheName().empty());
+
+  ASSERT_EQ("v1_1_2", cache.getBodyKey(1, 2));
+  ASSERT_EQ("v1_7112627847_5813023304", cache.getBodyKey(7112627847llu, 5813023304ll));
+}
+
 #endif
 
 #endif // FLYEMBODYMESHCACHETEST_H
