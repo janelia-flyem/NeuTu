@@ -112,6 +112,7 @@
 #include "test/commandtest.h"
 #include "test/z3dwindowtest.h"
 #include "test/maintest.h"
+#include "test/zstroke2dtest.h"
 
 #include "bigdata/tests/zitemchunktest.h"
 #include "bigdata/tests/zdatachunktest.h"

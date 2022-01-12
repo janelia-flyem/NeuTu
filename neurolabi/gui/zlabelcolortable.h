@@ -16,7 +16,7 @@ public:
   const static int COLOR_COUNT;
 
 private:
-  static QVector<QColor> constructColorTable();
+  static QVector<QColor> ConstructColorTable();
 
   const static QVector<QColor> m_colorTable;
   const static QColor m_blackColor;

@@ -177,7 +177,8 @@ bool ZDvidSparseStack::display(QPainter *painter, const DisplayConfig &config) c
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
           getLabel(), getLabelType(),
-          config.getCutDepth(ZPoint::ORIGIN), config.getSliceAxis(), true, NULL);
+          config.getCutPlane().getOffset().getValue(config.getSliceAxis()),
+          config.getSliceAxis(), true, NULL);
     obj->setColor(getColor());
     painted = obj->display(painter, config);
     delete obj;

@@ -396,7 +396,6 @@ HEADERS += mainwindow.h \
     zlabelededitwidget.h \
     zlabeledcombowidget.h \
     zbuttonbox.h \
-#    zkeyeventswcmapper.h \
     newprojectmainwindow.h \
     zmouseeventmapper.h \
     zframefactory.h \

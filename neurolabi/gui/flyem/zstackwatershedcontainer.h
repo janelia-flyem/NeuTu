@@ -76,6 +76,12 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
+  /*!
+   * \brief Run watershed computation.
+   *
+   * It tries to run watershed on the source stack with current seeds and store
+   * the result in the buffer that can be retrieved by \a getResult().
+   */
   void run();
 
   /*!

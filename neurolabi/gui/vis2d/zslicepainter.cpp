@@ -768,7 +768,7 @@ void ZSlice3dPainter::drawPlanePolyline(
       !points.empty()) {
     ZPoint shiftedCenter = m_worldViewTransform.getCutCenter();
     shiftedCenter.shiftSliceAxis(sliceAxis);
-    if (neutu::nround(z - shiftedCenter.getZ()) == 0) {
+    if (neutu::nround(shiftedCenter.getZ() - z) == 0) {
       std::vector<QPointF> newPoints = points;
       double x0 = shiftedCenter.getX();
       double y0 = shiftedCenter.getY();

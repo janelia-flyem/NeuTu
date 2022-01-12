@@ -2529,7 +2529,7 @@ void ZStackView::updateObjectBuffer(
     std::shared_ptr<ZSliceCanvas> canvas, QPainter *painter,
     const QList<ZStackObject*> &objList)
 {
-  if (canvas  && canvas->updateNeeded() && painter->isActive()) {
+  if (canvas && canvas->updateNeeded() && painter->isActive()) {
     neutu::data3d::DisplayConfig config;
     config.setStyle(buddyPresenter()->objectStyle());
     config.setTransform(canvas->getTransform());
@@ -2657,76 +2657,6 @@ void ZStackView::configureRecorder()
     m_recordDlg->configureRecorder(getRecorder());
   }
 }
-
-#if 0
-bool ZStackView::paintTileCanvasBuffer()
-{
-#ifdef _DEBUG_2
-  std::cout << "ZStackView::paintTileCanvasBuffer" << std::endl;
-#endif
-  bool painted = false;
-
-//  QElapsedTimer timer;
-//  timer.start();
-  if (buddyDocument()->hasObject(neutu::data3d::ETarget::TILE_CANVAS)) {
-    auto canvas = getClearCanvas(neutu::data3d::ETarget::TILE_CANVAS);
-//    auto canvas = imageWidget()->getValidCanvas(
-//          ZImageWidget::ECanvasRole::CANVAS_ROLE_TILE);
-    if (canvas && canvas->isVisible()) {
-      paintObjectBuffer(*canvas, neutu::data3d::ETarget::TILE_CANVAS);
-    }
-
-#if 0
-    //std::cout << "update time canvas time: " << timer.elapsed() << std::endl;
-    if (m_tileCanvasPainter.isActive()) {
-#ifdef _DEBUG_
-      std::cout << "Painting tile buffer ..." << std::endl;
-#endif
-      paintObjectBuffer(m_tileCanvasPainter, neutu::data3d::ETarget::TARGET_TILE_CANVAS);
-      painted = true;
-    }
-#endif
-    //std::cout << "paint tile time: " << timer.elapsed() << std::endl;
-  }
-
-//  setDepthFrozen(false);
-  setViewPortFrozen(false);
-
-  return painted;
-}
-#endif
-
-#if 0
-void ZStackView::paintObject()
-{
-#ifdef _DEBUG_
-  std::cout << "ZStackView::paintObject()" << std::endl;
-#endif
-
-  if (buddyPresenter()->isObjectVisible()) {
-    updateObjectSorter();
-  }
-
-  updateObjectBuffer(neutu::data3d::GetTargetSettled2dObjectCanvasList());
-
-  /*
-  m_paintSorter.clear();
-  paintObjectBuffer();
-  paintDynamicObjectBuffer();
-  paintObjectBuffer(neutu::data3d::ETarget::HD_OBJECT_CANVAS);
-  &*/
-  updateImageScreen(EUpdateOption::QUEUED);
-}
-#endif
-
-/*
-void ZStackView::paintActiveTile()
-{
-  if (paintTileCanvasBuffer()) {
-    updateImageScreen(EUpdateOption::QUEUED);
-  }
-}
-*/
 
 void ZStackView::paintObject(const ZStackObjectInfoSet &selected,
                              const ZStackObjectInfoSet &deselected)

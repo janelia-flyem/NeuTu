@@ -1729,7 +1729,10 @@ ZDvidReader* ZFlyEmProofDoc::getCurrentBodyGrayscaleReader()
   std::string key = m_currentGrayscaleKey;
   if (key.empty()) {
     key = get_grayscale_key(m_mainGrayscaleReader->getDvidTarget());
+    HLDEBUG("body split") << "Get grayscale reader key: " << key << std::endl;
   }
+
+  HLDEBUG("body split") << "Get grayscale reader: " << key << std::endl;
 
   QMutexLocker locker(&m_bodyGrayscaleReaderMapMutex);
   if (m_bodyGrayscaleReaderMap.empty()) {
@@ -1790,6 +1793,7 @@ void ZFlyEmProofDoc::setGrayscaleReader(
     delete obsoleteReader;
   }
 
+  HLDEBUG("body split") << "Set reader: " << key << "->" << reader << std::endl;
   if (reader) {
     readerMap[key] = reader;
   } else {
@@ -1801,11 +1805,13 @@ void ZFlyEmProofDoc::prepareGrayscaleReader(
     std::unordered_map<std::string, ZDvidReader*> &readerMap,
     bool updatingMainReader)
 {
+  HLDEBUG("body split") << "prepare grayscale reader: " << updatingMainReader << std::endl;
   auto targetList = m_dvidEnv.getTargetList(ZDvidEnv::ERole::GRAYSCALE);
   int index = 0;
   for (const ZDvidTarget& target : targetList) {
     ZDvidReader *reader = new ZDvidReader;
     std::string key = target.getGrayscaleSourceString();
+    HLDEBUG("body split") << "prepare grayscale reader: " << key << std::endl;
     if (reader->open(target)) {
       reader->updateMaxGrayscaleZoom(
             ZDvidGlobal::Memo::ReadMaxGrayscaleZoom(reader->getDvidTarget()));
@@ -1827,6 +1833,7 @@ void ZFlyEmProofDoc::prepareGrayscaleReader(
 
 void ZFlyEmProofDoc::prepareBodyGrayscaleReader()
 {
+  HLDEBUG("body split") << "prepare body grayscale reader" << std::endl;
   prepareGrayscaleReader(m_bodyGrayscaleReaderMap, false);
 }
 

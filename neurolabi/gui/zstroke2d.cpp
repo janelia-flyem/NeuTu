@@ -7,7 +7,7 @@
 #include "tz_geo3d_utils.h"
 #include "tz_geometry.h"
 
-#include "common/math.h"
+#include "neulib/math/utilities.h"
 #include "common/utilities.h"
 
 #include "neutubeconfig.h"
@@ -41,36 +41,16 @@ ZStroke2d::ZStroke2d() :
   m_width(10.0), m_z(-1), m_isFilled(true), m_hideStart(false),
   m_isPenetrating(true)
 {
-  setLabel(1);
+  setLabel_(1);
   m_type = GetType();
   setSliceAxis(neutu::EAxis::Z);
-  //setEraser(m_isEraser);
 }
-/*
-ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
-{
-  m_pointArray = stroke.m_pointArray;
-  m_width = stroke.m_width;
-//  m_label = stroke.m_label;
-  m_originalLabel = stroke.m_originalLabel;
-//  setLabel(stroke.m_label);
-  //m_label = stroke.m_label;
-  m_z = stroke.m_z;
-  //m_isEraser = stroke.m_isEraser;
-  m_isFilled = stroke.m_isFilled;
-  m_isPenetrating = stroke.m_isPenetrating;
-  m_type = stroke.m_type;
-  m_hideStart = stroke.m_hideStart;
-  m_sliceAxis = stroke.m_sliceAxis;
-}
-*/
+
 ZStroke2d::~ZStroke2d()
 {
   ZOUT(LTRACE(), 5) << "Deconstructing " << this << ": ZStroke2d " << ", "
             << getSource();
 }
-
-//ZSTACKOBJECT_DEFINE_CLASS_NAME(ZStroke2d)
 
 void ZStroke2d::save(const char * /*filePath*/)
 {
@@ -115,6 +95,22 @@ void ZStroke2d::setLast(double x, double y)
   }
 }
 
+void ZStroke2d::setZ(double z)
+{
+  if (m_roundingZ) {
+    z = neulib::nround(z);
+  }
+  m_z = z;
+}
+
+void ZStroke2d::setZRounding(bool on)
+{
+  m_roundingZ = on;
+  if (m_roundingZ) {
+    setZ(m_z);
+  }
+}
+
 void ZStroke2d::updateWithLast(const ZPoint &pt)
 {
   updateWithLast(pt.getX(), pt.getY(), pt.getZ());
@@ -151,11 +147,16 @@ void ZStroke2d::append(const ZPoint &pt)
   append(pt.getX(), pt.getY(), pt.getZ());
 }
 
-void ZStroke2d::setLabel(uint64_t label)
+void ZStroke2d::setLabel_(uint64_t label)
 {
   m_uLabel = label;
   m_originalLabel = label;
   m_color = getLabelColor();
+}
+
+void ZStroke2d::setLabel(uint64_t label)
+{
+  setLabel_(label);
 }
 
 void ZStroke2d::toggleLabel(bool toggling)
@@ -193,8 +194,8 @@ bool ZStroke2d::display(QPainter *painter, const DisplayConfig &config) const
 
     double s = config.getViewCanvasTransform().getScale();
     if (s > 2.0) {
-      int width = neutu::iceil(painter->device()->width() / s);
-      int height = neutu::iceil(painter->device()->height() / s);
+      int width = neulib::iceil(painter->device()->width() / s);
+      int height = neulib::iceil(painter->device()->height() / s);
       ZSliceViewTransform t;
       //It's important to set to an int center to match image pixel positions,
       //and keep its shape during panning by keeping the residuals constant.
@@ -510,12 +511,12 @@ ZStack* ZStroke2d::toLabelStack(int label) const
   }
 
   Cuboid_I boundBox;
-  int r = neutu::iround(m_width / 2);
-  boundBox.cb[0] = neutu::iround(x0) - margin - r;
-  boundBox.cb[1] = neutu::iround(y0) - margin - r;
+  int r = neulib::iround(m_width / 2);
+  boundBox.cb[0] = neulib::iround(x0) - margin - r;
+  boundBox.cb[1] = neulib::iround(y0) - margin - r;
   boundBox.cb[2] = m_z;
-  boundBox.ce[0] = neutu::iround(x1) + margin + r;
-  boundBox.ce[1] = neutu::iround(y1) + margin + r;
+  boundBox.ce[0] = neulib::iround(x1) + margin + r;
+  boundBox.ce[1] = neulib::iround(y1) + margin + r;
   boundBox.ce[2] = m_z;
 
   int width = Cuboid_I_Width(&boundBox);
@@ -595,8 +596,10 @@ void ZStroke2d::labelGrey(Stack *stack, int label, int ignoringValue) const
 
 void ZStroke2d::labelGrey(Stack *stack, int label) const
 {
+  int z = neulib::iround(m_z);
+
   if (stack == NULL || C_Stack::kind(stack) != GREY ||
-      ((m_z < 0 || m_z >= C_Stack::depth(stack)) && !m_isPenetrating)) {
+      ((z < 0 || z >= C_Stack::depth(stack)) && !m_isPenetrating)) {
     return;
   }
 
@@ -609,7 +612,7 @@ void ZStroke2d::labelGrey(Stack *stack, int label) const
 
   uint8_t* array = C_Stack::array8(stack);
   size_t area = C_Stack::width(stack) * C_Stack::height(stack);
-  size_t offset = area * m_z;
+  size_t offset = area * z;
   for (int j = 0; j < image.height(); ++j) {
     for (int i = 0; i < image.width(); ++i) {
       QRgb color = image.pixel(i, j);
@@ -711,8 +714,8 @@ bool ZStroke2d::getLastPoint(int *x, int *y) const
     return false;
   }
 
-  *x = neutu::iround(m_pointArray.back().x());
-  *y = neutu::iround(m_pointArray.back().y());
+  *x = neulib::iround(m_pointArray.back().x());
+  *y = neulib::iround(m_pointArray.back().y());
 
   return true;
 }
@@ -784,15 +787,6 @@ QColor ZStroke2d::GetLabelColor(int label)
 const QColor& ZStroke2d::getLabelColor() const
 {
   return m_colorTable.getColor((int) getLabel());
-
-#if 0
-  if (m_label == 255) {
-    return m_blackColor;
-  }
-
-  int index = m_label % m_colorTable.size();
-  return m_colorTable[index];
-#endif
 }
 
 void ZStroke2d::translate(const ZPoint &offset)
@@ -802,7 +796,7 @@ void ZStroke2d::translate(const ZPoint &offset)
     QPointF &pt = *iter;
     pt += QPointF(offset.x(), offset.y());
   }
-  m_z += neutu::iround(offset.z());
+  setZ(m_z + offset.z());
 }
 
 void ZStroke2d::translate(const ZIntPoint &offset)
@@ -812,7 +806,7 @@ void ZStroke2d::translate(const ZIntPoint &offset)
     QPointF &pt = *iter;
     pt += QPointF(offset.getX(), offset.getY());
   }
-  m_z += offset.getZ();
+  setZ(m_z + offset.getZ());
 }
 
 void ZStroke2d::scale(double sx, double sy, double sz)
@@ -823,7 +817,7 @@ void ZStroke2d::scale(double sx, double sy, double sz)
     pt.setX(pt.x() * sx);
     pt.setY(pt.y() * sy);
   }
-  m_z = neutu::iround(m_z * sz);
+  setZ(m_z * sz);
   m_width *= std::sqrt(sx * sy);
 }
 
@@ -1134,7 +1128,7 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
 
   zgeom::ShiftSliceAxis(x, y, z, getSliceAxis());
 
-  if (neutu::iround(z) == m_z) {
+  if (neulib::iround(z) == m_z) {
     hit = hitTest(x, y, getSliceAxis());
   }
 

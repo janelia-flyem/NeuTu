@@ -117,8 +117,18 @@ public:
   inline void setFilled(bool isFilled) {
     m_isFilled = isFilled;
   }
-  inline void setZ(double z) { m_z = z; }
+  void setZ(double z);
   inline double getZ() const { return m_z; }
+
+  /*!
+   * \brief Set z-rounding flag
+   *
+   * Set the flag that automatically rounds Z when it is on. It also rounds the
+   * current Z value. Like normal rounding, it sets Z to the closest integer,
+   * but for any middle point between two integers, it always goes to the larger
+   * one.
+   */
+  void setZRounding(bool on);
 
   double inline getWidth() const { return m_width; }
 
@@ -201,6 +211,8 @@ private:
   double pointLinesegDistance(
       const QPointF &x, const QPointF &x0, const QPointF x1);
 
+  void setLabel_(uint64_t label);
+
 private:
   std::vector<QPointF> m_pointArray;
   double m_width;
@@ -208,6 +220,7 @@ private:
 //  int m_label; //Label = 0 is reserved for eraser
   uint64_t m_originalLabel; //for label toggling
   double m_z;
+  bool m_roundingZ = true;
 
   //bool m_isEraser;
   //Customized styles

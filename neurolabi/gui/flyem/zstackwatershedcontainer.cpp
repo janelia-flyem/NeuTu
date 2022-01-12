@@ -3,7 +3,7 @@
 #include <QElapsedTimer>
 
 #include "common/utilities.h"
-
+#include "logging/zlog.h"
 #include "imgproc/zstackwatershed.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
@@ -783,11 +783,11 @@ void ZStackWatershedContainer::downsampleSeed(int intvx, int intvy, int intvz)
 
 void ZStackWatershedContainer::run()
 {
-  std::cout << "Running watershed ..." << std::endl;
+  ZINFO("watershed") << "Running watershed ...";
   deprecate(COMP_RESULT);
 
-  if (m_seedArray.size() < 2) {
-    std::cout << "No valid seed found. Abort" << std::endl;
+  if (m_seedArray.empty()) {
+    ZWARN("watershed") << "No valid seed found. Abort";
     return;
   }
 
@@ -798,7 +798,7 @@ void ZStackWatershedContainer::run()
     timer.start();
 
     //Todo: unified processing for dense and sparse stacks
-    if((sourceStack != nullptr) && m_scale > 1){//for normal stack
+    if(m_scale > 1){//for normal stack
       ZStackMultiScaleWatershed watershed;
       ZStackPtr stack(watershed.run(
                         sourceStack, m_seedArray, m_scale, m_algorithm.c_str(),
@@ -806,6 +806,12 @@ void ZStackWatershedContainer::run()
       stack->setOffset(getSourceOffset());
       m_result.push_back(stack);
     } else {
+      auto workspace = getWorkspace();
+      if (!workspace) {
+        ZWARN("watershed") << "Failed to create watershed workspace";
+        return;
+      }
+
       Stack *source = getRawSourceStack(sourceStack);
       updateSeedMask();
 
@@ -820,8 +826,8 @@ void ZStackWatershedContainer::run()
 #endif
 
       if (m_result.empty()) {
-        getWorkspace()->conn=6;
-        Stack *out = C_Stack::watershed(source, getWorkspace());
+        workspace->conn=6;
+        Stack *out = C_Stack::watershed(source, workspace);
         ZStackPtr stack = ZStackPtr::Make();
         stack->consume(out);
         stack->setOffset(getSourceOffset());
@@ -835,8 +841,7 @@ void ZStackWatershedContainer::run()
 #endif
       }
 
-      std::cout << "Downsampling interval: "
-                << getSourceStack()->getDsIntv().toString() << std::endl;
+      ZINFO("watershed") << "Downsampling interval: " + getSourceStack()->getDsIntv().toString();
 
       if (m_refiningBorder/* && !getSourceStack()->getDsIntv().isZero()*/) {
         refineBorder();
@@ -845,7 +850,7 @@ void ZStackWatershedContainer::run()
 
     logProfile(timer.elapsed(), "watershed computation");
   } else {
-    ZOUT(LWARN(), 5) << "No source stack found. Abort watershed.";
+    ZOUT(ZWARN("watershed"), 5) << "No source stack found. Abort watershed.";
   }
 
 //  std::cout << "Watershed time: " << timer.elapsed() << "ms" << std::endl;
