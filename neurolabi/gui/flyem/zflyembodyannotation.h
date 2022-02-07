@@ -156,6 +156,24 @@ public:
       const ZJsonObject &target, const ZJsonObject &source,
       const std::function<int(const std::string&)>& getStatusRank);
 
+  /*!
+   * \brief Check if two annotations are the same
+   *
+   * It returns true iff \a obj1 and \a obj2 are the same, which means they
+   * are both empty or have the same keys or values.
+   */
+  static bool IsSameAnnotation(const ZJsonObject &obj1, const ZJsonObject &obj2);
+
+  /*!
+   * \brief Check if an annotation is empty.
+   *
+   * The annotation \a obj is deemed as empty if it has no non-null field or
+   * its only non-null field is the body ID.
+   *
+   * \return true iff \a obj is empty.
+   */
+  static bool IsEmptyAnnotation(const ZJsonObject &obj);
+
   static const char *KEY_BODY_ID;
   static const char *KEY_STATUS;
   static const char *KEY_NAME;

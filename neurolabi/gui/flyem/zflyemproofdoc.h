@@ -638,6 +638,15 @@ public:
 
   void updateState(QMap<QString, QVariant> config) override;
 
+  /*!
+   * \brief Respond to body changes.
+   *
+   * Process a body change event in which the body \a bodyId is created, deleted,
+   * or updated according to \a action.
+   */
+  void onSegmentChange(
+        uint64_t sid, int level, neutu::mvc::EModification action) override;
+
 signals:
   void bodyMerged();
   void bodyUnmerged();

@@ -58,8 +58,26 @@ public:
   bool isReal() const;
   bool isNumber() const;
   bool isBoolean() const;
-  virtual bool isEmpty() const;
+  /*!
+   * \brief Check if the json value is a null value.
+   *
+   * \return true iff the value is null in JSON representation.
+   */
   bool isNull() const;
+
+  /*!
+   * \brief Check if the json value is empty.
+   *
+   * \return true iff the value is null or there is no value.
+   */
+  virtual bool isEmpty() const;
+
+  /*!
+   * \brief Check if the value has anything inside.
+   *
+   * \return true iff \a getData() is not a null pointer.
+   */
+  bool shellOnly() const;
 
   std::string getType() const;
 
@@ -140,6 +158,11 @@ public:
   int getRefCount() const;
 
   friend std::ostream& operator << (std::ostream &stream, const ZJsonValue &v);
+
+  /*!
+   * \brief Make a null value.
+   */
+  static ZJsonValue MakeNull();
 
 protected:
 //  json_error_t m_error;

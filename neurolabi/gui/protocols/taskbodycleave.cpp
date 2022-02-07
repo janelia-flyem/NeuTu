@@ -2382,11 +2382,15 @@ bool TaskBodyCleave::writeOutput(ZDvidWriter &writer,
 
   QString responsesText = "Cleaving body " + QString::number(m_bodyId) + " created new ";
   responsesText += (responseLabels.size() > 1) ? "bodies " : "body ";
+  m_bodyDoc->onSegmentChange(m_bodyId, 0, neutu::mvc::EModification::UPDATED);
   for (std::size_t i = 0; i < responseLabels.size(); i++) {
     responsesText += responseLabels[i];
     if (i < responseLabels.size() - 1) {
       responsesText += ", ";
     }
+    m_bodyDoc->onSegmentChange(
+          neutu::ToUint64(responseLabels[i].toStdString()),
+          0, neutu::mvc::EModification::CREATED);
   }
   ZWidgetMessage msg(responsesText);
   notify(msg);

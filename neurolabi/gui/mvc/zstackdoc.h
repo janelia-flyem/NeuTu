@@ -529,6 +529,15 @@ public:
         const std::vector<uint64_t> &ids,
         neutu::ECacheOption option = neutu::ECacheOption::CACHE_FIRST) const;
 
+  /*!
+   * \brief Respond to segment change.
+   *
+   * Process a segment change event in which the segment \a sid at level
+   * \a level is created, deleted, or updated according to \a action.
+   */
+  virtual void onSegmentChange(
+      uint64_t sid, int level, neutu::mvc::EModification action);
+
 public: //Image processing
   static int autoThreshold(Stack* getStack);
   void autoThreshold();

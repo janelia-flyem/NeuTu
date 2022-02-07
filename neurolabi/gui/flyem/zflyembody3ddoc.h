@@ -355,6 +355,9 @@ public:
 
   void tryPrefetchBodyMesh(uint64_t bodyId);
 
+  void onSegmentChange(
+        uint64_t sid, int level, neutu::mvc::EModification action) override;
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;

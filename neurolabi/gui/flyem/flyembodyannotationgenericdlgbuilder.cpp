@@ -64,8 +64,9 @@ FlyEmBodyAnnotationGenericDlgBuilder::fromOldAnnotation(const ZJsonObject &obj)
     }
   }
 
-  if (!m_annotation.isNull()) {
-    m_annotation = ZSegmentAnnotationBuilder().copy(obj).join(m_annotation);
+  if (!m_annotation.shellOnly()) {
+    m_annotation =
+        ZSegmentAnnotationBuilder().copy(obj).join(m_annotation).withoutNull();
   }
 
   return *this;

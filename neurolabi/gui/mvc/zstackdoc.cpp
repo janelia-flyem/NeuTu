@@ -11200,6 +11200,11 @@ ZStackDoc::getSegmentAnnotations(
   return std::vector<std::pair<uint64_t, ZJsonObject>>();
 }
 
+void ZStackDoc::onSegmentChange(
+      uint64_t /*sid*/, int /*level*/, neutu::mvc::EModification /*action*/)
+{
+}
+
 void ZStackDoc::updateState(QMap<QString, QVariant> config)
 {
   for (auto iter = config.begin(); iter != config.end(); ++iter) {

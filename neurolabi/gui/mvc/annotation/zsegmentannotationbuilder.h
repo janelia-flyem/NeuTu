@@ -20,6 +20,11 @@ public:
    */
   ZSegmentAnnotationBuilder& join(const ZJsonObject &obj);
 
+  /*!
+   * \brief Remove null values from the current annotation.
+   */
+  ZSegmentAnnotationBuilder& withoutNull();
+
   operator ZJsonObject() const;
 
 protected:

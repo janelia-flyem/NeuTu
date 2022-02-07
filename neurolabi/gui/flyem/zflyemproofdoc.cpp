@@ -51,6 +51,8 @@
 #include "dvid/zdvidenv.h"
 #include "dvid/zdvidglobal.h"
 
+#include "service/zskeletonizeservice.h"
+
 #include "zslicedpuncta.h"
 #include "zdialogfactory.h"
 
@@ -495,7 +497,7 @@ QString ZFlyEmProofDoc::getBodySelectionMessage() const
   for (std::set<uint64_t>::const_iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
     uint64_t bodyId = *iter;
-    msg += QString("%1 ").arg(bodyId);
+    msg += QString("%1 ").arg(ZFlyEmBodyManager::ToString(bodyId));
     if (!isSupervoxelMode()) {
       const QSet<uint64_t> &originalBodySet =
           getBodyMerger()->getOriginalLabelSet(bodyId);
@@ -504,7 +506,7 @@ QString ZFlyEmProofDoc::getBodySelectionMessage() const
         for (QSet<uint64_t>::const_iterator iter = originalBodySet.begin();
              iter != originalBodySet.end(); ++iter) {
           if (selected.count(*iter) == 0) {
-            msg += QString("_%1").arg(*iter);
+            msg += QString("_%1").arg(ZFlyEmBodyManager::ToString(*iter));
           }
         }
         msg += ")</font> ";
@@ -7556,7 +7558,7 @@ void ZFlyEmProofDoc::processBodyAnnotationUpdate(
 void ZFlyEmProofDoc::processBodyAnnotationUpdate(
     uint64_t bodyId, ZJsonObject annotation)
 {
-  if (annotation.isNull()) {
+  if (annotation.shellOnly()) {
     annotation = getSegmentAnnotation(bodyId);
   }
 
@@ -7585,6 +7587,29 @@ void ZFlyEmProofDoc::processBodyAnnotationUpdate(
 
   emit messageGenerated(
         ZWidgetMessage(QString("The annotation of body %1 is updated.").arg(bodyId)));
+}
+
+void ZFlyEmProofDoc::onSegmentChange(
+    uint64_t sid, int level, neutu::mvc::EModification action)
+{
+  if (level == 0) {
+    try {
+      HLDEBUG("body change") << sid << " " << neutu::ToString(action) << std::endl;
+      switch (action) {
+      case neutu::mvc::EModification::CREATED:
+      case neutu::mvc::EModification::UPDATED:
+        ZSkeletonizeService::GetInstance().requestSkeletonize(
+              getDvidTarget(), sid);
+        break;
+      case neutu::mvc::EModification::DELETED:
+        getDvidWriter().deleteSkeleton(sid);
+        getDvidWriter().deleteBodyAnnotation(sid);
+        break;
+      }
+    } catch (std::exception &e) {
+      emitWarning(e.what());
+    }
+  }
 }
 
 void ZFlyEmProofDoc::diagnose() const

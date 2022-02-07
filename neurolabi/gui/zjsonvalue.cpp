@@ -133,12 +133,22 @@ bool ZJsonValue::isEmpty() const
 
 bool ZJsonValue::isNull() const
 {
+  return json_is_null(m_data);
+}
+
+bool ZJsonValue::shellOnly() const
+{
   return m_data == NULL;
+}
+
+ZJsonValue ZJsonValue::MakeNull()
+{
+  return ZJsonValue(C_Json::makeJsonNull(), ESetDataOption::SET_AS_IT_IS);
 }
 
 std::string ZJsonValue::getType() const
 {
-  if (isNull()) {
+  if (shellOnly()) {
     return "null";
   } else if (isObject()) {
     return "object";

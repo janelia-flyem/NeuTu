@@ -215,6 +215,16 @@ int64_t GetTimeStamp();
 std::string GetUtcTimeString();
 
 /*!
+ * \brief Make an string for iterated data
+ *
+ * It concatenates data items from \a first to \a last in string by inserting
+ * \a delimiter between two adjacent items.
+ */
+template<typename InputIterator>
+std::string ToString(
+    InputIterator first, InputIterator last, const std::string &delimiter);
+
+/*!
  * \brief Process partitions of a range
  *
  * The behavior of this function is undefined if x0 > x1 or n <= 0.
@@ -251,6 +261,9 @@ public:
 private:
   std::function<void()> m_endFunc;
 };
+
+#define APPLY_ONCE(todo, done) \
+  auto apply__once__ = neutu::ApplyOnce([&](){todo;}, [&](){done;});
 
 template<typename TEnum>
 constexpr typename std::underlying_type<TEnum>::type
@@ -305,6 +318,20 @@ void neutu::assign(T *out, const T &v)
   if (out != NULL) {
     *out = v;
   }
+}
+
+template<typename InputIterator>
+std::string neutu::ToString(
+    InputIterator first, InputIterator last, const std::string &delimiter)
+{
+  std::string result;
+  for (auto iter = first; iter != last; ++iter) {
+    if (iter != first) {
+      result += delimiter;
+    }
+    result += std::to_string(*iter);
+  }
+  return result;
 }
 
 #endif // UTILITIES_H

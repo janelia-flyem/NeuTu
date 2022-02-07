@@ -54,9 +54,9 @@ public:
     m_tracedOnly = state;
   }
 
-  void exclude(int bodyId);
-  void exclude(const std::vector<int> &bodyArray);
-  bool isExcluded(int bodyId) const;
+  void exclude(uint64_t bodyId);
+  void exclude(const std::vector<uint64_t> &bodyArray);
+  bool isExcluded(uint64_t bodyId) const;
   bool hasExclusion() const;
   bool namedBodyOnly() const;
   bool tracedOnly() const;

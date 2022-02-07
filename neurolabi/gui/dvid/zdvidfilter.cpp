@@ -8,20 +8,19 @@ ZDvidFilter::ZDvidFilter() :
 {
 }
 
-void ZDvidFilter::exclude(int bodyId)
+void ZDvidFilter::exclude(uint64_t bodyId)
 {
   m_excludedBodySet.insert(bodyId);
 }
 
-void ZDvidFilter::exclude(const std::vector<int> &bodyArray)
+void ZDvidFilter::exclude(const std::vector<uint64_t> &bodyArray)
 {
-  for (std::vector<int>::const_iterator iter = bodyArray.begin();
-       iter != bodyArray.end(); ++iter) {
+  for (auto iter = bodyArray.begin(); iter != bodyArray.end(); ++iter) {
     exclude(*iter);
   }
 }
 
-bool ZDvidFilter::isExcluded(int bodyId) const
+bool ZDvidFilter::isExcluded(uint64_t bodyId) const
 {
 #ifdef _DEBUG_2
   if (bodyId == 16493) {

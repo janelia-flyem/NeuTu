@@ -204,6 +204,11 @@ public:
 
   void setValue(const ZJsonValue &value);
 
+  /*!
+   * \brief Get number of keys in the object
+   */
+  size_t countKey() const;
+
   std::vector<std::string> getAllKey() const;
 
   /*!
@@ -226,6 +231,22 @@ public:
   void forEachValue(std::function<void(ZJsonValue)> f) const;
   bool all(std::function<bool(const std::string &key, ZJsonValue)> f) const;
   bool all(std::function<bool(const std::string &key)> f) const;
+
+  /*!
+   * \brief Conditional removal of keys.
+   *
+   * A key in the object will be removed if its key-value pair makes \a pred true.
+   *
+   * \return number of keys removed.
+   */
+  int removeKeys(std::function<bool(const std::string &key, ZJsonValue)> pred);
+
+  /*!
+   * \brief Remove keys that have null values.
+   *
+   * \return number of keys removed;
+   */
+  int removeNullFields();
 
   static ZJsonObject MakeNull();
   static ZJsonObject MakeEmpty();

@@ -17,6 +17,10 @@ public:
   void addAdminStatus(const QString &status);
   void setAdmin(bool on);
 
+protected:
+  static void RemoveEmptyStringValues(ZJsonObject &obj);
+  void postProcess(ZJsonObject &obj) const override;
+
 private:
   void updateStatusParameter();
 

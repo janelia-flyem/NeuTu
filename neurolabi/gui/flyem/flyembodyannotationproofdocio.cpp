@@ -73,7 +73,7 @@ void FlyEmBodyAnnotationProofDocIO::deleteBodyAnnotation(uint64_t bodyId)
 void FlyEmBodyAnnotationProofDocIO::writeBodyAnnotation(
     uint64_t bodyId, const ZJsonObject &obj)
 {
-  if (obj.isEmpty()) {
+  if (ZFlyEmBodyAnnotation::IsEmptyAnnotation(obj)) {
     deleteBodyAnnotation(bodyId);
   } else {
     ZDvidWriter &writer = getValidWriter();

@@ -67,19 +67,19 @@ private:
 TEST(ZSegmentAnnotationStore, Basic)
 {
   ZMockSegmentAnnotationStore store;
-  ASSERT_TRUE(store.getAnnotation(1).isNull());
-  ASSERT_TRUE(store.getAnnotation(1, neutu::ECacheOption::SOURCE_ONLY).isNull());
+  ASSERT_TRUE(store.getAnnotation(1).shellOnly());
+  ASSERT_TRUE(store.getAnnotation(1, neutu::ECacheOption::SOURCE_ONLY).shellOnly());
 
   ZJsonObject obj;
   obj.setEntry("status", "test");
   store.saveAnnotation(1, obj);
-  ASSERT_FALSE(store.getAnnotation(1).isNull());
-  ASSERT_FALSE(store.getAnnotation(1, neutu::ECacheOption::SOURCE_ONLY).isNull());
+  ASSERT_FALSE(store.getAnnotation(1).shellOnly());
+  ASSERT_FALSE(store.getAnnotation(1, neutu::ECacheOption::SOURCE_ONLY).shellOnly());
 
   obj.setEntry("status", "test2");
   store.saveAnnotation(2, obj);
-  ASSERT_FALSE(store.getAnnotation(2).isNull());
-  ASSERT_FALSE(store.getAnnotation(2, neutu::ECacheOption::SOURCE_ONLY).isNull());
+  ASSERT_FALSE(store.getAnnotation(2).shellOnly());
+  ASSERT_FALSE(store.getAnnotation(2, neutu::ECacheOption::SOURCE_ONLY).shellOnly());
 
   ASSERT_EQ("test", ZJsonObjectParser::GetValue(
               store.getAnnotation(1), "status", ""));
@@ -92,7 +92,7 @@ TEST(ZSegmentAnnotationStore, Basic)
               annotations[0].second, "status", ""));
   ASSERT_EQ("test2", ZJsonObjectParser::GetValue(
               annotations[1].second, "status", ""));
-  ASSERT_TRUE(annotations[2].second.isNull());
+  ASSERT_TRUE(annotations[2].second.shellOnly());
 }
 
 #endif

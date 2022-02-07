@@ -17,6 +17,10 @@ enum class EBodySplitRange {
   FULL, SEED, LOCAL
 };
 
+enum class EBodyMod {
+  CREATED, DELETED, UPDATED
+};
+
 namespace key {
 static const char *GRAYSCALE = "grayscale";
 static const char *SEGMENTATION = "segmentation";

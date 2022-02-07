@@ -3821,7 +3821,7 @@ void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
 
     if (checkOutBody(bodyId, neutu::EBodySplitMode::NONE)) {
       ZJsonObject annotation = getCompleteDocument()->getBodyAnnotation(bodyId);
-      if (!annotation.isNull()) {
+      if (!annotation.shellOnly()) {
         ZJsonObject oldAnnotation = annotation.clone();
         ZFlyEmBodyAnnotation::SetStatus(annotation, status);
         if (status.empty()) {
@@ -4017,7 +4017,7 @@ void ZFlyEmProofMvc::annotateSelectedBody()
                 [&](){ return m_dlgManager->getGenericAnnotationDlg(); }, false)
               .forBody(bodyId)
               .fromOldAnnotation(oldAnnotation);
-          if (!newAnnotation.isNull()) {
+          if (!newAnnotation.shellOnly()) {
             annotateBody(bodyId, newAnnotation, oldAnnotation);
           }
         } else {

@@ -6,6 +6,7 @@
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 #include "zjsonobjectparser.h"
+#include "zstring.h"
 
 #ifdef _USE_GTEST_
 
@@ -44,22 +45,22 @@ TEST(Json, basic)
   ASSERT_EQ(int64_t(0), ZJsonParser::integerValue(arrayObj.at(2)));
 
   ZJsonValue value2;
-  ASSERT_TRUE(value2.isNull());
+  ASSERT_TRUE(value2.shellOnly());
 
   value2.denull();
-  ASSERT_FALSE(value2.isNull());
+  ASSERT_FALSE(value2.shellOnly());
 
   ZJsonArray array;
-  ASSERT_TRUE(array.isNull());
+  ASSERT_TRUE(array.shellOnly());
 
   array.denull();
-  ASSERT_FALSE(array.isNull());
+  ASSERT_FALSE(array.shellOnly());
 
   ZJsonObject obj4;
-  ASSERT_TRUE(obj4.isNull());
+  ASSERT_TRUE(obj4.shellOnly());
 
   obj4.denull();
-  ASSERT_FALSE(obj4.isNull());
+  ASSERT_FALSE(obj4.shellOnly());
 }
 
 TEST(ZJsonValue, decode)
@@ -165,6 +166,7 @@ TEST(ZJsonObject, basic)
         setEntry("test5", uint64_t(200)).
         setEntry("test6", 1.0).
         setEntry("test7", {"v1", "v2", "v3"});
+    ASSERT_EQ(7, obj.countKey());
     ASSERT_EQ(1, ZJsonObjectParser::GetValue(obj, "test", 0));
     ASSERT_EQ(true, ZJsonObjectParser::GetValue(obj, "test2", false));
     ASSERT_EQ("value", ZJsonObjectParser::GetValue(obj, "test3", ""));
@@ -190,7 +192,36 @@ TEST(ZJsonObject, basic)
     ASSERT_EQ(5.0, darray2[4]);
     ASSERT_EQ(1, iarray2[0]);
     ASSERT_EQ(4, iarray2[3]);
+  }
 
+  {
+    ZJsonObject obj;
+    obj.setEntry("test", 1).
+        setEntry("test2", true).
+        setEntry("test3", "value").
+        setEntry("test4", int64_t(100)).
+        setEntry("test5", uint64_t(200)).
+        setEntry("test6", 1.0).
+        setEntry("test7", {"v1", "v2", "v3"});
+    ASSERT_EQ(7, obj.removeKeys([&](const std::string &key, ZJsonValue /*value*/) {
+      return ZString(key).startsWith("test");
+    }));
+    ASSERT_TRUE(obj.isEmpty());
+
+    obj.setEntry("test", 1).
+        setEntry("test2", true).
+        setEntry("test3", "value").
+        setEntry("test4", int64_t(100)).
+        setEntry("test5", uint64_t(200)).
+        setEntry("test6", 1.0).
+        setEntry("test7", {"v1", "v2", "v3"});
+    ASSERT_EQ(3, obj.removeKeys([&](const std::string &/*key*/, ZJsonValue value) {
+      return value.isInteger();
+    }));
+
+    obj.setEntry("test", ZJsonValue::MakeNull());
+    obj.setEntry("test2", ZJsonValue::MakeNull());
+    ASSERT_EQ(2, obj.removeNullFields());
   }
 }
 

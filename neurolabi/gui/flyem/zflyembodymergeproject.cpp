@@ -5,6 +5,7 @@
 #include <QItemSelectionModel>
 #include <QDesktopWidget>
 
+#include "common/debug.h"
 #include "logging/zlog.h"
 
 #include "geometry/zintpoint.h"
@@ -921,17 +922,22 @@ void ZFlyEmBodyMergeProject::refreshBodyAnnotationCache()
 }
 
 void ZFlyEmBodyMergeProject::updateAffliatedData(
-    uint64_t targetId, const std::vector<uint64_t> &bodyArray,
-    ZWidgetMessage &warnMsg)
+    uint64_t targetId, const std::vector<uint64_t> &bodyArray)
 {
+  HLDEBUG("body merge") << "update affliated data" << std::endl;
   for (uint64_t bodyId : bodyArray) {
     if (getBodyAnnotationManager()) {
       getBodyAnnotationManager()->removeAnnotation(bodyId);
     }
 //    m_writer.deleteBodyAnnotation(bodyId);
-    m_writer.deleteSkeleton(bodyId);
+//    m_writer.deleteSkeleton(bodyId);
+    getDocument()->onSegmentChange(
+          bodyId, 0, neutu::mvc::EModification::DELETED);
   }
+  getDocument()->onSegmentChange(
+        targetId, 0, neutu::mvc::EModification::UPDATED);
 
+      /*
   if (GET_FLYEM_CONFIG.neutuseAvailable(
         neutu::UsingLocalHost(getDvidTarget().getAddress()))) {
     neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
@@ -942,6 +948,7 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
       warnMsg.setMessage("Failed to upload skeletonization task");
     }
   }
+      */
 
   //Temporary fix for mesh update, which should be moved the remote service
 //  m_writer.deleteMesh(targetId);
@@ -1082,7 +1089,9 @@ bool ZFlyEmBodyMergeProject::mergeVerified(
   QString bodyNameMsg;
   if (!bodyArray.empty() && getBodyAnnotationManager()) {
     if (!getBodyAnnotationManager()->hasName(targetId)
-        && getBodyAnnotationManager()->hasName(bodyArray.front())) {
+        && getBodyAnnotationManager()->hasName(bodyArray.front())
+        && (getBodyAnnotationManager()->getBodyStatus(targetId) ==
+        getBodyAnnotationManager()->getBodyStatus(bodyArray.front()))) {
       msg += QString("The name of ID %1 will be transfered to ID %2\n").
           arg(bodyArray.front()).arg(targetId);
     }
@@ -1185,14 +1194,20 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(
       return false;
     };
 
-    foreach (uint64_t targetId, m_mergeMap.keys()) {
-      const std::vector<uint64_t> &merged = m_mergeMap.value(targetId);
+    QMapIterator<uint64_t, std::vector<uint64_t>> iter(m_mergeMap);
+//    foreach (uint64_t targetId, m_mergeMap.keys()) {
+    while (iter.hasNext()) {
+      auto item = iter.next();
+      auto targetId = item.key();
+      const std::vector<uint64_t> &merged = iter.value(); //m_mergeMap.value(targetId);
       auto mergeConfig = dvid::GetMergeConfig(targetId, merged, lessStable);
       const uint64_t &newTargetId = mergeConfig.first;
       const std::vector<uint64_t> &newMerged = mergeConfig.second;
 
       if (mergeVerified(newTargetId, newMerged)) {
         m_writer.mergeBody(newTargetId, newMerged);
+        HLDEBUG("body merge") << "Merging: " << neutu::ToString(newMerged.begin(), newMerged.end(), ", ")
+                              << " -> " << newTargetId << std::endl;
 
         if (m_writer.getStatusCode() != 200) {
           emit messageGenerated(
@@ -1205,7 +1220,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(
           uploadMeshMerge(newTargetId, newMerged);
           mergeBodyAnnotation(newTargetId, newMerged);
 
-          updateAffliatedData(newTargetId, newMerged, warnMsg);
+          updateAffliatedData(newTargetId, newMerged);
 
           if (oldSelection.count(newTargetId) > 0) {
             newBodySet.insert(newTargetId);

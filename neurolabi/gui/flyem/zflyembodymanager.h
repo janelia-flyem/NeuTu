@@ -3,6 +3,7 @@
 
 #include <QSet>
 #include <QMap>
+#include <QString>
 
 #include "flyembodyconfig.h"
 
@@ -173,6 +174,19 @@ public:
   static unsigned int EncodedLevel(uint64_t bodyId);
   static bool EncodingSupervoxelTar(uint64_t bodyId);
   static bool IsEncoded(uint64_t bodyId);
+
+  /*!
+   * \brief Convert a body ID to a string.
+   *
+   * It converts \a bodyId to a more readable form with the following rules:
+   *   normal body ID -> ID string
+   *   encoded body ID:
+   *     supervoxel -> sv:ID
+   *     supervoxel tar -> c:ID
+   *     tared level -> t<leve>:ID
+   *     other -> a<level>:ID
+   */
+  static QString ToString(uint64_t bodyId);
 
 private:
   static bool couldBeSupervoxelLevel(uint64_t bodyId);

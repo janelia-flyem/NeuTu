@@ -5,6 +5,8 @@
 #include <algorithm>
 
 #include "common/utilities.h"
+#include "common/debug.h"
+
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 #include "zjsonobjectparser.h"
@@ -127,6 +129,47 @@ std::string ZFlyEmBodyAnnotation::GetOldFormatKey(const ZJsonObject &obj)
 
   return "";
 }
+
+bool ZFlyEmBodyAnnotation::IsSameAnnotation(
+    const ZJsonObject &obj1, const ZJsonObject &obj2)
+{
+  if (obj1.isEmpty() && obj2.isEmpty()) {
+    return true;
+  }
+
+
+  int nkey1 = obj1.countKey();
+  int nkey2 = obj2.countKey();
+
+  if (nkey1 == nkey2) {
+    return obj1.dumpJanssonString(JSON_INDENT(0) | JSON_SORT_KEYS) ==
+        obj2.dumpJanssonString(JSON_INDENT(0) | JSON_SORT_KEYS);
+    /*
+    return obj1.all([&](const std::string &key) {
+      if (obj2.hasKey(key)) {
+        return obj1.value(key).dumpString(0) == obj2.value(key).dumpString(0);
+      }
+      return false;
+    });
+    */
+  }
+
+  return false;
+}
+
+bool ZFlyEmBodyAnnotation::IsEmptyAnnotation(const ZJsonObject &obj)
+{
+  return obj.all([&](const std::string &key, ZJsonValue value) {
+    if (key == KEY_BODY_ID) {
+      return true;
+    }
+#ifdef _DEBUG_0
+    std::cout << "value: " << value.dumpString(0) << std::endl;
+#endif
+    return value.isEmpty();
+  });
+}
+
 /*
 namespace {
 template<typename T>
@@ -886,6 +929,7 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
     }
   } else if (getStatusRank(targetStatus) > getStatusRank(sourceStatus)) { //source has higher priority
 //    uint64_t bodyId = ZFlyEmBodyAnnotation::GetBodyId(target);
+    HLDEBUG("annotate body") << "Use source annotation directly." << std::endl;
     result = source.clone();
     /*
     if (bodyId > 0) {
@@ -893,6 +937,7 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
     }
     */
   } else { //target has higher priority
+    HLDEBUG("annotate body") << "Use target annotation directly." << std::endl;
     result = target.clone();
   }
 

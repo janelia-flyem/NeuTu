@@ -410,6 +410,78 @@ TEST(ZFlyEmBodyAnnotation, Json)
   ASSERT_EQ("test_user3", ZFlyEmBodyAnnotation::GetNamingUser(obj));
   ASSERT_EQ("test_user5", ZFlyEmBodyAnnotation::GetUser(obj));
   ASSERT_EQ("test_user6", ZFlyEmBodyAnnotation::GetLastModifiedBy(obj));
+
+  {
+    ZJsonObject obj1;
+    ZJsonObject obj2;
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    obj1.denull();
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj2, obj1));
+    obj1.setEntry("bodyid", 1);
+    ASSERT_FALSE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    obj2.denull();
+    ASSERT_FALSE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    obj2.setEntry("bodyid", 1);
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    obj2.setEntry("status", true);
+    ASSERT_FALSE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    obj1.setEntry("status", true);
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    obj1.clear();
+    obj1.setEntry("status", true);
+    obj1.setEntry("bodyid", 1);
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2))
+        << obj1.dumpJanssonString(JSON_INDENT(0)) << obj2.dumpJanssonString(JSON_INDENT(0));
+
+    obj1.clear();
+    obj2.clear();
+    obj1.setEntry("status", "Hard to trace");
+    obj1.setEntry("comment", "test");
+    obj1.setEntry("body ID", 123);
+    obj1.setEntry("name", "KC");
+    obj1.setEntry("class", "neuron");
+    obj1.setEntry("user", "test_user");
+    obj1.setEntry("naming user", "mock");
+    obj1.setEntry("clonal unit", "clonal unit test");
+    obj1.setEntry("auto-type", "auto type test");
+    obj1.setEntry("property", "Distinct");
+    obj1.setEntry(ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "neurite test");
+    obj1.setEntry(ZFlyEmBodyAnnotation::KEY_SYNONYM, "note test");
+    obj1.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER, "test_user2");
+
+    obj2.setEntry("status", "Hard to trace");
+    obj2.setEntry("comment", "test");
+    obj2.setEntry(ZFlyEmBodyAnnotation::KEY_STATUS_USER, "test_user2");
+    obj2.setEntry("auto-type", "auto type test");
+    obj2.setEntry("property", "Distinct");
+    obj2.setEntry(ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE, "neurite test");
+    obj2.setEntry("naming user", "mock");
+    obj2.setEntry("clonal unit", "clonal unit test");
+    obj2.setEntry(ZFlyEmBodyAnnotation::KEY_SYNONYM, "note test");
+    obj2.setEntry("body ID", 123);
+    obj2.setEntry("name", "KC");
+    obj2.setEntry("class", "neuron");
+    ASSERT_FALSE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+    obj2.setEntry("user", "test_user2");
+    ASSERT_FALSE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+
+    obj2.setEntry("user", "test_user");
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsSameAnnotation(obj1, obj2));
+
+    obj1.clear();
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsEmptyAnnotation(obj1));
+
+    obj1.setEntry("test", ZJsonValue::MakeNull());
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsEmptyAnnotation(obj1));
+
+    obj1.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, 1);
+    ASSERT_TRUE(ZFlyEmBodyAnnotation::IsEmptyAnnotation(obj1));
+
+    obj1.setEntry("test", 1);
+    ASSERT_FALSE(ZFlyEmBodyAnnotation::IsEmptyAnnotation(obj1));
+
+  }
 }
 
 #endif

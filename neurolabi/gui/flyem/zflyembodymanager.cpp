@@ -483,3 +483,22 @@ bool ZFlyEmBodyManager::IsEncoded(uint64_t bodyId)
 {
   return EncodesTar(bodyId) || (EncodedLevel(bodyId) > 0);
 }
+
+QString ZFlyEmBodyManager::ToString(uint64_t bodyId)
+{
+  QString prefix;
+
+  if (EncodingSupervoxel(bodyId)) {
+    prefix = "sv:";
+  } else if (EncodingSupervoxelTar(bodyId)) {
+    prefix = "c:";
+  } else if (IsEncoded(bodyId)) {
+    if (EncodesTar(bodyId)) {
+      prefix = QString("t%1:").arg(EncodedLevel(bodyId));
+    } else {
+      prefix = QString("a%1:").arg(EncodedLevel(bodyId));
+    }
+  }
+
+  return prefix + QString::number(Decode(bodyId));
+}

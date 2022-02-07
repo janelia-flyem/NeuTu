@@ -676,17 +676,6 @@ public:
   bool isAdjacentTo(const ZObject3dScan &obj,
                     neutu::EStackNeighborhood nbr = neutu::EStackNeighborhood::D1) const;
 
-
-  /*
-  uint64_t getLabel() const {
-    return m_label;
-  }
-
-  void setLabel(uint64_t label) {
-    m_label = label;
-  }
-  */
-
   class Appender {
   public:
     Appender(ZObject3dScan *obj) : m_obj(obj) {}

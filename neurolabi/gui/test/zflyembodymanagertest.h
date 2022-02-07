@@ -134,9 +134,23 @@ TEST(ZFlyEmBodyManager, encode)
   ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::Encode(3, 1, false)));
   ASSERT_TRUE(ZFlyEmBodyManager::IsEncoded(ZFlyEmBodyManager::EncodeSupervoxel(3)));
 
-  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::Encode(uint64_t(100000000000003), 0));
-  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::Encode(uint64_t(19900000000000003), 1));
-  ASSERT_EQ(uint64_t(0), ZFlyEmBodyManager::Encode(uint64_t(10000000000000003), 1, false));
+  ASSERT_EQ(uint64_t(0),
+            ZFlyEmBodyManager::Encode(uint64_t(100000000000003), 0));
+  ASSERT_EQ(uint64_t(0),
+            ZFlyEmBodyManager::Encode(uint64_t(19900000000000003), 1));
+  ASSERT_EQ(uint64_t(0),
+            ZFlyEmBodyManager::Encode(uint64_t(10000000000000003), 1, false));
+
+  ASSERT_EQ(QString("123"), ZFlyEmBodyManager::ToString(123));
+  ASSERT_EQ(QString("c:3"),
+            ZFlyEmBodyManager::ToString(ZFlyEmBodyManager::Encode(3, 0, true)));
+  ASSERT_EQ(QString("sv:3"),
+            ZFlyEmBodyManager::ToString(ZFlyEmBodyManager::EncodeSupervoxel(3)));
+  ASSERT_EQ(QString("t1:3"),
+            ZFlyEmBodyManager::ToString(ZFlyEmBodyManager::Encode(3, 1, true)))
+      << ZFlyEmBodyManager::ToString(ZFlyEmBodyManager::Encode(3, 1, true)).toStdString();
+  ASSERT_EQ(QString("a1:3"),
+            ZFlyEmBodyManager::ToString(ZFlyEmBodyManager::Encode(3, 1, false)));
 }
 
 #endif

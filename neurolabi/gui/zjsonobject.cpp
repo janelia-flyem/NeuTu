@@ -526,6 +526,20 @@ void ZJsonObject::setValue(const ZJsonValue &value)
   }
 }
 
+size_t ZJsonObject::countKey() const
+{
+  size_t n = 0;
+  if (!isEmpty()) {
+    const char *key;
+    json_t *value;
+    json_object_foreach(m_data, key, value) {
+      ++n;
+    }
+  }
+
+  return n;
+}
+
 std::vector<std::string> ZJsonObject::getAllKey() const
 {
   std::vector<std::string> keyList;
@@ -605,6 +619,28 @@ std::string ZJsonObject::dumpJanssonString(size_t flags) const
   }
 
   return ZJsonValue::dumpJanssonString(flags);
+}
+
+int ZJsonObject::removeKeys(
+    std::function<bool(const std::string &key, ZJsonValue)> pred)
+{
+  auto keys = getAllKey();
+  int removed = 0;
+  for (const std::string &key : keys) {
+    ZJsonValue v = value(key);
+    if (pred(key, v)) {
+      removeKey(key.c_str());
+      ++removed;
+    }
+  }
+  return removed;
+}
+
+int ZJsonObject::removeNullFields()
+{
+  return removeKeys([&](const std::string &/*key*/, ZJsonValue value) {
+    return value.isNull();
+  });
 }
 
 ZJsonObject ZJsonObject::MakeNull()

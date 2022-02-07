@@ -473,6 +473,7 @@ void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
             this, SLOT(updateTodo(uint64_t)));
     connect(getDataDocument(), SIGNAL(objectModified(ZStackObjectInfoSet)),
             this, SLOT(processObjectModifiedFromDataDoc(ZStackObjectInfoSet)));
+    ZWidgetMessage::ConnectMessagePipe(m_dataDoc.get(), this);
   }
 }
 
@@ -4515,7 +4516,7 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(ZGenericBodyAnnotationDialog *dlg)
               .forBody(bodyId)
               .fromOldAnnotation(oldAnnotation);
 
-        if (!newAnnotation.isNull()) {
+        if (!newAnnotation.shellOnly()) {
           ZFlyEmProofUtil::AnnotateBody(
                 bodyId, newAnnotation, oldAnnotation, getDataDocument(),
                 getParent3DWindow());
@@ -4608,6 +4609,12 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(FlyEmBodyAnnotationDialog *dlg)
 ZJsonObject ZFlyEmBody3dDoc::getBodyAnnotation(uint64_t bodyId)
 {
   return getDataDocument()->getBodyAnnotation(bodyId);
+}
+
+void ZFlyEmBody3dDoc::onSegmentChange(
+      uint64_t sid, int level, neutu::mvc::EModification action)
+{
+  getDataDocument()->onSegmentChange(sid, level, action);
 }
 
 /*

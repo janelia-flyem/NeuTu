@@ -126,7 +126,7 @@ double ZJsonParser::numberValue(const json_t *value)
 
 int64_t ZJsonParser::integerValue(const json_t *value)
 {
-  if (value == NULL) {
+  if (!json_is_integer(value)) {
     return 0;
   }
 

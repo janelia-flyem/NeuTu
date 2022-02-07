@@ -100,25 +100,18 @@ void FlyEmBodyAnnotationManager::saveAnnotation(
   if (m_io) {
     try {
       ZJsonObject oldAnnotation = getAnnotation(bodyId);
+      oldAnnotation.removeNullFields();
       ZJsonObject newAnnotation = obj.clone();
-      std::vector<std::string> keysToRemove;
-      newAnnotation.forEachValue([&](const std::string &key, ZJsonValue value) {
-        if (!oldAnnotation.hasKey(key)) {
-          if (value.isString()) {
-            if (value.toString().empty()) {
-              keysToRemove.push_back(key);
-            }
-          }
-        }
-      });
-      HLDEBUG("annotate body")
-          << "Save annotation for " << bodyId << ": "
+      newAnnotation.removeNullFields();
+      if (!ZFlyEmBodyAnnotation::IsSameAnnotation(oldAnnotation, newAnnotation)) {
+        HLDEBUG("annotate body")
+            << "Save annotation for " << bodyId << ": "
           << newAnnotation << std::endl;
-      for (const auto &key : keysToRemove) {
-        newAnnotation.removeKey(key.c_str());
+        m_io->writeBodyAnnotation(bodyId, newAnnotation);
+        m_annotationCache[bodyId] = newAnnotation;
+      } else {
+        HLDEBUG("annotate body") << "Skip saving unchanged annotation" << std::endl;
       }
-      m_io->writeBodyAnnotation(bodyId, newAnnotation);
-      m_annotationCache[bodyId] = newAnnotation;
     }  catch (std::exception &e) {
       KWARN(neutu::TOPIC_NULL) << std::string("Failed to write body annotation: ") + e.what();
     }
@@ -425,10 +418,13 @@ void FlyEmBodyAnnotationManager::mergeAnnotation(
     uint64_t targetId, const std::vector<uint64_t> &bodyIdArray)
 {
   ZJsonObject annotation = getAnnotation(targetId);
+  HLDEBUG("annotate body") << "Parent: "
+      << annotation.dumpString(0) << std::endl;
   for (uint64_t bodyId : bodyIdArray) {
     if (bodyId != targetId) {
       ZJsonObject subann = getAnnotation(bodyId);
-      if (!subann.isEmpty()) {
+      HLDEBUG("annotate body") << "  child: " << subann.dumpString(0) << std::endl;
+      if (!ZFlyEmBodyAnnotation::IsEmptyAnnotation(subann)) {
         if (m_bodyStatusProtocol.isEmpty()) {
           annotation = ZFlyEmBodyAnnotation::MergeAnnotation(
                 annotation, subann, &ZFlyEmBodyAnnotation::GetStatusRank);
@@ -441,6 +437,7 @@ void FlyEmBodyAnnotationManager::mergeAnnotation(
       }
     }
   }
+  HLDEBUG("annotate body") << "Merged: " << annotation.dumpString(0) << std::endl;
 
   saveAnnotation(targetId, annotation);
 }

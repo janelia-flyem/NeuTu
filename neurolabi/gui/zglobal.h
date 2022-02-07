@@ -6,6 +6,7 @@
 #include <QObject>
 
 #include "common/zsharedpointer.h"
+#include "common/zsingleton.hpp"
 
 class ZIntPoint;
 class ZPoint;
@@ -19,22 +20,6 @@ class QMainWindow;
 class NeuPrintReader;
 class ZJsonObject;
 class ZDvidBufferReader;
-
-template<typename T>
-class ZSingleton
-{
-public:
-  virtual ~ZSingleton() {}
-
-  static T& GetInstance() {
-    static T g;
-    return g;
-  }
-
-protected:
-  ZSingleton() {};
-  ZSingleton(ZSingleton&) = delete;
-};
 
 class ZGlobal : public ZSingleton<ZGlobal>
 {

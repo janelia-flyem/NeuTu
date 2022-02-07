@@ -1,6 +1,7 @@
 #include "zgenericbodyannotationdialog.h"
 
 #include "logging/zlog.h"
+#include "zjsonobject.h"
 
 ZGenericBodyAnnotationDialog::ZGenericBodyAnnotationDialog(QWidget *parent) :
   ZParameterDialog(parent)
@@ -66,4 +67,39 @@ int ZGenericBodyAnnotationDialog::exec()
   }
 
   return ZParameterDialog::exec();
+}
+
+void ZGenericBodyAnnotationDialog::RemoveEmptyStringValues(ZJsonObject &obj)
+{
+  auto keys = obj.getAllKey();
+  for (const std::string &key : keys) {
+    ZJsonValue value = obj.value(key);
+    if (value.isString() && value.toString().empty()) {
+      obj.removeKey(key.c_str());
+    }
+  }
+}
+
+void ZGenericBodyAnnotationDialog::postProcess(ZJsonObject &obj) const
+{
+  auto isDefault = [&](const std::string &key, ZJsonValue value) {
+    if (value.isString()) {
+      return isDefaultValue(
+            QString::fromStdString(key), QString::fromStdString(value.toString()));
+    } else if (value.isInteger()) {
+      return isDefaultValue(QString::fromStdString(key), value.toInteger());
+    } else if (value.isBoolean()) {
+      return isDefaultValue(QString::fromStdString(key), value.toBoolean());
+    }
+    return false;
+  };
+  auto process = [&](const std::string &key, ZJsonValue value) {
+    if (isDefault(key, value)) {
+      obj.setEntry(key, ZJsonValue::MakeNull());
+    }
+  };
+
+  obj.forEachValue(process);
+
+//  obj.removeKeys(pred);
 }

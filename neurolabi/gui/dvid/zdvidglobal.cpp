@@ -161,7 +161,7 @@ int ZDvidGlobal::Memo::ReadMaxLabelZoom(const ZDvidTarget &target)
     if (target.hasMultiscaleSegmentation()) {
       ZJsonObject infoJson = ReadDataInfoJson(target, target.getSegmentationName());
       ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
-      if (!v.isEmpty()) {
+      if (v.isInteger()) {
         zoom = v.toInteger();
       }
     } else if (target.hasSegmentation()) {

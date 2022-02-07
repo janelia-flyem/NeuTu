@@ -165,6 +165,20 @@ TEST(common, utilities)
     }
     ASSERT_EQ(5, state);
   }
+
+  {
+    int state = 5;
+    {
+      APPLY_ONCE(state = 3, state = 5);
+      ASSERT_EQ(3, state);
+    }
+    ASSERT_EQ(5, state);
+  }
+
+  {
+    std::vector<int> array({1, 2, 3, 4, 5});
+    ASSERT_EQ("1, 2, 3, 4, 5", neutu::ToString(array.begin(), array.end(), ", "));
+  }
 }
 
 TEST(common, math)

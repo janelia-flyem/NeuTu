@@ -33055,6 +33055,17 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZGenericBodyAnnotationDialog *dlg = new ZGenericBodyAnnotationDialog(host);
+  ZJsonObject config;
+  config.load(GET_BENCHMARK_DIR + "/bnschema.json");
+  dlg->configure(config);
+  dlg->build();
+
+  dlg->exec();
+  dlg->toJsonObject().print();
+#endif
+
 #if 0
   FlyEmBatchBodyAnnotationDialog *dlg = new FlyEmBatchBodyAnnotationDialog(host);
   ZJsonObject config;
@@ -33521,7 +33532,7 @@ void ZTest::test(MainWindow *host)
   cache.get(index);
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetDvidReader("local_test");
   FlyEmCachedBodyMeshFactory factory;
   auto cache = std::make_shared<FlyEmDvidBodyMeshCache>();

@@ -14,12 +14,6 @@ FlyEmBatchBodyAnnotationDialog::FlyEmBatchBodyAnnotationDialog(QWidget *parent) 
 void FlyEmBatchBodyAnnotationDialog::postProcess(ZJsonObject &obj) const
 {
   if (m_ignoringEmptyField->isChecked()) {
-    auto keys = obj.getAllKey();
-    for (const std::string &key : keys) {
-      ZJsonValue value = obj.value(key);
-      if (value.isString() && value.toString().empty()) {
-        obj.removeKey(key.c_str());
-      }
-    }
+    RemoveEmptyStringValues(obj);
   }
 }

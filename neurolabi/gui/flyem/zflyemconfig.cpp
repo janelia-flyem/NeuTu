@@ -482,8 +482,14 @@ void ZFlyEmConfig::activateNeutuse(bool forLocalTarget)
   }
 }
 
-bool ZFlyEmConfig::neutuseAvailable(bool forLocalTarget) const
+void ZFlyEmConfig::setMappedNode(const std::string &key, const std::string &value)
 {
+  m_rootMap[key] = value;
+}
+
+bool ZFlyEmConfig::neutuseAvailable(bool forLocalTarget)
+{
+  activateNeutuse(forLocalTarget);
   if (forLocalTarget) {
     return m_neutuseStatus == EServiceStatus::ONLINE_LOCAL;
   }
@@ -491,12 +497,7 @@ bool ZFlyEmConfig::neutuseAvailable(bool forLocalTarget) const
   return isNeutuseOnline();
 }
 
-void ZFlyEmConfig::setMappedNode(const std::string &key, const std::string &value)
-{
-  m_rootMap[key] = value;
-}
-
-bool ZFlyEmConfig::neutuseAvailable(const ZDvidTarget &target) const
+bool ZFlyEmConfig::neutuseAvailable(const ZDvidTarget &target)
 {
   return neutuseAvailable(neutu::UsingLocalHost(target.getAddress()));
 }

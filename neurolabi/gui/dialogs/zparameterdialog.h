@@ -70,6 +70,9 @@ protected:
   template<typename T>
   T getGenericValue(const QString &name) const;
 
+  template<typename T>
+  bool isDefaultValue(const QString &name, const T &value) const;
+
   bool buildRequied() const;
 
   ZParameter* getParameter(const QString &name) const;
@@ -137,6 +140,19 @@ void ZParameterDialog::setValue(const QString &name, const T &value)
   }
 
   param->set(value);
+}
+
+template <typename T>
+bool ZParameterDialog::isDefaultValue(const QString &name, const T &value) const
+{
+  if (m_parameterMap.contains(name)) {
+    const auto &defaultValue = m_parameterMap[name].defaultValue;
+    if (defaultValue.isValid()) {
+      return defaultValue == QVariant(value);
+    }
+  }
+
+  return false;
 }
 
 template <typename T>

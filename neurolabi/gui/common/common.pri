@@ -8,7 +8,8 @@ HEADERS += \
     $$PWD/utilities.h \
     $$PWD/zrefcount.h \
     $$PWD/zsharedpointer.h \
-    $$PWD/zcolor.h
+    $$PWD/zcolor.h \
+    $$PWD/zsingleton.hpp
 #    $$PWD/zstringbuilder.h
 
 SOURCES += \

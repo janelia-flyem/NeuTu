@@ -1,0 +1,2 @@
+HEADERS += \
+  $$PWD/zslicecanvastest.h

@@ -239,8 +239,7 @@ private:
   void refreshBodySizeCache();
   void updateMergeMap();
   void updateAffliatedData(
-      uint64_t targetId, const std::vector<uint64_t> &bodyArray,
-      ZWidgetMessage &warnMsg);
+      uint64_t targetId, const std::vector<uint64_t> &bodyArray);
   void updateSelection(const std::set<uint64_t> &newBodySet);
 //  void refreshSegmentationView();
   void unlockBody(const std::set<uint64_t> &bodySet);

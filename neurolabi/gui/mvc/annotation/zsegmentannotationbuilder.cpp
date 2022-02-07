@@ -34,6 +34,13 @@ ZSegmentAnnotationBuilder& ZSegmentAnnotationBuilder::join(
   return *this;
 }
 
+ZSegmentAnnotationBuilder& ZSegmentAnnotationBuilder::withoutNull()
+{
+  m_annotation.removeNullFields();
+
+  return *this;
+}
+
 ZSegmentAnnotationBuilder::operator ZJsonObject() const
 {
   return m_annotation;

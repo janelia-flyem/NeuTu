@@ -17,6 +17,10 @@ enum class ERoiRole {
   NONE, GENERAL, SPLIT
 };
 
+enum class EModification {
+  CREATED, DELETED, UPDATED
+};
+
 struct RectState {
   ERoiRole role = ERoiRole::NONE;
   ERectTarget target = ERectTarget::PLANE_ROI;
@@ -36,8 +40,9 @@ Q_DECLARE_FLAGS(ViewInfoFlags, ViewInfoFlag)
 
 bool HasFlag(ViewInfoFlags host, ViewInfoFlags test);
 
-
 } //namespace mvc
+
+std::string ToString(mvc::EModification action);
 
 }
 

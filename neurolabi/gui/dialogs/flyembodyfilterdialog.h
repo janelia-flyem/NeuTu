@@ -27,10 +27,10 @@ public:
   QString getBodyListFile() const;
   void setBodyListFile(const QString path);
 
-  std::vector<int> getExcludedBodies() const;
-  std::set<int> getExcludedBodySet() const;
+  std::vector<uint64_t> getExcludedBodies() const;
+  std::set<uint64_t> getExcludedBodySet() const;
 
-  std::vector<int> getBodyIdArray() const;
+  std::vector<uint64_t> getBodyIdArray() const;
 
   ZDvidFilter getDvidFilter() const;
 

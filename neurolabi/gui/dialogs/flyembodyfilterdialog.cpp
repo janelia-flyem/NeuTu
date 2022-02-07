@@ -65,16 +65,16 @@ bool FlyEmBodyFilterDialog::hasUpperBodySize() const
   return ui->maxBodySizeCheckBox->isChecked();
 }
 
-std::vector<int> FlyEmBodyFilterDialog::getExcludedBodies() const
+std::vector<uint64_t> FlyEmBodyFilterDialog::getExcludedBodies() const
 {
   ZString str =  ui->excludedBodyLineEdit->text().toStdString();
-  return str.toIntegerArray();
+  return str.toUint64Array();
 }
 
-std::set<int> FlyEmBodyFilterDialog::getExcludedBodySet() const
+std::set<uint64_t> FlyEmBodyFilterDialog::getExcludedBodySet() const
 {
-  std::vector<int> bodyArray = getExcludedBodies();
-  std::set<int> bodySet;
+  std::vector<uint64_t> bodyArray = getExcludedBodies();
+  std::set<uint64_t> bodySet;
   bodySet.insert(bodyArray.begin(), bodyArray.end());
 
   return bodySet;

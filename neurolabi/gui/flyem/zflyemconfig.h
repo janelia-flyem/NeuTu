@@ -124,8 +124,8 @@ public:
   void activateNeutuseForce(bool forLocalTarget);
   void activateNeutuse(bool forLocalTarget);
 
-  bool neutuseAvailable(bool forLocalTarget) const;
-  bool neutuseAvailable(const ZDvidTarget &target) const;
+  bool neutuseAvailable(bool forLocalTarget);
+  bool neutuseAvailable(const ZDvidTarget &target);
 
 //  void setRemoteServer(const std::string &server);
 #endif

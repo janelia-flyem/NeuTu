@@ -3011,7 +3011,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(const ZDvidFilter &filter) const
     std::set<uint64_t> newBodySet;
     for (std::set<uint64_t>::const_iterator iter = bodyIdSet.begin();
          iter != bodyIdSet.end(); ++iter) {
-      int bodyId = *iter;
+      auto bodyId = *iter;
       if (!filter.isExcluded(bodyId)) {
         newBodySet.insert(bodyId);
       }
@@ -5242,9 +5242,9 @@ void ZDvidReader::updateMaxLabelZoom()
     if (getDvidTarget().hasMultiscaleSegmentation()) {
       ZJsonObject infoJson = readInfo(getDvidTarget().getSegmentationName());
       ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
-      if (!v.isEmpty()) {
-        updateMaxLabelZoom(v.toInteger());
-      }
+//      if (v.isInteger()) {
+        updateMaxLabelZoom(v.isInteger() ? v.toInteger() : 0);
+//      }
 #if 0
       else { //temporary hack!!!
         if (getDvidTarget().getUuid() == "c140") {
@@ -6121,7 +6121,7 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 //    const QByteArray &buffer = bufferReader.getBuffer();
     if (bufferReader.getStatus() == neutu::EReadStatus::OK) {
       obj = decode_json_object(bufferReader.getBuffer());
-      if (obj.isNull()) {
+      if (obj.shellOnly()) {
         obj.denull();
       }
     }
