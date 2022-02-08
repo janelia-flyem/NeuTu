@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <functional>
+#include <string>
 
 class ZJsonObject;
 
