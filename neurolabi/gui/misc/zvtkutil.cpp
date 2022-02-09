@@ -1,5 +1,6 @@
 #include "zvtkutil.h"
 
+#include <limits>
 #include <vtkPolyData.h>
 #include <vtkCellArray.h>
 #include <vtkDataArray.h>

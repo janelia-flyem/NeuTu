@@ -1,4 +1,4 @@
 cxx_compiler_version:  # [linux]
-  - 7.5.0              # [linux]
+  - 11.2.0              # [linux]
 c_compiler_version:    # [linux]
-  - 7.5.0              # [linux]
+  - 11.2.0              # [linux]

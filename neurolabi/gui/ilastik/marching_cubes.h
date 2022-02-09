@@ -6,6 +6,8 @@
 #include <map>
 #include <vector>
 
+#include "tz_stdint.h"
+
 namespace ilastik {
 
 typedef float Point[3];
@@ -34,10 +36,10 @@ struct Triangle
 struct Mesh
 {
 	size_t vertexCount;
-    Point* vertices = NULL;
-    Point* normals = NULL;
+    Point* vertices = nullptr;
+    Point* normals = nullptr;
 	size_t faceCount;
-    size_t* faces = NULL;
+    size_t* faces = nullptr;
 
 	Mesh(size_t, Point*, Point*, size_t, size_t*);
 	Mesh();
