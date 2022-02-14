@@ -5,6 +5,7 @@
 #include <vector>
 #include <set>
 #include <functional>
+#include <iostream>
 
 #include "defs.h"
 
@@ -38,5 +39,7 @@ bool IsNonblocking(ETarget target);
 
 }
 }
+
+std::ostream& operator<<(std::ostream &stream, neutu::data3d::ETarget target);
 
 #endif // UTILITIES_H

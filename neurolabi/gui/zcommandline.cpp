@@ -769,21 +769,31 @@ ZSwcTree* ZCommandLine::traceFile()
 
 ZSwcTree* ZCommandLine::traceDvid(const ZDvidTarget &target)
 {
+  ZSwcTree *tree = nullptr;
+
   if (m_position.size() == 3) {
-    ZDvidNeuronTracer tracer;
-
-//    ZDvidTarget target;
-//    target.setFromSourceString(m_input[0], dvid::EDataType::UINT8BLK);
-//    target.setNullSegmentationName();
-    tracer.setDvidTarget(target);
-    tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
-
-    ZSwcTree *tree = tracer.getResult();
-
-    return tree;
+    if (m_size.size() == 3) {
+      std::cout << "Tracing " << target.getGrayscaleSourceString() << " @"
+              << "(" + neutu::ToString(m_position.begin(), m_position.end(), ",") + ") "
+              << neutu::ToString(m_size.begin(), m_size.end(), "x") << std::endl;
+      ZStack *stack = readDvidStack(target);
+#ifdef _DEBUG_
+      stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+      ZNeuronTracer tracer;
+      tracer.setIntensityField(stack);
+      tracer.setTraceLevel(m_level);
+      tree = tracer.trace(stack);
+      delete stack;
+    } else {
+      ZDvidNeuronTracer tracer;
+      tracer.setDvidTarget(target);
+      tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
+      tree = tracer.getResult();
+    }
   }
 
-  return nullptr;
+  return tree;
 }
 
 int ZCommandLine::runTraceNeuron()

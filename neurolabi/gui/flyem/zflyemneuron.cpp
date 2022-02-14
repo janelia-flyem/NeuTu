@@ -21,7 +21,7 @@
 #if defined(_QT_GUI_USED_)
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
-#include "flyem/zskeletonizeservice.h"
+//#include "flyem/zskeletonizeservice.h"
 #endif
 
 using namespace std;

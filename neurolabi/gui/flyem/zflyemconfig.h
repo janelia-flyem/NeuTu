@@ -127,7 +127,6 @@ public:
   bool neutuseAvailable(bool forLocalTarget);
   bool neutuseAvailable(const ZDvidTarget &target);
 
-//  void setRemoteServer(const std::string &server);
 #endif
 
   void setDefaultNeuTuServer(const std::string &server);

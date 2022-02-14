@@ -157,7 +157,7 @@ HEADERS += \
     $$PWD/zpaintlabelwidget.h \
     $$PWD/zproofreadwindow.h \
     $$PWD/zserviceconsumer.h \
-    $$PWD/zskeletonizeservice.h \
+#    $$PWD/zskeletonizeservice.h \
     $$PWD/zstackwatershedcontainer.h \
     $$PWD/zswctreebatchmatcher.h \
     $$PWD/logging.h \
@@ -314,7 +314,7 @@ SOURCES += \
     $$PWD/zpaintlabelwidget.cpp \
     $$PWD/zproofreadwindow.cpp \
     $$PWD/zserviceconsumer.cpp \
-    $$PWD/zskeletonizeservice.cpp \
+#    $$PWD/zskeletonizeservice.cpp \
     $$PWD/zstackwatershedcontainer.cpp \
     $$PWD/zswctreebatchmatcher.cpp \
     $$PWD/flyemmvcdialogmanager.cpp \

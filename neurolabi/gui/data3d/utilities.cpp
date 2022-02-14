@@ -144,3 +144,47 @@ bool neutu::data3d::IsNonblocking(ETarget target)
   return target == ETarget::NONBLOCKING_OBJECT_CANVAS;
 }
 
+std::ostream& operator<<(std::ostream &stream, neutu::data3d::ETarget target)
+{
+  switch (target) {
+  case neutu::data3d::ETarget::STACK_CANVAS:
+    stream << "STACK_CANVAS";
+    break;
+  case neutu::data3d::ETarget::TILE_CANVAS:
+    stream << "TILE_CANVAS";
+    break;
+  case neutu::data3d::ETarget::MASK_CANVAS:
+    stream << "MASK_CANVAS";
+    break;
+  case neutu::data3d::ETarget::DYNAMIC_OBJECT_CANVAS:
+    stream << "DYNAMIC_OBJECT_CANVAS";
+    break;
+  case neutu::data3d::ETarget::PIXEL_OBJECT_CANVAS:
+    stream << "PIXEL_OBJECT_CANVAS";
+    break;
+  case neutu::data3d::ETarget::HD_OBJECT_CANVAS:
+    stream << "HD_OBJECT_CANVAS";
+    break;
+  case neutu::data3d::ETarget::NONBLOCKING_OBJECT_CANVAS:
+    stream << "NONBLOCKING_OBJECT_CANVAS";
+    break;
+  case neutu::data3d::ETarget::ROAMING_OBJECT_CANVAS:
+    stream << "ROAMING_OBJECT_CANVAS";
+    break;
+  case neutu::data3d::ETarget::WIDGET:
+    stream << "WIDGET";
+    break;
+  case neutu::data3d::ETarget::CANVAS_3D:
+    stream << "CANVAS_3D";
+    break;
+  case neutu::data3d::ETarget::ONLY_3D:
+    stream << "ONLY_3D";
+    break;
+  case neutu::data3d::ETarget::TARGET_NONE:
+    stream << "TARGET_NONE";
+    break;
+  }
+
+  return stream;
+}
+

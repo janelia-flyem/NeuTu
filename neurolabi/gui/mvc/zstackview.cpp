@@ -7,6 +7,7 @@
 #include <QJsonObject>
 
 #include "neulib/math/utilities.h"
+#include "data3d/utilities.h"
 #include "common/debug.h"
 //#include "common/math.h"
 #include "logging/zlog.h"
@@ -2573,6 +2574,8 @@ void ZStackView::updateState(QMap<QString, QVariant> config)
 void ZStackView::updateObjectBuffer(
     neutu::data3d::ETarget target, const QList<ZStackObject *> &objList)
 {
+  HLDEBUG("2d view") << "Update " << target << " with "
+                            << objList.size() << " objects" << std::endl;
   updateObjectBuffer(
         neutu::data3d::IsNonblocking(target) ? nullptr : getClearCanvas(target),
         target, objList);

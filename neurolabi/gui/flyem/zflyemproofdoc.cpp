@@ -2320,7 +2320,7 @@ void ZFlyEmProofDoc::addRoiMask(ZObject3dScan *obj)
 #endif
       obj->setColor(0, 255, 0);
       obj->setZOrder(2);
-      obj->setTarget(neutu::data3d::ETarget::WIDGET);
+      obj->setTarget(neutu::data3d::ETarget::HD_OBJECT_CANVAS);
       obj->useCosmeticPen(true);
       obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
       obj->useCosmeticPen(true);
