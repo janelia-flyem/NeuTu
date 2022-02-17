@@ -2,17 +2,42 @@
 
 set -e 
 
+usage() {
+  echo ""
+  echo "Setup neutu development environment"
+  echo "USAGE: $0 <install_dir> [-m <miniconda_folder>] [-e <env>]"
+  echo "  install_dir: root installation directory where miniconda is expected to be installed."
+  echo "  miniconda_folder: the folder under <install_dir> for installing miniconda"
+  echo "  env: env name for hosting development environment."
+  exit 1
+}
+
 if test $# -eq 0
 then
-  echo './neutu_qt_prepare <install_dir> [<env>]'
-  exit
+  usage
 fi
 
 install_dir=$1
+CONDA_FOLDER=miniconda
+ENV_NAME=neutu-dev
+shift 1
+while getopts m:e: OPTION
+do
+  case "$OPTION" in
+    m)
+      CONDA_FOLDER="$OPTARG"
+      ;;
+    e)
+      ENV_NAME="$OPTARG"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
 
-ENV_NAME=${2-neutu-env}
-./setup_conda_for_neutu $install_dir $ENV_NAME
+CONDA_DIR=$install_dir/$CONDA_FOLDER
 
-CONDA_DIR=$install_dir/miniconda
+./setup_conda_for_neutu $install_dir -m "$CONDA_FOLDER" -e "$ENV_NAME"
 
 ./neutu_qt_prepare_post "${CONDA_DIR}/envs/$ENV_NAME"

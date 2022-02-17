@@ -17,6 +17,13 @@ then
   cp condarc $condarc
 fi
 
+if [ -d "$ENV_DIR" ]
+then
+  echo "ERROR: Cannot setup env for an existing env: $ENV_DIR"
+  echo "You should either remove it or use a different env name to proceed."
+  exit 1
+fi
+
 source $CONDA_DIR/bin/activate root
 mkdir $CONDA_DIR/envs/$ENV_NAME
 #conda create -n $ENV_NAME python=3.7.3 -y -c flyem-forge -c conda-forge -c defaults
