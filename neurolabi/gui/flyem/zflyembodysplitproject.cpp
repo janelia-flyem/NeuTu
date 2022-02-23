@@ -101,6 +101,8 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
           this, &ZFlyEmBodySplitProject::resetStatusAfterUpload);
   connect(this, &ZFlyEmBodySplitProject::splitVis3dCanceled,
           this, &ZFlyEmBodySplitProject::resetSplitCancel);
+  connect(this, SIGNAL(bodyChanged(uint64_t,neutu::mvc::EModification)),
+          this, SLOT(onBodyChange(uint64_t,neutu::mvc::EModification)));
 }
 
 ZFlyEmBodySplitProject::~ZFlyEmBodySplitProject()
@@ -571,6 +573,12 @@ void ZFlyEmBodySplitProject::resetSplitCancel()
   m_cancelSplitVis3d = false;
 }
 
+void ZFlyEmBodySplitProject::onBodyChange(
+    uint64_t bodyId, neutu::mvc::EModification action)
+{
+  getDocument()->onSegmentChange(bodyId, 0, action);
+}
+
 void ZFlyEmBodySplitProject::cancelSplitVis3d()
 {
   m_cancelSplitVis3d = true;
@@ -857,7 +865,7 @@ void ZFlyEmBodySplitProject::chopBody(
             std::vector<uint64_t> bodyArray;
             bodyArray.push_back(getBodyId());
             bodyArray.push_back(newBodyId);
-            updateBodyDep(getBodyId(), bodyArray, writer);
+            updateBodyDep(getBodyId(), bodyArray);
 
 //            GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
 //                  getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
@@ -949,7 +957,7 @@ void ZFlyEmBodySplitProject::chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg
             }
             emitMessage(msg);
 
-            updateBodyDep(getBodyId(), newBodyId, writer);
+            updateBodyDep(getBodyId(), newBodyId);
             /*
             GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
                   getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
@@ -1038,7 +1046,7 @@ void ZFlyEmBodySplitProject::cropBody(ZFlyEmSplitUploadOptionDialog *dlg)
           }
           emitMessage(msg);
 
-          updateBodyDep(getBodyId(), newBodyId, writer);
+          updateBodyDep(getBodyId(), newBodyId);
 
           /*
           GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
@@ -1162,7 +1170,7 @@ void ZFlyEmBodySplitProject::decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg)
 
 #if defined(_FLYEM_)
   if (!newBodyIdList.isEmpty()) {
-    updateBodyDep(wholeBody->getLabel(), updateBodyArray, writer);
+    updateBodyDep(wholeBody->getLabel(), updateBodyArray);
 //    updateBodyDep(updateBodyArray);
     /*
     GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
@@ -1318,7 +1326,7 @@ void ZFlyEmBodySplitProject::commitCoarseSplit(const ZObject3dScan &splitPart)
                            arg(getBodyId()),
                            neutu::EMessageType::ERROR));
     } else {
-      updateBodyDep(getBodyId(), bodyId, writer);
+      updateBodyDep(getBodyId(), bodyId);
 #if defined(_FLYEM_2)
       GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
             getDvidTarget(), getBodyId(), ZNeutuService::UPDATE_ALL);
@@ -1423,38 +1431,29 @@ ZDvidWriter& ZFlyEmBodySplitProject::getMainWriter()
   return m_writer;
 }
 
-void ZFlyEmBodySplitProject::updateBodyDep(
-    uint64_t bodyId1, uint64_t bodyId2, ZDvidWriter &writer)
+void ZFlyEmBodySplitProject::updateBodyDep(uint64_t bodyId1, uint64_t bodyId2)
 {
   std::vector<uint64_t> bodyArray;
 //  bodyArray.push_back(bodyId1);
   bodyArray.push_back(bodyId2);
-  updateBodyDep(bodyId1, bodyArray, writer);
+  updateBodyDep(bodyId1, bodyArray);
 }
 
-void ZFlyEmBodySplitProject::updateBodyDep(uint64_t bodyId, ZDvidWriter &writer)
+void ZFlyEmBodySplitProject::updateBodyDep(uint64_t bodyId)
 {
   std::vector<uint64_t> bodyArray;
 //  bodyArray.push_back(bodyId);
-  updateBodyDep(bodyId, bodyArray, writer);
+  updateBodyDep(bodyId, bodyArray);
 }
 
 template<template<class...> class C>
 void ZFlyEmBodySplitProject::updateBodyDep(
-    uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer)
+    uint64_t originalBody, C<uint64_t> bodyArray)
 {
-#if defined(_FLYEM_)
-  writer.deleteMesh(originalBody);
-  bodyArray.push_back(originalBody);
-  if (GET_FLYEM_CONFIG.neutuseAvailable(getDvidTarget())) {
-    for (uint64_t bodyId : bodyArray) {
-      neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
-            "skeletonize", getDvidTarget(), bodyId, true);
-      task.setPriority(5);
-      GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
-    }
+  emit bodyChanged(originalBody, neutu::mvc::EModification::UPDATED);
+  for (uint64_t bodyId : bodyArray) {
+    emit bodyChanged(bodyId, neutu::mvc::EModification::CREATED);
   }
-#endif
 }
 
 /*
@@ -1918,7 +1917,7 @@ void ZFlyEmBodySplitProject::uploadSplitListFunc()
       QString bodyMessage = QString("Body %1 split: ").arg(wholeBody->getLabel());
 //      QVector<uint64_t> bodyArray = updateBodyArray;
 //      bodyArray.push_back(wholeBody->getLabel());
-      updateBodyDep(wholeBody->getLabel(), updateBodyArray, writer);
+      updateBodyDep(wholeBody->getLabel(), updateBodyArray);
 
       bodyMessage += "<font color=#007700>";
       foreach (uint64_t bodyId, newBodyIdList) {
@@ -2306,7 +2305,7 @@ void ZFlyEmBodySplitProject::commitResultFunc(
     QString bodyMessage = QString("Body %1 split: ").arg(wholeBody->getLabel());
 
 //    updateBodyDep(wholeBody->getLabel());
-    updateBodyDep(wholeBody->getLabel(), updateBodyArray, writer);
+    updateBodyDep(wholeBody->getLabel(), updateBodyArray);
 
 #if defined(_FLYEM_2)
     GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(

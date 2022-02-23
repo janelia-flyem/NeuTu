@@ -7,6 +7,7 @@
 #include <QElapsedTimer>
 #include <QUrl>
 
+#include "common/debug.h"
 #include "logging/zlog.h"
 #include "logging/utilities.h"
 
@@ -288,6 +289,7 @@ void ZDvidWriter::removeBodyAnnotation(uint64_t bodyId)
 void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
 {
   ZDvidUrl url(getDvidTarget(), m_admin);
+  HLDEBUG("body change") << "Delete " << url.getBodyAnnotationUrl(bodyId) << std::endl;
   del(ZDvidUrl::AppendSourceQuery(url.getBodyAnnotationUrl(bodyId)));
 }
 
@@ -694,6 +696,8 @@ void ZDvidWriter::deleteKey(const char* dataName, const char* key)
   if (strlen(dataName) == 0 || strlen(key) == 0) {
     return;
   }
+
+  HLDEBUG("body change") << "Delete " << dataName << "/" << key << std::endl;
 
   ZDvidUrl dvidUrl(getDvidTarget(), m_admin);
   std::string url = dvidUrl.getKeyUrl(dataName, key);

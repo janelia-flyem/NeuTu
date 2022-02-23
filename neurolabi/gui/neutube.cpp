@@ -21,6 +21,7 @@
 #include "zarbsliceviewparam.h"
 #include "data3d/zsliceviewtransform.h"
 #include "vis2d/zslicecanvas.h"
+#include "mvc/mvcdef.h"
 
 void neutu::RegisterMetaType()
 {
@@ -45,6 +46,7 @@ void neutu::RegisterMetaType()
   qRegisterMetaType<ZIntPoint>("ZIntPoint");
   qRegisterMetaType<ZSliceViewTransform>("ZSliceViewTransform");
   qRegisterMetaType<std::shared_ptr<ZSliceCanvas>>("std::shared_ptr<ZSliceCanvas>");
+  qRegisterMetaType<neutu::mvc::EModification>("neutu::mvc::EModification");
 }
 
 ZMessageReporter* neutu::getMessageReporter()

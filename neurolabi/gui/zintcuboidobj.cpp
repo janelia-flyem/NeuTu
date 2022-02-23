@@ -31,6 +31,17 @@ bool ZIntCuboidObj::isVisible_inner(const DisplayConfig &config) const
   return false;
 }
 
+namespace {
+void next_marker(int &x, int intv, int &remain)
+{
+  x += intv;
+  if (remain > 0) {
+    ++x;
+    --remain;
+  }
+}
+}
+
 bool ZIntCuboidObj::display_inner(
     QPainter *painter, const DisplayConfig &config) const
 {
@@ -78,6 +89,38 @@ bool ZIntCuboidObj::display_inner(
     s2Painter.setPixelCentered(false);
     s2Painter.drawRect(painter, minCorner.getX(), minCorner.getY(),
                        maxCorner.getX(), maxCorner.getY());
+
+    if (hasVisualEffect(neutu::display::Box::VE_GRID)) {
+      const int gridIntervalHint = m_gridIntv;
+
+      int x1 = minCorner.getX();
+      int y1 = minCorner.getY();
+      int x2 = maxCorner.getX() + 1;
+      int y2 = maxCorner.getY() + 1;
+
+      int colCount = getWidth() / gridIntervalHint;
+      if (colCount > 1) {
+        int colInterval = getWidth() / colCount;
+        int colRemain = getWidth() % colCount;
+        int x = x1;
+        for (int i = 1; i < colCount; ++i) {
+          next_marker(x, colInterval, colRemain);
+          s2Painter.drawLine(painter, x, y1, x, y2);
+        }
+      }
+
+      int rowCount = getHeight() / gridIntervalHint;
+      if (rowCount > 1) {
+        int rowInterval = getHeight() / rowCount;
+        int rowRemain = getHeight() % rowCount;
+        int y = y1;
+        for (int i = 1; i < rowCount; ++i) {
+          next_marker(y, rowInterval, rowRemain);
+          s2Painter.drawLine(painter, x1, y, x2, y);
+        }
+      }
+    }
+
     if (isSelected()) {
       s2Painter.drawLine(
             painter, minCorner.getX(), minCorner.getY(),

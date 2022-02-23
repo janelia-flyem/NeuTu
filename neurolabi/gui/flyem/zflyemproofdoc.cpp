@@ -7597,12 +7597,19 @@ void ZFlyEmProofDoc::onSegmentChange(
       HLDEBUG("body change") << sid << " " << neutu::ToString(action) << std::endl;
       switch (action) {
       case neutu::mvc::EModification::CREATED:
+        ZSkeletonizeService::GetInstance().requestSkeletonize(
+              getDvidTarget(), sid);
+        break;
       case neutu::mvc::EModification::UPDATED:
+        getDvidWriter().deleteMesh(sid);
+        getDvidWriter().deleteSkeleton(sid);
         ZSkeletonizeService::GetInstance().requestSkeletonize(
               getDvidTarget(), sid);
         break;
       case neutu::mvc::EModification::DELETED:
+        getDvidWriter().deleteMesh(sid);
         getDvidWriter().deleteSkeleton(sid);
+        getBodyAnnotationManager()->removeAnnotation(sid);
         getDvidWriter().deleteBodyAnnotation(sid);
         break;
       }

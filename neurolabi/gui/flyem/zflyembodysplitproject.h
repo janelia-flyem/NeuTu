@@ -13,6 +13,7 @@
 
 #include "zthreadfuturemap.h"
 #include "common/zsharedpointer.h"
+#include "mvc/mvcdef.h"
 #include "dvid/zdvidinfo.h"
 #include "zprogresssignal.h"
 #include "flyem/zflyembodyannotationprotocol.h"
@@ -192,6 +193,7 @@ signals:
   void proceedingToUpload();
   void proceedingToPreview();
   void proceedingToExport();
+  void bodyChanged(uint64_t bodyId, neutu::mvc::EModification action);
 
 public slots:
 //  void start();
@@ -237,6 +239,7 @@ private slots:
   void resetStatusAfterUpload();
   void previewSplitList();
   void resetSplitCancel();
+  void onBodyChange(uint64_t bodyId, neutu::mvc::EModification action);
 
 private:
   QWidget* getParentWidget() const;
@@ -301,13 +304,12 @@ private:
   ZDvidWriter& getCommitWriter();
   ZDvidWriter& getMainWriter();
 
-  void updateBodyDep(uint64_t bodyId, ZDvidWriter &writer);
-  void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2, ZDvidWriter &writer);
+  void updateBodyDep(uint64_t bodyId);
+  void updateBodyDep(uint64_t bodyId1, uint64_t bodyId2);
 //  void updateBodyDep(const std::vector<uint64_t> &bodyArray);
 //  void updateBodyDep(const QVector<uint64_t> &bodyArray);
   template<template<class...> class C>
-  void updateBodyDep(
-      uint64_t originalBody, C<uint64_t> bodyArray, ZDvidWriter &writer);
+  void updateBodyDep(uint64_t originalBody, C<uint64_t> bodyArray);
 
   FlyEmBodyAnnotationManager* getBodyAnnotationManager() const;
 

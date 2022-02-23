@@ -926,32 +926,16 @@ void ZFlyEmBodyMergeProject::updateAffliatedData(
 {
   HLDEBUG("body merge") << "update affliated data" << std::endl;
   for (uint64_t bodyId : bodyArray) {
+    /*
     if (getBodyAnnotationManager()) {
       getBodyAnnotationManager()->removeAnnotation(bodyId);
     }
-//    m_writer.deleteBodyAnnotation(bodyId);
-//    m_writer.deleteSkeleton(bodyId);
+    */
     getDocument()->onSegmentChange(
           bodyId, 0, neutu::mvc::EModification::DELETED);
   }
   getDocument()->onSegmentChange(
         targetId, 0, neutu::mvc::EModification::UPDATED);
-
-      /*
-  if (GET_FLYEM_CONFIG.neutuseAvailable(
-        neutu::UsingLocalHost(getDvidTarget().getAddress()))) {
-    neutuse::Task task = neutuse::TaskFactory::MakeDvidTask(
-          "skeletonize", getDvidTarget(), targetId, true);
-    task.setPriority(5);
-    GET_FLYEM_CONFIG.getNeutuseWriter().uploadTask(task);
-    if (GET_FLYEM_CONFIG.getNeutuseWriter().getStatusCode() != 200) {
-      warnMsg.setMessage("Failed to upload skeletonization task");
-    }
-  }
-      */
-
-  //Temporary fix for mesh update, which should be moved the remote service
-//  m_writer.deleteMesh(targetId);
 }
 
 void ZFlyEmBodyMergeProject::updateSelection(const std::set<uint64_t> &newBodySet)
