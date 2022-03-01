@@ -27,7 +27,7 @@ FlyEmBodyMesh FlyEmSparsevolBodyMeshFactory::make_(const FlyEmBodyConfig &config
 
   if (m_bodySource) {
     if (config.isHybrid()) {
-       HLDEBUG("mesh factory") << "Make hybrid mesh from sparsevol" << std::endl;
+      HLDEBUG("mesh factory") << "Make hybrid mesh from sparsevol" << std::endl;
       ZDvidBodyHelper helper(m_bodySource);
       if (m_bodySource->getCoarseSparsevolScale() > 0) {
         if (config.usingCoarseLevel() ||

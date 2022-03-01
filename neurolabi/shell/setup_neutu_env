@@ -9,13 +9,8 @@ fi
 
 CONDA_DIR=$1
 ENV_NAME=${2:-neutu-env}
-condarc=$CONDA_DIR/.condarc
 ENV_DIR=$CONDA_DIR/envs/$ENV_NAME
 
-if [ ! -f $condarc ]
-then
-  cp condarc $condarc
-fi
 
 if [ -d "$ENV_DIR" ]
 then
@@ -41,6 +36,13 @@ if [ `uname` == 'Linux' ]; then
 else
   conda install --file neutu_conda_requirements_mac.txt -y -c flyem-forge -c conda-forge -c defaults
 fi
+
+condarc=$ENV_DIR/.condarc
+if [ ! -f $condarc ]
+then
+  cp condarc $condarc
+fi
+
 ./fixqtdebug Qt5 ${ENV_DIR}/lib
 
 

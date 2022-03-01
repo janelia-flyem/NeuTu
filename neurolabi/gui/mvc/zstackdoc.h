@@ -116,9 +116,6 @@ class ZRect2d;
  *
  * Each document has at most one main stack, which defines some context of other
  * data (e.g. resolution).
- *
- * For any derived class, it is highly recommended to call dispose() in its
- * destructor.
  */
 class ZStackDoc : public QObject, public ZReportable, public ZProgressable
 {
