@@ -6062,16 +6062,28 @@ ZJsonObject ZDvidReader::readBodyAnnotationSchema() const
 {
   ZDvidUrl url(getDvidTarget());
 
-  return readJsonObject(
-        with_source_query(url.getBodyAnnotationSchemaUrl()).c_str());
+  ZJsonObject schema = readJsonObject(
+        with_source_query(url.getBodyAnnotationSchemaUrlOld()).c_str());
+  if (schema.isEmpty()) {
+    schema = readJsonObject(
+          with_source_query(url.getBodyAnnotationSchemaUrl()).c_str());
+  }
+
+  return schema;
 }
 
 ZJsonObject ZDvidReader::readBodyAnnotationBatchSchema() const
 {
   ZDvidUrl url(getDvidTarget());
 
-  return readJsonObject(
-        with_source_query(url.getBodyAnnotationBatchSchemaUrl()).c_str());
+  ZJsonObject schema =  readJsonObject(
+        with_source_query(url.getBodyAnnotationBatchSchemaUrlOld()).c_str());
+  if (schema.isEmpty()) {
+    schema = readJsonObject(
+          with_source_query(url.getBodyAnnotationBatchSchemaUrl()).c_str());
+  }
+
+  return schema;
 }
 
 namespace {

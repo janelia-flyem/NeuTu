@@ -50,6 +50,9 @@ public:
 
   std::string getCommitInfoUrl() const;
 
+  std::string getDataMetaUrl(
+      const std::string &dataName, const std::string &metaName) const;
+
   std::string getSkeletonUrl(const std::string &bodyLabelName) const;
   std::string getSkeletonUrl(
       uint64_t bodyId, const std::string &bodyLabelName) const;
@@ -163,13 +166,38 @@ public:
   std::string getKeyValuesUrl(
       const std::string &name, const std::string &key1, const std::string &key2) const;
 
-  std::string getBodyAnnotationSchemaUrl(const std::string &bodyLabelName) const;
-  std::string getBodyAnnotationSchemaUrl() const;
+  /**@addtogroup Old body annotation schema
+   *
+   * It expects the schema to be stored as a keyvalue. The old APIs are kept
+   * for back compatibility.
+   *
+   * @{
+   */
+
+  std::string getBodyAnnotationSchemaUrlOld(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationSchemaUrlOld() const;
+
   /*!
    * \brief Url for batch body annotation schema
    */
-  std::string getBodyAnnotationBatchSchemaUrl(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationBatchSchemaUrlOld(const std::string &bodyLabelName) const;
+  std::string getBodyAnnotationBatchSchemaUrlOld() const;
+
+  /**@}*/
+
+
+  /**@addtogroup Body annotation schema
+   *
+   * It expects the schema to be stored as meta data of the annotation data
+   * instance.
+   *
+   * @{
+   */
+
+  std::string getBodyAnnotationSchemaUrl() const;
   std::string getBodyAnnotationBatchSchemaUrl() const;
+
+  /**@}*/
 
   std::string getBodyAnnotationUrl(const std::string &bodyLabelName) const;
   std::string getBodyAnnotationUrl(

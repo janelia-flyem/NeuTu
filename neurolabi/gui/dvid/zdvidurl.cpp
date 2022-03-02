@@ -1215,12 +1215,12 @@ std::string ZDvidUrl::getBodyAnnotationUrl(uint64_t bodyId) const
   return getBodyAnnotationUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
-std::string ZDvidUrl::getBodyAnnotationSchemaUrl() const
+std::string ZDvidUrl::getBodyAnnotationSchemaUrlOld() const
 {
-  return getBodyAnnotationSchemaUrl(m_dvidTarget.getBodyLabelName());
+  return getBodyAnnotationSchemaUrlOld(m_dvidTarget.getBodyLabelName());
 }
 
-std::string ZDvidUrl::getBodyAnnotationSchemaUrl(
+std::string ZDvidUrl::getBodyAnnotationSchemaUrlOld(
     const std::string &bodyLabelName) const
 {
   return applyAdminToken(
@@ -1228,7 +1228,7 @@ std::string ZDvidUrl::getBodyAnnotationSchemaUrl(
           GetKeyCommandUrl(getBodyAnnotationUrl(bodyLabelName)), "schema"));
 }
 
-std::string ZDvidUrl::getBodyAnnotationBatchSchemaUrl(
+std::string ZDvidUrl::getBodyAnnotationBatchSchemaUrlOld(
     const std::string &bodyLabelName) const
 {
   return applyAdminToken(
@@ -1236,9 +1236,20 @@ std::string ZDvidUrl::getBodyAnnotationBatchSchemaUrl(
                      getBodyAnnotationUrl(bodyLabelName)), "schema_batch"));
 }
 
+std::string ZDvidUrl::getBodyAnnotationBatchSchemaUrlOld() const
+{
+  return getBodyAnnotationBatchSchemaUrlOld(m_dvidTarget.getBodyLabelName());
+}
+
+
+std::string ZDvidUrl::getBodyAnnotationSchemaUrl() const
+{
+  return applyAdminToken(getDataMetaUrl(getBodyAnnotationName(), "schema"));
+}
+
 std::string ZDvidUrl::getBodyAnnotationBatchSchemaUrl() const
 {
-  return getBodyAnnotationBatchSchemaUrl(m_dvidTarget.getBodyLabelName());
+  return applyAdminToken(getDataMetaUrl(getBodyAnnotationName(), "schema_batch"));
 }
 
 std::string ZDvidUrl::getBodyInfoUrl(const std::string &bodyLabelName) const
@@ -1401,6 +1412,12 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 std::string ZDvidUrl::getDataConfigUrl(const std::string &userName) const
 {
   return getKeyUrl("neutu_config", "user_" + userName);
+}
+
+std::string ZDvidUrl::getDataMetaUrl(
+    const std::string &dataName, const std::string &metaName) const
+{
+  return applyAdminToken(GetFullUrl(getDataUrl(dataName), metaName));
 }
 
 std::string ZDvidUrl::applyAdminToken(const std::string &url) const
