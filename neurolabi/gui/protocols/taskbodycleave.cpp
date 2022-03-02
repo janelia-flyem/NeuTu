@@ -629,7 +629,7 @@ bool TaskBodyCleave::skip(QString &reason)
     reason = "tarsupervoxels HEAD failed";
   }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   if (m_skip) {
     m_skip = false;
     reason += " - Ignore skip for debugging.";

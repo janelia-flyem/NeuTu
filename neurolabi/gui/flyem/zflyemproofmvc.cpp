@@ -175,7 +175,9 @@ void ZFlyEmProofMvc::init()
 //  m_dlgManager = std::make_unique<FlyEmMvcDialogManager>(this);
   m_dlgManager = new FlyEmMvcDialogManager(this);
 
+#ifndef _NEU3_
   m_protocolSwitcher = new ProtocolSwitcher(this);
+#endif
 
   m_actionLibrary = new ZActionLibrary(this);
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
@@ -649,10 +651,12 @@ void ZFlyEmProofMvc::connectSignalSlot()
     connect(view, SIGNAL(sliceAxisChanged()), this, SLOT(processStateUpdate()));
   }
 //  connect(this, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
-  connect(getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
-          m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
-  connect(getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
-          m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
+  if (m_protocolSwitcher) {
+    connect(getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
+            m_protocolSwitcher, SLOT(processSynapseVerification(int,int,int,bool)));
+    connect(getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
+            m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
+  }
 //  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
 //          this, SLOT(syncBodySelectionToOrthoWindow()));
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
@@ -2127,7 +2131,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
     return;
   }
 
-  if (getRole() == ERole::ROLE_WIDGET) {
+  if (hasWidgetRole()) {
 //    LINFO() << "Set contrast";
 //    ZJsonObject contrastObj = reader.readContrastProtocal();
 //    getPresenter()->setHighContrastProtocal(contrastObj);
@@ -2172,7 +2176,7 @@ void ZFlyEmProofMvc::setDvid(const ZDvidEnv &env)
 
   getProgressSignal()->advanceProgress(0.2);
 
-  if (getRole() == ERole::ROLE_WIDGET) {
+  if (hasWidgetRole()) {
     if (getDvidTarget().isValid()) {
       KINFO(neutu::TOPIC_NULL) << "Download annotations";
       getCompleteDocument()->downloadSynapse();
@@ -2820,7 +2824,7 @@ void ZFlyEmProofMvc::customInit()
 
   disableSplit();
 
-  if (getRole() == ERole::ROLE_WIDGET) {
+  if (hasWidgetRole()) {
     // connections to body info dialog (aka "sequencer")
     /*
     if (m_bodyInfoDlg != NULL) {
@@ -2847,18 +2851,20 @@ void ZFlyEmProofMvc::customInit()
 //            m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
     connect(this, &ZFlyEmProofMvc::dvidTargetChanged,
             this, &ZFlyEmProofMvc::handleDvidTargetChange);
-    connect(m_protocolSwitcher, &ProtocolSwitcher::requestStateUpdate,
-            this, &ZStackMvc::updateState);
-    connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
-            this, SLOT(zoomTo(int,int,int)));
-    connect(m_protocolSwitcher, SIGNAL(requestDisplayBody(uint64_t)),
-            this, SLOT(locateBody(uint64_t)));
-    connect(m_protocolSwitcher, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
-            getCompleteDocument(), SLOT(updateProtocolColorMap(ZFlyEmSequencerColorScheme)));
-    connect(m_protocolSwitcher, SIGNAL(activateColorMap(QString)),
-            this, SLOT(changeColorMap(QString)));
-    connect(m_protocolSwitcher, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)),
-            this, SLOT(updateProtocolRangeGlyph(ZIntPoint, ZIntPoint)));
+    if (m_protocolSwitcher) {
+      connect(m_protocolSwitcher, &ProtocolSwitcher::requestStateUpdate,
+              this, &ZStackMvc::updateState);
+      connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
+              this, SLOT(zoomTo(int,int,int)));
+      connect(m_protocolSwitcher, SIGNAL(requestDisplayBody(uint64_t)),
+              this, SLOT(locateBody(uint64_t)));
+      connect(m_protocolSwitcher, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+              getCompleteDocument(), SLOT(updateProtocolColorMap(ZFlyEmSequencerColorScheme)));
+      connect(m_protocolSwitcher, SIGNAL(activateColorMap(QString)),
+              this, SLOT(changeColorMap(QString)));
+      connect(m_protocolSwitcher, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)),
+              this, SLOT(updateProtocolRangeGlyph(ZIntPoint, ZIntPoint)));
+    }
   }
 
   prepareTopLayout();
@@ -2906,7 +2912,7 @@ void ZFlyEmProofMvc::updateSequencerBodyMap(
 
 void ZFlyEmProofMvc::handleDvidTargetChange(const ZDvidTarget &target)
 {
-  if (getRole() == ERole::ROLE_WIDGET) {
+  if (hasWidgetRole()) {
     for (ZStackView *view : m_viewList) {
       if (getDvidTarget().hasSegmentation()) {
         view->enableCustomCheckBox(
@@ -5842,7 +5848,9 @@ void ZFlyEmProofMvc::openSequencer()
 
 void ZFlyEmProofMvc::openProtocol()
 {
-  m_protocolSwitcher->openProtocolDialogRequested();
+  if (m_protocolSwitcher) {
+    m_protocolSwitcher->openProtocolDialogRequested();
+  }
 }
 
 void ZFlyEmProofMvc::openRoiTool()
@@ -7514,17 +7522,15 @@ void ZFlyEmProofMvc::updateViewButton(EViewButton option)
 
 void ZFlyEmProofMvc::updateViewButton()
 {
-  if (getRole() != ERole::ROLE_WIDGET) {
-    return;
-  }
-
+  if (hasWidgetRole()) {
 #ifdef _DEBUG_
-  std::cout << "Update view button" << std::endl;
+    std::cout << "Update view button" << std::endl;
 #endif
 
-  updateViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
-  updateViewButton(EViewButton::ANNOTATE_TRACED);
-  updateViewButton(EViewButton::GOTO_BODY);
+    updateViewButton(EViewButton::ANNOTATE_ROUGHLY_TRACED);
+    updateViewButton(EViewButton::ANNOTATE_TRACED);
+    updateViewButton(EViewButton::GOTO_BODY);
+  }
 }
 
 void ZFlyEmProofMvc::makeViewButton(
