@@ -92,6 +92,7 @@
 #include "protocols/taskbodyhistory.h"
 #include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/taskmultibodyreview.h"
 #include "protocols/taskfalsesplitreview.h"
 #include "protocols/taskmergereview.h"
 #include "protocols/tasksplitseeds.h"
@@ -503,6 +504,7 @@ void configure_task_factory()
   register_task<TaskBodyHistory>();
   register_task<TaskBodyMerge>();
   register_task<TaskBodyReview>();
+  register_task<TaskMultiBodyReview>();
   register_task<TaskFalseSplitReview>();
   register_task<TaskMergeReview>();
   register_task<TaskSplitSeeds>();

@@ -546,6 +546,7 @@ HEADERS += mainwindow.h \
     protocols/taskbodymerge.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
+    protocols/taskmultibodyreview.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
     protocols/bodyprefetchqueue.h \
@@ -816,6 +817,7 @@ SOURCES += main.cpp \
     protocols/taskutils.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
+    protocols/taskmultibodyreview.cpp \
     protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
     protocols/bodyprefetchqueue.cpp \
