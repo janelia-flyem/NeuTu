@@ -22,24 +22,17 @@ public:
     static QString taskTypeStatic();
     static TaskMultiBodyReview* createFromJson(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc);
 
-    QString taskType() const;
-    QString actionString();
-    QString targetString();
-
-private:
-    uint64_t getEncodedBodyId() const;
-    QString getBodyKey() const;
+    QString taskType() const override;
+    QString actionString() override;
+    QString targetString() override;
 
 private:
     static const QString KEY_TASKTYPE;
     static const QString VALUE_TASKTYPE;
-    static const QString KEY_BODYID;
-    static const QString KEY_SVID;
-    uint64_t m_bodyID = 0;
-    neutu::EBodyLabelType m_bodyType = neutu::EBodyLabelType::BODY;
+    static const QString KEY_BODYIDS;
 
-    bool loadSpecific(QJsonObject json);
-    QJsonObject addToJson(QJsonObject json);
+    bool loadSpecific(QJsonObject json) override;
+    QJsonObject addToJson(QJsonObject json) override;
 };
 
 #endif // TASKBODYREVIEW_H

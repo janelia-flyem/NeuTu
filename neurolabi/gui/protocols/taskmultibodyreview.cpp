@@ -27,8 +27,7 @@ TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json)
 // constants
 const QString TaskMultiBodyReview::KEY_TASKTYPE = "task type";
 const QString TaskMultiBodyReview::VALUE_TASKTYPE = "multibody review";
-const QString TaskMultiBodyReview::KEY_BODYID = "body ID";
-const QString TaskMultiBodyReview::KEY_SVID = "supervoxel ID";
+const QString TaskMultiBodyReview::KEY_BODYIDS = "body IDs";
 
 QString TaskMultiBodyReview::taskTypeStatic()
 {
@@ -46,24 +45,11 @@ QString TaskMultiBodyReview::taskType() const
 }
 
 QString TaskMultiBodyReview::actionString() {
-    return "Review body:";
-}
-
-uint64_t TaskMultiBodyReview::getEncodedBodyId() const
-{
-  return (m_bodyType == neutu::EBodyLabelType::SUPERVOXEL)
-      ? ZFlyEmBodyManager::EncodeSupervoxel(m_bodyID)
-      : m_bodyID;
+    return "Review bodies:";
 }
 
 QString TaskMultiBodyReview::targetString() {
-    return QString::number(getEncodedBodyId());
-}
-
-QString TaskMultiBodyReview::getBodyKey() const
-{
-  return (m_bodyType == neutu::EBodyLabelType::SUPERVOXEL)
-      ? KEY_SVID : KEY_BODYID;
+    return "(multiple bodies)";
 }
 
 QJsonObject TaskMultiBodyReview::addToJson(QJsonObject taskJson) {
@@ -71,42 +57,14 @@ QJsonObject TaskMultiBodyReview::addToJson(QJsonObject taskJson) {
     //  know the source of the body IDs, the conversions
     //  below should be OK
 
-    taskJson[getBodyKey()] = static_cast<double>(m_bodyID);
+    taskJson[KEY_BODYIDS] = "(multiple bodies)";
     taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
 
     return taskJson;
 }
 
 bool TaskMultiBodyReview::loadSpecific(QJsonObject json) {
-
-    if (!json.contains(KEY_BODYID) && !json.contains(KEY_SVID)) {
-        return false;
-    }
-
-    // see note on body IDs in base class loadStandard() method
-    if (json.contains(KEY_SVID)) {
-      m_bodyID = json[KEY_SVID].toDouble();
-      m_bodyType = neutu::EBodyLabelType::SUPERVOXEL;
-    } else {
-      m_bodyID = json[KEY_BODYID].toDouble();
-      m_bodyType = neutu::EBodyLabelType::BODY;
-    }
-    if (m_bodyID == 0) {
-        // 0 indicates a conversion failure; we don't
-        //  anticipate reviewing body 0
-        LINFO() << "error converting task json; body ID = 0 not allowed";
-        return false;
-    }
-
-    if (m_bodyID > 4503599627370496) {
-        // that number is 2^52
-        LINFO() << "error converting task json; found body ID > 2^52";
-        return false;
-    }
-
-    // if it's OK, put it in visible set:
-    m_visibleBodies.insert(getEncodedBodyId());
-
+    // nothing specific for this protocol
     return true;
 }
 
