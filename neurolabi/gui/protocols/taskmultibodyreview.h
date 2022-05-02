@@ -6,6 +6,9 @@
 
 #include <QObject>
 #include <QSet>
+
+#include <QStandardItemModel>
+#include <QTableView>
 #include <QWidget>
 
 #include "common/neutudefs.h"
@@ -30,6 +33,9 @@ public:
 
     QWidget * getTaskWidget();
 
+private slots:
+    void onTestButton();
+
 private:
     static const QString KEY_TASKTYPE;
     static const QString VALUE_TASKTYPE;
@@ -38,11 +44,34 @@ private:
     bool loadSpecific(QJsonObject json) override;
     QJsonObject addToJson(QJsonObject json) override;
 
+    enum TableColumns {
+        BODYID_COLUMN,
+        CELL_TYPE_COLUMN,
+        STATUS_COLUMN,
+        BUTTON_COLUMN
+    };
+
     void loadBodyData();
     void setupUI();
+    void setTableHeaders(QStandardItemModel * model);
+    void updateTable();
 
+    // data stuff
     ZFlyEmBody3dDoc * m_bodyDoc;
+    QList<uint64_t> m_bodyIDs;
+    QStringList m_celltypes;
+    QStringList m_statuses;
+
+    // UI stuff
     QWidget *m_widget;
+
+    QTableView *m_bodyTableView;
+    QStandardItemModel *m_bodyModel;
+
+
+
+
+
 };
 
 #endif // TASKBODYREVIEW_H
