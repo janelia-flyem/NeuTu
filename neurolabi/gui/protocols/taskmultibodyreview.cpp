@@ -30,8 +30,6 @@ TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bod
 
     loadJson(json);
 
-    loadBodyData();
-
     setupUI();
 
 }
@@ -77,6 +75,7 @@ bool TaskMultiBodyReview::loadSpecific(QJsonObject /* json */ ) {
 }
 
 void TaskMultiBodyReview::loadBodyData() {
+    LINFO() << "loadBodyData()";
     ZDvidReader reader;
     reader.setVerbose(false);
     if (!reader.open(m_bodyDoc->getDvidTarget())) {
@@ -109,6 +108,11 @@ void TaskMultiBodyReview::loadBodyData() {
     }
 }
 
+void TaskMultiBodyReview::onLoaded() {
+    loadBodyData();
+    updateTable();
+}
+
 void TaskMultiBodyReview::setupUI() {
     m_widget = new QWidget();
 
@@ -133,19 +137,16 @@ void TaskMultiBodyReview::setupUI() {
     topLayout->addWidget(tempButton);
 
 
-    updateTable();
 
 }
 
 void TaskMultiBodyReview::updateTable() {
+    LINFO() << "updateTable()";
     // clear and repopulate model
     m_bodyModel->clear();
     setTableHeaders(m_bodyModel);
 
     for (int row=0; row<m_bodyIDs.size(); row++) {
-
-        LINFO() << "trying to set body ID " << m_bodyIDs[row];
-
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(QString::number(m_bodyIDs[row])), Qt::DisplayRole);
         m_bodyModel->setItem(row, BODYID_COLUMN, bodyIDItem);
@@ -157,11 +158,12 @@ void TaskMultiBodyReview::updateTable() {
         QStandardItem * statusItem = new QStandardItem();
         statusItem  ->setData(QVariant(m_statuses[row]), Qt::DisplayRole);
         m_bodyModel->setItem(row, STATUS_COLUMN, statusItem  );
-
     }
+}
 
-
-
+// testing
+bool TaskMultiBodyReview:: usePrefetching() {
+    return false;
 }
 
 void TaskMultiBodyReview::onTestButton() {

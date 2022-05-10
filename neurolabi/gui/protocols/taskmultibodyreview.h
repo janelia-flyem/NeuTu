@@ -31,6 +31,8 @@ public:
     QString actionString() override;
     QString targetString() override;
 
+    bool usePrefetching() override;
+
     QWidget * getTaskWidget();
 
 private slots:
@@ -43,6 +45,7 @@ private:
 
     bool loadSpecific(QJsonObject json) override;
     QJsonObject addToJson(QJsonObject json) override;
+    void onLoaded() override;
 
     enum TableColumns {
         BODYID_COLUMN,
