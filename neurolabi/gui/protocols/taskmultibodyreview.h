@@ -12,9 +12,13 @@
 #include <QWidget>
 
 #include "common/neutudefs.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 #include "protocols/taskprotocoltask.h"
+#include "flyem/zflyembodyannotation.h"
 
 class ZFlyEmBody3dDoc;
+
 
 class TaskMultiBodyReview : public TaskProtocolTask
 {
@@ -37,11 +41,14 @@ public:
 
 private slots:
     void onTestButton();
+    void onRowButton(int);
 
 private:
     static const QString KEY_TASKTYPE;
     static const QString VALUE_TASKTYPE;
     static const QString KEY_BODYIDS;
+
+    static const QString STATUS_PRT;
 
     bool loadSpecific(QJsonObject json) override;
     QJsonObject addToJson(QJsonObject json) override;
@@ -62,8 +69,12 @@ private:
     // data stuff
     ZFlyEmBody3dDoc * m_bodyDoc;
     QList<uint64_t> m_bodyIDs;
-    QStringList m_celltypes;
-    QStringList m_statuses;
+    QList<ZFlyEmBodyAnnotation> m_bodyAnnotations;
+
+    ZDvidReader m_reader;
+    ZDvidWriter m_writer;
+
+    void setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann);
 
     // UI stuff
     QWidget *m_widget;

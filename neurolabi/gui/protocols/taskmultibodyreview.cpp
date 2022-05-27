@@ -8,13 +8,14 @@
 #include <QJsonObject>
 
 #include <QLabel>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 
 #include "logging/zqslog.h"
+#include "flyem/zflyembodyannotation.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyembodymanager.h"
-#include "dvid/zdvidreader.h"
 
 TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)
 {
@@ -38,6 +39,8 @@ TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bod
 const QString TaskMultiBodyReview::KEY_TASKTYPE = "task type";
 const QString TaskMultiBodyReview::VALUE_TASKTYPE = "multibody review";
 const QString TaskMultiBodyReview::KEY_BODYIDS = "body IDs";
+
+const QString TaskMultiBodyReview::STATUS_PRT = "Prelim Roughly traced";
 
 QString TaskMultiBodyReview::taskTypeStatic()
 {
@@ -75,36 +78,23 @@ bool TaskMultiBodyReview::loadSpecific(QJsonObject /* json */ ) {
 }
 
 void TaskMultiBodyReview::loadBodyData() {
-    LINFO() << "loadBodyData()";
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (!reader.open(m_bodyDoc->getDvidTarget())) {
-      LERROR() << "TaskMultiBodyReview::loadBodyData() could not open DVID target for reading";
-      return;
-    }
-
     m_bodyIDs.clear();
-    m_celltypes.clear();
-    m_statuses.clear();
+    m_bodyAnnotations.clear();
 
     std::vector<uint64_t> bodyIDs(m_visibleBodies.size());
     size_t i=0;
     for (uint64_t bodyID: m_visibleBodies) {
+        // need std::vector for retrieving body annotations, and QList for general use later
+        m_bodyIDs << bodyID;
         bodyIDs[i] = bodyID;
         i++;
     }
-    std::sort(bodyIDs.begin(), bodyIDs.end());
-    std::vector<ZJsonObject> bodyData = reader.readBodyAnnotationJsons(bodyIDs);
 
+    std::vector<ZJsonObject> bodyData = m_reader.readBodyAnnotationJsons(bodyIDs);
     for (const auto &obj: bodyData) {
-        QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(obj.dumpString()).toUtf8());
-        QJsonObject data = doc.object();
-
-        // m_bodyIDs << data["bodyid"].toInt();
-        m_bodyIDs << uint64_t(data["bodyid"].toDouble());
-        m_celltypes << data["type"].toString();
-        m_statuses << data["status"].toString();
-
+        ZFlyEmBodyAnnotation ann;
+        ann.loadJsonObject(obj);
+        m_bodyAnnotations << ann;
     }
 }
 
@@ -128,9 +118,6 @@ void TaskMultiBodyReview::setupUI() {
 
 
 
-
-
-
     // testing, remove later
     QPushButton *tempButton = new QPushButton("Test", m_widget);
     connect(tempButton, SIGNAL(clicked(bool)), this, SLOT(onTestButton()));
@@ -138,13 +125,41 @@ void TaskMultiBodyReview::setupUI() {
 
 
 
+    // setup DVID reader, writer; create one of each and reuse so
+    //  we don't multiply connections
+    m_reader.setVerbose(false);
+    if (!m_reader.open(m_bodyDoc->getDvidTarget())) {
+      LERROR() << "TaskMultiBodyReview::setupUI() could not open DVID target for reading";
+      QMessageBox errorBox;
+      errorBox.setText("Error connecting to DVID");
+      errorBox.setInformativeText("Could not open DVID!  Check server information!");
+      errorBox.setStandardButtons(QMessageBox::Ok);
+      errorBox.setIcon(QMessageBox::Warning);
+      errorBox.exec();
+      return;
+    }
+    if (!m_writer.open(m_bodyDoc->getDvidTarget())) {
+      LERROR() << "TaskMultiBodyReview::setupUI() could not open DVID target for writing";
+      QMessageBox errorBox;
+      errorBox.setText("Error connecting to DVID");
+      errorBox.setInformativeText("Could not open DVID!  Check server information!");
+      errorBox.setStandardButtons(QMessageBox::Ok);
+      errorBox.setIcon(QMessageBox::Warning);
+      errorBox.exec();
+      return;
+    }
+
+
+
+
 }
 
 void TaskMultiBodyReview::updateTable() {
-    LINFO() << "updateTable()";
     // clear and repopulate model
     m_bodyModel->clear();
     setTableHeaders(m_bodyModel);
+
+    QPushButton * tempButton;
 
     for (int row=0; row<m_bodyIDs.size(); row++) {
         QStandardItem * bodyIDItem = new QStandardItem();
@@ -152,24 +167,47 @@ void TaskMultiBodyReview::updateTable() {
         m_bodyModel->setItem(row, BODYID_COLUMN, bodyIDItem);
 
         QStandardItem * cellTypeItem = new QStandardItem();
-        cellTypeItem ->setData(QVariant(m_celltypes[row]), Qt::DisplayRole);
-        m_bodyModel->setItem(row, CELL_TYPE_COLUMN, cellTypeItem );
+        cellTypeItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getType())), Qt::DisplayRole);
+        m_bodyModel->setItem(row, CELL_TYPE_COLUMN, cellTypeItem);
 
         QStandardItem * statusItem = new QStandardItem();
-        statusItem  ->setData(QVariant(m_statuses[row]), Qt::DisplayRole);
-        m_bodyModel->setItem(row, STATUS_COLUMN, statusItem  );
+        statusItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getStatus())), Qt::DisplayRole);
+        m_bodyModel->setItem(row, STATUS_COLUMN, statusItem);
+
+        tempButton = new QPushButton();
+        tempButton->setText("Set PRT");
+        m_bodyTableView->setIndexWidget(m_bodyModel->index(row , BUTTON_COLUMN), tempButton);
+        connect(tempButton, &QPushButton::clicked, m_bodyTableView, [this, row]() {
+            onRowButton(row);
+        });
     }
 }
 
 // testing
-bool TaskMultiBodyReview:: usePrefetching() {
+bool TaskMultiBodyReview::usePrefetching() {
     return false;
+}
+
+void TaskMultiBodyReview::onRowButton(int row) {
+    ZFlyEmBodyAnnotation ann = m_bodyAnnotations[row];
+    if (QString::fromStdString(ann.getStatus()) != STATUS_PRT) {
+        setPRTStatus(m_bodyIDs[row], m_bodyAnnotations[row]);
+    }
 }
 
 void TaskMultiBodyReview::onTestButton() {
     LINFO() << "test button pressed";
 
 }
+
+void TaskMultiBodyReview::setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann) {
+    ann.setStatus(STATUS_PRT.toStdString());
+    m_writer.writeBodyAnnotation(bodyId, ann);
+
+    loadBodyData();
+    updateTable();
+}
+
 
 void TaskMultiBodyReview::setTableHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(BODYID_COLUMN, new QStandardItem(QString("body ID")));
