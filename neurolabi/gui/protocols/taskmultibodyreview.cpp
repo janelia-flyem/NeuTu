@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+#include "neutubeconfig.h"
 #include "logging/zqslog.h"
 #include "flyem/zflyembodyannotation.h"
 #include "flyem/zflyembody3ddoc.h"
@@ -117,14 +118,6 @@ void TaskMultiBodyReview::setupUI() {
     topLayout->addWidget(m_bodyTableView);
 
 
-
-    // testing, remove later
-    QPushButton *tempButton = new QPushButton("Test", m_widget);
-    connect(tempButton, SIGNAL(clicked(bool)), this, SLOT(onTestButton()));
-    topLayout->addWidget(tempButton);
-
-
-
     // setup DVID reader, writer; create one of each and reuse so
     //  we don't multiply connections
     m_reader.setVerbose(false);
@@ -148,9 +141,6 @@ void TaskMultiBodyReview::setupUI() {
       errorBox.exec();
       return;
     }
-
-
-
 
 }
 
@@ -202,6 +192,7 @@ void TaskMultiBodyReview::onTestButton() {
 
 void TaskMultiBodyReview::setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann) {
     ann.setStatus(STATUS_PRT.toStdString());
+    ann.setStatusUser(NeutubeConfig::GetUserName());
     m_writer.writeBodyAnnotation(bodyId, ann);
 
     loadBodyData();
