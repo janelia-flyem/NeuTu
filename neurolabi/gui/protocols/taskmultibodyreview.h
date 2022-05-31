@@ -63,6 +63,7 @@ private:
 
     void loadBodyData();
     void setupUI();
+    void setColors();
     void setTableHeaders(QStandardItemModel * model);
     void updateTable();
 

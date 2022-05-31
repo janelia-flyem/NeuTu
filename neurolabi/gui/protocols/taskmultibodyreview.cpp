@@ -17,7 +17,38 @@
 #include "flyem/zflyembodyannotation.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyembodymanager.h"
+#include "z3dmeshfilter.h"
+#include "z3dwindow.h"
+#include "zglmutils.h"
 
+// copied from taskmergereview.cpp:
+namespace {
+// https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
+  static const std::vector<glm::vec4> INDEX_COLORS({
+    glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
+    glm::vec4(230,  25,  75, 255) / 255.0f, // red
+    glm::vec4(255, 225,  25, 255) / 255.0f, // yellow
+    glm::vec4(  0, 130, 200, 255) / 255.0f, // blue
+    glm::vec4(245, 130,  48, 255) / 255.0f, // orange
+    glm::vec4(145,  30, 180, 255) / 255.0f, // purple
+    glm::vec4( 70, 240, 240, 255) / 255.0f, // cyan
+    glm::vec4( 60, 180,  75, 255) / 255.0f, // green
+    glm::vec4(240,  50, 230, 255) / 255.0f, // magenta
+    glm::vec4(210, 245,  60, 255) / 255.0f, // lime
+    glm::vec4(250, 190, 190, 255) / 255.0f, // pink
+    glm::vec4(  0, 128, 128, 255) / 255.0f, // teal
+    glm::vec4(230, 190, 255, 255) / 255.0f, // lavender
+    glm::vec4(170, 110,  40, 255) / 255.0f, // brown
+    glm::vec4(255, 250, 200, 255) / 255.0f, // beige
+    glm::vec4(128,   0,   0, 255) / 255.0f, // maroon
+    glm::vec4(170, 255, 195, 255) / 255.0f, // mint
+    glm::vec4(128, 128,   0, 255) / 255.0f, // olive
+    glm::vec4(255, 215, 180, 255) / 255.0f, // coral
+    glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
+    glm::vec4(128, 128, 128, 255) / 255.0f, // gray
+  });
+
+}
 TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)
 {
     if (json[KEY_TASKTYPE] != VALUE_TASKTYPE) {
@@ -101,6 +132,8 @@ void TaskMultiBodyReview::loadBodyData() {
 
 void TaskMultiBodyReview::onLoaded() {
     loadBodyData();
+    // setColors() must be after loadBodyData() as it uses m_bodyIDs
+    setColors();
     updateTable();
 }
 
@@ -142,6 +175,17 @@ void TaskMultiBodyReview::setupUI() {
       return;
     }
 
+}
+
+void TaskMultiBodyReview::setColors() {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+        if (Z3DMeshFilter *filter = dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
+            filter->setColorMode("Indexed Color");
+            filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
+                return m_bodyIDs.indexOf(id);
+            });
+        }
+    }
 }
 
 void TaskMultiBodyReview::updateTable() {
