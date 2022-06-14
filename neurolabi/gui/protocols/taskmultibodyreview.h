@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QSet>
 
+#include <QCheckBox>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QWidget>
@@ -37,10 +38,11 @@ public:
 
     bool usePrefetching() override;
 
+    virtual void beforeDone() override;
+
     QWidget * getTaskWidget();
 
 private slots:
-    void onTestButton();
     void onRowButton(int);
 
 private:
@@ -63,6 +65,7 @@ private:
 
     void loadBodyData();
     void setupUI();
+    void setupDVID();
     void setColors();
     void setTableHeaders(QStandardItemModel * model);
     void updateTable();

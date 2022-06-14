@@ -8,6 +8,7 @@
 #include <QJsonObject>
 
 #include <QLabel>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -21,34 +22,58 @@
 #include "z3dwindow.h"
 #include "zglmutils.h"
 
-// copied from taskmergereview.cpp:
+// color table and save/restore mechanism copied from taskmergereview.cpp:
 namespace {
-// https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
-  static const std::vector<glm::vec4> INDEX_COLORS({
-    glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
-    glm::vec4(230,  25,  75, 255) / 255.0f, // red
-    glm::vec4(255, 225,  25, 255) / 255.0f, // yellow
-    glm::vec4(  0, 130, 200, 255) / 255.0f, // blue
-    glm::vec4(245, 130,  48, 255) / 255.0f, // orange
-    glm::vec4(145,  30, 180, 255) / 255.0f, // purple
-    glm::vec4( 70, 240, 240, 255) / 255.0f, // cyan
-    glm::vec4( 60, 180,  75, 255) / 255.0f, // green
-    glm::vec4(240,  50, 230, 255) / 255.0f, // magenta
-    glm::vec4(210, 245,  60, 255) / 255.0f, // lime
-    glm::vec4(250, 190, 190, 255) / 255.0f, // pink
-    glm::vec4(  0, 128, 128, 255) / 255.0f, // teal
-    glm::vec4(230, 190, 255, 255) / 255.0f, // lavender
-    glm::vec4(170, 110,  40, 255) / 255.0f, // brown
-    glm::vec4(255, 250, 200, 255) / 255.0f, // beige
-    glm::vec4(128,   0,   0, 255) / 255.0f, // maroon
-    glm::vec4(170, 255, 195, 255) / 255.0f, // mint
-    glm::vec4(128, 128,   0, 255) / 255.0f, // olive
-    glm::vec4(255, 215, 180, 255) / 255.0f, // coral
-    glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
-    glm::vec4(128, 128, 128, 255) / 255.0f, // gray
-  });
+    // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
+    static const std::vector<glm::vec4> INDEX_COLORS({
+        glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
+        glm::vec4(230,  25,  75, 255) / 255.0f, // red
+        glm::vec4(255, 225,  25, 255) / 255.0f, // yellow
+        glm::vec4(  0, 130, 200, 255) / 255.0f, // blue
+        glm::vec4(245, 130,  48, 255) / 255.0f, // orange
+        glm::vec4(145,  30, 180, 255) / 255.0f, // purple
+        glm::vec4( 70, 240, 240, 255) / 255.0f, // cyan
+        glm::vec4( 60, 180,  75, 255) / 255.0f, // green
+        glm::vec4(240,  50, 230, 255) / 255.0f, // magenta
+        glm::vec4(210, 245,  60, 255) / 255.0f, // lime
+        glm::vec4(250, 190, 190, 255) / 255.0f, // pink
+        glm::vec4(  0, 128, 128, 255) / 255.0f, // teal
+        glm::vec4(230, 190, 255, 255) / 255.0f, // lavender
+        glm::vec4(170, 110,  40, 255) / 255.0f, // brown
+        glm::vec4(255, 250, 200, 255) / 255.0f, // beige
+        glm::vec4(128,   0,   0, 255) / 255.0f, // maroon
+        glm::vec4(170, 255, 195, 255) / 255.0f, // mint
+        glm::vec4(128, 128,   0, 255) / 255.0f, // olive
+        glm::vec4(255, 215, 180, 255) / 255.0f, // coral
+        glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
+        glm::vec4(128, 128, 128, 255) / 255.0f, // gray
+    });
 
+    // we set some values for all TaskMultiBodyReview instances, and restore them
+    //  when we're done
+    static bool applySharedSettingsNeeded = true;
+    static int minDsLevel;
+    static int maxDsLevel;
+
+    void applySharedSettings(ZFlyEmBody3dDoc* bodyDoc) {
+        if (applySharedSettingsNeeded) {
+            applySharedSettingsNeeded = false;
+            minDsLevel = bodyDoc->getMinDsLevel();
+            maxDsLevel = bodyDoc->getMaxDsLevel();
+            bodyDoc->useCoarseOnly();
+        }
+    }
+
+    void restoreSharedSettings(ZFlyEmBody3dDoc * bodyDoc) {
+        if (!applySharedSettingsNeeded) {
+              applySharedSettingsNeeded = true;
+              bodyDoc->setMinDsLevel(minDsLevel);
+              bodyDoc->setMaxDsLevel(maxDsLevel);
+        }
+    }
 }
+
+
 TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)
 {
     if (json[KEY_TASKTYPE] != VALUE_TASKTYPE) {
@@ -61,10 +86,11 @@ TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bod
     m_visibleBodies = QSet<uint64_t>();
     m_selectedBodies = QSet<uint64_t>();
 
+    applySharedSettings(m_bodyDoc);
     loadJson(json);
 
     setupUI();
-
+    setupDVID();
 }
 
 // constants
@@ -137,6 +163,10 @@ void TaskMultiBodyReview::onLoaded() {
     updateTable();
 }
 
+void TaskMultiBodyReview::beforeDone() {
+    restoreSharedSettings(m_bodyDoc);
+}
+
 void TaskMultiBodyReview::setupUI() {
     m_widget = new QWidget();
 
@@ -149,8 +179,9 @@ void TaskMultiBodyReview::setupUI() {
     setTableHeaders(m_bodyModel);
     m_bodyTableView->setModel(m_bodyModel);
     topLayout->addWidget(m_bodyTableView);
+}
 
-
+void TaskMultiBodyReview::setupDVID() {
     // setup DVID reader, writer; create one of each and reuse so
     //  we don't multiply connections
     m_reader.setVerbose(false);
@@ -174,7 +205,6 @@ void TaskMultiBodyReview::setupUI() {
       errorBox.exec();
       return;
     }
-
 }
 
 void TaskMultiBodyReview::setColors() {
@@ -227,11 +257,6 @@ void TaskMultiBodyReview::onRowButton(int row) {
     if (QString::fromStdString(ann.getStatus()) != STATUS_PRT) {
         setPRTStatus(m_bodyIDs[row], m_bodyAnnotations[row]);
     }
-}
-
-void TaskMultiBodyReview::onTestButton() {
-    LINFO() << "test button pressed";
-
 }
 
 void TaskMultiBodyReview::setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann) {
