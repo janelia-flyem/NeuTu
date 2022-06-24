@@ -179,6 +179,15 @@ void TaskMultiBodyReview::setupUI() {
     setTableHeaders(m_bodyModel);
     m_bodyTableView->setModel(m_bodyModel);
     topLayout->addWidget(m_bodyTableView);
+
+    // more buttons
+    QHBoxLayout *buttonLayout = new QHBoxLayout(m_widget);
+    buttonLayout->addStretch();
+    m_allPRTButton = new QPushButton("Set all bodies to PRT", m_widget);
+    connect(m_allPRTButton, SIGNAL(clicked(bool)), this, SLOT(onAllPRTButton()));
+    buttonLayout->addWidget(m_allPRTButton);
+    topLayout->addLayout(buttonLayout);
+
 }
 
 void TaskMultiBodyReview::setupDVID() {
@@ -253,6 +262,20 @@ bool TaskMultiBodyReview::usePrefetching() {
 }
 
 void TaskMultiBodyReview::onRowButton(int row) {
+    setPRTStatusForRow(row);
+    loadBodyData();
+    updateTable();
+}
+
+void TaskMultiBodyReview::onAllPRTButton() {
+    for (auto row=0; row<m_bodyModel->rowCount(); row++) {
+        setPRTStatusForRow(row);
+    }
+    loadBodyData();
+    updateTable();
+}
+
+void TaskMultiBodyReview::setPRTStatusForRow(int row) {
     ZFlyEmBodyAnnotation ann = m_bodyAnnotations[row];
     if (QString::fromStdString(ann.getStatus()) != STATUS_PRT) {
         setPRTStatus(m_bodyIDs[row], m_bodyAnnotations[row]);
@@ -263,9 +286,6 @@ void TaskMultiBodyReview::setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann
     ann.setStatus(STATUS_PRT.toStdString());
     ann.setStatusUser(NeutubeConfig::GetUserName());
     m_writer.writeBodyAnnotation(bodyId, ann);
-
-    loadBodyData();
-    updateTable();
 }
 
 

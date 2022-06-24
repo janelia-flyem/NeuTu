@@ -8,6 +8,7 @@
 #include <QSet>
 
 #include <QCheckBox>
+#include <QPushButton>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QWidget>
@@ -44,6 +45,7 @@ public:
 
 private slots:
     void onRowButton(int);
+    void onAllPRTButton();
 
 private:
     static const QString KEY_TASKTYPE;
@@ -79,6 +81,7 @@ private:
     ZDvidWriter m_writer;
 
     void setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann);
+    void setPRTStatusForRow(int row);
 
     // UI stuff
     QWidget *m_widget;
@@ -86,7 +89,7 @@ private:
     QTableView *m_bodyTableView;
     QStandardItemModel *m_bodyModel;
 
-
+    QPushButton *m_allPRTButton;
 
 
 
