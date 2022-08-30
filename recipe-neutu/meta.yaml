@@ -27,6 +27,7 @@ build:
 
 requirements:
   build:
+    - make
     - cmake
     - {{ compiler('cxx') }} # [linux]
     - {{ cdt('mesa-libgl-devel') }}  # [linux]
