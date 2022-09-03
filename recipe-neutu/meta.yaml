@@ -29,10 +29,27 @@ requirements:
   build:
     - make
     - cmake
-    - {{ compiler('cxx') }} # [linux]
+    - {{ compiler('cxx') }}          # [linux]
+
+    # CDT packages for linking against libGL
+    # These are packages which we expect NeuTu users to have installed on their own machines.
+    # https://conda-forge.org/docs/maintainer/knowledge_base.html#core-dependency-tree-packages-cdts
+    # https://github.com/conda-forge/cdt-builds
     - {{ cdt('mesa-libgl-devel') }}  # [linux]
-    - {{ cdt('mesa-libegl-devel') }}  # [linux]
+    - {{ cdt('mesa-libegl-devel') }} # [linux]
     - {{ cdt('mesa-dri-drivers') }}  # [linux]
+    - {{ cdt('libselinux') }}        # [linux]
+    - {{ cdt('libxdamage') }}        # [linux]
+    - {{ cdt('libxxf86vm') }}        # [linux]
+    - {{ cdt('libxext') }}           # [linux]
+    - {{ cdt('libxcb') }}            # [linux]
+    - {{ cdt('libxfixes') }}         # [linux]
+    - {{ cdt('expat') }}             # [linux]
+
+    # Should we upgrade to CentOS-7 sysroot?
+    # https://conda-forge.org/docs/user/announcements.html?highlight=sysroot_linux#centos-7-docker-images-are-now-the-default
+    # https://conda-forge.org/docs/maintainer/knowledge_base.html#using-centos-7
+    #- sysroot_linux-64 2.17          # [linux]
 
   host:
     - libneucore >=0.1.5, <2.0
