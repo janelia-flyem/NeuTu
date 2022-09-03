@@ -15,7 +15,7 @@ package:
 source:
     git_url: ../
     patches:
-      - patches/libgl-is-in-build-prefix.patch # [linux]
+      - patches/libgl-is-in-build-prefix.patch  # [linux]
 
 build:
   number: 0
@@ -52,58 +52,74 @@ requirements:
     #- sysroot_linux-64 2.17          # [linux]
 
   host:
-    - libneucore >=0.1.5, <2.0
-    - libneumath >=0.1.0, <2.0
-    - qt      5.12.*
-    - fftw    >=3.3.9, <3.4
-    - jansson 2.7.*
-    - libpng  1.6.*
-    - hdf5    1.10.*
-    - pango   1.42.*         # [linux64]
+    # FlyEM packages
+    - libneucore >=0.1.5,<2.0
+    - libneumath >=0.1.0,<2.0
     - lowtis  0.1.0.post78.*
-    - tbb 2020.2.*
-    - tbb-devel 2020.2.*
-    - vtk 9.0.*
-    - assimp 4.0.1.*
-    - glbinding 2.1.3.*
-    - draco 1.3.4.*
-    - libarchive 3.5.1.*
-    - libiconv 1.16.*
-    - librdkafka 1.6.*
-    - alsa-lib 1.1.5.*         # [linux64]
-    - xorg-libxrandr 1.5.1.*   # [linux64]
-    - xorg-libxcursor 1.2.0.*  # [linux64]
-    - xorg-libxtst 1.2.3.*     # [linux64]
+
+    # Packages from our channel (flyem-forge)
+    - draco     1.3.4
+    - glbinding 2.1.3
+    
+    # from conda-forge, pinned here
+    - jansson   2.7
+    - xorg-libxrandr  1.5.2       # [linux]
+    - xorg-libxcursor 1.2.0       # [linux]
+    - xorg-libxtst    1.2.3       # [linux]
+
+    # 'pin_run_as_build' in conda_build_config.yaml
+    - fftw        {{ fftw }}
+    - libiconv    {{ libiconv }}
+    - libpng      {{ libpng }}
+    - pango       {{ pango }}     # [linux]
+    - qt          {{ qt }}
+    - vtk         {{ vtk }}  # Note: Must be the same as VTK_VER in neurolabi/gui/extlib.pri
+
+    # No 'pin_run_as_build' provided
+    - alsa-lib    {{ alsa_lib }}  # [linux]
+    - assimp      {{ assimp }}
+    - hdf5        {{ hdf5 }}
+    - libarchive  {{ libarchive }}
+    - librdkafka  {{ librdkafka }}
+    - tbb         {{ tbb }}
+    - tbb-devel   {{ tbb_devel}}
 
   run:
-    # runtime only
+    # FlyEM packages
+    - libneucore >=0.1.5,<2.0
+    - libneumath >=0.1.0,<2.0
+    - lowtis  0.1.0.post78.*
+
+    # Packages from our channel (flyem-forge)
+    - draco     ==1.3.4
+    - glbinding ==2.1.3
+
+    # from conda-forge, but pinned here.
+    - jansson   2.7.*
+    - xorg-libxrandr ==1.5.2    # [linux]
+    - xorg-libxcursor ==1.2.0   # [linux]
+    - xorg-libxtst ==1.2.3      # [linux]
+
+    # 'pin_run_as_build' in conda_build_config.yaml
+    - fftw
+    - libiconv
+    - libpng
+    - pango  # [linux]
+    - qt
+    - vtk
+
+    # No 'pin_run_as_build' provided
+    - {{ pin_compatible("alsa-lib") }} # [linux]
+    - {{ pin_compatible("assimp") }}
+    - {{ pin_compatible("hdf5") }}
+    - {{ pin_compatible("libarchive") }}
+    - {{ pin_compatible("librdkafka") }}
+    - {{ pin_compatible("tbb") }}
+    - {{ pin_compatible("tbb-devel") }}
+
+    # runtime only (not listed above in build)
     - python  3.7.*
     - marktips 0.3.*
-
-    # copied from host (above)
-    - libneucore >=0.1.5, <2.0
-    - libneumath >=0.1.0, <2.0
-    - qt      5.12.*
-    - fftw    >=3.3.9, <3.4
-    - jansson 2.7.*
-    - libpng  1.6.*
-    - hdf5    1.10.*
-    - pango   1.42.*         # [linux64]
-    - lowtis  0.1.0.post78.*
-    - tbb 2020.2.*
-    - tbb-devel 2020.2.*
-    - vtk 9.0.*
-    - assimp 4.0.1.*
-    - glbinding 2.1.3.*
-    - draco 1.3.4.*
-    - libarchive 3.5.1.*
-    - libiconv 1.16.*
-    - librdkafka 1.6.*
-    - alsa-lib 1.1.5.*         # [linux64]
-    - xorg-libxrandr 1.5.1.*   # [linux64]
-    - xorg-libxcursor 1.2.0.*  # [linux64]
-    - xorg-libxtst 1.2.3.*     # [linux64]
-
 
 about:
   home: http://github.com/janelia-flyem/NeuTu
