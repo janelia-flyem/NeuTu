@@ -15,5 +15,5 @@ if [ `uname` = Darwin ]; then
     export THREAD_COUNT=1
   fi
 fi
-conda build $recipe -c flyem-forge -c conda-forge
+conda mambabuild $recipe -c flyem-forge -c conda-forge
  
