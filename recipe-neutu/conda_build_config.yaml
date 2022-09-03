@@ -1,4 +1,79 @@
-cxx_compiler_version:  # [linux]
-  - 11.2.0              # [linux]
-c_compiler_version:    # [linux]
-  - 11.2.0              # [linux]
+#
+# Except where noted, the settings in this file were extracted from the conda-forge-pinnings package (on 2022-09-01):
+# https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/main/recipe/conda_build_config.yaml
+# 
+c_compiler:
+  - gcc                        # [linux]
+  - clang                      # [osx]
+c_compiler_version:            # [unix]
+  - 10                         # [linux]
+  - 14                         # [osx]
+cxx_compiler:
+  - gxx                        # [linux]
+  - clangxx                    # [osx]
+cxx_compiler_version:          # [unix]
+  - 10                         # [linux]
+  - 14                         # [osx]
+llvm_openmp:                   # [osx]
+  - 14                         # [osx]
+fortran_compiler:              # [unix or win64]
+  - gfortran                   # [linux64 or (osx and x86_64)]
+fortran_compiler_version:      # [unix or win64]
+  - 10                         # [linux]
+  - 11                         # [osx]
+_libgcc_mutex:
+  - 0.1 conda_forge
+macos_machine:                 # [osx]
+  - x86_64-apple-darwin13.4.0  # [osx and x86_64]
+
+# I don't know if this actually matters if you aren't running on conda-forge infrastructure
+cdt_name:  # [linux]
+  - cos6   # [linux64 and os.environ.get("DEFAULT_LINUX_VERSION", "cos6") == "cos6"]
+  - cos7   # [linux64 and os.environ.get("DEFAULT_LINUX_VERSION", "cos6") == "cos7"]
+
+# These were copied from the qt-main feedstock
+MACOSX_DEPLOYMENT_TARGET:  # [osx and x86_64]
+  - '10.13'                # [osx and x86_64]
+MACOSX_SDK_VERSION:        # [osx and x86_64]
+  - '10.14'                # [osx and x86_64]
+
+alsa_lib:
+- 1.2.6
+assimp:
+- 5.2.3
+fftw:
+- 3
+hdf5:
+- 1.12.1
+libarchive:
+- 3.5
+libiconv:
+- 1.16
+libpng:
+- 1.6
+librdkafka:
+- '1.7'
+pango:
+- 1.48
+qt:
+- 5.12
+tbb:
+- '2021'
+tbb_devel:
+- '2021'
+vtk:
+- 9.1.0  # If you change this, also change VTK_VER in neurolabi/gui/extlib.pri
+
+pin_run_as_build:
+  fftw:
+    max_pin: x
+  libiconv:
+    max_pin: x.x
+  libpng:
+    max_pin: x.x
+  pango:
+    max_pin: x.x
+  qt:
+    max_pin: x.x
+  vtk:
+    max_pin: x.x.x
