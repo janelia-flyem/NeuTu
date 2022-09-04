@@ -118,7 +118,7 @@ requirements:
     - {{ pin_compatible("tbb-devel") }}
 
     # runtime only (not listed above in build)
-    - python  3.7.*
+    - python
     - marktips 0.3.*
 
 about:
