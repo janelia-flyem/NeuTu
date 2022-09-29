@@ -771,7 +771,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Paste View", parent);
     break;
   case ACTION_RUN_TIP_DETECTION:
-    action = new QAction("Tip detection dialog...", parent);
+    // disabled Sept. 2022 by request of Chris Knecht
+    // action = new QAction("Tip detection dialog...", parent);
     break;
   case ACTION_VIEW_AXIS_X:
     action = new QAction("Change View X", parent);
