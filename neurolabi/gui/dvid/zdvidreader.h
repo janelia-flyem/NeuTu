@@ -461,6 +461,7 @@ public:
   std::tuple</*voxelCount=*/size_t, /*blockCount=*/size_t, /*range=*/ZIntCuboid>
   readBodySizeInfo( uint64_t bodyId, neutu::EBodyLabelType type) const;
 
+  std::tuple<int64_t, std::string, std::string, std::string> readBodyMutationInfo(uint64_t bodyId) const;
   int64_t readBodyMutationId(uint64_t bodyId) const;
 
   bool hasGrayscale() const;

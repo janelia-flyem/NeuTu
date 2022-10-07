@@ -5133,19 +5133,31 @@ ZFlyEmNeuronBodyInfo ZDvidReader::readBodyInfo(uint64_t bodyId)
 }
 */
 
+std::tuple<int64_t, std::string, std::string, std::string> ZDvidReader::readBodyMutationInfo(uint64_t bodyId) const
+{
+    int64_t mutId = -1;
+    std::string modUser = "unknown user";
+    std::string modApp = "unknown app";
+    std::string modTime = "unknown time";
+
+    ZDvidUrl dvidUrl(getDvidTarget());
+    std::string url = dvidUrl.getSparsevolLastModUrl(bodyId);
+    if (!url.empty()) {
+      ZJsonObject obj = readJsonObject(with_source_query(url));
+      ZJsonObjectParser parser;
+      mutId = parser.GetValue(obj, "mutation id", int64_t(-1));
+      modUser = parser.GetValue(obj, "last mod user", "unknown user");
+      modApp = parser.GetValue(obj, "last mod app", "unknown app");
+      modTime = parser.GetValue(obj, "last mod time", "unknown time");
+      }
+    return std::make_tuple(mutId, modUser, modApp, modTime);
+}
+
 int64_t ZDvidReader::readBodyMutationId(uint64_t bodyId) const
 {
-  int64_t mutId = -1;
-
-  ZDvidUrl dvidUrl(getDvidTarget());
-  std::string url = dvidUrl.getSparsevolLastModUrl(bodyId);
-  if (!url.empty()) {
-    ZJsonObject obj = readJsonObject(with_source_query(url));
-    ZJsonObjectParser parser;
-    mutId = parser.GetValue(obj, "mutation id", int64_t(-1));
-//    mutId = ZJsonParser::integerValue(obj["mutation id"]);
-  }
-
+  int64_t mutId = 0;
+  std::string modUser, modApp, modTime;
+  std::tie(mutId, modUser, modApp, modTime) = readBodyMutationInfo(bodyId);
   return mutId;
 }
 

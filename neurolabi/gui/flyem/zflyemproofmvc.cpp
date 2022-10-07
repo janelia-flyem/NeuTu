@@ -3805,8 +3805,14 @@ void ZFlyEmProofMvc::showBodyProfile()
       ZIntCuboid box;
       std::tie(bodySize, blockCount, box) = reader.readBodySizeInfo(
             bodyId, neutu::EBodyLabelType::BODY);
-      msg += QString("#voxels: %1; #blocks: %2; Range: %3").arg(bodySize).
+      msg += QString("\n    #voxels: %1\n    #blocks: %2\n    Range: %3").arg(bodySize).
           arg(blockCount).arg(box.toString().c_str());
+
+      int64_t ignored = 0;
+      std::string modUser, modApp, modTime;
+      std::tie(ignored, modUser, modApp, modTime) = reader.readBodyMutationInfo(bodyId);
+      msg += QString("\n    Modified by %1/%2 at %3").arg(modUser.c_str()).arg(modApp.c_str()).arg(modTime.c_str());
+
       emit messageGenerated(
             ZWidgetMessage(
               msg, neutu::EMessageType::INFORMATION));
