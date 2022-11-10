@@ -70,7 +70,7 @@ public:
    * \param parentUuid the uuid of the parent node
    * \return true iff a new node or a new link is created.
    */
-  bool addNode(const std::string &uuid, const std::string &parentUuid);
+  bool addNode(const std::string &uuid, const std::string &parentUuid, const std::string &branch);
 
   bool isParent(const std::string &uuid, const std::string &parentUuid) const;
 
@@ -90,7 +90,7 @@ public:
 private:
   const ZTreeNode<ZDvidVersionNode>* getDagNode(const std::string &uuid) const;
   ZTreeNode<ZDvidVersionNode>* getDagNode(const std::string &uuid);
-  ZTreeNode<ZDvidVersionNode>* addNode(const std::string &uuid);
+  ZTreeNode<ZDvidVersionNode>* addNode(const std::string &uuid, const std::string &branch);
 
   const std::map<std::string, ZTreeNode<ZDvidVersionNode>* >&
   getVersionList() const {

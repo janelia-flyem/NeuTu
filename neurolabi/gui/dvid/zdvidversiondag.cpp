@@ -212,7 +212,7 @@ void ZDvidVersionDag::setRoot(const std::string &uuid)
   if (!uuid.empty()) {
     clear();
 
-    ZTreeNode<ZDvidVersionNode> *root = addNode(uuid);
+    ZTreeNode<ZDvidVersionNode> *root = addNode(uuid, "");
 
     getTreeRef().setRoot(root, true);
   }
@@ -234,12 +234,13 @@ bool ZDvidVersionDag::isParent(
   return false;
 }
 
-ZTreeNode<ZDvidVersionNode>* ZDvidVersionDag::addNode(const std::string &uuid)
+ZTreeNode<ZDvidVersionNode>* ZDvidVersionDag::addNode(const std::string &uuid, const std::string &branch)
 {
   ZTreeNode<ZDvidVersionNode> *tn = NULL;
   if (!uuid.empty() && getVersionList().count(uuid) == 0) {
     tn = new ZTreeNode<ZDvidVersionNode>;
     tn->data().setUuid(uuid);
+    tn->data().setBranch(branch);
     getVersionListRef()[uuid] = tn;
   }
 
@@ -247,7 +248,7 @@ ZTreeNode<ZDvidVersionNode>* ZDvidVersionDag::addNode(const std::string &uuid)
 }
 
 bool ZDvidVersionDag::addNode(
-    const std::string &uuid, const std::string &parentUuid)
+    const std::string &uuid, const std::string &parentUuid, const std::string &branch)
 {
   bool succ = false;
 
@@ -257,7 +258,7 @@ bool ZDvidVersionDag::addNode(
       if (parent != NULL) {
         ZTreeNode<ZDvidVersionNode> *tn = getDagNode(uuid);
         if (tn == NULL) {
-          tn = addNode(uuid);
+          tn = addNode(uuid, branch);
         }
 
         if (tn->isRoot()) {
@@ -281,12 +282,47 @@ bool ZDvidVersionDag::isAncester(
     const std::string &uuid, const std::string &ancester) const
 {
   bool result = false;
+  std::string actualUUID = "";
+
+  if (uuid.find(":") != std::string::npos) {
+    // uuid:branch syntax detected; resolve it into the actual uuid before proceeding
+    // if we end up using this logic anywhere else, I'll factor it out; but right now
+    //      almost everything passes through cleanly to DVID and NeuTu/3 doesn't care
+    // we just need to go through the tree and find the node with the right branch name
+    //      that has no children (leaf node); that's the actual UUID
+
+    // have I mentioned lately how much I hate C++'s awful classes?  why can't std::string
+    //   have a split method?
+    std::stringstream stream(uuid);
+    std::string targetBranch;
+    // don't care about first part; just want second
+    std::getline(stream, targetBranch, ':');
+    std::getline(stream, targetBranch, ':');
+
+    ZTreeIterator<ZDvidVersionNode> iter0(m_data->m_tree);
+    while (iter0.hasNext()) {
+        ZTreeNode<ZDvidVersionNode> *tn = iter0.nextNode();
+        if (tn->data().getBranch() == targetBranch) {
+            ZString currentUuid = tn->data().getUuid();
+            if (getChildList(currentUuid).size() == 0) {
+                actualUUID = currentUuid;
+                break;
+            }
+        }
+    }
+    if (actualUUID == "") {
+        // we can't resolve the node:branch syntax, so can't say it IS an ancestor...
+        return false;
+    }
+  } else {
+    actualUUID = uuid;
+  }
 
   ZTreeIterator<ZDvidVersionNode> iter(m_data->m_tree);
   while (iter.hasNext()) {
     ZTreeNode<ZDvidVersionNode> *tn = iter.nextNode();
     ZString currentUuid = tn->data().getUuid();
-    if (dvid::IsUuidMatched(currentUuid, uuid)) {
+    if (dvid::IsUuidMatched(currentUuid, actualUUID)) {
       ZTreeNode<ZDvidVersionNode> *parent = tn->parent();
       while (parent != NULL) {
         if (dvid::IsUuidMatched(parent->data().getUuid(), ancester)) {
@@ -349,6 +385,7 @@ void ZDvidVersionDag::load(const ZJsonObject &jsonObj)
       }
       ZDvidVersionNode node;
       node.setUuid(key);
+      node.setBranch(ZJsonParser::stringValue(nodeJson["Branch"]));
       if (ZJsonParser::booleanValue(nodeJson["Locked"])) {
         node.lock();
       }
@@ -369,7 +406,8 @@ void ZDvidVersionDag::load(const ZJsonObject &jsonObj)
           uuidQueue.push(childUuid);
         }
         addNode(childUuid.substr(0, DVID_UUID_COMMON_LENGTH),
-                nextUuid.substr(0, DVID_UUID_COMMON_LENGTH));
+                nextUuid.substr(0, DVID_UUID_COMMON_LENGTH),
+                nodeList[versionId].getBranch());
       }
     }
 

@@ -109,6 +109,14 @@ std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
 
   if (!getHost().empty()) {
     std::string uuid = getUuid();
+    // accommodate the "uuid:branch" syntax as well
+    std::string branch = "";
+    if (uuid.find(":") != std::string::npos) {
+        std::stringstream uuidstream(uuid);
+        std::getline(uuidstream, uuid, ':');
+        std::getline(uuidstream, branch, ':');
+    }
+
     if (uuidBrief > 0 && uuid.size() > uuidBrief && hasDvidUuid()) {
       uuid = uuid.substr(0, uuidBrief);
     } else if (uuid.size() < uuidBrief) {
@@ -116,6 +124,11 @@ std::string ZDvidNode::getSourceString(bool withScheme, size_t uuidBrief) const
       ZWARN("dvid") << "Out-of-bound uuid brief (" + std::to_string(uuidBrief) +
                ") for " + uuid;
 #endif
+    }
+
+    // splice the branch back on, after the uuid shortening
+    if (branch.size() > 0) {
+        uuid = uuid + ":" + branch;
     }
 
     source = getHost() + ":" + ZString::num2str(getPort()) + ":" + uuid;

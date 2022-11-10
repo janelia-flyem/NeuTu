@@ -233,7 +233,13 @@ void ZDvidVersionModel::setRoot(const std::string &uuid)
 void ZDvidVersionModel::addNode(
     const std::string &uuid, const std::string &parentUuid)
 {
-  if (m_dag.addNode(uuid, parentUuid)) {
+  // November 2022: I added the branch name to nodes in the ZDvidVersionDag class;
+  //    I believe this code is no longer used, but I updated it using the default ""
+  //    branch name anyway; if branches during a merge project are wrong, this is
+  //    one possible cause
+  // (only used via FlyEmBodyMergeProjectDialog, which I believe has long since been
+  //    replaced and deactivated)
+  if (m_dag.addNode(uuid, parentUuid, "")) {
     int row = m_dag.getSiblingIndex(uuid);
     insertRow(row, createIndex(
                 m_dag.getSiblingIndex(parentUuid), 0, parentUuid));
