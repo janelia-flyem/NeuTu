@@ -188,6 +188,8 @@ void TaskMultiBodyReview::setupUI() {
     buttonLayout->addWidget(m_allPRTButton);
     topLayout->addLayout(buttonLayout);
 
+    // connections
+    connect(m_bodyTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 }
 
 void TaskMultiBodyReview::setupDVID() {
@@ -259,6 +261,16 @@ void TaskMultiBodyReview::updateTable() {
 // testing
 bool TaskMultiBodyReview::usePrefetching() {
     return false;
+}
+
+void TaskMultiBodyReview::onClickedTable(QModelIndex index) {
+    if (index.column() == BODYID_COLUMN) {
+        // we don't have a sort proxy, so the table index = model index at this point
+        m_bodyTableView->selectionModel()->select(index, QItemSelectionModel::Select);
+        QSet<uint64_t> selected;
+        selected << m_bodyIDs[index.row()];
+        updateBodies(m_visibleBodies, selected);
+    }
 }
 
 void TaskMultiBodyReview::onRowButton(int row) {

@@ -8,6 +8,7 @@
 #include <QSet>
 
 #include <QCheckBox>
+#include <QModelIndex>
 #include <QPushButton>
 #include <QStandardItemModel>
 #include <QTableView>
@@ -44,6 +45,7 @@ public:
     QWidget * getTaskWidget();
 
 private slots:
+    void onClickedTable(QModelIndex index);
     void onRowButton(int);
     void onAllPRTButton();
 
