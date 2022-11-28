@@ -20,6 +20,7 @@ public:
   inline const std::string& getComment() const { return m_comment; }
 //  inline const std::string& getName() const { return m_name; }
   inline const std::string& getType() const { return m_type; }
+  inline const std::string& getInstance() const { return m_instance; }
   inline const std::string& getUser() const { return m_userName; }
   inline const std::string& getNamingUser() const { return m_namingUser; }
   inline const std::string& getStatusUser() const { return m_statusUser; }

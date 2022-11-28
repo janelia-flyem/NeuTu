@@ -9,6 +9,7 @@
 
 #include <QLabel>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -175,7 +176,7 @@ void TaskMultiBodyReview::setupUI() {
 
     // body info table
     m_bodyTableView = new QTableView(m_widget);
-    m_bodyModel = new QStandardItemModel(0, 4, m_bodyTableView);
+    m_bodyModel = new QStandardItemModel(0, 5, m_bodyTableView);
     setTableHeaders(m_bodyModel);
     m_bodyTableView->setModel(m_bodyModel);
     topLayout->addWidget(m_bodyTableView);
@@ -245,6 +246,10 @@ void TaskMultiBodyReview::updateTable() {
         cellTypeItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getType())), Qt::DisplayRole);
         m_bodyModel->setItem(row, CELL_TYPE_COLUMN, cellTypeItem);
 
+        QStandardItem * instanceItem = new QStandardItem();
+        instanceItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getInstance())), Qt::DisplayRole);
+        m_bodyModel->setItem(row, INSTANCE_COLUMN, instanceItem);
+
         QStandardItem * statusItem = new QStandardItem();
         statusItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getStatus())), Qt::DisplayRole);
         m_bodyModel->setItem(row, STATUS_COLUMN, statusItem);
@@ -256,6 +261,11 @@ void TaskMultiBodyReview::updateTable() {
             onRowButton(row);
         });
     }
+
+    m_bodyTableView->resizeColumnsToContents();
+    m_bodyTableView->horizontalHeader()->setSectionResizeMode(CELL_TYPE_COLUMN, QHeaderView::Stretch);
+    m_bodyTableView->horizontalHeader()->setSectionResizeMode(INSTANCE_COLUMN, QHeaderView::Stretch);
+
 }
 
 // testing
@@ -300,10 +310,10 @@ void TaskMultiBodyReview::setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann
     m_writer.writeBodyAnnotation(bodyId, ann);
 }
 
-
 void TaskMultiBodyReview::setTableHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(BODYID_COLUMN, new QStandardItem(QString("body ID")));
     model->setHorizontalHeaderItem(CELL_TYPE_COLUMN, new QStandardItem(QString("cell type")));
+    model->setHorizontalHeaderItem(INSTANCE_COLUMN, new QStandardItem(QString("instance")));
     model->setHorizontalHeaderItem(STATUS_COLUMN, new QStandardItem(QString("status")));
     model->setHorizontalHeaderItem(BUTTON_COLUMN, new QStandardItem(QString("button")));
 }

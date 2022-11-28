@@ -63,6 +63,7 @@ private:
     enum TableColumns {
         BODYID_COLUMN,
         CELL_TYPE_COLUMN,
+        INSTANCE_COLUMN,
         STATUS_COLUMN,
         BUTTON_COLUMN
     };
