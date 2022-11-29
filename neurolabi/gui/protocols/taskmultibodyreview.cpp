@@ -99,6 +99,7 @@ const QString TaskMultiBodyReview::KEY_TASKTYPE = "task type";
 const QString TaskMultiBodyReview::VALUE_TASKTYPE = "multibody review";
 const QString TaskMultiBodyReview::KEY_BODYIDS = "body IDs";
 
+// yes, that's the capitalization we use...
 const QString TaskMultiBodyReview::STATUS_PRT = "Prelim Roughly traced";
 
 QString TaskMultiBodyReview::taskTypeStatic()
@@ -155,6 +156,15 @@ void TaskMultiBodyReview::loadBodyData() {
         ann.loadJsonObject(obj);
         m_bodyAnnotations << ann;
     }
+
+    if (!m_originalStatusesLoaded) {
+        m_originalStatuses.clear();
+        for (ZFlyEmBodyAnnotation ann: m_bodyAnnotations) {
+            m_originalStatuses << ann.getStatus();
+        }
+        m_originalStatusesLoaded = true;
+    }
+
 }
 
 void TaskMultiBodyReview::onLoaded() {
@@ -235,7 +245,7 @@ void TaskMultiBodyReview::updateTable() {
     m_bodyModel->clear();
     setTableHeaders(m_bodyModel);
 
-    QPushButton * tempButton;
+    QPushButton * actionButton;
 
     for (int row=0; row<m_bodyIDs.size(); row++) {
         QStandardItem * bodyIDItem = new QStandardItem();
@@ -251,15 +261,32 @@ void TaskMultiBodyReview::updateTable() {
         m_bodyModel->setItem(row, INSTANCE_COLUMN, instanceItem);
 
         QStandardItem * statusItem = new QStandardItem();
-        statusItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getStatus())), Qt::DisplayRole);
+        std::string status = m_bodyAnnotations[row].getStatus();
+        statusItem->setData(QVariant(QString::fromStdString(status)), Qt::DisplayRole);
         m_bodyModel->setItem(row, STATUS_COLUMN, statusItem);
 
-        tempButton = new QPushButton();
-        tempButton->setText("Set PRT");
-        m_bodyTableView->setIndexWidget(m_bodyModel->index(row , BUTTON_COLUMN), tempButton);
-        connect(tempButton, &QPushButton::clicked, m_bodyTableView, [this, row]() {
-            onRowButton(row);
-        });
+        actionButton = new QPushButton();
+        m_bodyTableView->setIndexWidget(m_bodyModel->index(row , BUTTON_COLUMN), actionButton);
+
+        // adjust button behavior based on current and original status
+        std::string originalStatus = m_originalStatuses[row];
+        if (originalStatus == STATUS_PRT.toStdString()) {
+            // body is originally PRT, no action needed or possible
+            actionButton->setText("Set PRT");
+            actionButton->setDisabled(true);
+        } else if (status == originalStatus) {
+            // has its original status but not already PRT = can set PRT
+            actionButton->setText("Set PRT");
+            connect(actionButton, &QPushButton::clicked, m_bodyTableView, [this, row]() {
+                onRowPRTButton(row);
+            });
+        } else {
+            // it's PRT now, and can be set back to original status
+            actionButton->setText("Revert");
+            connect(actionButton, &QPushButton::clicked, m_bodyTableView, [this, row]() {
+                onRowRevertButton(row);
+            });
+        }
     }
 
     m_bodyTableView->resizeColumnsToContents();
@@ -268,8 +295,8 @@ void TaskMultiBodyReview::updateTable() {
 
 }
 
-// testing
 bool TaskMultiBodyReview::usePrefetching() {
+    // prefetching was causing crashes in this protocol, not sure why
     return false;
 }
 
@@ -283,8 +310,14 @@ void TaskMultiBodyReview::onClickedTable(QModelIndex index) {
     }
 }
 
-void TaskMultiBodyReview::onRowButton(int row) {
+void TaskMultiBodyReview::onRowPRTButton(int row) {
     setPRTStatusForRow(row);
+    loadBodyData();
+    updateTable();
+}
+
+void TaskMultiBodyReview::onRowRevertButton(int row) {
+    setOriginalStatusForRow(row);
     loadBodyData();
     updateTable();
 }
@@ -300,12 +333,20 @@ void TaskMultiBodyReview::onAllPRTButton() {
 void TaskMultiBodyReview::setPRTStatusForRow(int row) {
     ZFlyEmBodyAnnotation ann = m_bodyAnnotations[row];
     if (QString::fromStdString(ann.getStatus()) != STATUS_PRT) {
-        setPRTStatus(m_bodyIDs[row], m_bodyAnnotations[row]);
+        setStatus(m_bodyIDs[row], m_bodyAnnotations[row], STATUS_PRT.toStdString());
     }
 }
 
-void TaskMultiBodyReview::setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann) {
-    ann.setStatus(STATUS_PRT.toStdString());
+void TaskMultiBodyReview::setOriginalStatusForRow(int row) {
+    ZFlyEmBodyAnnotation ann = m_bodyAnnotations[row];
+    std::string originalStatus = m_originalStatuses[row];
+    if (ann.getStatus() != originalStatus) {
+        setStatus(m_bodyIDs[row], m_bodyAnnotations[row], originalStatus);
+    }
+}
+
+void TaskMultiBodyReview::setStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann, std::string status) {
+    ann.setStatus(status);
     ann.setStatusUser(NeutubeConfig::GetUserName());
     m_writer.writeBodyAnnotation(bodyId, ann);
 }

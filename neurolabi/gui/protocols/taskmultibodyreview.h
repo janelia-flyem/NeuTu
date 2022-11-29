@@ -46,7 +46,8 @@ public:
 
 private slots:
     void onClickedTable(QModelIndex index);
-    void onRowButton(int);
+    void onRowPRTButton(int);
+    void onRowRevertButton(int);
     void onAllPRTButton();
 
 private:
@@ -77,14 +78,18 @@ private:
 
     // data stuff
     ZFlyEmBody3dDoc * m_bodyDoc;
+    // these lists are all in the same order
     QList<uint64_t> m_bodyIDs;
     QList<ZFlyEmBodyAnnotation> m_bodyAnnotations;
+    QList<std::string> m_originalStatuses;
+    bool m_originalStatusesLoaded = false;
 
     ZDvidReader m_reader;
     ZDvidWriter m_writer;
 
-    void setPRTStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann);
+    void setStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann, std::string status);
     void setPRTStatusForRow(int row);
+    void setOriginalStatusForRow(int row);
 
     // UI stuff
     QWidget *m_widget;
