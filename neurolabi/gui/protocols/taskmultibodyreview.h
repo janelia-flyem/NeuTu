@@ -15,6 +15,7 @@
 #include <QWidget>
 
 #include "common/neutudefs.h"
+#include "data3d/defs.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "protocols/taskprotocoltask.h"
@@ -22,13 +23,14 @@
 
 class ZFlyEmBody3dDoc;
 
-
 class TaskMultiBodyReview : public TaskProtocolTask
 {
     Q_OBJECT
 
 public:
     TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc);
+
+    using EType = neutu::data3d::EType;
 
     // For use with TaskProtocolTaskFactory.
     static QString taskTypeStatic();
@@ -41,6 +43,7 @@ public:
     bool usePrefetching() override;
 
     virtual void beforeDone() override;
+    virtual void beforeLoading() override;
 
     QWidget * getTaskWidget();
 
@@ -49,6 +52,7 @@ private slots:
     void onRowPRTButton(int);
     void onRowRevertButton(int);
     void onAllPRTButton();
+    void onToggleMeshQuality();
 
 private:
     static const QString KEY_TASKTYPE;
@@ -91,6 +95,12 @@ private:
     void setPRTStatusForRow(int row);
     void setOriginalStatusForRow(int row);
 
+    void applySharedSettings(ZFlyEmBody3dDoc * bodyDoc);
+    void restoreSharedSettings(ZFlyEmBody3dDoc * bodyDoc);
+    void setCoarseMeshes(ZFlyEmBody3dDoc * bodyDoc);
+    void setOriginalMeshes(ZFlyEmBody3dDoc * bodyDoc);
+    void updateDisplay();
+
     // UI stuff
     QWidget *m_widget;
 
@@ -98,7 +108,7 @@ private:
     QStandardItemModel *m_bodyModel;
 
     QPushButton *m_allPRTButton;
-
+    QCheckBox *m_meshCheckbox;
 
 
 };

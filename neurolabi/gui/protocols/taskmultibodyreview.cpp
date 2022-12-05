@@ -22,6 +22,7 @@
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
 #include "zglmutils.h"
+#include "zstackdocproxy.h"
 
 // color table and save/restore mechanism copied from taskmergereview.cpp:
 namespace {
@@ -50,28 +51,15 @@ namespace {
         glm::vec4(128, 128, 128, 255) / 255.0f, // gray
     });
 
-    // we set some values for all TaskMultiBodyReview instances, and restore them
+    // we set some values shared by all TaskMultiBodyReview instances, and restore them
     //  when we're done
+    // note that we start using coarse meshes, then allow the user to toggle in the UI
     static bool applySharedSettingsNeeded = true;
+    static bool useCoarseMeshes = true;
     static int minDsLevel;
     static int maxDsLevel;
 
-    void applySharedSettings(ZFlyEmBody3dDoc* bodyDoc) {
-        if (applySharedSettingsNeeded) {
-            applySharedSettingsNeeded = false;
-            minDsLevel = bodyDoc->getMinDsLevel();
-            maxDsLevel = bodyDoc->getMaxDsLevel();
-            bodyDoc->useCoarseOnly();
-        }
-    }
 
-    void restoreSharedSettings(ZFlyEmBody3dDoc * bodyDoc) {
-        if (!applySharedSettingsNeeded) {
-              applySharedSettingsNeeded = true;
-              bodyDoc->setMinDsLevel(minDsLevel);
-              bodyDoc->setMaxDsLevel(maxDsLevel);
-        }
-    }
 }
 
 
@@ -178,6 +166,10 @@ void TaskMultiBodyReview::beforeDone() {
     restoreSharedSettings(m_bodyDoc);
 }
 
+void TaskMultiBodyReview::beforeLoading() {
+    m_meshCheckbox->setChecked(useCoarseMeshes);
+}
+
 void TaskMultiBodyReview::setupUI() {
     m_widget = new QWidget();
 
@@ -189,18 +181,20 @@ void TaskMultiBodyReview::setupUI() {
     m_bodyModel = new QStandardItemModel(0, 5, m_bodyTableView);
     setTableHeaders(m_bodyModel);
     m_bodyTableView->setModel(m_bodyModel);
+    connect(m_bodyTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
     topLayout->addWidget(m_bodyTableView);
 
     // more buttons
     QHBoxLayout *buttonLayout = new QHBoxLayout(m_widget);
+    m_meshCheckbox = new QCheckBox("Coarse meshes", m_widget);
+    m_meshCheckbox->setChecked(true);
+    connect(m_meshCheckbox, SIGNAL(clicked(bool)), this, SLOT(onToggleMeshQuality()));
+    buttonLayout->addWidget(m_meshCheckbox);
     buttonLayout->addStretch();
     m_allPRTButton = new QPushButton("Set all bodies to PRT", m_widget);
     connect(m_allPRTButton, SIGNAL(clicked(bool)), this, SLOT(onAllPRTButton()));
     buttonLayout->addWidget(m_allPRTButton);
     topLayout->addLayout(buttonLayout);
-
-    // connections
-    connect(m_bodyTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClickedTable(QModelIndex)));
 }
 
 void TaskMultiBodyReview::setupDVID() {
@@ -330,6 +324,22 @@ void TaskMultiBodyReview::onAllPRTButton() {
     updateTable();
 }
 
+void TaskMultiBodyReview::onToggleMeshQuality() {
+    useCoarseMeshes = m_meshCheckbox->isChecked();
+    // can't figure out how to redraw immediately; see updateDisplay() method for notes
+    QMessageBox infoBox;
+    infoBox.setText("Mesh quality changed");
+    infoBox.setInformativeText("Mesh quality change will take place when loading 'Next' or 'Prev' task");
+    infoBox.setStandardButtons(QMessageBox::Ok);
+    infoBox.setIcon(QMessageBox::Warning);
+    infoBox.exec();
+    if (useCoarseMeshes) {
+        setCoarseMeshes(m_bodyDoc);
+    } else {
+        setOriginalMeshes(m_bodyDoc);
+    }
+}
+
 void TaskMultiBodyReview::setPRTStatusForRow(int row) {
     ZFlyEmBodyAnnotation ann = m_bodyAnnotations[row];
     if (QString::fromStdString(ann.getStatus()) != STATUS_PRT) {
@@ -361,4 +371,55 @@ void TaskMultiBodyReview::setTableHeaders(QStandardItemModel * model) {
 
 QWidget * TaskMultiBodyReview::getTaskWidget() {
     return m_widget;
+}
+
+void TaskMultiBodyReview::applySharedSettings(ZFlyEmBody3dDoc* bodyDoc) {
+    if (applySharedSettingsNeeded) {
+        applySharedSettingsNeeded = false;
+        minDsLevel = bodyDoc->getMinDsLevel();
+        maxDsLevel = bodyDoc->getMaxDsLevel();
+        setCoarseMeshes(bodyDoc);
+    }
+}
+
+void TaskMultiBodyReview::restoreSharedSettings(ZFlyEmBody3dDoc * bodyDoc) {
+    if (!applySharedSettingsNeeded) {
+          applySharedSettingsNeeded = true;
+          setOriginalMeshes(bodyDoc);
+    }
+}
+
+void TaskMultiBodyReview::setCoarseMeshes(ZFlyEmBody3dDoc * bodyDoc) {
+    bodyDoc->useCoarseOnly();
+    updateDisplay();
+}
+
+void TaskMultiBodyReview::setOriginalMeshes(ZFlyEmBody3dDoc * bodyDoc) {
+    bodyDoc->setMinDsLevel(minDsLevel);
+    bodyDoc->setMaxDsLevel(maxDsLevel);
+    updateDisplay();
+}
+
+void TaskMultiBodyReview::updateDisplay() {
+    // after I update the mesh quality settings, I want to force the display to update
+    //  with the new mesh level; none of these seems to work for me
+
+    // emit bodiesUpdated();
+
+    // updateBodies(m_visibleBodies, m_selectedBodies);
+
+    // QSet<uint64_t> tempVisible(m_visibleBodies);
+    // QSet<uint64_t> tempSelected(m_selectedBodies);
+    // QSet<uint64_t> empty;
+    // updateBodies(empty, empty);
+    // updateBodies(tempVisible, tempSelected);
+
+    // bodyDoc->processObjectModified(ZStackObject::EType::MESH);
+
+    // QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(bodyDoc);
+    // for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+    //     ZMesh *mesh = *itMesh;
+    //     bodyDoc->bufferObjectModified(mesh, ZStackObjectInfo::STATE_MODIFIED);
+    // }
+    // bodyDoc->processObjectModified();
 }
