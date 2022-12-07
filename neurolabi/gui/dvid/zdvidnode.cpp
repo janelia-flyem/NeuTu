@@ -322,9 +322,14 @@ void ZDvidNode::setMappedUuid(
 
 bool ZDvidNode::IsValidDvidUuid(const std::string &uuid)
 {
-  std::regex reg("^[0-9a-fA-F]+(:[^\\s]+)?$");
+    // DVID UUID can be:
+    // hash = some number of hexadecimal digits
+    // hash:branch = hash plus colon plus string branch name
+    // :branch = no hash, just colon plus string branch name (added most recently, second regex)
 
-  return std::regex_match(uuid, reg);
+    std::regex reg1("^[0-9a-fA-F]+(:[^\\s]+)?$");
+    std::regex reg2("^:[^\\s]+$");
+    return std::regex_match(uuid, reg1) || std::regex_match(uuid, reg2);
 }
 
 bool ZDvidNode::IsMasterUuid(const std::string &uuid)
