@@ -10,6 +10,8 @@ ZFlyEmTodoAnnotationDialog::ZFlyEmTodoAnnotationDialog(QWidget *parent) :
 {
   ui->setupUi(this);
   initActionBox();
+  initCheckedCombo();
+
 }
 
 ZFlyEmTodoAnnotationDialog::~ZFlyEmTodoAnnotationDialog()
@@ -38,40 +40,28 @@ void ZFlyEmTodoAnnotationDialog::initActionBox()
           this, SLOT(updateWidget()));
 }
 
+void ZFlyEmTodoAnnotationDialog::initCheckedCombo() {
+    // this is a little clunky, but we expect this will change never or rarely
+    ui->checkedComboBox->addItem(ZFlyEmToDoItem::TODO_STATE_CHECKED);
+    ui->checkedComboBox->addItem(ZFlyEmToDoItem::TODO_STATE_CHECKED_WONT_DO);
+    ui->checkedComboBox->addItem(ZFlyEmToDoItem::TODO_STATE_UNCHECKED);
+}
+
 void ZFlyEmTodoAnnotationDialog::updateWidget()
 {
   if (ui->actionComboBox->currentText() == ZFlyEmToDoItem::ACTION_NO_SOMA) {
-    ui->checkedCheckBox->setChecked(true);
+    ui->checkedComboBox->setCurrentText(ZFlyEmToDoItem::TODO_STATE_CHECKED);
   } else {
-    ui->checkedCheckBox->setChecked(m_bufferChecked);
+    ui->checkedComboBox->setCurrentText(QString::fromStdString(m_bufferCheckedString));
   }
 }
 
 void ZFlyEmTodoAnnotationDialog::init(const ZFlyEmToDoItem &item)
 {
   ui->priorityComboBox->setCurrentText(item.getPriorityName().c_str());
-  /*
-  switch (item.getPriority()) {
-  case 0:
-    ui->priorityComboBox->setCurrentIndex(3);
-    break;
-  case 1:
-  case 2:
-  case 3:
-    ui->priorityComboBox->setCurrentIndex(0);
-    break;
-  case 4:
-  case 5:
-    ui->priorityComboBox->setCurrentIndex(1);
-    break;
-  default:
-    ui->priorityComboBox->setCurrentIndex(2);
-    break;
-  }
-  */
 
-  ui->checkedCheckBox->setChecked(item.isChecked());
-  m_bufferChecked = item.isChecked();
+  ui->checkedComboBox->setCurrentText(QString::fromStdString(item.getChecked()));
+  m_bufferCheckedString = item.getChecked();
 
   int index = neutu::EnumValue(item.getAction());
   Q_ASSERT(index < ui->actionComboBox->maxCount());
@@ -101,7 +91,7 @@ void ZFlyEmTodoAnnotationDialog::annotate(ZFlyEmToDoItem *item)
 {
   if (item != NULL) {
     item->setAction(ui->actionComboBox->currentText().toStdString());
-    item->setChecked(ui->checkedCheckBox->isChecked());
+    item->setChecked(ui->checkedComboBox->currentText().toStdString());
     item->setPriority(getPriority());
     item->setComment(getComment().toStdString());
   }

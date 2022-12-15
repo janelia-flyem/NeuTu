@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-class ZFlyEmToDoItem;
+#include "flyem/zflyemtodoitem.h"
 
 namespace Ui {
 class ZFlyEmTodoAnnotationDialog;
@@ -22,6 +22,7 @@ public:
 
 private:
   void initActionBox();
+  void initCheckedCombo();
   int getPriority() const;
   QString getComment() const;
 
@@ -30,7 +31,7 @@ private slots:
 
 private:
   Ui::ZFlyEmTodoAnnotationDialog *ui;
-  bool m_bufferChecked = false;
+  std::string m_bufferCheckedString = ZFlyEmToDoItem::TODO_STATE_UNCHECKED;
 };
 
 #endif // ZFLYEMTODOANNOTATIONDIALOG_H

@@ -37,6 +37,9 @@ const char* ZFlyEmToDoItem::ACTION_SEGMENTATION_DIAGNOSTIC_TAG =
     "segmentation_diagnostic";
 const char* ZFlyEmToDoItem::ACTION_TIP_DETECTOR = "tip detector";
 const char* ZFlyEmToDoItem::ACTION_TIP_DETECTOR_TAG = "tip_detector";
+const char * ZFlyEmToDoItem::TODO_STATE_CHECKED = "checked";
+const char * ZFlyEmToDoItem::TODO_STATE_UNCHECKED = "unchecked";
+const char * ZFlyEmToDoItem::TODO_STATE_CHECKED_WONT_DO = "checked-won't do";
 
 const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_GENERAL, neutu::EToDoAction::TO_DO},
@@ -623,8 +626,11 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle option,
 
 bool ZFlyEmToDoItem::isChecked() const
 {
+   // we switched from boolean (stored as "0" and "1") to an enum (with longer strings) but support both
   if (m_propertyJson.hasKey("checked")) {
-    return std::string(ZJsonParser::stringValue(m_propertyJson["checked"])) == "1";
+    std::string checkedStr = std::string(ZJsonParser::stringValue(m_propertyJson["checked"]));
+    return (checkedStr == "1" || checkedStr == TODO_STATE_CHECKED ||
+        checkedStr == TODO_STATE_CHECKED_WONT_DO);
   }
 
   return false;
@@ -687,13 +693,36 @@ bool ZFlyEmToDoItem::isCheckable() const
 
 void ZFlyEmToDoItem::setChecked(bool checked)
 {
-  std::string checkedStr = "0";
+  // we switched from boolean (stored as "0" and "1") to an enum (with longer strings) but support both
+  // note you can only set state CHECKED_WONT_DO using the other setChecked() method
+  std::string checkedStr = TODO_STATE_UNCHECKED;
   if (checked) {
-    checkedStr = "1";
+    checkedStr = TODO_STATE_CHECKED;
   }
   m_propertyJson.setEntry("checked", checkedStr);
-
   syncActionTag();
+}
+
+void ZFlyEmToDoItem::setChecked(std::string state) {
+    // this is a little risky, as I don't check that the state matches a known constant;
+    //  but it is expected to be called from UI code that restricts the input values
+    m_propertyJson.setEntry("checked", state);
+    syncActionTag();
+}
+
+std::string ZFlyEmToDoItem::getChecked() const {
+    if (m_propertyJson.hasKey("checked")) {
+        std::string checkedString = ZJsonParser::stringValue(m_propertyJson["checked"]);
+        // support old "0", "1" as well as full strings
+        if (checkedString == "0") {
+            return TODO_STATE_UNCHECKED;
+        } else if (checkedString == "1") {
+            return TODO_STATE_CHECKED;
+        } else {
+        return checkedString;
+        }
+    }
+    return "";
 }
 
 std::string ZFlyEmToDoItem::GetPriorityName(int p)

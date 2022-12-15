@@ -42,6 +42,8 @@ public:
 
   bool isChecked() const;
   void setChecked(bool checked);
+  void setChecked(std::string state);
+  std::string getChecked() const;
   int getPriority() const;
   std::string getPriorityName() const;
 
@@ -95,6 +97,9 @@ public:
   static const char *ACTION_TRACE_TO_SOMA_TAG;
   static const char *ACTION_NO_SOMA_TAG;
   static const char *ACTION_DIAGNOSTIC_TAG;
+  static const char *TODO_STATE_CHECKED;
+  static const char *TODO_STATE_UNCHECKED;
+  static const char *TODO_STATE_CHECKED_WONT_DO;
 
   static const std::map<std::string, neutu::EToDoAction> m_actionMap;
 
