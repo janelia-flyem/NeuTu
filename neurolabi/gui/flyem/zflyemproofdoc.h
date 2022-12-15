@@ -432,6 +432,7 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
+  void checkTodoItem(std::string state);
   void setTodoItemAction(neutu::EToDoAction action);
   void setTodoItemAction(neutu::EToDoAction action, bool checked);
   void annotateTodoItem(std::function<void(ZFlyEmToDoItem&)> process,

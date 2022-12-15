@@ -30,6 +30,7 @@
 #include "neutubeconfig.h"
 //#include "dvid/zdvidlabelslice.h"
 #include "zflyemtododelegate.h"
+#include "zflyemtodoitem.h"
 #include "zflyemproofdocutil.h"
 #include "flyemdatareader.h"
 
@@ -964,6 +965,10 @@ void ZFlyEmProofPresenter::removeTodoItem()
 void ZFlyEmProofPresenter::checkTodoItem()
 {
   getCompleteDocument()->checkTodoItem(true);
+}
+
+void ZFlyEmProofPresenter::checkWontfixTodoItem() {
+    getCompleteDocument()->checkTodoItem(ZFlyEmToDoItem::TODO_STATE_CHECKED_WONTFIX);
 }
 
 void ZFlyEmProofPresenter::uncheckTodoItem()

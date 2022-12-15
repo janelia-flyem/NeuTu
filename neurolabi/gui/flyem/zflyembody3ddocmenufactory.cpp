@@ -28,27 +28,6 @@ QMenu* ZFlyEmBody3dDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *men
 //    menu = ZStackDocMenuFactory::makeContextMenu(window, menu);
     ZMenuConfig config = getConfig(doc, window->getBodyEnv());
     menu = ZMenuFactory::MakeMenu(config, window, menu);
-#if 0
-    QList<ZActionFactory::EAction> actionList;
-    if (doc->hasTodoItemSelected()) {
-      actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
-      actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
-      actionList.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL);
-      actionList.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT);
-    }
-
-    if (doc->hasSelectedPuncta()) {
-      actionList.append(ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR);
-      actionList.append(ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED);
-      actionList.append(ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED);
-    }
-
-//    if (doc->getSelectedBodyCount() == 1) {
-
-//    }
-
-    addAction(actionList, window, menu);
-#endif
   }
 
   return menu;
@@ -209,6 +188,7 @@ ZMenuConfig ZFlyEmBody3dDocMenuFactory::getConfig(
     if (doc->hasTodoItemSelected()) {
       if (isMutable) {
         config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
+        config.append(ZActionFactory::ACTION_CHECK_WONTFIX_TODO_ITEM);
         config.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
         config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL);
         config.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT);

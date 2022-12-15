@@ -43,7 +43,7 @@ void ZFlyEmTodoAnnotationDialog::initActionBox()
 void ZFlyEmTodoAnnotationDialog::initCheckedCombo() {
     // this is a little clunky, but we expect this will change never or rarely
     ui->checkedComboBox->addItem(ZFlyEmToDoItem::TODO_STATE_CHECKED);
-    ui->checkedComboBox->addItem(ZFlyEmToDoItem::TODO_STATE_CHECKED_WONT_DO);
+    ui->checkedComboBox->addItem(ZFlyEmToDoItem::TODO_STATE_CHECKED_WONTFIX);
     ui->checkedComboBox->addItem(ZFlyEmToDoItem::TODO_STATE_UNCHECKED);
 }
 

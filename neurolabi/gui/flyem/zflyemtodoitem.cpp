@@ -41,7 +41,7 @@ const char * ZFlyEmToDoItem::TODO_STATE_CHECKED = "checked";
 const char * ZFlyEmToDoItem::TODO_STATE_UNCHECKED = "unchecked";
 // after Slack discussion (https://flyem2pt0.slack.com/archives/C15S8GGVD/p1671119229175209) we
 //    decided to mangle the English language in this way:
-const char * ZFlyEmToDoItem::TODO_STATE_CHECKED_WONT_DO = "checked--wontfix";
+const char * ZFlyEmToDoItem::TODO_STATE_CHECKED_WONTFIX = "checked--wontfix";
 
 const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_GENERAL, neutu::EToDoAction::TO_DO},
@@ -632,7 +632,7 @@ bool ZFlyEmToDoItem::isChecked() const
   if (m_propertyJson.hasKey("checked")) {
     std::string checkedStr = std::string(ZJsonParser::stringValue(m_propertyJson["checked"]));
     return (checkedStr == "1" || checkedStr == TODO_STATE_CHECKED ||
-        checkedStr == TODO_STATE_CHECKED_WONT_DO);
+        checkedStr == TODO_STATE_CHECKED_WONTFIX);
   }
 
   return false;
@@ -709,6 +709,12 @@ void ZFlyEmToDoItem::setChecked(std::string state) {
     // this is a little risky, as I don't check that the state matches a known constant;
     //  but it is expected to be called from UI code that restricts the input values
     m_propertyJson.setEntry("checked", state);
+    syncActionTag();
+}
+
+void ZFlyEmToDoItem::setCheckedWontfix() {
+    // convenience, so I don't have to include this enum distantly
+    m_propertyJson.setEntry("checked", TODO_STATE_CHECKED_WONTFIX);
     syncActionTag();
 }
 

@@ -43,6 +43,7 @@ public:
   bool isChecked() const;
   void setChecked(bool checked);
   void setChecked(std::string state);
+  void setCheckedWontfix();
   std::string getChecked() const;
   int getPriority() const;
   std::string getPriorityName() const;
@@ -99,7 +100,7 @@ public:
   static const char *ACTION_DIAGNOSTIC_TAG;
   static const char *TODO_STATE_CHECKED;
   static const char *TODO_STATE_UNCHECKED;
-  static const char *TODO_STATE_CHECKED_WONT_DO;
+  static const char *TODO_STATE_CHECKED_WONTFIX;
 
   static const std::map<std::string, neutu::EToDoAction> m_actionMap;
 

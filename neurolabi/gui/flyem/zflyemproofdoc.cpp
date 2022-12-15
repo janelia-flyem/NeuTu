@@ -3008,6 +3008,17 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
   );
 }
 
+void ZFlyEmProofDoc::checkTodoItem(std::string state) {
+    KINFO(neutu::TOPIC_NULL) << "Check to do items";
+
+    annotateTodoItem(
+          [state](ZFlyEmToDoItem &item) {
+                item.setChecked(state);},
+          [state](const ZFlyEmToDoItem &item) -> bool {
+                return state != item.getChecked(); }
+    );
+}
+
 void ZFlyEmProofDoc::setTodoItemAction(neutu::EToDoAction action, bool checked)
 {
   KINFO(neutu::TOPIC_NULL) << "Set action of to do items";

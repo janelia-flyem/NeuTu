@@ -152,6 +152,7 @@ public slots:
   void tryAddSegmentationDiagnosticItem();
   void removeTodoItem();
   void checkTodoItem();
+  void checkWontfixTodoItem();
   void uncheckTodoItem();
   void setTodoItemToNormal();
   void setTodoItemIrrelevant();

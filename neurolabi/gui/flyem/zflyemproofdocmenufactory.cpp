@@ -258,6 +258,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
       config.append(ZActionFactory::ACTION_SEPARATOR);
       if (doc->hasTodoItemSelected()) {
         config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
+        config.append(ZActionFactory::ACTION_CHECK_WONTFIX_TODO_ITEM);
         config.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
         config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
       }
