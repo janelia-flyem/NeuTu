@@ -39,7 +39,9 @@ const char* ZFlyEmToDoItem::ACTION_TIP_DETECTOR = "tip detector";
 const char* ZFlyEmToDoItem::ACTION_TIP_DETECTOR_TAG = "tip_detector";
 const char * ZFlyEmToDoItem::TODO_STATE_CHECKED = "checked";
 const char * ZFlyEmToDoItem::TODO_STATE_UNCHECKED = "unchecked";
-const char * ZFlyEmToDoItem::TODO_STATE_CHECKED_WONT_DO = "checked-won't do";
+// after Slack discussion (https://flyem2pt0.slack.com/archives/C15S8GGVD/p1671119229175209) we
+//    decided to mangle the English language in this way:
+const char * ZFlyEmToDoItem::TODO_STATE_CHECKED_WONT_DO = "checked--wontfix";
 
 const std::map<std::string, neutu::EToDoAction> ZFlyEmToDoItem::m_actionMap ={
   {ZFlyEmToDoItem::ACTION_GENERAL, neutu::EToDoAction::TO_DO},
