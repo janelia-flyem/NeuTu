@@ -299,6 +299,11 @@ bool ZDvidVersionDag::isAncester(
     std::getline(stream, targetBranch, ':');
     std::getline(stream, targetBranch, ':');
 
+    // the master branch is implicit, stored as empty string in DVID
+    if (targetBranch == "master") {
+        targetBranch = "";
+    }
+
     ZTreeIterator<ZDvidVersionNode> iter0(m_data->m_tree);
     while (iter0.hasNext()) {
         ZTreeNode<ZDvidVersionNode> *tn = iter0.nextNode();
