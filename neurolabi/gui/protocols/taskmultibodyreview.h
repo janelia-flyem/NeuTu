@@ -52,6 +52,7 @@ private slots:
     void onRowPRTButton(int);
     void onRowRevertButton(int);
     void onAllPRTButton();
+    void onRefreshButton();
     void onToggleMeshQuality();
 
 private:
@@ -107,7 +108,6 @@ private:
     QTableView *m_bodyTableView;
     QStandardItemModel *m_bodyModel;
 
-    QPushButton *m_allPRTButton;
     QCheckBox *m_meshCheckbox;
 
 

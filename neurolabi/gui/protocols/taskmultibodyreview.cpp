@@ -24,11 +24,14 @@
 #include "zglmutils.h"
 #include "zstackdocproxy.h"
 
-// color table and save/restore mechanism copied from taskmergereview.cpp:
+// save/restore mechanism copied from taskmergereview.c
 namespace {
     // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
+    // these colors are used in the cleave protocol as well, so they are familiar in this 
+    //   order; omitting white as (a) it disappears in the table view, and (b) cleave
+    //   protocol reserves it for other uses
     static const std::vector<glm::vec4> INDEX_COLORS({
-        glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
+        // glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
         glm::vec4(230,  25,  75, 255) / 255.0f, // red
         glm::vec4(255, 225,  25, 255) / 255.0f, // yellow
         glm::vec4(  0, 130, 200, 255) / 255.0f, // blue
@@ -58,10 +61,7 @@ namespace {
     static bool useCoarseMeshes = true;
     static int minDsLevel;
     static int maxDsLevel;
-
-
 }
-
 
 TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)
 {
@@ -191,9 +191,13 @@ void TaskMultiBodyReview::setupUI() {
     connect(m_meshCheckbox, SIGNAL(clicked(bool)), this, SLOT(onToggleMeshQuality()));
     buttonLayout->addWidget(m_meshCheckbox);
     buttonLayout->addStretch();
-    m_allPRTButton = new QPushButton("Set all bodies to PRT", m_widget);
-    connect(m_allPRTButton, SIGNAL(clicked(bool)), this, SLOT(onAllPRTButton()));
-    buttonLayout->addWidget(m_allPRTButton);
+    QPushButton * refreshButton = new QPushButton("Refresh", m_widget);
+    connect(refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
+    buttonLayout->addWidget(refreshButton);
+    buttonLayout->addStretch();
+    QPushButton * allPRTButton = new QPushButton("Set all bodies to PRT", m_widget);
+    connect(allPRTButton, SIGNAL(clicked(bool)), this, SLOT(onAllPRTButton()));
+    buttonLayout->addWidget(allPRTButton);
     topLayout->addLayout(buttonLayout);
 }
 
@@ -244,6 +248,18 @@ void TaskMultiBodyReview::updateTable() {
     for (int row=0; row<m_bodyIDs.size(); row++) {
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(QString::number(m_bodyIDs[row])), Qt::DisplayRole);
+
+        // adjust color swatch; rows are in body ID order, as are colors; also, try to respect
+        //  current opacity
+        float opacity = 1.0;
+        if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+            if (Z3DMeshFilter *filter = dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
+                opacity = filter->opacity();
+            }
+        }
+        QColor swatchColor = QColor(255 * INDEX_COLORS[row][0], 255 * INDEX_COLORS[row][1],
+            255 * INDEX_COLORS[row][2], 255 * opacity * INDEX_COLORS[row][3]);
+        bodyIDItem->setData(swatchColor, Qt::DecorationRole);
         m_bodyModel->setItem(row, BODYID_COLUMN, bodyIDItem);
 
         QStandardItem * cellTypeItem = new QStandardItem();
@@ -312,6 +328,11 @@ void TaskMultiBodyReview::onRowPRTButton(int row) {
 
 void TaskMultiBodyReview::onRowRevertButton(int row) {
     setOriginalStatusForRow(row);
+    loadBodyData();
+    updateTable();
+}
+
+void TaskMultiBodyReview::onRefreshButton() {
     loadBodyData();
     updateTable();
 }
