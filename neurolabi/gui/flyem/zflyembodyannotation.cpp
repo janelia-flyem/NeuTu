@@ -968,6 +968,7 @@ void ZFlyEmBodyAnnotation::SetComment(
   }
 }
 
+// deprecated; DVID tracks this info by other means now; do not use
 void ZFlyEmBodyAnnotation::SetLastModifiedBy(
     ZJsonObject &obj, const std::string &user)
 {
@@ -988,8 +989,6 @@ void ZFlyEmBodyAnnotation::UpdateUserFields(
   if (!newUser.empty()) {
     ZFlyEmBodyAnnotation::SetUser(obj, newUser);
   }
-
-  ZFlyEmBodyAnnotation::SetLastModifiedBy(obj, user);
 
   std::string status = ZFlyEmBodyAnnotation::GetStatus(obj);
   if (status != ZFlyEmBodyAnnotation::GetStatus(oldObj)) {
