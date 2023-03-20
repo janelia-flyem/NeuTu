@@ -2,6 +2,7 @@
 
 #include "logging/zqslog.h"
 #include "protocoltaskconfig.h"
+#include "dvid/zdvidreader.h"
 
 /*
  * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; you
@@ -62,6 +63,38 @@ const QSet<uint64_t> & TaskProtocolTask::visibleBodies() {
 
 const QSet<uint64_t> & TaskProtocolTask::selectedBodies() {
     return m_selectedBodies;
+}
+
+void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
+                                    const QSet<uint64_t> &selected)
+{
+  m_visibleBodies = visible;
+  m_selectedBodies = selected;
+  emit bodiesUpdated();
+}
+
+void TaskProtocolTask::validateBodies(ZDvidReader reader) {
+    // if a body on the visible or selected list doesn't exist, it'll cause issues during
+    //  mesh loading
+    // note we do NOT call updatedBodies() because we don't want the signal it emits
+    QSet<uint64_t> dontExist;
+    if (m_visibleBodies.size() > 0) {
+        for (uint64_t id: m_visibleBodies) {
+            if (!reader.hasBody(id)) {
+                dontExist << id;
+            }
+        }
+        m_visibleBodies -= dontExist;
+    }
+    dontExist.clear();
+    if (m_selectedBodies.size() > 0) {
+        for (uint64_t id: m_selectedBodies) {
+            if (!reader.hasBody(id)) {
+                dontExist << id;
+            }
+        }
+        m_selectedBodies -= dontExist;
+    }
 }
 
 void TaskProtocolTask::setCompleted(bool completed)
@@ -313,14 +346,6 @@ QString TaskProtocolTask::objectToString(QJsonObject json) {
     QJsonDocument doc(json);
     QString jsonString(doc.toJson(QJsonDocument::Compact));
     return jsonString;
-}
-
-void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
-                                    const QSet<uint64_t> &selected)
-{
-  m_visibleBodies = visible;
-  m_selectedBodies = selected;
-  emit bodiesUpdated();
 }
 
 void TaskProtocolTask::allowNextPrev(bool allow)

@@ -5,6 +5,7 @@
 #include <QThread>
 
 #include "dvid/zdvidwriter.h"
+#include "dvid/zdvidreader.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
@@ -137,6 +138,7 @@ private:
     ZFlyEmProofDoc * m_proofDoc = nullptr;
     ZFlyEmBody3dDoc * m_body3dDoc = nullptr;
     ZDvidWriter m_writer;
+    ZDvidReader m_reader;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex = -1;
     bool m_changingTask = false;

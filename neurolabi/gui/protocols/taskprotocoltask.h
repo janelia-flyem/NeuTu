@@ -9,6 +9,7 @@
 
 class ProtocolTaskConfig;
 class QMenu;
+class ZDvidReader;
 class ZWidgetMessage;
 
 class TaskProtocolTask: public QObject
@@ -27,6 +28,7 @@ public:
     void setCompleted(bool completed);
     const QSet<uint64_t> & visibleBodies();
     const QSet<uint64_t> & selectedBodies();
+    void validateBodies(ZDvidReader reader);
 
     //#Review-TZ: it might better to replace beforeNext and beforePrev with
     // one function: onUnloaded or beforeUnloaded. If we do need to distinguish

@@ -155,23 +155,20 @@ const QString TaskProtocolWindow::TAG_NEEDS_REVIEW = "needs review";
 void TaskProtocolWindow::init() {
     // start to do stuff
     if (!m_writer.open(m_proofDoc->getDvidTarget())) {
-        showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
+        showError("Couldn't open DVID", "DVID couldn't be opened for writing!  Check your network connections.");
         setWindowConfiguration(LOAD_BUTTON);
         return;
     }
 
-    const ZDvidReader &reader = m_writer.getDvidReader();
-    /*
-    if (!reader.open(m_proofDoc->getDvidTarget())) {
-        showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
+    if (!m_reader.open(m_proofDoc->getDvidTarget())) {
+        showError("Couldn't open DVID", "DVID couldn't be opened for reading!  Check your network connections.");
         setWindowConfiguration(LOAD_BUTTON);
         return;
     }
-    */
 
 //    dvid::ENodeStatus status = reader.getNodeStatus();
     dvid::ENodeStatus status =
-        ZDvidGlobal::Memo::ReadNodeStatus(reader.getDvidTarget());
+        ZDvidGlobal::Memo::ReadNodeStatus(m_reader.getDvidTarget());
     if (status == dvid::ENodeStatus::INVALID || status == dvid::ENodeStatus::OFFLINE) {
         showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
         setWindowConfiguration(LOAD_BUTTON);
@@ -920,6 +917,10 @@ void TaskProtocolWindow::updateMenu(bool add) {
 void TaskProtocolWindow::updateBodyWindow(int taskIdBodiesToRemove) {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
+        // if a body in the visible or selected list doesn't exist, it'll cause 
+        //  problems with the protocol
+        m_taskList[m_currentTaskIndex]->validateBodies(m_reader);
+
         m_taskList[m_currentTaskIndex]->beforeLoading();
 
         QSet<uint64_t> toRemove;
@@ -1183,16 +1184,15 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
  */
 QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) {
     QJsonObject emptyResult;
-    ZDvidReader reader;
-    if (!reader.open(m_proofDoc->getDvidTarget())) { //#Review-TZ: Consider using a shared reader
+    if (!m_reader.open(m_proofDoc->getDvidTarget())) {
         return emptyResult;
     }
-    if (!reader.hasKey(instance, key)) {
+    if (!m_reader.hasKey(instance, key)) {
         return emptyResult;
     }
 
     // we got something!  reel it in...
-    QByteArray data = reader.readKeyValue(instance, key);
+    QByteArray data = m_reader.readKeyValue(instance, key);
     QJsonDocument doc = QJsonDocument::fromJson(data);
         if (doc.isNull() or !doc.isObject()) {
             showError("Error parsing JSON", "Couldn't parse JSON from " + instance +
@@ -1367,13 +1367,12 @@ bool TaskProtocolWindow::checkCreateDataInstance() {
     }
 
     // m_protocolInstanceStatus = UNCHECKED:
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_proofDoc->getDvidTarget())) {
-        if (!reader.hasData(PROTOCOL_INSTANCE.toStdString())) {
+    m_reader.setVerbose(false);
+    if (m_reader.open(m_proofDoc->getDvidTarget())) {
+        if (!m_reader.hasData(PROTOCOL_INSTANCE.toStdString())) {
             m_writer.createKeyvalue(PROTOCOL_INSTANCE.toStdString());
             // did it actually create?  I'm only going to try once
-            if (reader.hasData(PROTOCOL_INSTANCE.toStdString())) {
+            if (m_reader.hasData(PROTOCOL_INSTANCE.toStdString())) {
                 m_protocolInstanceStatus = CHECKED_PRESENT;
                 return true;
             } else {
