@@ -164,6 +164,19 @@ void TaskMultiBodyReview::onLoaded() {
 
 void TaskMultiBodyReview::beforeDone() {
     restoreSharedSettings(m_bodyDoc);
+
+    // need to reset the colors on the filter, because otherwise it'll hold
+    // onto a body list that will soon disappear
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+        if (Z3DMeshFilter *filter = dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
+            filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
+                // return index for first color; in practice, color is never used,
+                //  but this function *will* be called
+                return 0;
+            });
+        }
+    }
+
 }
 
 void TaskMultiBodyReview::beforeLoading() {
