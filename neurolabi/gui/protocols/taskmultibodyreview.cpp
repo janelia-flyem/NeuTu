@@ -28,10 +28,10 @@
 namespace {
     // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
     // these colors are used in the cleave protocol as well, so they are familiar in this 
-    //   order; omitting white as (a) it disappears in the table view, and (b) cleave
-    //   protocol reserves it for other uses
+    //   order; moved white to the end as (a) it disappears in the table view, and (b) cleave
+    //   protocol reserves it for other uses, but (c) I want to restore it when we're done,
+    //   as it's neu3's default mesh color
     static const std::vector<glm::vec4> INDEX_COLORS({
-        // glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
         glm::vec4(230,  25,  75, 255) / 255.0f, // red
         glm::vec4(255, 225,  25, 255) / 255.0f, // yellow
         glm::vec4(  0, 130, 200, 255) / 255.0f, // blue
@@ -52,6 +52,7 @@ namespace {
         glm::vec4(255, 215, 180, 255) / 255.0f, // coral
         glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
         glm::vec4(128, 128, 128, 255) / 255.0f, // gray
+        glm::vec4(255, 255, 255, 255) / 255.0f, // white (default neu3 mesh color)
     });
 
     // we set some values shared by all TaskMultiBodyReview instances, and restore them
@@ -170,9 +171,9 @@ void TaskMultiBodyReview::beforeDone() {
     if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
         if (Z3DMeshFilter *filter = dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
             filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
-                // return index for first color; in practice, color is never used,
-                //  but this function *will* be called
-                return 0;
+                // return index for white from the table; this is neu3's
+                // default mesh color
+                return 20;
             });
         }
     }
