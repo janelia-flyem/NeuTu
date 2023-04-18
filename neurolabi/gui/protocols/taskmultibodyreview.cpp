@@ -278,15 +278,18 @@ void TaskMultiBodyReview::updateTable() {
 
         QStandardItem * cellTypeItem = new QStandardItem();
         cellTypeItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getType())), Qt::DisplayRole);
+        cellTypeItem->setToolTip(QString::fromStdString(m_bodyAnnotations[row].getType()));
         m_bodyModel->setItem(row, CELL_TYPE_COLUMN, cellTypeItem);
 
         QStandardItem * instanceItem = new QStandardItem();
         instanceItem->setData(QVariant(QString::fromStdString(m_bodyAnnotations[row].getInstance())), Qt::DisplayRole);
+        instanceItem->setToolTip(QString::fromStdString(m_bodyAnnotations[row].getInstance()));
         m_bodyModel->setItem(row, INSTANCE_COLUMN, instanceItem);
 
         QStandardItem * statusItem = new QStandardItem();
         std::string status = m_bodyAnnotations[row].getStatus();
         statusItem->setData(QVariant(QString::fromStdString(status)), Qt::DisplayRole);
+        statusItem->setToolTip(QString::fromStdString(status));
         m_bodyModel->setItem(row, STATUS_COLUMN, statusItem);
 
         actionButton = new QPushButton();
