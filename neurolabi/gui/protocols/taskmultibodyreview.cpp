@@ -262,6 +262,13 @@ void TaskMultiBodyReview::updateTable() {
     for (int row=0; row<m_bodyIDs.size(); row++) {
         QStandardItem * bodyIDItem = new QStandardItem();
         bodyIDItem->setData(QVariant(QString::number(m_bodyIDs[row])), Qt::DisplayRole);
+        if (!m_tags.isEmpty()) {
+            QStringList tagList;
+            for (QString s: m_tags) {
+                tagList << s;
+            }
+            bodyIDItem->setToolTip(tagList.join(","));
+        }
 
         // adjust color swatch; rows are in body ID order, as are colors; also, try to respect
         //  current opacity
