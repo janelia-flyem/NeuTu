@@ -3,6 +3,7 @@
 #include "logging/zqslog.h"
 #include "protocoltaskconfig.h"
 #include "dvid/zdvidreader.h"
+#include "flyem/zflyembodymanager.h"
 
 /*
  * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; you
@@ -80,6 +81,8 @@ void TaskProtocolTask::validateBodies(ZDvidReader reader) {
     QSet<uint64_t> dontExist;
     if (m_visibleBodies.size() > 0) {
         for (uint64_t id: m_visibleBodies) {
+            // could be encoded id (eg, for cleaving)
+            id = ZFlyEmBodyManager::Decode(id);
             if (!reader.hasBody(id)) {
                 dontExist << id;
             }
@@ -89,6 +92,8 @@ void TaskProtocolTask::validateBodies(ZDvidReader reader) {
     dontExist.clear();
     if (m_selectedBodies.size() > 0) {
         for (uint64_t id: m_selectedBodies) {
+            // could be encoded id (eg, for cleaving)
+            id = ZFlyEmBodyManager::Decode(id);
             if (!reader.hasBody(id)) {
                 dontExist << id;
             }
