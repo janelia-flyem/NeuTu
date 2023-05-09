@@ -119,28 +119,35 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
   if (!isChecked()) {
     switch (getAction()) {
     case neutu::EToDoAction::TO_DO:
+      // red
       color.setRgb(255, 0, 0, 192);
       break;
     case neutu::EToDoAction::TO_MERGE:
+      // yellow-orange
       color.setRgb(255, 164, 0, 192);
       break;
     case neutu::EToDoAction::TO_SPLIT:
+      // lighter purple
       color.setRgb(200, 0, 255, 192);
       break;
     case neutu::EToDoAction::TO_SUPERVOXEL_SPLIT:
+      // pink
       color.setRgb(255, 80, 164, 192);
       break;
     case neutu::EToDoAction::TO_DO_IRRELEVANT:
       color.setRgb(Qt::gray);
       break;
     case neutu::EToDoAction::TO_TRACE_TO_SOMA:
+      // brown
       color.setRgb(160, 80, 0, 192);
       break;
     case neutu::EToDoAction::DIAGNOSTIC:
     case neutu::EToDoAction::SEGMENTATION_DIAGNOSIC:
+      // darker purple
       color.setRgb(128, 0, 128, 192);
       break;
     case neutu::EToDoAction::TIP_DETECTOR:
+      // salmon
       color.setRgb(255, 128, 128, 192);
       break;
     case neutu::EToDoAction::NO_SOMA:
