@@ -149,11 +149,16 @@ void ZParameterDialog::configure(const ZJsonObject &config)
   updateGeneration();
 }
 
-void ZParameterDialog::setLabel(const QString &label)
+void ZParameterDialog::setLabel(const QString &label, const QString &tooltip)
 {
   if (m_label) {
     m_label->setText(label);
     m_label->setVisible(!label.isEmpty());
+    if (!tooltip.isEmpty()) {
+        m_label->setToolTip(tooltip);
+    } else {
+        m_label->setToolTip("");
+    }
   } else {
     ZWARN(neutu::TOPIC_NULL) << "Cannot set uninitialized label.";
   }

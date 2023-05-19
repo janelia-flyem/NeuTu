@@ -59,7 +59,7 @@ public:
 
   void resetValues();
 
-  void setLabel(const QString &label);
+  void setLabel(const QString &label, const QString &tooltip="");
 
   void addAuxWidget(QWidget *widget);
 

@@ -6045,7 +6045,7 @@ ZJsonObject ZDvidReader::readBodyAnnotationJson(uint64_t bodyId) const
   ZDvidUrl url(getDvidTarget());
 
   return readJsonObject(
-        with_source_query(url.getBodyAnnotationUrl(bodyId)).c_str());
+       with_source_query(ZDvidUrl::AppendQuery(url.getBodyAnnotationUrl(bodyId).c_str(), "show=all")));
 }
 
 std::vector<ZJsonObject> ZDvidReader::readBodyAnnotationJsons(
