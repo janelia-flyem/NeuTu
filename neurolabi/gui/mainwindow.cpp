@@ -1136,7 +1136,7 @@ void MainWindow::createToolBars()
   m_toolBar->addAction(screenshotAction);
 #ifdef _DEBUG_
   m_toolBar->addAction(testAction);
-  m_toolBar->addAction(testAction2);
+  // m_toolBar->addAction(testAction2);
 #endif
   m_toolBar->addAction(m_ui->actionShortcut);
 }
