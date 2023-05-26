@@ -128,6 +128,11 @@ void ZParameterDialog::configure(const ZJsonObject &config)
         addStringParameter(key.c_str(), options);
       } else if (type == "checkbox") {
         addBoolParameter(key.c_str());
+      } else if (type == "int") {
+          // int parameter = actual 32 bit int, which could be a problem;
+          //    we use 0 as a default, making this technically a nonnegative int parameter,
+          //    but it's only used right now for body ID context (the "group" annotation field)
+          addIntParameter(key.c_str(), 0, 0, 2147483647);
       }
       if (editElement.isEmpty()) {
         auto param = getParameter(key.c_str());
