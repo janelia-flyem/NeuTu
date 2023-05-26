@@ -89,6 +89,8 @@ private:
     QList<std::string> m_originalStatuses;
     bool m_originalStatusesLoaded = false;
 
+    QStringList m_userBodyStatuses;
+
     ZDvidReader m_reader;
     ZDvidWriter m_writer;
 

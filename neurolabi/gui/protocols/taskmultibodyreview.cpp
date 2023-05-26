@@ -18,7 +18,9 @@
 #include "logging/zqslog.h"
 #include "flyem/zflyembodyannotation.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembodymanager.h"
+#include "flyem/flyembodyannotationmanager.h"
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
 #include "zglmutils.h"
@@ -78,6 +80,10 @@ TaskMultiBodyReview::TaskMultiBodyReview(QJsonObject json, ZFlyEmBody3dDoc * bod
 
     applySharedSettings(m_bodyDoc);
     loadJson(json);
+
+    // this is the list of statuses the user is allowed to change
+    ZFlyEmProofDoc* proofDoc = m_bodyDoc->getDataDocument();
+    m_userBodyStatuses = proofDoc->getBodyAnnotationManager()->getBodyStatusList();
 
     setupUI();
     setupDVID();
@@ -388,7 +394,20 @@ void TaskMultiBodyReview::onToggleMeshQuality() {
 void TaskMultiBodyReview::setPRTStatusForRow(int row) {
     ZFlyEmBodyAnnotation ann = m_bodyAnnotations[row];
     if (QString::fromStdString(ann.getStatus()) != STATUS_PRT) {
-        setStatus(m_bodyIDs[row], m_bodyAnnotations[row], STATUS_PRT.toStdString());
+        // verify the user is allowed to do this!
+        if (!m_userBodyStatuses.contains(QString::fromStdString(ann.getStatus())) ||
+            !m_userBodyStatuses.contains(QString::fromStdString(STATUS_PRT.toStdString()))) {
+            QMessageBox infoBox;
+            infoBox.setText("Body status problem");
+            QString message = "You do not have permission to change status " +
+                QString::fromStdString(ann.getStatus()) + " to PRT";
+            infoBox.setInformativeText(message);
+            infoBox.setStandardButtons(QMessageBox::Ok);
+            infoBox.setIcon(QMessageBox::Warning);
+            infoBox.exec();
+        } else {
+            setStatus(m_bodyIDs[row], m_bodyAnnotations[row], STATUS_PRT.toStdString());
+        }
     }
 }
 
