@@ -79,6 +79,17 @@ FlyEmBodyAnnotationGenericDlgBuilder::fromOldAnnotation(const ZJsonObject &obj)
   if (!m_annotation.shellOnly()) {
     m_annotation =
         ZSegmentAnnotationBuilder().copy(obj).join(m_annotation).withoutNull();
+
+    // remove _user and _time fields from annotation; DVID will add as needed
+    for (std::string key: m_annotation.getAllKey()) {
+        if (key.length() > 5) {
+            std::string end5 = key.substr(key.length() - 5);
+            if (end5 == "_user" || end5 == "_time") {
+                m_annotation.removeKey(key.c_str());
+            }
+        }
+    }
+
   }
 
   return *this;

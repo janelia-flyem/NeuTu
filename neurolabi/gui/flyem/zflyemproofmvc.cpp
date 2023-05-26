@@ -3836,13 +3836,6 @@ void ZFlyEmProofMvc::setSelectedBodyStatus(const std::string &status)
       if (!annotation.shellOnly()) {
         ZJsonObject oldAnnotation = annotation.clone();
         ZFlyEmBodyAnnotation::SetStatus(annotation, status);
-        if (status.empty()) {
-          ZFlyEmBodyAnnotation::RemoveStatusUser(annotation);
-        } else  if (ZFlyEmBodyAnnotation::GetStatus(oldAnnotation) != status) {
-          ZFlyEmBodyAnnotation::SetStatusUser(
-                annotation, neutu::GetCurrentUserName());
-        }
-//        annotation.setStatus(status);
         annotateBody(bodyId, annotation, oldAnnotation);
       } else {
         emit messageGenerated(

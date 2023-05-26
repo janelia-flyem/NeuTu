@@ -20,11 +20,6 @@ const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
 const char *ZFlyEmBodyAnnotation::KEY_DESCRIPTION = "description";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
 const char *ZFlyEmBodyAnnotation::KEY_USER = "user";
-const char *ZFlyEmBodyAnnotation::KEY_LAST_MODIFIED_USER = "last_modified_by";
-const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD = "naming user";
-const char *ZFlyEmBodyAnnotation::KEY_NAMING_USER = "instance_user";
-const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD = "status user";
-const char *ZFlyEmBodyAnnotation::KEY_STATUS_USER = "status_user";
 const char *ZFlyEmBodyAnnotation::KEY_INSTANCE = "instance";
 const char *ZFlyEmBodyAnnotation::KEY_PROPERTY = "property";
 const char *ZFlyEmBodyAnnotation::KEY_MAJOR_INPUT = "major input";
@@ -67,6 +62,17 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
 {
   ZJsonObject obj;
 
+  // strip off any fields ending with _user or _time; DVID will set these, and
+  //    we should not post them
+  for (std::string key: obj.getAllKey()) {
+      if (key.length() > 5) {
+          std::string end5 = key.substr(key.length() - 5);
+          if (end5 == "_user" || end5 == "_time") {
+              obj.removeKey(key.c_str());
+          }
+      }
+  }
+
   if (!m_name.empty()) {
     obj.setEntry(KEY_NAME, m_name);
   }
@@ -85,15 +91,6 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
 
   if (!m_userName.empty()) {
     obj.setEntry(KEY_USER, m_userName);
-  }
-
-  if (!m_namingUser.empty()) {
-    SetNamingUser(obj, m_namingUser);
-//    obj.setEntry(KEY_NAMING_USER, m_namingUser);
-  }
-
-  if (!m_statusUser.empty()) {
-    obj.setEntry(KEY_STATUS_USER, m_statusUser);
   }
 
   obj.setNonEmptyEntry(KEY_INSTANCE, m_instance);
@@ -144,14 +141,6 @@ bool ZFlyEmBodyAnnotation::IsSameAnnotation(
   if (nkey1 == nkey2) {
     return obj1.dumpJanssonString(JSON_INDENT(0) | JSON_SORT_KEYS) ==
         obj2.dumpJanssonString(JSON_INDENT(0) | JSON_SORT_KEYS);
-    /*
-    return obj1.all([&](const std::string &key) {
-      if (obj2.hasKey(key)) {
-        return obj1.value(key).dumpString(0) == obj2.value(key).dumpString(0);
-      }
-      return false;
-    });
-    */
   }
 
   return false;
@@ -170,35 +159,6 @@ bool ZFlyEmBodyAnnotation::IsEmptyAnnotation(const ZJsonObject &obj)
   });
 }
 
-/*
-namespace {
-template<typename T>
-void process_annotation_key(
-    const ZJsonObject &obj, const char *key, std::function<void(const T &)> f)
-{
-  if (obj.hasKey(key)) {
-    f(ZJsonParser().getValue<T>(obj[key]));
-  }
-}
-}
-*/
-
-/*
-void ZFlyEmBodyAnnotation::setBodyId(int64_t bodyId)
-{
-  if (bodyId < 0) {
-    setBodyId(0);
-  } else {
-    setBodyId(uint64_t(bodyId));
-  }
-}
-
-void ZFlyEmBodyAnnotation::setBodyId(int bodyId)
-{
-  setBodyId(int64_t(bodyId));
-}
-*/
-
 /*member dependent*/
 void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 {
@@ -208,7 +168,6 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
   if (!key.empty()) {
     uint64_t bodyId = ZString(key).firstUint64();
     if (bodyId > 0) {
-//      setBodyId(bodyId);
       ZJsonObject annotationJson(
           const_cast<json_t*>(obj[key.c_str()]),
           ZJsonObject::SET_INCREASE_REF_COUNT);
@@ -217,12 +176,6 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
     }
   } else {
     ZJsonObjectParser objParser;
-
-    /*
-    if (obj.hasKey(KEY_BODY_ID)) {
-      setBodyId(ZJsonParser::integerValue(obj[KEY_BODY_ID]));
-    }
-    */
 
     if (obj.hasKey(KEY_STATUS)) {
       setStatus(ZJsonParser::stringValue(obj[KEY_STATUS]));
@@ -248,21 +201,6 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
       setUser(ZJsonParser::stringValue(obj[KEY_USER]));
     }
 
-    setNamingUser(GetNamingUser(obj));
-    /*
-    if (obj.hasKey(KEY_NAMING_USER)) {
-      setNamingUser(ZJsonParser::stringValue(obj[KEY_NAMING_USER]));
-    } else if (obj.hasKey(KEY_NAMING_USER_OLD)) {
-      setNamingUser(ZJsonParser::stringValue(obj[KEY_NAMING_USER_OLD]));
-    }
-    */
-
-    if (obj.hasKey(KEY_STATUS_USER)) {
-      setStatusUser(ZJsonParser::stringValue(obj[KEY_STATUS_USER]));
-    } else if (obj.hasKey(KEY_STATUS_USER_OLD)) {
-      setStatusUser(ZJsonParser::stringValue(obj[KEY_STATUS_USER_OLD]));
-    }
-
     if (obj.hasKey(KEY_INSTANCE)) {
       setInstance(ZJsonParser::stringValue(obj[KEY_INSTANCE]));
     }
@@ -279,11 +217,6 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
           objParser.GetValue(
             obj, std::vector<std::string>{KEY_CELL_BODY_FIBER, KEY_PRIMARY_NEURITE},
             std::string()));
-    /*
-    if (obj.hasKey(KEY_PRIMARY_NEURITE)) {
-      setPrimaryNeurite(ZJsonParser::stringValue(obj[KEY_PRIMARY_NEURITE]));
-    }
-    */
 
     if (obj.hasKey(KEY_LOCATION)) {
       setLocation(ZJsonParser::stringValue(obj[KEY_LOCATION]));
@@ -307,11 +240,6 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
 
     setSynonym(objParser.GetValue(
                  obj, std::vector<std::string>{KEY_NOTES, KEY_SYNONYM}, std::string()));
-    /*
-    if (obj.hasKey(KEY_SYNONYM)) {
-      setSynonym(ZJsonParser::stringValue(obj[KEY_SYNONYM]));
-    }
-    */
 
     if (obj.hasKey(KEY_CLONAL_UNIT)) {
       setClonalUnit(ZJsonParser::stringValue(obj[KEY_CLONAL_UNIT]));
@@ -388,20 +316,12 @@ std::string ZFlyEmBodyAnnotation::getName() const
     return m_name;
   }
 
-
   return m_instance;
-
-//  return getAutoName();
 }
 
 std::string ZFlyEmBodyAnnotation::getClass() const
 {
   return m_class;
-//  if (!m_type.empty()) {
-//    return m_type;
-//  }
-
-//  return getAutoType();
 }
 
 std::string ZFlyEmBodyAnnotation::getInferredType() const
@@ -497,27 +417,6 @@ void ZFlyEmBodyAnnotation::UpdateTimeStamp(ZJsonObject &obj)
 void ZFlyEmBodyAnnotation::print() const
 {
   toJsonObject().print();
-  /*
-  std::cout << "Body annotation:" << std::endl;
-  std::cout << "  Body ID: " << m_bodyId << std::endl;
-  std::cout << "  Type: " << m_type << std::endl;
-  std::cout << "  Name: " << getName() << std::endl;
-  std::cout << "  Status: " << m_status << std::endl;
-  std::cout << "  Propert: " << m_property << std::endl;
-  std::cout << "  Comment: " << m_comment << std::endl;
-  std::cout << "  User: " << m_userName << std::endl;
-  std::cout << "  Named User: " << m_namingUser << std::endl;
-  std::cout << "  Instance: " << m_instance << std::endl;
-  std::cout << "  Major Input: " << m_majorInput << std::endl;
-  std::cout << "  Major Output: " << m_majorOutput << std::endl;
-  std::cout << "  Primary Neurite: " << m_primaryNeurite << std::endl;
-  std::cout << "  Location: " << m_location << std::endl;
-  std::cout << "  Out of Bounds: " << m_outOfBounds << std::endl;
-  std::cout << "  Cross Midline: " << m_crossMidline << std::endl;
-  std::cout << "  Neurotransmitter: " << m_neurotransmitter << std::endl;
-  std::cout << "  Hemilineage" << m_hemilineage << std::endl;
-  std::cout << "  Synonym: " << m_synonym << std::endl;
-  */
 }
 
 /*member dependent*/
@@ -596,21 +495,12 @@ int ZFlyEmBodyAnnotation::CompareStatus(
 void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotation,
     const std::function<int(const std::string&)>& getStatusRank)
 {
-  /*
-  if (m_bodyId == 0) {
-    m_bodyId = annotation.getBodyId();
-  }
-  */
-
   if (m_timestamp < annotation.m_timestamp) {
     m_timestamp = annotation.m_timestamp;
   }
 
   if (getStatusRank(m_status) > getStatusRank(annotation.m_status)) {
-//    m_status = annotation.m_status;
-//    uint64_t bodyId = m_bodyId;
     *this = annotation;
-//    m_bodyId = bodyId;
   } else if (getStatusRank(m_status) == getStatusRank(annotation.m_status)) {
     if (m_comment.empty()) {
       m_comment = annotation.m_comment;
@@ -618,16 +508,10 @@ void ZFlyEmBodyAnnotation::mergeAnnotation(const ZFlyEmBodyAnnotation &annotatio
 
     if (m_name.empty()) {
       m_name = annotation.m_name;
-      m_namingUser = annotation.m_namingUser;
-    }
-
-    if (m_statusUser.empty()) {
-      m_statusUser = annotation.m_statusUser;
     }
 
     if (m_instance.empty()) {
       m_instance = annotation.m_instance;
-      m_namingUser = annotation.m_namingUser;
     }
 
     if (m_class.empty()) {
@@ -730,9 +614,7 @@ bool ZFlyEmBodyAnnotation::IsFinalized(const ZJsonObject &obj)
 
 bool ZFlyEmBodyAnnotation::hasSameUserStatus(const ZFlyEmBodyAnnotation &annot) const
 {
-  return (m_userName == annot.m_userName) &&
-      (m_namingUser == annot.m_namingUser) &&
-      (m_statusUser == annot.m_statusUser);
+  return (m_userName == annot.m_userName);
 }
 
 //member dependent
@@ -743,8 +625,6 @@ bool ZFlyEmBodyAnnotation::operator ==(const ZFlyEmBodyAnnotation &annot) const
       (m_comment == annot.m_comment) &&
       (m_name == annot.m_name) &&
       (m_class == annot.m_class) &&
-//      (m_userName == annot.m_userName) &&
-//      (m_namingUser == annot.m_namingUser) &&
       (m_instance == annot.m_instance) &&
       (m_property == annot.m_property) &&
       (m_majorInput == annot.m_majorInput) &&
@@ -794,61 +674,10 @@ std::string ZFlyEmBodyAnnotation::GetUser(const ZJsonObject &obj)
   return ZJsonObjectParser::GetValue(obj, KEY_USER, "");
 }
 
-std::string ZFlyEmBodyAnnotation::GetStatusUser(const ZJsonObject &obj)
-{
-  return ZJsonObjectParser::GetValue(
-        obj, KEY_STATUS_USER,
-        ZJsonObjectParser::GetValue(obj, KEY_STATUS_USER_OLD, ""));
-}
-
-std::string ZFlyEmBodyAnnotation::GetNamingUser(const ZJsonObject &obj)
-{
-  return ZJsonObjectParser::GetValue(
-        obj, KEY_NAMING_USER,
-        ZJsonObjectParser::GetValue(obj, KEY_NAMING_USER_OLD, ""));
-}
-
-std::string ZFlyEmBodyAnnotation::GetLastModifiedBy(const ZJsonObject &obj)
-{
-  return ZJsonObjectParser::GetValue(obj, KEY_LAST_MODIFIED_USER, "");
-}
-
 void ZFlyEmBodyAnnotation::SetUser(ZJsonObject &obj, const std::string &user)
 {
   obj.setEntry(KEY_USER, user);
 }
-
-void ZFlyEmBodyAnnotation::SetNamingUser(
-    ZJsonObject &obj, const std::string &user)
-{
-  obj.setEntry(KEY_NAMING_USER, user);
-  obj.removeKey(KEY_NAMING_USER_OLD);
-}
-
-void ZFlyEmBodyAnnotation::SetStatusUser(
-    ZJsonObject &obj, const std::string &user)
-{
-  if (user.empty()) {
-    obj.removeKey(KEY_STATUS_USER);
-  } else {
-    obj.setEntry(KEY_STATUS_USER, user);
-  }
-
-  obj.removeKey(KEY_STATUS_USER_OLD);
-}
-
-void ZFlyEmBodyAnnotation::RemoveStatusUser(ZJsonObject &obj)
-{
-  obj.removeKey(KEY_STATUS_USER);
-  obj.removeKey(KEY_STATUS_USER_OLD);
-}
-
-/*
-void ZFlyEmBodyAnnotation::SetBodyId(ZJsonObject &obj, const uint64_t bodyId)
-{
-  obj.setEntry(KEY_BODY_ID, bodyId);
-}
-*/
 
 std::string ZFlyEmBodyAnnotation::GetName(const ZFlyEmBodyAnnotation &obj)
 {
@@ -878,15 +707,17 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
     result = target.clone();
     bool passingNamingUser = false;
     bool passingStatusUser = false;
-    //Move soure to empty fields of target
+    // Move source to empty fields of target
     source.forEachValue([&](const std::string &key, ZJsonValue value) {
-      if (key == ZFlyEmBodyAnnotation::KEY_NAMING_USER ||
-          key == ZFlyEmBodyAnnotation::KEY_NAMING_USER_OLD ||
-          key == ZFlyEmBodyAnnotation::KEY_STATUS_USER ||
-          key == ZFlyEmBodyAnnotation::KEY_STATUS_USER_OLD) {
-        return;
-      }
-      if (value.isBoolean()) {
+        // check for _user and _time fields; don't move them
+        if (key.length() > 5) {
+            std::string end5 = key.substr(key.length() - 5);
+            if (end5 == "_user" || end5 == "_time") {
+                return;
+            }
+        }
+
+        if (value.isBoolean()) {
         result.setEntry(
               key, ZJsonObjectParser::GetValue(target, key, false) ||
               value.toBoolean());
@@ -895,31 +726,9 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
         if (ZJsonObjectParser::GetValue(target, key, "").empty() &&
             !stringValue.empty()) {
           result.setEntry(key, stringValue);
-          if (key == ZFlyEmBodyAnnotation::KEY_NAME ||
-              key == ZFlyEmBodyAnnotation::KEY_INSTANCE) {
-            passingNamingUser = true;
-          } else if (key == ZFlyEmBodyAnnotation::KEY_STATUS) {
-            passingStatusUser = true;
-          }
         }
       }
     });
-    if (passingNamingUser) {
-      SetNamingUser(result, GetNamingUser(source));
-    }
-    if (passingStatusUser) {
-      SetStatusUser(result, GetStatusUser(source));
-    }
-    /*
-    if (ZJsonObjectParser::GetValue(
-          result, ZFlyEmBodyAnnotation::KEY_BODY_ID, 0ll) == 0) {
-      int64_t bodyId = ZJsonObjectParser::GetValue(
-            source, ZFlyEmBodyAnnotation::KEY_BODY_ID, 0ll);
-      if (bodyId > 0) {
-        result.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, bodyId);
-      }
-    }
-    */
     int64_t sourceTimeStamp = ZJsonObjectParser::GetValue(
           source, ZFlyEmBodyAnnotation::KEY_TIMESTAMP, 0ll);
     int64_t targetTimeStamp = ZJsonObjectParser::GetValue(
@@ -928,14 +737,8 @@ ZJsonObject ZFlyEmBodyAnnotation::MergeAnnotation(
       result.setEntry(ZFlyEmBodyAnnotation::KEY_TIMESTAMP, sourceTimeStamp);
     }
   } else if (getStatusRank(targetStatus) > getStatusRank(sourceStatus)) { //source has higher priority
-//    uint64_t bodyId = ZFlyEmBodyAnnotation::GetBodyId(target);
     HLDEBUG("annotate body") << "Use source annotation directly." << std::endl;
     result = source.clone();
-    /*
-    if (bodyId > 0) {
-      ZFlyEmBodyAnnotation::SetBodyId(result, bodyId);
-    }
-    */
   } else { //target has higher priority
     HLDEBUG("annotate body") << "Use target annotation directly." << std::endl;
     result = target.clone();
@@ -968,13 +771,6 @@ void ZFlyEmBodyAnnotation::SetComment(
   }
 }
 
-// deprecated; DVID tracks this info by other means now; do not use
-void ZFlyEmBodyAnnotation::SetLastModifiedBy(
-    ZJsonObject &obj, const std::string &user)
-{
-  obj.setEntry(KEY_LAST_MODIFIED_USER, user);
-}
-
 void ZFlyEmBodyAnnotation::UpdateUserFields(
     ZJsonObject &obj, const std::string &user, const ZJsonObject &oldObj)
 {
@@ -988,21 +784,6 @@ void ZFlyEmBodyAnnotation::UpdateUserFields(
 
   if (!newUser.empty()) {
     ZFlyEmBodyAnnotation::SetUser(obj, newUser);
-  }
-
-  std::string status = ZFlyEmBodyAnnotation::GetStatus(obj);
-  if (status != ZFlyEmBodyAnnotation::GetStatus(oldObj)) {
-    ZFlyEmBodyAnnotation::SetStatusUser(obj, user);
-  }
-
-  std::string name = ZFlyEmBodyAnnotation::GetName(obj);
-  std::string oldName = ZFlyEmBodyAnnotation::GetName(oldObj);
-  std::string namingUser = ZFlyEmBodyAnnotation::GetNamingUser(oldObj);
-  if (name != oldName) {
-    namingUser = user;
-  }
-  if (!namingUser.empty()) {
-    ZFlyEmBodyAnnotation::SetNamingUser(obj, namingUser);
   }
 }
 

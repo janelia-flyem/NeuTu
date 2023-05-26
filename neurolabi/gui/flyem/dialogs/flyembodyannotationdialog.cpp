@@ -411,12 +411,10 @@ std::string FlyEmBodyAnnotationDialog::getHemilineage() const
 void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
-//  setBodyId(annotation.getBodyId());
   setPrevUser(annotation.getUser());
-  setPrevNamingUser(annotation.getNamingUser());
-  setPrevStatusUser(annotation.getStatusUser());
+  setPrevNamingUser("");
+  setPrevStatusUser("");
 
-//  setComment(annotation.getComment());
   setStatus(annotation.getStatus());
   setInstance(annotation.getName());
   setType(annotation.getClass());
@@ -434,25 +432,17 @@ void FlyEmBodyAnnotationDialog::loadBodyAnnotation(
   setClonalUnit(annotation.getClonalUnit());
   setAutoType(annotation.getAutoType());
   setProperty(annotation.getProperty());
-//  setInstance(annotation.get);
 }
 
 ZFlyEmBodyAnnotation FlyEmBodyAnnotationDialog::getBodyAnnotation() const
 {
   ZFlyEmBodyAnnotation annotation;
-//  annotation.setBodyId(getBodyId());
   annotation.setStatus(getStatus());
   annotation.setClass(getType());
   annotation.setInstance(getInstance());
   annotation.setComment(getComment());
   std::string user = neutu::GetCurrentUserName();
   annotation.setUser(user);
-  if (isInstanceChanged()) {
-    annotation.setNamingUser(user);
-  } else {
-    annotation.setNamingUser(m_prevNamingUser);
-  }
-  annotation.setStatusUser(isStatusChanged() ? user : m_prevStatusUser);
   annotation.setMajorInput(getMajorInput());
   annotation.setMajorOutput(getMajorOutput());
   annotation.setPrimaryNeurite(getPrimaryNeurite());

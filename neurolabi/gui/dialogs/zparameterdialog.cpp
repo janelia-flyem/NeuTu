@@ -446,6 +446,8 @@ ZJsonObject ZParameterDialog::toJsonObject() const
   HLDEBUG_FUNC("annotate body")
       << " Annotation before post process: "  <<json.dumpString(0) << std::endl;
   postProcess(json);
+  HLDEBUG_FUNC("annotate body")
+      << " Annotation after post process: "  <<json.dumpString(0) << std::endl;
 
   return json;
 }

@@ -402,7 +402,6 @@ void TaskMultiBodyReview::setOriginalStatusForRow(int row) {
 
 void TaskMultiBodyReview::setStatus(uint64_t bodyId, ZFlyEmBodyAnnotation ann, std::string status) {
     ann.setStatus(status);
-    ann.setStatusUser(NeutubeConfig::GetUserName());
     m_writer.writeBodyAnnotation(bodyId, ann);
 }
 

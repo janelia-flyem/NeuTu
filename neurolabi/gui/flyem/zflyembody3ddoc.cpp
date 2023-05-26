@@ -4522,35 +4522,6 @@ void ZFlyEmBody3dDoc::startBodyAnnotation(ZGenericBodyAnnotationDialog *dlg)
                 getParent3DWindow());
         }
 
-        /*
-        dlg->loadJsonObject(oldAnnotation);
-        std::string lastModifiedBy =
-            ZFlyEmBodyAnnotation::GetLastModifiedBy(oldAnnotation);
-        std::string oldNamingUser =
-            ZFlyEmBodyAnnotation::GetNamingUser(oldAnnotation);
-        QString label = QString("Body ID: <b>%1</b>").arg(bodyId);
-        QString separator = "<br>";
-        if (!lastModifiedBy.empty()) {
-          label += separator +
-              QString("Previously annotated by <em>%1</em>").arg(
-                lastModifiedBy.c_str());
-          separator = " ;  ";
-        }
-        if (!oldNamingUser.empty()) {
-          label += separator +
-              QString("Named by <em>%1</em>").arg(oldNamingUser.c_str());
-        }
-        dlg->setLabel(label);
-        if (dlg->exec()) {
-          ZJsonObject newAnnotation = dlg->toJsonObject();
-          std::string user = neutu::GetCurrentUserName();
-          ZFlyEmBodyAnnotation::UpdateUserFields(
-                newAnnotation, user, oldAnnotation);
-          ZFlyEmProofUtil::AnnotateBody(
-                bodyId, newAnnotation, oldAnnotation, getDataDocument(),
-                getParent3DWindow());
-        }
-        */
         getDataDocument()->checkInBodyWithMessage(
               bodyId, neutu::EBodySplitMode::NONE);
       } else {

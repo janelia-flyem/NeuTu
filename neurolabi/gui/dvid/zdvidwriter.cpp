@@ -255,7 +255,7 @@ void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
     //  instead of just updating the changed fiels (which is what it does now); this is
     //  the old behavior and what NeuTu expects, so set it; if you don't, you can't
     //  delete fields by sending in empty values
-    url = ZDvidUrl::AppendQuery(url, std::make_pair(std::string("replace"), true));
+   url = ZDvidUrl::AppendQuery(url, std::make_pair(std::string("replace"), true));
     ZJsonObject objToUpload = obj.clone();
     objToUpload.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, bodyId);
 
