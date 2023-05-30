@@ -106,24 +106,18 @@ QMap<QString, QString> FlyEmBodyAnnotationGenericDlgBuilder::getUserTimeInfo(con
 
     QString latestTimeKey = "";
     QDateTime initialTime = QDateTime::fromString("2000-01-01", "yyyy-MM-dd");
-    std::cout << "initial time: " << initialTime.toString().toStdString() << std::endl;
     QDateTime latestTime = initialTime;
     for (QString key: data.keys()) {
-        std::cout << "working on " << key.toStdString() << std::endl;
         if (key.endsWith("_user")) {
-            std::cout << "adding " << key.toStdString() << std::endl;
             info[key] = data[key].toString();
         } else if (key.endsWith("_time")) {
             QString timeString = data[key].toString();
-            std::cout << "adding " << timeString.toStdString() << std::endl;
             info[key] = timeString;
             // time format: 2023-05-09T09:45:33-04:00 = Qt::ISODate
             QDateTime time = QDateTime::fromString(timeString, Qt::ISODate);
-            std::cout << "converted time: " << time.toString().toStdString() << std::endl;
             if (time > latestTime) {
                 latestTime = time;
                 latestTimeKey = key;
-                std::cout << "new latest time: " << latestTimeKey.toStdString() << std::endl;
             }
         }
     }

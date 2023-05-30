@@ -252,7 +252,7 @@ void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
     std::string url = ZDvidUrl(getDvidTarget(), m_admin).getBodyAnnotationUrl(
           bodyId, getDvidTarget().getBodyLabelName());
     // as of late 2022, "replace=true" required if you want to write the whole annotation
-    //  instead of just updating the changed fiels (which is what it does now); this is
+    //  instead of just updating the changed fields (which is what it does now); this is
     //  the old behavior and what NeuTu expects, so set it; if you don't, you can't
     //  delete fields by sending in empty values
    url = ZDvidUrl::AppendQuery(url, std::make_pair(std::string("replace"), true));
