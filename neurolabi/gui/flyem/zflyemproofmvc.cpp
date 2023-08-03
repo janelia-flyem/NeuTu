@@ -1394,7 +1394,9 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   window->getMeshFilter()->setStayOnTop(false);
   window->getPunctaFilter()->setStayOnTop(false);
   window->getGraphFilter()->setStayOnTop(false);
-  window->setOpacity(neutu3d::ERendererLayer::MESH, 0.9);
+  // changed mesh default opacity to 1.0 from 0.9, August 2023; comment
+  //    added so I can find this more easily later
+  window->setOpacity(neutu3d::ERendererLayer::MESH, 1.0);
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
 
   connect(window, SIGNAL(savingSplitTask()),
