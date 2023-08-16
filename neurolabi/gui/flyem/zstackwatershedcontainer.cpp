@@ -722,10 +722,11 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
   std::vector<ZObject3dScan> boundaryArray =
       boundaryObject.getConnectedComponent(ZObject3dScan::ACTION_NONE);
 
-#ifdef _DEBUG_
-  stack->save(GET_TEST_DATA_DIR + "/_test_stack.tif");
-  boundaryStack->save(GET_TEST_DATA_DIR + "/_test_boundary.tif");
-#endif
+// debug the debug: this is failing when I'm trying to debug something else!
+//#ifdef _DEBUG_
+//  stack->save(GET_TEST_DATA_DIR + "/_test_stack.tif");
+//  boundaryStack->save(GET_TEST_DATA_DIR + "/_test_boundary.tif");
+//#endif
   //For each component
   int index = 1;
   for (const ZObject3dScan &subbound : boundaryArray) {
@@ -751,21 +752,21 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
 #ifdef _DEBUG_2
       for (ZStackPtr stack : newResult) {
         stack->printInfo();
-        stack->save(GET_TEST_DATA_DIR + "/_test4.tif");
+        // stack->save(GET_TEST_DATA_DIR + "/_test4.tif");
       }
 #endif
 
-#ifdef _DEBUG_
-      subbound.save(GET_TEST_DATA_DIR + "/_test_bound.sobj");
-      container.exportSeedMask(GET_TEST_DATA_DIR + "/_test_mask.tif");
+// #ifdef _DEBUG_
+//       subbound.save(GET_TEST_DATA_DIR + "/_test_bound.sobj");
+//       container.exportSeedMask(GET_TEST_DATA_DIR + "/_test_mask.tif");
 
-      ZObject3dScanArray result;
-      container.makeSplitResult(1, &result);
-      result.save(GET_TEST_DATA_DIR + "/_test.soba");
-//      ZStack *labelStack = result.toColorField();
-//      labelStack->save(GET_TEST_DATA_DIR + "/_test5.tif");
-//      delete labelStack;
-#endif
+//       ZObject3dScanArray result;
+//       container.makeSplitResult(1, &result);
+//       result.save(GET_TEST_DATA_DIR + "/_test.soba");
+// //      ZStack *labelStack = result.toColorField();
+// //      labelStack->save(GET_TEST_DATA_DIR + "/_test5.tif");
+// //      delete labelStack;
+// #endif
 
       m_result.append(newResult);
     }
@@ -815,15 +816,15 @@ void ZStackWatershedContainer::run()
       Stack *source = getRawSourceStack(sourceStack);
       updateSeedMask();
 
-#ifdef _DEBUG_0
-      if (!getSourceStack()->getDsIntv().isZero()) {
-        exportMask(GET_TEST_DATA_DIR + "/_test.tif");
-      }
-#endif
+// #ifdef _DEBUG_0
+//       if (!getSourceStack()->getDsIntv().isZero()) {
+//         exportMask(GET_TEST_DATA_DIR + "/_test.tif");
+//       }
+// #endif
 
-#ifdef _DEBUG_2
-      exportSource(GET_TEST_DATA_DIR + "/_test.tif");
-#endif
+// #ifdef _DEBUG_2
+//       exportSource(GET_TEST_DATA_DIR + "/_test.tif");
+// #endif
 
       if (m_result.empty()) {
         workspace->conn=6;
@@ -834,11 +835,11 @@ void ZStackWatershedContainer::run()
         stack->setDsIntv(getSourceStack()->getDsIntv());
         m_result.push_back(stack);
 
-#ifdef _DEBUG_0
-        if (!getSourceStack()->getDsIntv().isZero()) {
-          stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
-        }
-#endif
+// #ifdef _DEBUG_0
+//         if (!getSourceStack()->getDsIntv().isZero()) {
+//           stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
+//         }
+// #endif
       }
 
       ZINFO("watershed") << "Downsampling interval: " + getSourceStack()->getDsIntv().toString();
@@ -1396,9 +1397,9 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     //The whole object
     ZObject3dScan *wholeBody = m_spStack->getObjectMask();
 
-#ifdef _DEBUG_2
-    wholeBody->save(GET_TEST_DATA_DIR + "/test.sobj");
-#endif
+// #ifdef _DEBUG_2
+//     wholeBody->save(GET_TEST_DATA_DIR + "/test.sobj");
+// #endif
 
     ZObject3dScan remainBodyBuffer;
     if (remainBody == NULL) {
@@ -1431,7 +1432,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 #ifdef _DEBUG_2
           std::cout << "Voxel count: " << currentBody->getVoxelNumber() << std::endl;
           std::cout << currentBody->getLabel() << std::endl;
-          currentBody->save(GET_TEST_DATA_DIR + "/test.sobj");
+          // currentBody->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
         } else {
@@ -1445,12 +1446,12 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
       }
     }
 
-#ifdef _DEBUG_2
-  configureResult(result);
-  ZStack *labelStack = result->toColorField();
-  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
-  delete labelStack;
-#endif
+// #ifdef _DEBUG_2
+//   configureResult(result);
+//   ZStack *labelStack = result->toColorField();
+//   labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+//   delete labelStack;
+// #endif
 
     if (ccaPost()) {
 //      mainBody.upSample(dsIntv);
@@ -1475,11 +1476,11 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 
   logProfile(timer.elapsed(), profileMessage.toStdString());
 
-#ifdef _DEBUG_2
-  ZStack *labelStack = result->toColorField();
-  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
-  delete labelStack;
-#endif
+// #ifdef _DEBUG_2
+//   ZStack *labelStack = result->toColorField();
+//   labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+//   delete labelStack;
+// #endif
 
   return result;
 }
