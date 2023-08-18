@@ -147,8 +147,9 @@ private:
         };
     enum BodyTableColumns {
         BODY_ID_COLUMN = 0,
-        BODY_PRIMARY_NEURITE,
+        // BODY_PRIMARY_NEURITE,
         BODY_TYPE_COLUMN,
+        BODY_HEMIBRAIN_TYPE_COLUMN,
         BODY_NAME_COLUMN,
         BODY_NPRE_COLUMN,
         BODY_NPOST_COLUMN,

@@ -161,6 +161,7 @@ public:
   static const char *KEY_NAME;
   static const char *KEY_CLASS;
   static const char *KEY_TYPE;
+  static const char *KEY_HEMIBRAIN_TYPE;
   static const char *KEY_COMMENT;
   static const char *KEY_DESCRIPTION;
   static const char *KEY_USER;

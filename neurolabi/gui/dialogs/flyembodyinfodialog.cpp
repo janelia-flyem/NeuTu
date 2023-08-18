@@ -236,7 +236,8 @@ void FlyEmBodyInfoDialog::initBodyColumnHeader()
 {
   m_bodyColumnHeaderList = QVector<QString>(BODY_TABLE_COLUMN_COUNT);
   m_bodyColumnHeaderList[BODY_ID_COLUMN] = "Body ID";
-  m_bodyColumnHeaderList[BODY_PRIMARY_NEURITE] = "CBF";
+  // m_bodyColumnHeaderList[BODY_PRIMARY_NEURITE] = "CBF";
+  m_bodyColumnHeaderList[BODY_HEMIBRAIN_TYPE_COLUMN] = "hemi_type";
   m_bodyColumnHeaderList[BODY_TYPE_COLUMN] = "type";
   m_bodyColumnHeaderList[BODY_NAME_COLUMN] = "instance";
   m_bodyColumnHeaderList[BODY_NPRE_COLUMN] = "# pre";
@@ -308,6 +309,12 @@ std::string get_annotation_primary_neurite(const ZJsonObject &bodyData)
         bodyData, std::vector<std::string>{
           ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
           ZFlyEmBodyAnnotation::KEY_PRIMARY_NEURITE}, std::string());
+}
+
+std::string get_annotation_hemibrain_type(const ZJsonObject &bodyData)
+{
+  ZJsonObjectParser parser;
+  return parser.GetValue(bodyData, ZFlyEmBodyAnnotation::KEY_HEMIBRAIN_TYPE, std::string());
 }
 
 std::string get_annotation_name(const ZJsonObject &bodyData)
@@ -1259,9 +1266,16 @@ void FlyEmBodyInfoDialog::importBodiesDvid2()
                   }
                 }
 
+                /*
+                // not doing CBF anymore, but leaving in in case we do in future
                 entry.setNonEmptyEntry(
                       ZFlyEmBodyAnnotation::KEY_CELL_BODY_FIBER,
                       get_annotation_primary_neurite(bodyData));
+                */
+
+                entry.setNonEmptyEntry(
+                      ZFlyEmBodyAnnotation::KEY_HEMIBRAIN_TYPE,
+                      get_annotation_hemibrain_type(bodyData));
             }
 
             // synapse info
@@ -1486,7 +1500,9 @@ void FlyEmBodyInfoDialog::adjustBodyTableColumn()
 {
   ui->bodyTableView->resizeColumnsToContents();
   ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 180);
-  ui->bodyTableView->setColumnWidth(BODY_PRIMARY_NEURITE, 80);
+  // not populating this column for the present:
+  // ui->bodyTableView->setColumnWidth(BODY_PRIMARY_NEURITE, 80);
+  ui->bodyTableView->setColumnWidth(BODY_HEMIBRAIN_TYPE_COLUMN, 120);
   ui->bodyTableView->setColumnWidth(BODY_TYPE_COLUMN, 120);
 }
 
@@ -1545,10 +1561,20 @@ QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
         "+double click to append the body to the current selection");
   itemArray[BODY_ID_COLUMN] = bodyIDItem;
 
+  /*
+  // not using primaryNeurite aka CBF anymore, but leaving it in in case
+  //    we need it in the future
   std::string primaryNeurite = get_annotation_primary_neurite(bkmk);
   if (!primaryNeurite.empty()) {
     itemArray[BODY_PRIMARY_NEURITE] =
         new QStandardItem(QString::fromStdString(primaryNeurite));
+  }
+  */
+
+  std::string hemibrainType = get_annotation_hemibrain_type(bkmk);
+  if (!hemibrainType.empty()) {
+    itemArray[BODY_HEMIBRAIN_TYPE_COLUMN] =
+        new QStandardItem(QString::fromStdString(hemibrainType));
   }
 
   std::string type = get_annotation_type(bkmk);

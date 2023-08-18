@@ -16,6 +16,7 @@ const char *ZFlyEmBodyAnnotation::KEY_BODY_ID = "bodyid";
 const char *ZFlyEmBodyAnnotation::KEY_NAME = "name";
 const char *ZFlyEmBodyAnnotation::KEY_CLASS = "class";
 const char *ZFlyEmBodyAnnotation::KEY_TYPE = "type";
+const char *ZFlyEmBodyAnnotation::KEY_HEMIBRAIN_TYPE = "hemibrain_type";
 const char *ZFlyEmBodyAnnotation::KEY_COMMENT = "comment";
 const char *ZFlyEmBodyAnnotation::KEY_DESCRIPTION = "description";
 const char *ZFlyEmBodyAnnotation::KEY_STATUS = "status";
