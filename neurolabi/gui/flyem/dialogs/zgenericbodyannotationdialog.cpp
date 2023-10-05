@@ -57,15 +57,17 @@ void ZGenericBodyAnnotationDialog::setAdmin(bool on)
 
 int ZGenericBodyAnnotationDialog::exec()
 {
-  if (m_adminStatusSet.contains(getStringValue("status"))) {
-    auto param = getParameter("status");
-    if (param) {
+  auto param = getParameter("status");
+  if (param) {
+    if (m_adminStatusSet.contains(getStringValue("status"))) {
       param->setEnabled(m_isAdmin);
     } else {
-      ZWARN(neutu::TOPIC_NULL) << "Unexpected null parameter.";
+      // if you don't reset here, future invocations can inherit old restrictions
+      param->setEnabled(true);
     }
+  } else {
+    ZWARN(neutu::TOPIC_NULL) << "Unexpected null parameter.";
   }
-
   return ZParameterDialog::exec();
 }
 
