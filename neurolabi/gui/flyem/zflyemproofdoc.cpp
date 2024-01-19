@@ -1553,7 +1553,7 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
       initData("keyvalue", target.getSkeletonName());
       initData("keyvalue", target.getThumbnailName());
       initData("keyvalue", target.getBookmarkKeyName());
-      initData("keyvalue", target.getBodyAnnotationName());
+      initData("neuronjson", target.getBodyAnnotationName());
       initData("keyvalue", target.getSplitLabelName());
       initData("keyvalue", ZDvidData::GetName(ZDvidData::ERole::MERGE_OPERATION));
     }
