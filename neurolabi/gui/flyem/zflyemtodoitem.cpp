@@ -737,7 +737,10 @@ std::string ZFlyEmToDoItem::getChecked() const {
         return checkedString;
         }
     }
-    return "";
+    // if the property doesn't exist, consider it unchecked; we have to handle this as
+    //  there are to do items in DVID that are missing the property for reasons I don't know
+    // (used to return empty string)
+    return TODO_STATE_UNCHECKED;
 }
 
 std::string ZFlyEmToDoItem::GetPriorityName(int p)
