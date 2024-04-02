@@ -68,6 +68,10 @@ FlyEmBodyAnnotationGenericDlgBuilder::fromOldAnnotation(const ZJsonObject &obj)
           dlgReady = true;
         }
       }
+      // note from 2024: we now rely on DVID to populate the "user" field;
+      //    I've left this here in case anything else relies on it, but the
+      //    user field will be stripped off just before writing to DVID in
+      //    ZDvidWrite::writeAnnotation()
       if (dlgReady) {
         std::string user = neutu::GetCurrentUserName();
         ZFlyEmBodyAnnotation::UpdateUserFields(

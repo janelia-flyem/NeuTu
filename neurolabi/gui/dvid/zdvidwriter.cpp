@@ -259,6 +259,12 @@ void ZDvidWriter::writeAnnotation(uint64_t bodyId, const ZJsonObject &obj)
     ZJsonObject objToUpload = obj.clone();
     objToUpload.setEntry(ZFlyEmBodyAnnotation::KEY_BODY_ID, bodyId);
 
+    // we also now rely on DVID to populate the "user" field in body annotations;
+    //  strip it off if it's present
+    if (objToUpload.hasKey("user")) {
+        objToUpload.removeKey("user");
+    }
+
 #if defined(_ENABLE_LIBDVIDCPP_)
     post(ZDvidUrl::AppendSourceQuery(url), objToUpload);
 #else

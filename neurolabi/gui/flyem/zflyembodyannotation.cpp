@@ -64,8 +64,11 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
   ZJsonObject obj;
 
   // strip off any fields ending with _user or _time; DVID will set these, and
-  //    we should not post them
+  //    we should not post them; likewise the user field itself--DVID will set it
   for (std::string key: obj.getAllKey()) {
+      if (key == KEY_USER) {
+          obj.removeKey(key.c_str());
+      }
       if (key.length() > 5) {
           std::string end5 = key.substr(key.length() - 5);
           if (end5 == "_user" || end5 == "_time") {
@@ -88,10 +91,6 @@ ZJsonObject ZFlyEmBodyAnnotation::toJsonObject() const
 
   if (!m_comment.empty()) {
     obj.setEntry(KEY_COMMENT, m_comment);
-  }
-
-  if (!m_userName.empty()) {
-    obj.setEntry(KEY_USER, m_userName);
   }
 
   obj.setNonEmptyEntry(KEY_INSTANCE, m_instance);
