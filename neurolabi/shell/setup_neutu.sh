@@ -62,15 +62,16 @@ fi
 #echo $PATH
 #which md5
 #exit
+ARCH=`uname -m`
 cd $downloadDir
 if [ ! -d $condaDir ]
 then
   if [ `uname` = 'Darwin' ]; then
-    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-x86_64.sh
+    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-${ARCH}.sh > Miniconda-latest-${ARCH}.sh
   else
-    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh > Miniconda-latest-x86_64.sh
+    curl -X GET https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-${ARCH}.sh > Miniconda-latest-${ARCH}.sh
   fi
-  bash Miniconda-latest-x86_64.sh -b -p $condaDir
+  bash Miniconda-latest-${ARCH}.sh -b -p $condaDir
 fi
 
 cd $scriptDir
