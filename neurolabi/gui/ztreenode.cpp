@@ -407,6 +407,9 @@ ZTreeNode<T>* ZTreeNode<T>::mergeToParent()
   return p;
 }
 
+/*
+// doesn't compile in MacOS 15.5
+
 template <typename T>
 void ZTreeNode<T>::becomeRoot(bool virtualCheck)
 {
@@ -442,6 +445,7 @@ void ZTreeNode<T>::becomeRoot(bool virtualCheck)
     setParent(buffer1);
   }
 }
+*/
 
 template <typename T>
 double ZTreeNode<T>::getBacktraceWeight(int n) const

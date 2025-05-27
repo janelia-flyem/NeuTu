@@ -92,7 +92,7 @@ public:
 
     virtual ZTreeNode<T>* mergeToParent();
 
-    void becomeRoot(bool virtualCheck = true);
+    // void becomeRoot(bool virtualCheck = true);
 
     double getBacktraceWeight(int n) const;
 
